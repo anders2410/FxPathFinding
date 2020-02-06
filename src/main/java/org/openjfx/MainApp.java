@@ -16,16 +16,17 @@ public class MainApp extends Application {
 
     public static void main(String[] args) {
         // Here you can work with args - command line parameters
-        Application.launch(args);
+        launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/mainScene.fxml"));
-        Parent root = loader.load();
+    public void start(Stage stage) throws Exception {
+        Parent root = FXMLLoader.load(getClass().getResource("/scene.fxml"));
 
-        primaryStage.setScene(new Scene(root));
-        primaryStage.show();
+        Scene scene = new Scene(root);
+
+        stage.setTitle("JavaFX and Gradle");
+        stage.setScene(scene);
+        stage.show();
     }
 }
