@@ -12,6 +12,8 @@ import javafx.scene.paint.Color;
 import model.Edge;
 import model.Graph;
 import model.Node;
+import paths.AlgorithmMode;
+import paths.Dijkstra;
 import xml.XMLFilter;
 import xml.XMLGraphExtractor;
 
@@ -44,6 +46,7 @@ public class FXMLController implements Initializable {
     public void handleButton1Event() {
         System.out.println("The bytton1 has been pressed");
         yOffset -= 100;
+        Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
     }
 
     public void handleCanvasDrawing() {
