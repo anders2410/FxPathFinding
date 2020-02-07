@@ -9,6 +9,8 @@ public class Dijkstra {
 
     public static boolean trace = false;
 
+    public static int seed = 0;
+
     public static boolean result = false;
 
     private static Function<Integer, Float> priorityStrategy;
@@ -86,8 +88,7 @@ public class Dijkstra {
 
     public static ShortestPathResult randomPath(Graph graph, AlgorithmMode mode) {
         int n = graph.getNodeSize();
-        Random random = new Random();
-        random.setSeed(120471);
+        Random random = new Random(seed);
         int from = random.nextInt(n);
         int to = random.nextInt(n);
         ShortestPathResult res = sssp(graph, from, to, mode);

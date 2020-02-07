@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.util.List;
+import java.util.Random;
 
 public class SimpleUI extends JFrame {
 
@@ -93,6 +94,13 @@ public class SimpleUI extends JFrame {
             repaint();
         });
         panel.add(aPath);
+
+        JButton newSeed = new JButton("new seed");
+        newSeed.addActionListener(e -> {
+            Dijkstra.seed = new Random().nextInt();
+            repaint();
+        });
+        panel.add(newSeed);
     }
 
     @Override
@@ -174,12 +182,14 @@ public class SimpleUI extends JFrame {
         float y2 = projectCord(-ny.longitude, yoffset);
         //System.out.println("(" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
         Line2D line = new Line2D.Float(x1, y1, x2, y2);
-        g2d.setColor(Color.GREEN);
+        g2d.setStroke(new BasicStroke(1));
+        g2d.setColor(Color.BLACK);
         if (edge.visited) {
-            g2d.setColor(Color.CYAN);
+            g2d.setColor(Color.BLUE);
         }
         if (edge.inPath) {
-            g2d.setColor(Color.MAGENTA);
+            g2d.setStroke(new BasicStroke(2));
+            g2d.setColor(Color.RED);
         }
         g2d.draw(line);
         edge.isDrawn = true;
