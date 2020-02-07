@@ -70,6 +70,8 @@ public class XMLFilter extends DefaultHandler {
         wayDetected = false;
     }
 
+    private boolean illegalKeyValPair;
+
     /**
      * Sets the above flags ^
      * Adds 1 to indent level
@@ -94,11 +96,11 @@ public class XMLFilter extends DefaultHandler {
             String attriKey = attributes.getQName(i);
             String attriVal = attributes.getValue(i);
 
-            if (qName.equals("node")) {
-                if (ifIllegalKey(attriKey)) {
-                    continue;
-                }
+            if (ifIllegalKey(attriKey)) {
+                continue;
             }
+
+            illegalKeyValPair = illegalKeyValPair || ifIllegalVal(attriKey, attriVal);
 
             // If we have a tag element, we can start filtering away the super node element,
             // because <tag> elements exists only inside of <ways> and <node>
@@ -119,7 +121,17 @@ public class XMLFilter extends DefaultHandler {
             attriVal = replaceSpecialCharacters(attriVal);
             processText += ' ' + attriKey + "=\"" + attriVal + '"';
         }
-        stringList.add(processText + '>');
+        if (!(illegalKeyValPair || ifIllegalNestedNode(qName))) {
+            stringList.add(processText + '>');
+        }
+    }
+
+    private boolean ifIllegalNestedNode(String qName) {
+        return nodeDetected && qName.equals("tag");
+    }
+
+    private boolean ifIllegalVal(String attriKey, String attriVal) {
+        return attriKey.equals("k") && (attriVal.equals("name"));
     }
 
     // Method to filter out keys we don't want to use
@@ -148,7 +160,9 @@ public class XMLFilter extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String localName, String qName) {
-        stringList.add(indentation() + "</" + qName + '>');
+        if (!(illegalKeyValPair || ifIllegalNestedNode(qName))) {
+            stringList.add(indentation() + "</" + qName + '>');
+        }
         indentLevel--;
 
         if (indentLevel == 1) {
@@ -170,6 +184,7 @@ public class XMLFilter extends DefaultHandler {
             stringList.clear();
             tempNodeRefs.clear();
         }
+        illegalKeyValPair = false;
     }
 
     @Override

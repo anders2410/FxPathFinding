@@ -1,10 +1,12 @@
-package xml;
+package paths;
 
 import model.*;
 import org.junit.Before;
 import org.junit.Test;
 import paths.AlgorithmMode;
 import paths.Dijkstra;
+import xml.XMLFilter;
+import xml.XMLGraphExtractor;
 
 import static org.junit.Assert.assertEquals;
 
