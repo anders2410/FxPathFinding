@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 public class XMLTest {
 
     XMLFilter xmlFilter;
+    XMLGraphExtractor xmlGraphExtractor;
     String fileName = "jelling";
 
     @Before
@@ -22,8 +23,7 @@ public class XMLTest {
         xmlFilter.executeFilter();
         long xmlDoneTime = System.currentTimeMillis();
         System.out.println("Time to xml parse: " + (xmlDoneTime - startTime) / 1000);
-        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
-        xmlGraphExtractor.executeExtractor();
+        xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         long graphExtractDoneTime = System.currentTimeMillis();
         System.out.println("Time to graph extract: " + (graphExtractDoneTime - xmlDoneTime) / 1000);
     }
@@ -36,13 +36,11 @@ public class XMLTest {
 
     @Test
     public void testExtractor() {
-        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         xmlGraphExtractor.executeExtractor();
     }
 
     @Test
     public void testCoordinateConversion() {
-        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor("jelling", new HashSet<>());
         int coordinateInt = Util.cordToInt("55.7332789");
         assertEquals(557332789, coordinateInt);
         int negCord = Util.cordToInt("-55.7332789");
@@ -52,12 +50,10 @@ public class XMLTest {
 
     @Test
     public void testNodeDistance() {
-        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor("jelling", new HashSet<>());
-
         Node n1 = new Node(0, 557332789, 597332789);
         Node n2 = new Node(2, 557332789, 597332789);
         float distance = Util.getNodeDistance(n1, n2);
-        assertEquals(0.0, distance);
+        assertEquals(0.0, distance, 0);
     }
 
 }
