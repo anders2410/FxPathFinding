@@ -1,46 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import java.net.*?>
+<?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0"
-            prefWidth="1000.0" style="-fx-background-color: #00203FFF;" xmlns="http://javafx.com/javafx/10.0.2-internal"
-            xmlns:fx="http://javafx.com/fxml/1">
-  <AnchorPane prefHeight="650.0" prefWidth="55.0" style="-fx-background-color: #ADEFD1FF;" AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-    <Pane layoutX="5" layoutY="5" prefHeight="50.0" prefWidth="50.0"
-          style="-fx-background-color: #FA2C56; -fx-background-radius: 5;">
-      <Label alignment="CENTER" prefHeight="50.0" prefWidth="50.0" text="SSSP" textFill="WHITE">
-        <font>
-          <Font name="System Bold" size="18.0"/>
-        </font>
-      </Label>
-    </Pane>
+<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="mainWindow" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.FXMLController">
+  <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
 
-    <VBox layoutY="60.0" prefHeight="650.0" prefWidth="55.0" styleClass="navigation" spacing="5"
-          AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="80.0">
+    <VBox layoutY="60.0" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="10.0">
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false"
-              prefHeight="50.0" prefWidth="50.0" styleClass="button1" stylesheets="@style.css" text="D"
-              textAlignment="CENTER" />
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button1" onAction="#handleButton1Event" text="UP" />
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0"
-              styleClass="button1" stylesheets="@style.css" text="A*" />
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button2" text="DOWN" />
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0"
-              styleClass="button1" stylesheets="@style.css" text="EPIC" />
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button3" text="LEFT" />
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0"
-              styleClass="button1" stylesheets="@style.css" text="GG" />
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button4" text="RIGHT" />
     </VBox>
 
   </AnchorPane>
 
-  <Pane layoutX="55.0" prefHeight="650" prefWidth="945"
-        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="55.0"
-        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+  <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <StackPane minHeight="650" minWidth="950" maxHeight="-Infinity" maxWidth="-Infinity" style="-fx-background-color: #C5C6C7">
+         <children>
+            <Canvas fx:id="canvas" height="611.0" width="896.0" />
+         </children>
+      </StackPane>
+  </AnchorPane>
 
-  </Pane>
+  <stylesheets>
+    <URL value="@style.css" />
+  </stylesheets>
+
 </AnchorPane>

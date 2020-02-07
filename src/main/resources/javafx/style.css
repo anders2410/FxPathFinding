@@ -1,12 +1,29 @@
+/* MAIN COLORS
+
+ Black:             #0B0C10
+ Dark Grey:         #1F2833
+ Light Grey:        #C5C6C7
+ Turquoise;         #66FCF1
+ Dark Turquoise:    #45A29E
+ */
+
 .button1 {
-    -fx-background-color: gray;
+    -fx-background-color: #45A29E;
     -fx-font-weight: bold;
 }
 
 .button1:hover {
-    -fx-background-color: blue;
+    -fx-background-color: #C5C6C7;
+}
+
+.mainWindow {
+    -fx-background-color: #1F2833;
 }
 
 .navigation {
+    -fx-background-color: #45A29E;
+}
+
+.navigation VBox {
     -fx-spacing: 5;
 }
