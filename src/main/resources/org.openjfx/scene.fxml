@@ -1,18 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<StackPane maxHeight="-Infinity"
-           maxWidth="-Infinity"
-           minHeight="-Infinity"
-           minWidth="-Infinity"
-           prefHeight="400.0"
-           prefWidth="600.0"
-           xmlns="http://javafx.com/javafx/8.0.171"
-           xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="org.openjfx.FXMLController"
-           stylesheets="@style.css">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0"
+            prefWidth="1000.0" style="-fx-background-color: #00203FFF;" xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1">
+  <AnchorPane prefHeight="650.0" prefWidth="55.0" style="-fx-background-color: #ADEFD1FF;" AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <Pane layoutX="5" layoutY="5" prefHeight="50.0" prefWidth="50.0"
+          style="-fx-background-color: #FA2C56; -fx-background-radius: 5;">
+      <Label alignment="CENTER" prefHeight="50.0" prefWidth="50.0" text="SSSP" textFill="WHITE">
+        <font>
+          <Font name="System Bold" size="18.0"/>
+        </font>
+      </Label>
+    </Pane>
 
-    <Label fx:id="label" text="Label"/>
-</StackPane>
+    <VBox layoutY="60.0" prefHeight="650.0" prefWidth="55.0" styleClass="navigation" spacing="5"
+          AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="80.0">
+
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false"
+              prefHeight="50.0" prefWidth="50.0" styleClass="button1" stylesheets="@style.css" text="D"
+              textAlignment="CENTER" />
+
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0"
+              styleClass="button1" stylesheets="@style.css" text="A*" />
+
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0"
+              styleClass="button1" stylesheets="@style.css" text="EPIC" />
+
+      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0"
+              styleClass="button1" stylesheets="@style.css" text="GG" />
+    </VBox>
+
+  </AnchorPane>
+
+  <Pane layoutX="55.0" prefHeight="650" prefWidth="945"
+        AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="55.0"
+        AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+  </Pane>
+</AnchorPane>
