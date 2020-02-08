@@ -10,24 +10,25 @@
 
     <VBox layoutY="60.0" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="10.0">
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button1" onAction="#handleButton1Event" text="UP" />
+      <Button id="button1" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleButton1Event" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="U" />
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button2" text="DOWN" />
+      <Button id="button2" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleButton2Event" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="D" />
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button3" text="LEFT" />
+      <Button id="button3" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleButton3Event" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="L" />
 
-      <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" id="button4" text="RIGHT" />
+      <Button id="button4" alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleButton4Event" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="R" />
     </VBox>
 
   </AnchorPane>
 
   <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
-      <StackPane minHeight="650" minWidth="950" maxHeight="-Infinity" maxWidth="-Infinity" style="-fx-background-color: #C5C6C7">
+      <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650" minWidth="950" style="-fx-background-color: #C5C6C7">
          <children>
             <Canvas fx:id="canvas" height="611.0" width="896.0" />
          </children>
       </StackPane>
   </AnchorPane>
+   <BorderPane prefHeight="200.0" prefWidth="200.0" />
 
   <stylesheets>
     <URL value="@style.css" />

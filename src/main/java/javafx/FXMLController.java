@@ -24,6 +24,7 @@ public class FXMLController implements Initializable {
 
     Graph graph;
     String fileName = "jelling";
+    GraphicsContext gc;
     private int coordToPos = 1000;
     private int zoom = 10000000;
     int xOffset = -3800;
@@ -41,16 +42,34 @@ public class FXMLController implements Initializable {
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
+        gc = canvas.getGraphicsContext2D();
     }
 
     public void handleButton1Event() {
-        System.out.println("The bytton1 has been pressed");
+        gc.clearRect(0,0,1000,1000);
+        yOffset += 100;
+        drawEdges(gc);
+    }
+
+    public void handleButton2Event() {
+        gc.clearRect(0,0,1000,1000);
         yOffset -= 100;
-        Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+        drawEdges(gc);
+    }
+
+    public void handleButton3Event() {
+        gc.clearRect(0,0,1000,1000);
+        xOffset += 100;
+        drawEdges(gc);
+    }
+
+    public void handleButton4Event() {
+        gc.clearRect(0,0,1000,1000);
+        xOffset -= 100;
+        drawEdges(gc);
     }
 
     public void handleCanvasDrawing() {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
         drawEdges(gc);
     }
 
