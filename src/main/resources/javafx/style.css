@@ -7,6 +7,43 @@
  Dark Turquoise:    #45A29E
  */
 
+ /* Navigation Buttons */
+.nav_buttons {
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(255, 255, 255, 0.8);;
+}
+
+.nav_buttons:hover {
+    -fx-background-color: #66FCF1;
+}
+
+#nav_up, #nav_left, #nav_right, #nav_down {
+    -fx-background-size: 18 18;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position:center;
+}
+
+#nav_up { -fx-background-image: url(../icons/arrow_up.png); }
+#nav_left { -fx-background-image: url(../icons/arrow_left.png); }
+#nav_right { -fx-background-image: url(../icons/arrow_right.png); }
+#nav_down { -fx-background-image: url(../icons/arrow_down.png); }
+
+/* ----------------------------------------------------------------------------------------------------------------- */
+/* The main Window */
+.mainWindow {
+    -fx-background-color: #1F2833;
+}
+
+/* ----------------------------------------------------------------------------------------------------------------- */
+/* The navigation menu */
+.navigation {
+    -fx-background-color: #45A29E;
+}
+
+.navigation VBox {
+    -fx-spacing: 5;
+}
+
 .button1 {
     -fx-background-color: #45A29E;
     -fx-font-weight: bold;
@@ -14,16 +51,4 @@
 
 .button1:hover {
     -fx-background-color: #C5C6C7;
-}
-
-.mainWindow {
-    -fx-background-color: #1F2833;
-}
-
-.navigation {
-    -fx-background-color: #45A29E;
-}
-
-.navigation VBox {
-    -fx-spacing: 5;
 }

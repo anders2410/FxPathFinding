@@ -11,7 +11,9 @@ repositories {
     maven {
         url 'http://mvn.slimjars.com'
     }
+    jcenter()
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
@@ -22,7 +24,16 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
-    compile 'com.jfoenix:jfoenix:9.0.8'
+    // FontAwesome Icons
+    compile 'de.jensd:fontawesomefx-emojione:2.2.7-2'
+    compile 'de.jensd:fontawesomefx-fontawesome:4.7.0-5'
+    compile 'de.jensd:fontawesomefx-icons525:3.0.0-4'
+    compile 'de.jensd:fontawesomefx-materialdesignfont:1.7.22-4'
+    compile 'de.jensd:fontawesomefx-materialicons:2.2.0-5'
+    compile 'de.jensd:fontawesomefx-octicons:4.3.0-5'
+    compile 'de.jensd:fontawesomefx-weathericons:2.0.10-5'
+    compile 'de.jensd:fontawesomefx-controls:8.15'
+    compile 'org.controlsfx:controlsfx:8.40.11'
 }
 
 javafx {

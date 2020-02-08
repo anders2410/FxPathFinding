@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -20,7 +21,6 @@ import xml.XMLGraphExtractor;
 public class FXMLController implements Initializable {
 
     public Canvas canvas;
-    public Button button1;
 
     Graph graph;
     String fileName = "jelling";
@@ -45,27 +45,39 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
     }
 
-    public void handleButton1Event() {
+    public void handleNavUpEvent() {
         gc.clearRect(0,0,1000,1000);
         yOffset += 100;
         drawEdges(gc);
     }
 
-    public void handleButton2Event() {
+    public void handleNavDownEvent() {
         gc.clearRect(0,0,1000,1000);
         yOffset -= 100;
         drawEdges(gc);
     }
 
-    public void handleButton3Event() {
+    public void handleNavLeftEvent() {
         gc.clearRect(0,0,1000,1000);
         xOffset += 100;
         drawEdges(gc);
     }
 
-    public void handleButton4Event() {
+    public void handleNavRightEvent() {
         gc.clearRect(0,0,1000,1000);
         xOffset -= 100;
+        drawEdges(gc);
+    }
+
+    public void handleDjikEvent(ActionEvent actionEvent) {
+        gc.clearRect(0,0,1000,1000);
+        Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+        drawEdges(gc);
+    }
+
+    public void handleAStarEvent(ActionEvent actionEvent) {
+        gc.clearRect(0,0,1000,1000);
+        Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawEdges(gc);
     }
 
