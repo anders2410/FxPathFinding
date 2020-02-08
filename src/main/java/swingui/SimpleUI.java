@@ -98,7 +98,6 @@ public class SimpleUI extends JFrame {
         JButton newSeed = new JButton("new seed");
         newSeed.addActionListener(e -> {
             Dijkstra.seed = new Random().nextInt();
-            repaint();
         });
         panel.add(newSeed);
     }
