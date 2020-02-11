@@ -29,6 +29,8 @@ public class FXMLController implements Initializable {
     private int zoom = 10000000;
     int xOffset = -3800;
     int yOffset = 7700;
+    double canvasHeight;
+    double canvasWidth;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -43,46 +45,8 @@ public class FXMLController implements Initializable {
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
         gc = canvas.getGraphicsContext2D();
-    }
-
-    public void handleNavUpEvent() {
-        gc.clearRect(0,0,1000,1000);
-        yOffset += 100;
-        drawEdges(gc);
-    }
-
-    public void handleNavDownEvent() {
-        gc.clearRect(0,0,1000,1000);
-        yOffset -= 100;
-        drawEdges(gc);
-    }
-
-    public void handleNavLeftEvent() {
-        gc.clearRect(0,0,1000,1000);
-        xOffset += 100;
-        drawEdges(gc);
-    }
-
-    public void handleNavRightEvent() {
-        gc.clearRect(0,0,1000,1000);
-        xOffset -= 100;
-        drawEdges(gc);
-    }
-
-    public void handleDjikEvent(ActionEvent actionEvent) {
-        gc.clearRect(0,0,1000,1000);
-        Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-        drawEdges(gc);
-    }
-
-    public void handleAStarEvent(ActionEvent actionEvent) {
-        gc.clearRect(0,0,1000,1000);
-        Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
-        drawEdges(gc);
-    }
-
-    public void handleCanvasDrawing() {
-        drawEdges(gc);
+        canvasHeight = canvas.getHeight();
+        canvasWidth = canvas.getWidth();
     }
 
     private void drawEdges(GraphicsContext graphicsContext) {
@@ -141,5 +105,64 @@ public class FXMLController implements Initializable {
 
     private float projectCord(float cord, int shift) {
         return (cord % zoom) / coordToPos + shift;
+    }
+
+    // Here comes all the eventHandle methods
+    public void handleNavUpEvent() {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        yOffset += 100;
+        drawEdges(gc);
+    }
+
+    public void handleNavDownEvent() {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        yOffset -= 100;
+        drawEdges(gc);
+    }
+
+    public void handleNavLeftEvent() {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        xOffset += 100;
+        drawEdges(gc);
+    }
+
+    public void handleNavRightEvent() {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        xOffset -= 100;
+        drawEdges(gc);
+    }
+
+    public void handleZoomInEvent(ActionEvent actionEvent) {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        canvasWidth *= 0.67;
+        canvasHeight *= 0.67;
+        gc.scale(1.5,1.5);
+        // Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+        drawEdges(gc);
+    }
+
+    public void handleZoomOutEvent(ActionEvent actionEvent) {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        canvasWidth *= 1.5;
+        canvasHeight *= 1.5;
+        gc.scale(0.67,0.67);
+        // Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+        drawEdges(gc);
+    }
+
+    public void handleDjikEvent(ActionEvent actionEvent) {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+        drawEdges(gc);
+    }
+
+    public void handleAStarEvent(ActionEvent actionEvent) {
+        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+        drawEdges(gc);
+    }
+
+    public void handleCanvasDrawing() {
+        drawEdges(gc);
     }
 }

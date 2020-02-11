@@ -23,7 +23,7 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(root);
 
-        stage.setTitle("JavaFX and Gradle");
+        stage.setTitle("Single Source Shortest Path");
         stage.setScene(scene);
         stage.show();
     }

@@ -1,43 +1,51 @@
 /* MAIN COLORS
 
- Black:             #0B0C10
- Dark Grey:         #1F2833
- Light Grey:        #C5C6C7
- Turquoise;         #66FCF1
- Dark Turquoise:    #45A29E
+ Teal Blue:          #388087
+ Moonstone Blue:     #6FB3B8
+ Powder Blue:        #BADFE7
+ Magic Mint;         #C2EDCE
+ White Smoke:        #F6F6F2
  */
 
- /* Navigation Buttons */
-.nav_buttons {
-    -fx-font-weight: bold;
-    -fx-background-color: rgba(255, 255, 255, 0.8);;
+ /* Navigation Buttons on map */
+.nav_buttons, .zoom_button {
+    -fx-background-color: #BADFE7;
 }
 
-.nav_buttons:hover {
-    -fx-background-color: #66FCF1;
+.nav_buttons:hover, .zoom_button:hover {
+    -fx-background-color: #C2EDCE;
 }
 
-#nav_up, #nav_left, #nav_right, #nav_down {
+#nav_up, #nav_left, #nav_right, #nav_down, #zoom_in, #zoom_out {
     -fx-background-size: 18 18;
     -fx-background-repeat: no-repeat;
     -fx-background-position:center;
 }
 
+/* All the icons comes from flaticon.com */
 #nav_up { -fx-background-image: url(../icons/arrow_up.png); }
 #nav_left { -fx-background-image: url(../icons/arrow_left.png); }
 #nav_right { -fx-background-image: url(../icons/arrow_right.png); }
 #nav_down { -fx-background-image: url(../icons/arrow_down.png); }
+#zoom_in { -fx-background-image: url(../icons/plus.png); }
+#zoom_out { -fx-background-image: url(../icons/minus.png); }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* The main Window */
 .mainWindow {
-    -fx-background-color: #1F2833;
+    -fx-background-color: #F6F6F2;
+}
+
+/* ----------------------------------------------------------------------------------------------------------------- */
+/* The Canvas Window */
+#canvasWindow {
+    -fx-background-color: #F6F6F2;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* The navigation menu */
 .navigation {
-    -fx-background-color: #45A29E;
+    -fx-background-color: #6FB3B8;
 }
 
 .navigation VBox {
@@ -45,10 +53,10 @@
 }
 
 .button1 {
-    -fx-background-color: #45A29E;
+    -fx-background-color: #6FB3B8;
     -fx-font-weight: bold;
 }
 
 .button1:hover {
-    -fx-background-color: #C5C6C7;
+    -fx-background-color: #F6F6F2;
 }

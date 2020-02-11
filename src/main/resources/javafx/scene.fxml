@@ -1,27 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.net.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane styleClass="mainWindow" prefHeight="650.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.FXMLController">
-    <AnchorPane styleClass="navigation" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <VBox layoutY="60.0" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="10.0">
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DJIK" onAction="#handleDjikEvent" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="A*" onAction="#handleAStarEvent" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="BEST" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="EPIC" />
+<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="mainWindow" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.FXMLController">
+    <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <VBox layoutY="15.0" prefHeight="650.0" prefWidth="60.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDjikEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DJIK">
+            <VBox.margin>
+               <Insets left="5.0" top="5.0" />
+            </VBox.margin></Button>
+         <Separator prefHeight="0.0" prefWidth="60.0" />
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAStarEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="A*">
+            <VBox.margin>
+               <Insets left="5.0" />
+            </VBox.margin></Button>
+         <Separator prefHeight="0.0" prefWidth="60.0" />
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="BEST">
+            <VBox.margin>
+               <Insets left="5.0" />
+            </VBox.margin></Button>
+         <Separator prefHeight="0.0" prefWidth="60.0" />
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="EPIC">
+            <VBox.margin>
+               <Insets left="5.0" />
+            </VBox.margin></Button>
+         <Separator prefHeight="0.0" prefWidth="60" />
         </VBox>
     </AnchorPane>
 
     <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
-        <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650" minWidth="950" style="-fx-background-color: #C5C6C7">
+        <StackPane id="canvasWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650" minWidth="950">
             <children>
                 <Canvas fx:id="canvas" height="611.0" width="896.0" />
             </children>
         </StackPane>
-        <GridPane layoutX="20.0" layoutY="560.0" prefHeight="70.0" prefWidth="100.0" AnchorPane.leftAnchor="20.0">
+        <GridPane layoutX="20.0" layoutY="560.0" prefHeight="70.0" prefWidth="100.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -33,12 +50,20 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Button id="nav_up" onAction="#handleNavUpEvent" styleClass="nav_buttons" mnemonicParsing="false" prefWidth="33.0" GridPane.columnIndex="1" />
-                <Button id="nav_left" onAction="#handleNavLeftEvent" styleClass="nav_buttons" mnemonicParsing="false" prefWidth="33.0" GridPane.rowIndex="1" />
-                <Button id="nav_right" onAction="#handleNavRightEvent" styleClass="nav_buttons" mnemonicParsing="false" prefWidth="33.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                <Button id="nav_down" onAction="#handleNavDownEvent" styleClass="nav_buttons" mnemonicParsing="false" prefWidth="33.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Button id="nav_up" mnemonicParsing="false" onAction="#handleNavUpEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="1" />
+                <Button id="nav_left" mnemonicParsing="false" onAction="#handleNavLeftEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.rowIndex="1" />
+                <Button id="nav_right" mnemonicParsing="false" onAction="#handleNavRightEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                <Button id="nav_down" mnemonicParsing="false" onAction="#handleNavDownEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             </children>
         </GridPane>
+        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="71.0" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="20.0">
+            <Button id="zoom_in" mnemonicParsing="false" onAction="#handleZoomInEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button" />
+            <Button id="zoom_out" mnemonicParsing="false" onAction="#handleZoomOutEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button">
+                <HBox.margin>
+                   <Insets left="5.0" />
+                </HBox.margin>
+            </Button>
+        </HBox>
     </AnchorPane>
 
     <stylesheets>
