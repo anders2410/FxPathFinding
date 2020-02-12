@@ -21,20 +21,35 @@ import java.util.*;
 public class PBFParser {
 
     private Graph graph;
-    private final ArrayList<Node> nodeList = new ArrayList<>();
-    private Map<String, Node> nodeMap = new HashMap<>();
-    private int indexCounter = 0;
-    private String lastNdID = "";
+    private String fileName;
+    private ArrayList<Node> nodeList;
+    private Map<String, Node> nodeMap;
+    private int indexCounter;
+    private String lastNdID;
 
-    public Graph extractGraph(String filename) throws FileNotFoundException {
-        Set<String> validNodes = findValidNodes(filename);
-        graph = new Graph(validNodes.size());
-        buildGraph(validNodes, filename);
-        return graph;
+    int numNodes = 0;
+    int numEdges = 0;
+    int numWays = 0;
+
+    public PBFParser(String fileName) {
+        this.fileName = fileName;
+        nodeList = new ArrayList<>();
+        nodeMap = new HashMap<>();
+        indexCounter = 0;
+        lastNdID = "";
     }
 
-    private void buildGraph(Set<String> validNodes, String filename) throws FileNotFoundException {
-        File file = new File(filename);
+    public void executePBFParser() throws FileNotFoundException {
+        Set<String> validNodes = findValidNodes();
+        graph = new Graph(validNodes.size());
+        buildGraph(validNodes);
+        System.out.println("numNodes: " + numNodes);
+        System.out.println("numEdges: " + numEdges);
+        System.out.println("numWays: " + numWays);
+    }
+
+    private void buildGraph(Set<String> validNodes) throws FileNotFoundException {
+        File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
         for (EntityContainer container : iterator) {
@@ -59,6 +74,7 @@ public class PBFParser {
                 }
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
                     lastNdID = "";
+                    numWays++;
                     addEdgesGraph(way);
                 }
             }
@@ -67,7 +83,7 @@ public class PBFParser {
     }
 
     private void addEdgesGraph(OsmWay way) {
-        if (lastNdID.equals("")) {
+        /*if (lastNdID.equals("")) {
             lastNdID = Long.toString(way.getNodeId(0));
         }
         Node firstNode1 = nodeMap.get(lastNdID);
@@ -78,16 +94,15 @@ public class PBFParser {
         float firstD = Util.getNodeDistance(firstNode1, firstNode2);
         graph.addEdge(firstNode1, firstNode2, firstD);
         graph.addEdge(firstNode2, firstNode1, firstD);
+        numNodesWays++;*/
 
         for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
             Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
-            System.out.println("New Pair: ");
-            System.out.println(node1.toString());
-            System.out.println(node2.toString());
             float d = Util.getNodeDistance(node1, node2);
             graph.addEdge(node1, node2, d);
             graph.addEdge(node2, node1, d);
+            numEdges += 2;
         }
 
         lastNdID = Long.toString(way.getNodeId(way.getNumberOfNodes() - 1));
@@ -100,13 +115,13 @@ public class PBFParser {
         int lat = Integer.parseInt(latString);
         int lon = Integer.parseInt(lonString);
         Node n = new Node(indexCounter, lat, lon);
-        indexCounter++;
-        nodeList.add(n);
         nodeMap.put(Long.toString(node.getId()), n);
+        nodeList.add(n);
+        indexCounter++;
     }
 
-    private Set<String> findValidNodes(String filename) throws FileNotFoundException {
-        File file = new File(filename);
+    private Set<String> findValidNodes() throws FileNotFoundException {
+        File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
         HashSet<String> nodeSet = new HashSet<>();
@@ -126,6 +141,7 @@ public class PBFParser {
 
                 for (int i = 0; i < way.getNumberOfNodes(); i++) {
                     nodeSet.add(Long.toString(way.getNodeId(i)));
+                    numNodes++;
                 }
             }
         }
@@ -141,12 +157,16 @@ public class PBFParser {
                 || hV.equals("corridor");
     }
 
-    public static double round(double value, int places) {
+    private static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
         BigDecimal bd = BigDecimal.valueOf(value);
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.doubleValue();
+    }
+
+    public Graph getGraph() {
+        return graph;
     }
 
     /*private void TestSpeedRaw(String filename) throws FileNotFoundException {

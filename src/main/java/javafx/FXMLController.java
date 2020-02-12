@@ -5,11 +5,9 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import model.Edge;
 import model.Graph;
@@ -17,8 +15,6 @@ import model.Node;
 import paths.AlgorithmMode;
 import paths.Dijkstra;
 import pbfparsing.PBFParser;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
 
 public class FXMLController implements Initializable {
 
@@ -50,19 +46,20 @@ public class FXMLController implements Initializable {
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();*/
-        PBFParser pbfParser = new PBFParser();
-        graph = pbfParser.extractGraph("malta-latest.osm.pbf");
+        PBFParser pbfParser = new PBFParser("malta-latest.osm.pbf");
+        pbfParser.executePBFParser();
+        graph = pbfParser.getGraph();
         // System.out.println(graph.getAdjList());
         gc = canvas.getGraphicsContext2D();
         canvasHeight = canvas.getHeight();
         canvasWidth = canvas.getWidth();
     }
 
-    private void drawEdges(GraphicsContext graphicsContext) {
-        graphicsContext.setStroke(Color.VIOLET);
-        graphicsContext.setLineWidth(1.0);
-        java.util.List<Node> nodeList = graph.getNodeList();
-        java.util.List<java.util.List<Edge>> adjList = graph.getAdjList();
+    private void drawEdges() {
+        gc.setStroke(Color.VIOLET);
+        gc.setLineWidth(1.0);
+        List<Node> nodeList = graph.getNodeList();
+        List<List<Edge>> adjList = graph.getAdjList();
         resetIsDrawn(adjList);
         for (int i = 0; i < adjList.size(); i++) {
             Node nx = nodeList.get(i);
@@ -70,7 +67,7 @@ public class FXMLController implements Initializable {
                 Node ny = nodeList.get(edge.to);
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
                 if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
-                    drawEdge(graphicsContext, nx, ny, edge);
+                    drawEdge(nx, ny, edge);
                 }
             }
         }
@@ -94,20 +91,20 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private void drawEdge(GraphicsContext graphicsContext, Node nx, Node ny, Edge edge) {
+    private void drawEdge(Node nx, Node ny, Edge edge) {
         float x1 = projectCord(nx.latitude, xOffset);
         float y1 = projectCord(-nx.longitude, yOffset);
         float x2 = projectCord(ny.latitude, xOffset);
         float y2 = projectCord(-ny.longitude, yOffset);
         //System.out.println("(" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
-        graphicsContext.setStroke(Color.BLACK);
+        gc.setStroke(Color.BLACK);
         if (edge.visited) {
-            graphicsContext.setStroke(Color.BLUE);
+            gc.setStroke(Color.BLUE);
         }
         if (edge.inPath) {
-            graphicsContext.setStroke(Color.RED);
+            gc.setStroke(Color.RED);
         }
-        graphicsContext.strokeLine(x1, y1, x2, y2);
+        gc.strokeLine(x1, y1, x2, y2);
         edge.isDrawn = true;
         //graphicsContext.drawString("" + Math.round(edge.d), (x1 + x2) * 0.5f, (y1 + y2) * 0.5f);
     }
@@ -120,25 +117,25 @@ public class FXMLController implements Initializable {
     public void handleNavUpEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         yOffset += 100;
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleNavDownEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         yOffset -= 100;
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleNavLeftEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         xOffset += 100;
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleNavRightEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         xOffset -= 100;
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleZoomInEvent() {
@@ -146,7 +143,7 @@ public class FXMLController implements Initializable {
         canvasWidth *= 0.67;
         canvasHeight *= 0.67;
         gc.scale(1.5,1.5);
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleZoomOutEvent() {
@@ -154,22 +151,22 @@ public class FXMLController implements Initializable {
         canvasWidth *= 1.5;
         canvasHeight *= 1.5;
         gc.scale(0.67,0.67);
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleDjikstraEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleAStarEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
-        drawEdges(gc);
+        drawEdges();
     }
 
     public void handleCanvasDrawing() {
-        drawEdges(gc);
+        drawEdges();
     }
 }

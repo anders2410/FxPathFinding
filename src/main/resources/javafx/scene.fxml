@@ -35,7 +35,7 @@
     <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
         <StackPane id="canvasWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650" minWidth="950">
             <children>
-                <Canvas fx:id="canvas" height="611.0" width="896.0" />
+                <Canvas fx:id="canvas" height="643.0" width="943.0" />
             </children>
         </StackPane>
         <GridPane layoutX="20.0" layoutY="560.0" prefHeight="70.0" prefWidth="100.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">

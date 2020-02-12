@@ -13,6 +13,6 @@ public class Node {
 
     @Override
     public String toString() {
-        return "Node: " + index + ", " + latitude + ", " + longitude;
+        return "Node(" + index + ", " + latitude + ", " + longitude + ")";
     }
 }
