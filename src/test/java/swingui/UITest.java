@@ -30,6 +30,6 @@ public class UITest {
         simpleUI.setVisible(true);
         Dijkstra.trace = false;
         Dijkstra.result = true;
-        //while (true) {}
+        // while (true) {}
     }
 }

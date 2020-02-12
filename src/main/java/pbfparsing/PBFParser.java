@@ -24,28 +24,29 @@ public class PBFParser {
     private final ArrayList<Node> nodeList = new ArrayList<>();
     private Map<String, Node> nodeMap = new HashMap<>();
     private int indexCounter = 0;
+    private String lastNdID = "";
 
     public Graph extractGraph(String filename) throws FileNotFoundException {
         Set<String> validNodes = findValidNodes(filename);
         graph = new Graph(validNodes.size());
         buildGraph(filename, validNodes);
-        graph.setNodeList(nodeList);
         return graph;
     }
 
     private void buildGraph(String filename, Set<String> validNodes) throws FileNotFoundException {
         File file = new File(filename);
         FileInputStream input = new FileInputStream(file);
-        Iterator<EntityContainer> iterator = new PbfIterator(input, false);
+        PbfIterator iterator = new PbfIterator(input, false);
 
-        while (iterator.hasNext()) {
-            EntityContainer container = iterator.next();
+        for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
-                if (validNodes.contains(Long.toString(node.getId()))) {
+                String id = Long.toString(node.getId());
+                if (validNodes.contains(id)) {
                     constructGraphNode(node);
                 }
             }
+
             if (container.getType() == EntityType.Way) {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
@@ -57,43 +58,55 @@ public class PBFParser {
                 if (filtered) {
                     continue;
                 }
-                addEdgesGraph(way);
+                if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
+                    //System.out.println(way.getNumberOfNodes());
+                    System.out.println(highwayValue);
+                    addEdgesGraph(way);
+                }
             }
         }
+        graph.setNodeList(nodeList);
     }
 
     private void addEdgesGraph(OsmWay way) {
-        for (int i = 0; i < way.getNumberOfNodes()-1; i++) {
+        if (lastNdID.equals("")) {
+            lastNdID = Long.toString(way.getNodeId(0));
+        }
+        Node firstNode1 = nodeMap.get(lastNdID);
+        Node firstNode2 = nodeMap.get(Long.toString(way.getNodeId(0)));
+        float firstD = Util.getNodeDistance(firstNode1, firstNode2);
+        graph.addEdge(firstNode1, firstNode2, firstD);
+        graph.addEdge(firstNode2, firstNode1, firstD);
+
+        for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
             Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
             float d = Util.getNodeDistance(node1, node2);
             graph.addEdge(node1, node2, d);
             graph.addEdge(node2, node1, d);
         }
+
+        lastNdID = Long.toString(way.getNodeId(way.getNumberOfNodes() - 1));
     }
 
     private void constructGraphNode(OsmNode node) {
         String latString = Double.toString(round(node.getLatitude(), 7)).replace(".","");
         String lonString = Double.toString(round(node.getLongitude(), 7)).replace(".","");
-        // String latSub = latString.substring(0, latString.length() - 8);
-        // String lonSub = lonString.substring(0, lonString.length() - 8);
 
-            int lat = Integer.parseInt(latString);
-            int lon = Integer.parseInt(lonString);
-            Node n = new Node(indexCounter, lat, lon);
-            indexCounter++;
-            nodeList.add(n);
-            nodeMap.put(Long.toString(node.getId()), n);
-
+        int lat = Integer.parseInt(latString);
+        int lon = Integer.parseInt(lonString);
+        Node n = new Node(indexCounter, lat, lon);
+        indexCounter++;
+        nodeList.add(n);
+        nodeMap.put(Long.toString(node.getId()), n);
     }
 
     private Set<String> findValidNodes(String filename) throws FileNotFoundException {
         File file = new File(filename);
         FileInputStream input = new FileInputStream(file);
-        Iterator<EntityContainer> iterator = new PbfIterator(input, false);
+        PbfIterator iterator = new PbfIterator(input, false);
         HashSet<String> nodeSet = new HashSet<>();
-        while (iterator.hasNext()) {
-            EntityContainer container = iterator.next();
+        for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Way) {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
@@ -101,12 +114,13 @@ public class PBFParser {
                 if (highwayValue == null) {
                     continue;
                 }
+
                 boolean filtered = shouldFilter(highwayValue);
                 if (filtered) {
                     continue;
                 }
-                int nodeNum = way.getNumberOfNodes();
-                for (int i = 0; i < nodeNum; i++) {
+
+                for (int i = 0; i < way.getNumberOfNodes(); i++) {
                     nodeSet.add(Long.toString(way.getNodeId(i)));
                 }
             }
@@ -114,13 +128,13 @@ public class PBFParser {
         return nodeSet;
     }
 
-    private boolean shouldFilter(String highwayValue) {
+    private boolean shouldFilter(String hV) {
         // TODO: Add more filters from main project.
-        return highwayValue.equals("cycleway") || highwayValue.equals("footway") || highwayValue.equals("path")
-                || highwayValue.equals("proposed") || highwayValue.equals("raceway") || highwayValue.equals("escape")
-                || highwayValue.equals("pedestrian") || highwayValue.equals("track")
-                || highwayValue.equals("bus_guideway") || highwayValue.equals("steps")
-                || highwayValue.equals("corridor");
+        return hV.equals("cycleway") || hV.equals("footway") || hV.equals("path") || hV.equals("construction")
+                || hV.equals("proposed") || hV.equals("raceway") || hV.equals("escape")
+                || hV.equals("pedestrian") || hV.equals("track") || hV.equals("service")
+                || hV.equals("bus_guideway") || hV.equals("steps")
+                || hV.equals("corridor");
     }
 
     public static double round(double value, int places) {
