@@ -32,5 +32,4 @@ public class UITest {
         Dijkstra.result = true;
         //while (true) {}
     }
-
 }

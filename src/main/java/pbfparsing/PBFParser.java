@@ -6,34 +6,44 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
+import model.Graph;
+import model.Node;
+import model.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 
 // A tutorial for the Framework can be found at http://jaryard.com/projects/osm4j/tutorial/index.html
 public class PBFParser {
 
-    private Object extractGraph(String filename) throws FileNotFoundException {
+    private Graph graph;
+    private final ArrayList<Node> nodeList = new ArrayList<>();
+    private Map<String, Node> nodeMap = new HashMap<>();
+    private int indexCounter = 0;
+
+    public Graph extractGraph(String filename) throws FileNotFoundException {
         Set<String> validNodes = findValidNodes(filename);
-        return buildGraph(filename, validNodes);
+        graph = new Graph(validNodes.size());
+        buildGraph(filename, validNodes);
+        graph.setNodeList(nodeList);
+        return graph;
     }
 
-    private Object buildGraph(String filename, Set<String> validNodes) throws FileNotFoundException {
+    private void buildGraph(String filename, Set<String> validNodes) throws FileNotFoundException {
         File file = new File(filename);
         FileInputStream input = new FileInputStream(file);
         Iterator<EntityContainer> iterator = new PbfIterator(input, false);
+
         while (iterator.hasNext()) {
             EntityContainer container = iterator.next();
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
                 if (validNodes.contains(Long.toString(node.getId()))) {
-                    Object graphNode = constructGraphNode(node);
-                    addGraphNodeToGraph(graphNode);
+                    constructGraphNode(node);
                 }
             }
             if (container.getType() == EntityType.Way) {
@@ -50,20 +60,31 @@ public class PBFParser {
                 addEdgesGraph(way);
             }
         }
-        return null;
     }
 
     private void addEdgesGraph(OsmWay way) {
-        // TODO: Integrate with our EDGE representation
+        for (int i = 0; i < way.getNumberOfNodes()-1; i++) {
+            Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
+            Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
+            float d = Util.getNodeDistance(node1, node2);
+            graph.addEdge(node1, node2, d);
+            graph.addEdge(node2, node1, d);
+        }
     }
 
-    private void addGraphNodeToGraph(Object graphNode) {
-    }
+    private void constructGraphNode(OsmNode node) {
+        String latString = Double.toString(round(node.getLatitude(), 7)).replace(".","");
+        String lonString = Double.toString(round(node.getLongitude(), 7)).replace(".","");
+        // String latSub = latString.substring(0, latString.length() - 8);
+        // String lonSub = lonString.substring(0, lonString.length() - 8);
 
-    private Object constructGraphNode(OsmNode node) {
-        // TODO: Integrate with our NODE class from main project.
+            int lat = Integer.parseInt(latString);
+            int lon = Integer.parseInt(lonString);
+            Node n = new Node(indexCounter, lat, lon);
+            indexCounter++;
+            nodeList.add(n);
+            nodeMap.put(Long.toString(node.getId()), n);
 
-        return null;
     }
 
     private Set<String> findValidNodes(String filename) throws FileNotFoundException {
@@ -74,8 +95,8 @@ public class PBFParser {
         while (iterator.hasNext()) {
             EntityContainer container = iterator.next();
             if (container.getType() == EntityType.Way) {
-                OsmWay node = (OsmWay) container.getEntity();
-                Map<String, String> tags = OsmModelUtil.getTagsAsMap(node);
+                OsmWay way = (OsmWay) container.getEntity();
+                Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                 String highwayValue = tags.get("highway");
                 if (highwayValue == null) {
                     continue;
@@ -84,11 +105,10 @@ public class PBFParser {
                 if (filtered) {
                     continue;
                 }
-                int nodeNum = node.getNumberOfNodes();
+                int nodeNum = way.getNumberOfNodes();
                 for (int i = 0; i < nodeNum; i++) {
-                    nodeSet.add(Long.toString(node.getNodeId(i)));
+                    nodeSet.add(Long.toString(way.getNodeId(i)));
                 }
-
             }
         }
         return nodeSet;
@@ -96,7 +116,19 @@ public class PBFParser {
 
     private boolean shouldFilter(String highwayValue) {
         // TODO: Add more filters from main project.
-        return highwayValue.equals("path") || highwayValue.equals("raceway") || highwayValue.equals("cycleway");
+        return highwayValue.equals("cycleway") || highwayValue.equals("footway") || highwayValue.equals("path")
+                || highwayValue.equals("proposed") || highwayValue.equals("raceway") || highwayValue.equals("escape")
+                || highwayValue.equals("pedestrian") || highwayValue.equals("track")
+                || highwayValue.equals("bus_guideway") || highwayValue.equals("steps")
+                || highwayValue.equals("corridor");
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 
     /*private void TestSpeedRaw(String filename) throws FileNotFoundException {

@@ -1,5 +1,6 @@
 package javafx;
 
+import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -15,6 +16,7 @@ import model.Graph;
 import model.Node;
 import paths.AlgorithmMode;
 import paths.Dijkstra;
+import pbfparsing.PBFParser;
 import xml.XMLFilter;
 import xml.XMLGraphExtractor;
 
@@ -34,16 +36,22 @@ public class FXMLController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setUp();
+        try {
+            setUp();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         handleCanvasDrawing();
     }
 
-    public void setUp() {
-        XMLFilter xmlFilter = new XMLFilter(fileName);
+    public void setUp() throws FileNotFoundException {
+        /*XMLFilter xmlFilter = new XMLFilter(fileName);
         xmlFilter.executeFilter();
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         xmlGraphExtractor.executeExtractor();
-        graph = xmlGraphExtractor.getGraph();
+        graph = xmlGraphExtractor.getGraph();*/
+        PBFParser pbfParser = new PBFParser();
+        graph = pbfParser.extractGraph("malta-latest.osm.pbf");
         gc = canvas.getGraphicsContext2D();
         canvasHeight = canvas.getHeight();
         canvasWidth = canvas.getWidth();
