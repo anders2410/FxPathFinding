@@ -9,7 +9,7 @@
 <AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="mainWindow" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.FXMLController">
     <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
         <VBox layoutY="15.0" prefHeight="650.0" prefWidth="60.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0">
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDjikEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DJIK">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDjikstraEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DJIK">
             <VBox.margin>
                <Insets left="5.0" top="5.0" />
             </VBox.margin></Button>

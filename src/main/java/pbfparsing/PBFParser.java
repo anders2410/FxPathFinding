@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+// A tutorial for the Framework can be found at http://jaryard.com/projects/osm4j/tutorial/index.html
 public class PBFParser {
 
     private Object extractGraph(String filename) throws FileNotFoundException {
@@ -53,15 +54,14 @@ public class PBFParser {
     }
 
     private void addEdgesGraph(OsmWay way) {
-        //Todo integrate with our EDGE representation
-
+        // TODO: Integrate with our EDGE representation
     }
 
     private void addGraphNodeToGraph(Object graphNode) {
     }
 
     private Object constructGraphNode(OsmNode node) {
-        //Todo Integrate with our NODE class from main project.
+        // TODO: Integrate with our NODE class from main project.
 
         return null;
     }
@@ -95,11 +95,11 @@ public class PBFParser {
     }
 
     private boolean shouldFilter(String highwayValue) {
-        // TODO Add more filters from main project.
+        // TODO: Add more filters from main project.
         return highwayValue.equals("path") || highwayValue.equals("raceway") || highwayValue.equals("cycleway");
     }
 
-    private void TestSpeedRaw(String filename) throws FileNotFoundException {
+    /*private void TestSpeedRaw(String filename) throws FileNotFoundException {
         File file = new File(filename);
         FileInputStream input = new FileInputStream(file);
         Iterator<EntityContainer> iterator = new PbfIterator(input, false);
@@ -110,7 +110,7 @@ public class PBFParser {
         long endtime = System.currentTimeMillis();
         System.out.println("Time to parse denmark.pbf once : " + (endtime - starttime) + " ms");
 
-        /*File file1 = new File("denmark-latest.osm");
+        *//*File file1 = new File("denmark-latest.osm");
         input = new FileInputStream(file1);
         OsmXmlIterator iterator1 = new OsmXmlIterator(input, false);
         long starttime1 = System.currentTimeMillis();
@@ -118,6 +118,6 @@ public class PBFParser {
             EntityContainer container = iterator1.next();
         }
         long endtime1 = System.currentTimeMillis();
-        System.out.println("Time to parse denmark.xml once : " + (endtime1 - starttime1) + " ms");*/
-    }
+        System.out.println("Time to parse denmark.xml once : " + (endtime1 - starttime1) + " ms");*//*
+    }*/
 }

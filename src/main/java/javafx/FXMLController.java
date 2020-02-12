@@ -132,31 +132,29 @@ public class FXMLController implements Initializable {
         drawEdges(gc);
     }
 
-    public void handleZoomInEvent(ActionEvent actionEvent) {
+    public void handleZoomInEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         canvasWidth *= 0.67;
         canvasHeight *= 0.67;
         gc.scale(1.5,1.5);
-        // Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawEdges(gc);
     }
 
-    public void handleZoomOutEvent(ActionEvent actionEvent) {
+    public void handleZoomOutEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         canvasWidth *= 1.5;
         canvasHeight *= 1.5;
         gc.scale(0.67,0.67);
-        // Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawEdges(gc);
     }
 
-    public void handleDjikEvent(ActionEvent actionEvent) {
+    public void handleDjikstraEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawEdges(gc);
     }
 
-    public void handleAStarEvent(ActionEvent actionEvent) {
+    public void handleAStarEvent() {
         gc.clearRect(0,0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawEdges(gc);
