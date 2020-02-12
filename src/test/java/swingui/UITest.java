@@ -21,6 +21,7 @@ public class UITest {
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
+        // System.out.println(graph.getAdjList());
     }
 
     @Test

@@ -29,15 +29,14 @@ public class PBFParser {
     public Graph extractGraph(String filename) throws FileNotFoundException {
         Set<String> validNodes = findValidNodes(filename);
         graph = new Graph(validNodes.size());
-        buildGraph(filename, validNodes);
+        buildGraph(validNodes, filename);
         return graph;
     }
 
-    private void buildGraph(String filename, Set<String> validNodes) throws FileNotFoundException {
+    private void buildGraph(Set<String> validNodes, String filename) throws FileNotFoundException {
         File file = new File(filename);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
-
         for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
@@ -59,8 +58,7 @@ public class PBFParser {
                     continue;
                 }
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
-                    //System.out.println(way.getNumberOfNodes());
-                    System.out.println(highwayValue);
+                    lastNdID = "";
                     addEdgesGraph(way);
                 }
             }
@@ -74,6 +72,9 @@ public class PBFParser {
         }
         Node firstNode1 = nodeMap.get(lastNdID);
         Node firstNode2 = nodeMap.get(Long.toString(way.getNodeId(0)));
+        System.out.println("Starting Pair: ");
+        System.out.println(firstNode1.toString());
+        System.out.println(firstNode2.toString());
         float firstD = Util.getNodeDistance(firstNode1, firstNode2);
         graph.addEdge(firstNode1, firstNode2, firstD);
         graph.addEdge(firstNode2, firstNode1, firstD);
@@ -81,6 +82,9 @@ public class PBFParser {
         for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
             Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
+            System.out.println("New Pair: ");
+            System.out.println(node1.toString());
+            System.out.println(node2.toString());
             float d = Util.getNodeDistance(node1, node2);
             graph.addEdge(node1, node2, d);
             graph.addEdge(node2, node1, d);
