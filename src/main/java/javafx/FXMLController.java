@@ -46,7 +46,7 @@ public class FXMLController implements Initializable {
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();*/
-        PBFParser pbfParser = new PBFParser("malta-latest.osm.pbf");
+        PBFParser pbfParser = new PBFParser("isle-of-man-latest.osm.pbf");
         pbfParser.executePBFParser();
         graph = pbfParser.getGraph();
         // System.out.println(graph.getAdjList());
@@ -92,11 +92,17 @@ public class FXMLController implements Initializable {
     }
 
     private void drawEdge(Node nx, Node ny, Edge edge) {
-        float x1 = projectCord(nx.latitude, xOffset);
+        /*float x1 = projectCord(nx.latitude, xOffset);
         float y1 = projectCord(-nx.longitude, yOffset);
         float x2 = projectCord(ny.latitude, xOffset);
-        float y2 = projectCord(-ny.longitude, yOffset);
-        //System.out.println("(" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
+        float y2 = projectCord(-ny.longitude, yOffset);*/
+
+        double x1 = projectXCordMercator(nx.latitude);
+        double y1 = projectYCordMercator(nx.longitude);
+        double x2 = projectXCordMercator(ny.latitude);
+        double y2 = projectYCordMercator(ny.longitude);
+
+        System.out.println("(" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
         gc.setStroke(Color.BLACK);
         if (edge.visited) {
             gc.setStroke(Color.BLUE);
@@ -109,59 +115,69 @@ public class FXMLController implements Initializable {
         //graphicsContext.drawString("" + Math.round(edge.d), (x1 + x2) * 0.5f, (y1 + y2) * 0.5f);
     }
 
+    private double projectXCordMercator(double cord) {
+        final double RADIUS_MAJOR = 6378137.0;
+        return Math.toRadians(cord) * RADIUS_MAJOR;
+    }
+
+    private double projectYCordMercator(double cord) {
+        final double RADIUS_MINOR = 6356752.3142;
+        return Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR;
+    }
+
     private float projectCord(float cord, int shift) {
         return (cord % zoom) / coordToPos + shift;
     }
 
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         yOffset += 100;
         drawEdges();
     }
 
     public void handleNavDownEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         yOffset -= 100;
         drawEdges();
     }
 
     public void handleNavLeftEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         xOffset += 100;
         drawEdges();
     }
 
     public void handleNavRightEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         xOffset -= 100;
         drawEdges();
     }
 
     public void handleZoomInEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         canvasWidth *= 0.67;
         canvasHeight *= 0.67;
-        gc.scale(1.5,1.5);
+        gc.scale(1.5, 1.5);
         drawEdges();
     }
 
     public void handleZoomOutEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         canvasWidth *= 1.5;
         canvasHeight *= 1.5;
-        gc.scale(0.67,0.67);
+        gc.scale(0.67, 0.67);
         drawEdges();
     }
 
     public void handleDjikstraEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawEdges();
     }
 
     public void handleAStarEvent() {
-        gc.clearRect(0,0, canvasWidth, canvasHeight);
+        gc.clearRect(0, 0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawEdges();
     }

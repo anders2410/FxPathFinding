@@ -2,10 +2,10 @@ package model;
 
 public class Node {
     public int index;
-    public int latitude;
-    public int longitude;
+    public double latitude;
+    public double longitude;
 
-    public Node(int index, int latitude, int longitude) {
+    public Node(int index, double latitude, double longitude) {
         this.index = index;
         this.latitude = latitude;
         this.longitude = longitude;

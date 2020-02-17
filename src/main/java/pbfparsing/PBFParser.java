@@ -109,12 +109,12 @@ public class PBFParser {
     }
 
     private void constructGraphNode(OsmNode node) {
-        String latString = Double.toString(round(node.getLatitude(), 7)).replace(".","");
+       /* String latString = Double.toString(round(node.getLatitude(), 7)).replace(".","");
         String lonString = Double.toString(round(node.getLongitude(), 7)).replace(".","");
 
         int lat = Integer.parseInt(latString);
-        int lon = Integer.parseInt(lonString);
-        Node n = new Node(indexCounter, lat, lon);
+        int lon = Integer.parseInt(lonString);*/
+        Node n = new Node(indexCounter, node.getLatitude(), node.getLongitude());
         nodeMap.put(Long.toString(node.getId()), n);
         nodeList.add(n);
         indexCounter++;

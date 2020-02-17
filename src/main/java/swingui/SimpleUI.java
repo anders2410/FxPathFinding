@@ -123,14 +123,14 @@ public class SimpleUI extends JFrame {
         g2d.setColor(Color.BLACK);
         List<Node> nodeList = graph.getNodeList();
         for (Node nx : nodeList) {
-            float x = projectCord(nx.latitude, xoffset);
-            float y = projectCord(-nx.longitude, yoffset);
+            double x = projectCord(nx.latitude, xoffset);
+            double y = projectCord(-nx.longitude, yoffset);
             //System.out.println("Node(" + x + ", " + y + ")");
-            float xm = projectXCordMercator(nx.latitude, 2, -15336945000f)/20000;
-            float ym = projectYCordMercator(-nx.longitude, 2, 0);
+            double xm = projectXCordMercator(nx.latitude, 2, -15336945000f) / 20000;
+            double ym = projectYCordMercator(-nx.longitude, 2, 0);
             //System.out.println("NodeMercator(" + xm + ", " + ym + ")");
             g2d.setColor(Color.BLACK);
-            Line2D line = new Line2D.Float(x, y, x, y);
+            Line2D line = new Line2D.Double(x, y, x, y);
             g2d.draw(line);
             /*g2d.setColor(Color.MAGENTA);
             Line2D line2 = new Line2D.Float(xm, ym, xm, ym);
@@ -175,12 +175,12 @@ public class SimpleUI extends JFrame {
     }
 
     private void drawEdge(Graphics2D g2d, Node nx, Node ny, Edge edge) {
-        float x1 = projectCord(nx.latitude, xoffset);
-        float y1 = projectCord(-nx.longitude, yoffset);
-        float x2 = projectCord(ny.latitude, xoffset);
-        float y2 = projectCord(-ny.longitude, yoffset);
+        double x1 = projectCord(nx.latitude, xoffset);
+        double y1 = projectCord(-nx.longitude, yoffset);
+        double x2 = projectCord(ny.latitude, xoffset);
+        double y2 = projectCord(-ny.longitude, yoffset);
         //System.out.println("(" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
-        Line2D line = new Line2D.Float(x1, y1, x2, y2);
+        Line2D line = new Line2D.Double(x1, y1, x2, y2);
         g2d.setStroke(new BasicStroke(1));
         g2d.setColor(Color.BLACK);
         if (edge.visited) {
@@ -204,22 +204,22 @@ public class SimpleUI extends JFrame {
     private float pixels = 1;
 
     private float degreeToRadian(int degree) {
-        return degree/10000000f * radConversionFactor;
+        return degree / 10000000f * radConversionFactor;
     }
 
     private float zoomFactor(float zoom) {
         return (float) (256 / (2 * floatPi) * Math.pow(2, zoom));
     }
 
-    private float projectXCordMercator(float cord, float zoom, float shift) {
+    private double projectXCordMercator(double cord, float zoom, float shift) {
         return zoomFactor(zoom) * (cord + floatPi) * pixels + shift;
     }
 
-    private float projectYCordMercator(float cord, float zoom, float shift) {
+    private float projectYCordMercator(double cord, float zoom, float shift) {
         return zoomFactor(zoom) * (floatPi - (float) Math.log(Math.tan(floatPiDivFour + cord / 2))) * pixels + shift;
     }
 
-    private float projectCord(float cord, int shift) {
+    private double projectCord(double cord, int shift) {
         return (cord % zoom) / coordToPos + shift;
     }
 
