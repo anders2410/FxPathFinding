@@ -11,4 +11,8 @@ public class Util {
         String intString = attriVal.replace(".", "");
         return Integer.parseInt(intString);
     }
+
+    public static double cordToDouble(String attriVal) {
+        return Double.parseDouble(attriVal);
+    }
 }

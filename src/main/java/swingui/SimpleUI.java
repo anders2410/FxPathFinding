@@ -13,7 +13,7 @@ public class SimpleUI extends JFrame {
 
     private Graph graph;
     private int coordToPos = 1000;
-    private int zoom = 10000000;
+    private double zoom = 10000000;
     private int xoffset = -3900;
     private int yoffset = 7900;
 

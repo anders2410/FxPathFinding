@@ -67,7 +67,7 @@ public class XMLGraphExtractor extends DefaultHandler {
     private void startNode(Attributes attributes) {
         if (attributes != null) {
             String id = "";
-            int longitude = 0, latitude = 0;
+            double longitude = 0, latitude = 0;
             for (int i = 0; i < attributes.getLength(); i++) {
                 String attriKey = attributes.getQName(i);
                 String attriVal = attributes.getValue(i);
@@ -77,10 +77,10 @@ public class XMLGraphExtractor extends DefaultHandler {
                         id = attriVal;
                         break;
                     case "lat":
-                        longitude = Util.cordToInt(attriVal);
+                        longitude = Util.cordToDouble(attriVal);
                         break;
                     case "lon":
-                        latitude = Util.cordToInt(attriVal);
+                        latitude = Util.cordToDouble(attriVal);
                         break;
                 }
             }
