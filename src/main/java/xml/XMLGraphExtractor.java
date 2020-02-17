@@ -76,10 +76,10 @@ public class XMLGraphExtractor extends DefaultHandler {
                     case "id":
                         id = attriVal;
                         break;
-                    case "lat":
+                    case "lon":
                         longitude = Util.cordToDouble(attriVal);
                         break;
-                    case "lon":
+                    case "lat":
                         latitude = Util.cordToDouble(attriVal);
                         break;
                 }
