@@ -15,6 +15,8 @@ import model.Node;
 import paths.AlgorithmMode;
 import paths.Dijkstra;
 import pbfparsing.PBFParser;
+import xml.XMLFilter;
+import xml.XMLGraphExtractor;
 
 public class FXMLController implements Initializable {
 
@@ -25,8 +27,8 @@ public class FXMLController implements Initializable {
     GraphicsContext gc;
     private int coordToPos = 1000;
     private int zoom = 10000000;
-    int xOffset = -3800;
-    int yOffset = 7700;
+    int xOffset;
+    int yOffset;
     double canvasHeight;
     double canvasWidth;
     private double mapWidthRatio;
@@ -34,6 +36,7 @@ public class FXMLController implements Initializable {
     private PixelPoint minXY;
     private PixelPoint maxXY;
     private double globalRatio;
+    private float zoomFactor;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -45,16 +48,24 @@ public class FXMLController implements Initializable {
     }
 
     public void setUp() throws FileNotFoundException {
-        PBFParser pbfParser = new PBFParser("denmark-latest.osm.pbf");
+        PBFParser pbfParser = new PBFParser("malta-latest.osm.pbf");
         pbfParser.executePBFParser();
         graph = pbfParser.getGraph();
+
+        XMLFilter xmlFilter = new XMLFilter(fileName);
+        xmlFilter.executeFilter();
+        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
+        xmlGraphExtractor.executeExtractor();
+        graph = xmlGraphExtractor.getGraph();
         // System.out.println(graph.getAdjList());
         System.out.println(canvasHeight);
         gc = canvas.getGraphicsContext2D();
         canvasHeight = canvas.getHeight();
         canvasWidth = canvas.getWidth();
+        zoomFactor = 1;
         minXY = new PixelPoint(-1, -1);
         maxXY = new PixelPoint(-1, -1);
+
         List<Node> nodeList = graph.getNodeList();
         for (int i = 0; i < nodeList.size(); i++) {
             Node n = nodeList.get(i);
@@ -72,20 +83,7 @@ public class FXMLController implements Initializable {
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
-        // determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        System.out.println("maxXY.x: " + maxXY.x);
-        System.out.println("maxXY.y: " + maxXY.y);
-        System.out.println("minXY.x: " + minXY.x);
-        System.out.println("minXY.y: " + minXY.y);
-        mapWidthRatio = canvasWidth / maxXY.x;
-        mapHeightRatio = canvasHeight / maxXY.y;
-        System.out.println("MapheightRatio: " + mapHeightRatio);
-        System.out.println("MapwidthRatio: " + mapWidthRatio);
-        System.out.println("Canvas height: " + canvasHeight);
-        System.out.println("Canvas width: " + canvasWidth);
-        // using different ratios for width and height will cause the map to be stretched. So, we have to determine
-        // the global ratio that will perfectly fit into the given image dimension
-        globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
+        setRatios();
         gc.setStroke(Color.VIOLET);
         gc.setLineWidth(1.0);
         List<List<Edge>> adjList = graph.getAdjList();
@@ -93,9 +91,19 @@ public class FXMLController implements Initializable {
         Gerbil();
     }
 
+    private void setRatios() {
+        // determine the width and height ratio because we need to magnify the map to fit into the given image dimension
+        mapWidthRatio = zoomFactor * canvasWidth / maxXY.x;
+        mapHeightRatio = zoomFactor * canvasHeight / maxXY.y;
+        // using different ratios for width and height will cause the map to be stretched. So, we have to determine
+        // the global ratio that will perfectly fit into the given image dimension
+        globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
+    }
+
     private void Gerbil() {
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
+        resetIsDrawn(adjList);
         for (int i = 0; i < adjList.size(); i++) {
             Node nx = nodeList.get(i);
             for (Edge edge : adjList.get(i)) {
@@ -187,19 +195,18 @@ public class FXMLController implements Initializable {
             gc.setStroke(Color.RED);
         }
         gc.strokeLine(x1, y1, x2, y2);
-        gc.strokeText("Yo", 500, 500);
         edge.isDrawn = true;
         //graphicsContext.drawString("" + Math.round(edge.d), (x1 + x2) * 0.5f, (y1 + y2) * 0.5f);
     }
 
     private double projectXCordMercator(double cord) {
         final double RADIUS_MAJOR = 6378137.0;
-        return Math.toRadians(cord) * RADIUS_MAJOR;
+        return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
     }
 
     private double projectYCordMercator(double cord) {
         final double RADIUS_MINOR = 6356752.3142;
-        return Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR;
+        return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
     }
 
     private float projectCord(float cord, int shift) {
@@ -209,54 +216,54 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        yOffset += 100;
-        drawEdges();
+        yOffset -= 1000;
+        Gerbil();
     }
 
     public void handleNavDownEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        yOffset -= 100;
-        drawEdges();
+        yOffset += 1000;
+        Gerbil();
     }
 
     public void handleNavLeftEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        xOffset += 100;
-        drawEdges();
+        xOffset += 1000;
+        Gerbil();
     }
 
     public void handleNavRightEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        xOffset -= 100;
-        drawEdges();
+        xOffset -= 1000;
+        Gerbil();
     }
 
     public void handleZoomInEvent() {
+        zoomFactor *= 1.1f;
+        setRatios();
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        canvasWidth *= 0.67;
-        canvasHeight *= 0.67;
-        gc.scale(1.5, 1.5);
-        drawEdges();
+        Gerbil();
     }
 
     public void handleZoomOutEvent() {
+        zoomFactor *= 0.9f;
+        setRatios();
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        canvasWidth *= 1.5;
-        canvasHeight *= 1.5;
-        gc.scale(0.67, 0.67);
-        drawEdges();
+        Gerbil();
     }
 
     public void handleDjikstraEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-        drawEdges();
+        Gerbil();
+        Dijkstra.seed++;
     }
 
     public void handleAStarEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
-        drawEdges();
+        Gerbil();
+        Dijkstra.seed++;
     }
 
     public void handleCanvasDrawing() {
