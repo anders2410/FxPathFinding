@@ -139,24 +139,6 @@ public class FXMLController implements Initializable {
     }
 
 
-    private void drawEdges() {
-        gc.setStroke(Color.VIOLET);
-        gc.setLineWidth(1.0);
-        List<Node> nodeList = graph.getNodeList();
-        List<List<Edge>> adjList = graph.getAdjList();
-        resetIsDrawn(adjList);
-        for (int i = 0; i < adjList.size(); i++) {
-            Node nx = nodeList.get(i);
-            for (Edge edge : adjList.get(i)) {
-                Node ny = nodeList.get(edge.to);
-                Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
-                if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
-                    drawEdge(nx, ny, edge);
-                }
-            }
-        }
-    }
-
     private Edge findOppositeEdge(java.util.List<java.util.List<Edge>> adjList, int i, Edge edge) {
         Edge oppositeEdge = null;
         for (Edge edgeTo : adjList.get(edge.to)) {
@@ -175,30 +157,6 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private void drawEdge(Node nx, Node ny, Edge edge) {
-        /*float x1 = projectCord(nx.latitude, xOffset);
-        float y1 = projectCord(-nx.longitude, yOffset);
-        float x2 = projectCord(ny.latitude, xOffset);
-        float y2 = projectCord(-ny.longitude, yOffset);*/
-
-        double x1 = projectXCordMercator(nx.latitude);
-        double y1 = projectYCordMercator(nx.longitude);
-        double x2 = projectXCordMercator(ny.latitude);
-        double y2 = projectYCordMercator(ny.longitude);
-
-        System.out.println("(" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
-        gc.setStroke(Color.BLACK);
-        if (edge.visited) {
-            gc.setStroke(Color.BLUE);
-        }
-        if (edge.inPath) {
-            gc.setStroke(Color.RED);
-        }
-        gc.strokeLine(x1, y1, x2, y2);
-        edge.isDrawn = true;
-        //graphicsContext.drawString("" + Math.round(edge.d), (x1 + x2) * 0.5f, (y1 + y2) * 0.5f);
-    }
-
     private double projectXCordMercator(double cord) {
         final double RADIUS_MAJOR = 6378137.0;
         return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
@@ -207,10 +165,6 @@ public class FXMLController implements Initializable {
     private double projectYCordMercator(double cord) {
         final double RADIUS_MINOR = 6356752.3142;
         return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
-    }
-
-    private float projectCord(float cord, int shift) {
-        return (cord % zoom) / coordToPos + shift;
     }
 
     // Here comes all the eventHandle methods
@@ -256,14 +210,12 @@ public class FXMLController implements Initializable {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         Gerbil();
-        Dijkstra.seed++;
     }
 
     public void handleAStarEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         Gerbil();
-        Dijkstra.seed++;
     }
 
     public void handleCanvasDrawing() {

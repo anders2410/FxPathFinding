@@ -114,7 +114,7 @@ public class XMLGraphExtractor extends DefaultHandler {
                 Node node1 = nodeMap.get(ndID);
                 Node node2 = nodeMap.get(lastNdID);
                 lastNdID = ndID;
-                float d = Util.getNodeDistance(node1, node2);
+                double d = Util.getNodeDistance(node1, node2);
                 graph.addEdge(node1, node2, d);
                 graph.addEdge(node2, node1, d);
             }

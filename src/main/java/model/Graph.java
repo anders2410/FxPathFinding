@@ -34,7 +34,7 @@ public class Graph {
         return nodeList;
     }
 
-    public void addEdge(Node node1, Node node2, float d) {
+    public void addEdge(Node node1, Node node2, double d) {
         adjList.get(node1.index).add(new Edge(node2.index, d));
     }
 

@@ -142,9 +142,11 @@ public class XMLFilter extends DefaultHandler {
 
     // Method to filter out values/roads we do not want to use
     private boolean illegalRoads(String val) {
-        return val.equals("cycleway") || val.equals("footway") || val.equals("path") || val.equals("proposed")
-                || val.equals("raceway") || val.equals("escape") || val.equals("pedestrian") || val.equals("track")
-                || val.equals("bus_guideway") || val.equals("steps") || val.equals("corridor");
+        return val.equals("cycleway") || val.equals("footway") || val.equals("path") || val.equals("construction")
+                || val.equals("proposed") || val.equals("raceway") || val.equals("escape")
+                || val.equals("pedestrian") || val.equals("track") || val.equals("service")
+                || val.equals("bus_guideway") || val.equals("steps")
+                || val.equals("corridor");
     }
 
     public String replaceSpecialCharacters(String attriVal) {

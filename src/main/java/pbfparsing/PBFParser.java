@@ -99,7 +99,7 @@ public class PBFParser {
         for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
             Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
-            float d = Util.getNodeDistance(node1, node2);
+            double d = Util.getNodeDistance(node1, node2);
             graph.addEdge(node1, node2, d);
             graph.addEdge(node2, node1, d);
             numEdges += 2;

@@ -4,10 +4,10 @@ import java.util.Comparator;
 
 public class Edge {
     public int to;
-    public float d;
+    public double d;
     public boolean visited, inPath, isDrawn;
 
-    public Edge(int to, float d) {
+    public Edge(int to, double d) {
         this.to = to;
         this.d = d;
         visited = false;
