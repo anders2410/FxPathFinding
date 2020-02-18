@@ -164,6 +164,10 @@ public class PBFParser {
         return graph;
     }
 
+    public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
+        this.distanceStrategy = distanceStrategy;
+    }
+
     /*private void TestSpeedRaw(String filename) throws FileNotFoundException {
         File file = new File(filename);
         FileInputStream input = new FileInputStream(file);
