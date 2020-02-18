@@ -214,8 +214,7 @@ public class FXMLController implements Initializable {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         Gerbil();
-        String distance = Util.roundDouble(res.d);
-        distance_label.setText("Total distance: " + distance);
+        distance_label.setText("Total distance: " + Util.roundDouble(res.d));
     }
 
     public void handleCanvasDrawing() {
