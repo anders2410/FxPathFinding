@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -213,5 +214,9 @@ public class FXMLController implements Initializable {
 
     public void handleCanvasDrawing() {
         Gerbil();
+    }
+
+    public void handleSeedEvent() {
+        Dijkstra.seed++;
     }
 }

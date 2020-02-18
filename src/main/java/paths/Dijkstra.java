@@ -3,6 +3,8 @@ package paths;
 import model.*;
 
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 public class Dijkstra {
@@ -12,6 +14,8 @@ public class Dijkstra {
     public static int seed = 10000;
 
     public static boolean result = false;
+
+    public static BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
 
     private static Function<Integer, Double> priorityStrategy;
 
@@ -25,7 +29,7 @@ public class Dijkstra {
                 return (i) -> {
                     Node curNode = nodeList.get(i);
                     Node target = nodeList.get(to);
-                    double res = nodeDist.get(i) + Util.getNodeDistance(curNode, target);
+                    double res = nodeDist.get(i) + distanceStrategy.apply(curNode, target);
                     assert res >= 0;
                     return res;
                 };

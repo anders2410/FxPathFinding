@@ -9,6 +9,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class XMLGraphExtractor extends DefaultHandler {
 
@@ -19,6 +20,8 @@ public class XMLGraphExtractor extends DefaultHandler {
     private Set<String> validNodes;
     private Map<String, Node> nodeMap;
     private Graph graph;
+
+    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
 
     public XMLGraphExtractor(String fileName, Set<String> validNodes) {
         this.fileName = fileName;
@@ -114,7 +117,7 @@ public class XMLGraphExtractor extends DefaultHandler {
                 Node node1 = nodeMap.get(ndID);
                 Node node2 = nodeMap.get(lastNdID);
                 lastNdID = ndID;
-                double d = Util.getNodeDistance(node1, node2);
+                double d = distanceStrategy.apply(node1, node2);
                 graph.addEdge(node1, node2, d);
                 graph.addEdge(node2, node1, d);
             }
@@ -123,5 +126,9 @@ public class XMLGraphExtractor extends DefaultHandler {
 
     public Graph getGraph() {
         return graph;
+    }
+
+    public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
+        this.distanceStrategy = distanceStrategy;
     }
 }

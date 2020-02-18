@@ -19,7 +19,7 @@
                <Insets left="5.0" />
             </VBox.margin></Button>
          <Separator prefHeight="0.0" prefWidth="60.0" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="BEST">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleSeedEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="SEED">
             <VBox.margin>
                <Insets left="5.0" />
             </VBox.margin></Button>
