@@ -5,9 +5,11 @@
  Powder Blue:        #BADFE7
  Magic Mint;         #C2EDCE
  White Smoke:        #F6F6F2
+
  */
 
- /* Navigation Buttons on map */
+/* ----------------------------------------------------------------------------------------------------------------- */
+/* Navigation Buttons on map */
 .nav_buttons, .zoom_button {
     -fx-background-color: #BADFE7;
 }
@@ -58,5 +60,11 @@
 }
 
 .button1:hover {
+    -fx-background-color: #F6F6F2;
+}
+
+/* ----------------------------------------------------------------------------------------------------------------- */
+/* Distance Label */
+#distance_label {
     -fx-background-color: #F6F6F2;
 }

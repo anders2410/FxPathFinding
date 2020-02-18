@@ -56,7 +56,7 @@
                 <Button id="nav_down" mnemonicParsing="false" onAction="#handleNavDownEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             </children>
         </GridPane>
-        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="71.0" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="20.0">
+        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="71.0" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="20.0">
             <Button id="zoom_in" mnemonicParsing="false" onAction="#handleZoomInEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button" />
             <Button id="zoom_out" mnemonicParsing="false" onAction="#handleZoomOutEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button">
                 <HBox.margin>
@@ -64,6 +64,7 @@
                 </HBox.margin>
             </Button>
         </HBox>
+      <Label id="distance_label" fx:id="distance_label" alignment="TOP_RIGHT" prefHeight="20.0" prefWidth="150.0" text="Total Distance:" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="10.0" />
     </AnchorPane>
 
     <stylesheets>

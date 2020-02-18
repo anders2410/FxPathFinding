@@ -5,23 +5,26 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import model.Edge;
 import model.Graph;
 import model.Node;
+import model.Util;
 import paths.AlgorithmMode;
 import paths.Dijkstra;
+import paths.ShortestPathResult;
 import pbfparsing.PBFParser;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
 
 public class FXMLController implements Initializable {
 
+    @FXML
     public Canvas canvas;
+    public Label distance_label;
 
     Graph graph;
     String fileName = "jelling";
@@ -202,14 +205,17 @@ public class FXMLController implements Initializable {
 
     public void handleDijkstraEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         Gerbil();
+        distance_label.setText("Total distance: " + Util.roundDouble(res.d));
     }
 
     public void handleAStarEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         Gerbil();
+        String distance = Util.roundDouble(res.d);
+        distance_label.setText("Total distance: " + distance);
     }
 
     public void handleCanvasDrawing() {

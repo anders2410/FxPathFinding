@@ -1,5 +1,9 @@
 package model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 public class Util {
 
     public static double degreesToRadians(double degrees) {
@@ -35,5 +39,11 @@ public class Util {
 
     public static double cordToDouble(String attriVal) {
         return Double.parseDouble(attriVal);
+    }
+
+    public static String roundDouble(double value) {
+        DecimalFormat df = new DecimalFormat("#.#####");
+        df.setRoundingMode(RoundingMode.CEILING);
+        return df.format(value);
     }
 }
