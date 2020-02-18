@@ -200,7 +200,7 @@ public class FXMLController implements Initializable {
         Gerbil();
     }
 
-    public void handleDjikstraEvent() {
+    public void handleDijkstraEvent() {
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
         Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         Gerbil();
