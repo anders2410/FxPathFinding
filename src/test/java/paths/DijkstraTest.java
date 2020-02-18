@@ -27,15 +27,15 @@ public class DijkstraTest {
     @Test
     public void testDijkstra() {
         Dijkstra.trace = true;
-        float dist = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA).d;
+        double dist = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA).d;
         Dijkstra.trace = false;
     }
 
     @Test
     public void compareDijkstraAStar() {
         Dijkstra.result = true;
-        float dist_dijk = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA).d;
-        float dist_astar = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR_DIST).d;
+        double dist_dijk = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA).d;
+        double dist_astar = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR_DIST).d;
         assertEquals(dist_dijk, dist_astar, 0);
         Dijkstra.result = false;
     }

@@ -9,7 +9,7 @@ public class Graph {
     private List<List<Edge>> adjList;
     private int nodeSize;
 
-    public int getNodeSize() {
+    public int getNodeAmount() {
         return nodeSize;
     }
 

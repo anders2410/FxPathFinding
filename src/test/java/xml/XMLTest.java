@@ -52,7 +52,7 @@ public class XMLTest {
     public void testNodeDistance() {
         Node n1 = new Node(0, 557332789, 597332789);
         Node n2 = new Node(2, 557332789, 597332789);
-        float distance = Util.getNodeDistance(n1, n2);
+        double distance = Util.getNodeDistance(n1, n2);
         assertEquals(0.0, distance, 0);
     }
 
