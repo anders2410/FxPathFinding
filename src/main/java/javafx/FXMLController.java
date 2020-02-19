@@ -47,7 +47,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("malta-latest.osm.pbf");
+        setUpNewGraph("jelling.osm");
     }
 
     private void setUpNewGraph(String fileName) {

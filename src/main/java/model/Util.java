@@ -17,7 +17,7 @@ public class Util {
     }
 
     public static double sphericalDistance(Node node1, Node node2) {
-        var earthRadiusKm = 6371;
+        var R = 6371;
 
         var dLat = degreesToRadians(node2.latitude - node1.latitude);
         var dLon = degreesToRadians(node2.longitude - node2.longitude);
@@ -29,7 +29,7 @@ public class Util {
                 Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1rad) * Math.cos(lat2rad);
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         assert c >= 0;
-        return earthRadiusKm * c;
+        return 100 * R * c;
     }
 
     public static double cordToInt(String attriVal) {
