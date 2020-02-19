@@ -191,30 +191,25 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (0.1*heightofBoundingBox*mapHeightRatio/zoomFactor);
+        yOffset -= (zoomFactor <= 1) ? ((0.1*heightofBoundingBox*mapHeightRatio)/zoomFactor) : ((0.1*heightofBoundingBox*mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (0.1*heightofBoundingBox*mapHeightRatio/zoomFactor);
+        yOffset += (zoomFactor <= 1) ? ((0.1*heightofBoundingBox*mapHeightRatio)/zoomFactor) : ((0.1*heightofBoundingBox*mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        int zoomed = (int) ((0.1*widthOfBoundingBox*mapWidthRatio)/(100*zoomFactor));
-        int unzoomed = (int) ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor);
-        System.out.println(zoomed);
-        System.out.println(unzoomed);
-        xOffset += (zoomFactor >= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(100000000*zoomFactor));
+        xOffset += (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (zoomFactor >= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(1000000000*zoomFactor));
-        System.out.println(xOffset);
+        xOffset -= (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
