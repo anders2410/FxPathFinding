@@ -16,16 +16,10 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import model.Edge;
-import model.Graph;
-import model.Node;
-import model.Util;
-import paths.AlgorithmMode;
-import paths.Dijkstra;
-import paths.ShortestPathResult;
+import model.*;
+import paths.*;
 import pbfparsing.PBFParser;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
+import xml.*;
 
 public class FXMLController implements Initializable {
 
