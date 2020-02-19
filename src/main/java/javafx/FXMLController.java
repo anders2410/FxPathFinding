@@ -28,6 +28,8 @@ public class FXMLController implements Initializable {
 
     @FXML private Canvas canvas;
     @FXML private Label distance_label;
+    @FXML private Label nodes_label;
+    @FXML private Label edges_label;
     private Stage stage;
 
     Graph graph;
@@ -45,7 +47,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("djibouti-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {
@@ -74,8 +76,9 @@ public class FXMLController implements Initializable {
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
-
+        System.out.println(Math.abs(maxXY.x - minXY.x));
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
+        System.out.println(widthOfBoundingBox);
     }
 
     private void loadGraph(String fileName) {
@@ -167,25 +170,25 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (0.1*widthOfBoundingBox/zoomFactor);
+        yOffset -= (0.001*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (0.1*widthOfBoundingBox/zoomFactor);
+        yOffset += (0.001*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += (0.1*widthOfBoundingBox/zoomFactor);
+        xOffset += (0.001*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (0.1*widthOfBoundingBox/zoomFactor);
+        xOffset -= (0.001*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
@@ -208,6 +211,8 @@ public class FXMLController implements Initializable {
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
         distance_label.setText("Total distance: " + Util.roundDouble(res.d));
+        nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
+        edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
     }
 
     public void handleAStarEvent() {
@@ -215,6 +220,8 @@ public class FXMLController implements Initializable {
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawGraph();
         distance_label.setText("Total distance: " + Util.roundDouble(res.d));
+        nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
+        edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
     }
 
     private void clearCanvas() {
