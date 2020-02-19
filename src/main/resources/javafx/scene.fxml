@@ -9,7 +9,7 @@
 <AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="mainWindow" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.FXMLController">
     <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
         <VBox layoutY="15.0" prefHeight="650.0" prefWidth="60.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0">
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDijkstraEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DJIK">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDijkstraEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DIJK">
             <VBox.margin>
                <Insets left="5.0" top="5.0" />
             </VBox.margin></Button>
@@ -66,7 +66,8 @@
         </HBox>
         <VBox alignment="TOP_RIGHT" minHeight="20.0" prefWidth="155.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
             <children>
-                <Label fx:id="distance_label" prefHeight="20.0" prefWidth="200.0" text="Total Distance:" />
+                <Label fx:id="distance_label" prefHeight="20.0" prefWidth="200.0" text="Total Distance: " />
+                <Label fx:id="nodes_visited_label" prefHeight="20.0" prefWidth="200.0" text="Nodes Visited: " />
                 <Label fx:id="nodes_label" prefHeight="20.0" prefWidth="200.0" text="Number of Nodes: " />
                 <Label fx:id="edges_label" prefHeight="20.0" prefWidth="200.0" text="Number of Edges: " />
             </children>
