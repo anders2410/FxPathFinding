@@ -49,11 +49,13 @@ public class XMLTest {
     }
 
     @Test
-    public void testNodeDistance() {
+    public void testNodeDistanceSelf() {
         Node n1 = new Node(0, 557332789, 597332789);
         Node n2 = new Node(2, 557332789, 597332789);
-        float distance = Util.getNodeDistance(n1, n2);
+        double distance = Util.flatEarthDistance(n1, n2);
+        double sdistance = Util.sphericalDistance(n1, n2);
         assertEquals(0.0, distance, 0);
+        assertEquals(0.0, sdistance, 0);
     }
 
 }

@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.BiFunction;
 
 // A tutorial for the Framework can be found at http://jaryard.com/projects/osm4j/tutorial/index.html
 public class PBFParser {
@@ -26,6 +27,8 @@ public class PBFParser {
     private Map<String, Node> nodeMap;
     private int indexCounter;
     private String lastNdID;
+
+    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
 
     int numNodes = 0;
     int numEdges = 0;
@@ -99,7 +102,7 @@ public class PBFParser {
         for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
             Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
-            double d = Util.getNodeDistance(node1, node2);
+            double d = distanceStrategy.apply(node1, node2);
             graph.addEdge(node1, node2, d);
             graph.addEdge(node2, node1, d);
             numEdges += 2;
@@ -157,16 +160,12 @@ public class PBFParser {
                 || hV.equals("corridor");
     }
 
-    private static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
-        BigDecimal bd = BigDecimal.valueOf(value);
-        bd = bd.setScale(places, RoundingMode.HALF_UP);
-        return bd.doubleValue();
-    }
-
     public Graph getGraph() {
         return graph;
+    }
+
+    public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
+        this.distanceStrategy = distanceStrategy;
     }
 
     /*private void TestSpeedRaw(String filename) throws FileNotFoundException {

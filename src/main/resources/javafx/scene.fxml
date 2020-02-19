@@ -9,7 +9,7 @@
 <AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="mainWindow" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.FXMLController">
     <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
         <VBox layoutY="15.0" prefHeight="650.0" prefWidth="60.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0">
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDjikstraEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DJIK">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDijkstraEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DJIK">
             <VBox.margin>
                <Insets left="5.0" top="5.0" />
             </VBox.margin></Button>
@@ -19,12 +19,12 @@
                <Insets left="5.0" />
             </VBox.margin></Button>
          <Separator prefHeight="0.0" prefWidth="60.0" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="BEST">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleSeedEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="SEED">
             <VBox.margin>
                <Insets left="5.0" />
             </VBox.margin></Button>
          <Separator prefHeight="0.0" prefWidth="60.0" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="EPIC">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleChooseFileEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="FILE">
             <VBox.margin>
                <Insets left="5.0" />
             </VBox.margin></Button>
@@ -56,7 +56,7 @@
                 <Button id="nav_down" mnemonicParsing="false" onAction="#handleNavDownEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             </children>
         </GridPane>
-        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="71.0" AnchorPane.bottomAnchor="45.0" AnchorPane.rightAnchor="20.0">
+        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="71.0" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="20.0">
             <Button id="zoom_in" mnemonicParsing="false" onAction="#handleZoomInEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button" />
             <Button id="zoom_out" mnemonicParsing="false" onAction="#handleZoomOutEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button">
                 <HBox.margin>
@@ -64,6 +64,7 @@
                 </HBox.margin>
             </Button>
         </HBox>
+      <Label fx:id="distance_label" alignment="TOP_RIGHT" prefHeight="20.0" prefWidth="150.0" text="Total Distance:" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="10.0" />
     </AnchorPane>
 
     <stylesheets>

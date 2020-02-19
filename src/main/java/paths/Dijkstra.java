@@ -3,15 +3,19 @@ package paths;
 import model.*;
 
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 public class Dijkstra {
 
     public static boolean trace = false;
 
-    public static int seed = 0;
+    public static int seed = 10000;
 
     public static boolean result = false;
+
+    public static BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
 
     private static Function<Integer, Double> priorityStrategy;
 
@@ -25,7 +29,9 @@ public class Dijkstra {
                 return (i) -> {
                     Node curNode = nodeList.get(i);
                     Node target = nodeList.get(to);
-                    return nodeDist.get(i) + Util.getNodeDistance(curNode, target);
+                    double res = nodeDist.get(i) + distanceStrategy.apply(curNode, target);
+                    assert res >= 0;
+                    return res;
                 };
         }
     }
@@ -40,7 +46,7 @@ public class Dijkstra {
         nodeQueue.add(from);
         Set<Integer> seenNodes = new HashSet<>();
         List<Integer> backPointers = new ArrayList<>();
-        for (int i = 0; i < graph.getNodeSize(); i++) {
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
             backPointers.add(0);
         }
 
@@ -88,7 +94,7 @@ public class Dijkstra {
     }
 
     public static ShortestPathResult randomPath(Graph graph, AlgorithmMode mode) {
-        int n = graph.getNodeSize();
+        int n = graph.getNodeAmount();
         Random random = new Random(seed);
         int from = random.nextInt(n);
         int to = random.nextInt(n);

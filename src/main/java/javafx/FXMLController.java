@@ -1,100 +1,103 @@
 package javafx;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import model.Edge;
 import model.Graph;
 import model.Node;
+import model.Util;
 import paths.AlgorithmMode;
 import paths.Dijkstra;
+import paths.ShortestPathResult;
 import pbfparsing.PBFParser;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
 
 public class FXMLController implements Initializable {
 
-    public Canvas canvas;
+    @FXML private Canvas canvas;
+    @FXML private Label distance_label;
+    private Stage stage;
 
     Graph graph;
-    String fileName = "jelling";
     GraphicsContext gc;
-    private int coordToPos = 1000;
-    private int zoom = 10000000;
     int xOffset;
     int yOffset;
-    double canvasHeight;
-    double canvasWidth;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
     private PixelPoint minXY;
     private PixelPoint maxXY;
     private double globalRatio;
     private float zoomFactor;
+    private int widthOfBoundingBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        try {
-            setUp();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        gc = canvas.getGraphicsContext2D();
+        gc.setLineWidth(1.0);
+
+        setUpNewGraph("djibouti-latest.osm.pbf");
     }
 
-    public void setUp() throws FileNotFoundException {
-        PBFParser pbfParser = new PBFParser("malta-latest.osm.pbf");
-        pbfParser.executePBFParser();
-        graph = pbfParser.getGraph();
-        // System.out.println(graph.getAdjList());
-        System.out.println(canvasHeight);
-        gc = canvas.getGraphicsContext2D();
-        canvasHeight = canvas.getHeight();
-        canvasWidth = canvas.getWidth();
+    private void setUpNewGraph(String fileName) {
+        loadGraph(fileName);
+        setGraphBounds();
         zoomFactor = 1;
+        setRatios();
+        drawGraph();
+    }
+
+    private void setGraphBounds() {
         minXY = new PixelPoint(-1, -1);
         maxXY = new PixelPoint(-1, -1);
 
         List<Node> nodeList = graph.getNodeList();
-        for (int i = 0; i < nodeList.size(); i++) {
-            Node n = nodeList.get(i);
+        for (Node n : nodeList) {
             double x = projectXCordMercator(n.longitude);
             double y = projectYCordMercator(n.latitude);
-
             minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
             minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
         }
 
-        for (int i = 0; i < nodeList.size(); i++) {
-            Node n = nodeList.get(i);
+        for (Node n : nodeList) {
             double x = projectXCordMercator(n.longitude) - minXY.x;
             double y = projectYCordMercator(n.latitude) - minXY.y;
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
-        setRatios();
-        gc.setStroke(Color.VIOLET);
-        gc.setLineWidth(1.0);
-        List<List<Edge>> adjList = graph.getAdjList();
-        resetIsDrawn(adjList);
-        Gerbil();
+
+        widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
+    }
+
+    private void loadGraph(String fileName) {
+        try {
+            PBFParser pbfParser = new PBFParser(fileName);
+            pbfParser.executePBFParser();
+            graph = pbfParser.getGraph();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void setRatios() {
         // determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = zoomFactor * canvasWidth / maxXY.x;
-        mapHeightRatio = zoomFactor * canvasHeight / maxXY.y;
+        double mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
+        double mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
         // using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
     }
 
-    private void Gerbil() {
+    private void drawGraph() {
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
         resetIsDrawn(adjList);
@@ -111,10 +114,10 @@ public class FXMLController implements Initializable {
                     double y2 = projectYCordMercator(ny.latitude) - minXY.y;
 
                     double adjustedX1 = ((x1 * globalRatio));
-                    double adjustedY1 = (canvasHeight - (y1 * globalRatio));
+                    double adjustedY1 = (canvas.getHeight() - (y1 * globalRatio));
 
                     double adjustedX2 = ((x2 * globalRatio));
-                    double adjustedY2 = (canvasHeight - (y2 * globalRatio));
+                    double adjustedY2 = (canvas.getHeight() - (y2 * globalRatio));
                     /*System.out.println("---------------");
                     System.out.println("(" + x1 + "," + y1 + ") -> (" + x2 + "," + y2 + ")");
                     System.out.println("(" + adjustedX1 + "," + adjustedY1 + ") -> (" + adjustedX2 + "," + adjustedY2 + ")");*/
@@ -163,56 +166,80 @@ public class FXMLController implements Initializable {
 
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        yOffset -= 1000;
-        Gerbil();
+        clearCanvas();
+        yOffset -= (0.1*widthOfBoundingBox/zoomFactor);
+        drawGraph();
     }
 
     public void handleNavDownEvent() {
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        yOffset += 1000;
-        Gerbil();
+        clearCanvas();
+        yOffset += (0.1*widthOfBoundingBox/zoomFactor);
+        drawGraph();
     }
 
     public void handleNavLeftEvent() {
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        xOffset += 1000;
-        Gerbil();
+        clearCanvas();
+        xOffset += (0.1*widthOfBoundingBox/zoomFactor);
+        drawGraph();
     }
 
     public void handleNavRightEvent() {
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        xOffset -= 1000;
-        Gerbil();
+        clearCanvas();
+        xOffset -= (0.1*widthOfBoundingBox/zoomFactor);
+        drawGraph();
     }
 
     public void handleZoomInEvent() {
         zoomFactor *= 1.1f;
         setRatios();
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        Gerbil();
+        clearCanvas();
+        drawGraph();
     }
 
     public void handleZoomOutEvent() {
         zoomFactor *= 0.9f;
         setRatios();
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        Gerbil();
+        clearCanvas();
+        drawGraph();
     }
 
-    public void handleDjikstraEvent() {
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-        Gerbil();
+    public void handleDijkstraEvent() {
+        clearCanvas();
+        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+        drawGraph();
+        distance_label.setText("Total distance: " + Util.roundDouble(res.d));
     }
 
     public void handleAStarEvent() {
-        gc.clearRect(0, 0, canvasWidth, canvasHeight);
-        Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
-        Gerbil();
+        clearCanvas();
+        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+        drawGraph();
+        distance_label.setText("Total distance: " + Util.roundDouble(res.d));
+    }
+
+    private void clearCanvas() {
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
     public void handleCanvasDrawing() {
-        Gerbil();
+        drawGraph();
+    }
+
+    public void handleSeedEvent() {
+        Dijkstra.seed++;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    public void handleChooseFileEvent(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("PBF Files", "*.pbf"),
+                new FileChooser.ExtensionFilter("OSM Files", "*.osm")
+        );
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        setUpNewGraph(selectedFile.getAbsolutePath());
     }
 }
