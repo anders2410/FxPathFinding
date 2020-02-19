@@ -38,7 +38,7 @@ public class Dijkstra {
         List<List<Edge>> adjList = graph.getAdjList();
         List<Double> nodeDist = initNodeDist(from, adjList.size());
         priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
-        Comparator<Integer> comparator = (i1, i2) -> (int) (priorityStrategy.apply(i1) - priorityStrategy.apply(i2));
+        Comparator<Integer> comparator = (i1, i2) -> (int) Math.signum(priorityStrategy.apply(i1) - priorityStrategy.apply(i2));
         PriorityQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(from);
         Set<Integer> seenNodes = new HashSet<>();

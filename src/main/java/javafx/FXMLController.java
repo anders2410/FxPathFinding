@@ -39,7 +39,7 @@ public class FXMLController implements Initializable {
     private double globalRatio;
     private float zoomFactor;
     private int widthOfBoundingBox;
-    private int heightofBoundingBox;
+    private int heightOfBoundingBox;
     private double mapWidthRatio;
     private double mapHeightRatio;
 
@@ -50,7 +50,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("jelling.osm");
+        setUpNewGraph("malta-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {
@@ -81,7 +81,7 @@ public class FXMLController implements Initializable {
         }
         System.out.println(Math.abs(maxXY.x - minXY.x));
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
-        heightofBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
+        heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
     private void loadGraph(String fileName) {
@@ -196,13 +196,13 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (zoomFactor <= 1) ? ((0.1*heightofBoundingBox*mapHeightRatio)/zoomFactor) : ((0.1*heightofBoundingBox*mapHeightRatio)/(2.5*zoomFactor));
+        yOffset -= (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) : ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (zoomFactor <= 1) ? ((0.1*heightofBoundingBox*mapHeightRatio)/zoomFactor) : ((0.1*heightofBoundingBox*mapHeightRatio)/(2.5*zoomFactor));
+        yOffset += (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) : ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
@@ -237,7 +237,7 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d/100000));
+        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
         nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
     }
 
@@ -246,7 +246,7 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d/100000));
+        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
         nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
     }
 
