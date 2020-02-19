@@ -64,7 +64,13 @@
                 </HBox.margin>
             </Button>
         </HBox>
-      <Label fx:id="distance_label" alignment="TOP_RIGHT" prefHeight="20.0" prefWidth="150.0" text="Total Distance:" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="10.0" />
+        <VBox alignment="TOP_RIGHT" minHeight="20.0" prefWidth="155.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
+            <children>
+                <Label fx:id="distance_label" prefHeight="20.0" prefWidth="200.0" text="Total Distance:" />
+                <Label fx:id="nodes_label" prefHeight="20.0" prefWidth="200.0" text="Number of Nodes: " />
+                <Label fx:id="edges_label" prefHeight="20.0" prefWidth="200.0" text="Number of Edges: " />
+            </children>
+        </VBox>
     </AnchorPane>
 
     <stylesheets>

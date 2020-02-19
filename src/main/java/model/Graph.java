@@ -50,4 +50,15 @@ public class Graph {
             }
         }
     }
+
+    public int getNumberOfEdges() {
+        int total = 0;
+        for (List<Edge> sublist : adjList) {
+            if (sublist != null) {
+                total += sublist.size();
+            }
+        }
+
+        return total;
+    }
 }
