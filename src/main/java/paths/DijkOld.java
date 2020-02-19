@@ -1,6 +1,7 @@
 package paths;
 
-import old_model.*;
+
+import model.*;
 
 import java.util.*;
 import java.util.function.Function;
@@ -13,9 +14,9 @@ public class DijkOld {
 
     public static boolean result = false;
 
-    private static Function<Integer, Float> priorityStrategy;
+    private static Function<Integer, Double> priorityStrategy;
 
-    private static Function<Integer, Float> choosePriorityStrategy(Graph graph, int from, int to, AlgorithmMode mode, List<Float> nodeDist) {
+    private static Function<Integer, Double> choosePriorityStrategy(Graph graph, int from, int to, AlgorithmMode mode, List<Double> nodeDist) {
         List<Node> nodeList = graph.getNodeList();
         switch (mode) {
             default: case DIJKSTRA:
@@ -24,7 +25,7 @@ public class DijkOld {
                 return (i) -> {
                     Node curNode = nodeList.get(i);
                     Node target = nodeList.get(to);
-                    return nodeDist.get(i) + Util.sphericalDistance(curNode, target);
+                    return nodeDist.get(i) + Util.flatEarthDistance(curNode, target);
                 };
         }
     }
@@ -32,14 +33,14 @@ public class DijkOld {
     public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
         graph.resetPathTrace();
         List<List<Edge>> adjList = graph.getAdjList();
-        List<Float> nodeDist = initNodeDist(from, adjList.size());
+        List<Double> nodeDist = initNodeDist(from, adjList.size());
         priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
         Comparator<Integer> comparator = (i1, i2) -> (int) (priorityStrategy.apply(i1) - priorityStrategy.apply(i2));
         PriorityQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(from);
         Set<Integer> seenNodes = new HashSet<>();
         List<Integer> backPointers = new ArrayList<>();
-        for (int i = 0; i < graph.getNodeSize(); i++) {
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
             backPointers.add(0);
         }
 
@@ -87,7 +88,7 @@ public class DijkOld {
     }
 
     public static ShortestPathResult randomPath(Graph graph, AlgorithmMode mode) {
-        int n = graph.getNodeSize();
+        int n = graph.getNodeAmount();
         Random random = new Random(seed);
         int from = random.nextInt(n);
         int to = random.nextInt(n);
@@ -109,9 +110,9 @@ public class DijkOld {
         }
     }
 
-    private static void relax(List<Float> nodeDist, List<Integer> backPointers, int from, Edge edge) {
+    private static void relax(List<Double> nodeDist, List<Integer> backPointers, int from, Edge edge) {
         edge.visited = true;
-        float newDist = nodeDist.get(from) + edge.d;
+        double newDist = nodeDist.get(from) + edge.d;
         if (newDist < nodeDist.get(edge.to)) {
             nodeDist.set(edge.to, newDist);
             backPointers.set(edge.to, from);
@@ -123,12 +124,12 @@ public class DijkOld {
      * @param size number of nodes in total
      * @return a list of integers with max values in every entry, but that of the source node which is 0.
      */
-    private static List<Float> initNodeDist(int from, int size) {
-        List<Float> nodeDist = new ArrayList<>();
+    private static List<Double> initNodeDist(int from, int size) {
+        List<Double> nodeDist = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            nodeDist.add(Float.MAX_VALUE);
+            nodeDist.add(Double.MAX_VALUE);
         }
-        nodeDist.set(from, 0f);
+        nodeDist.set(from, 0.0);
         return nodeDist;
     }
 

@@ -1,6 +1,6 @@
 package old_xml;
 
-import old_model.*;
+import model.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -76,10 +76,10 @@ public class XMLGraphExtractor extends DefaultHandler {
                     case "id":
                         id = attriVal;
                         break;
-                    case "lat":
+                    case "lon":
                         longitude = Util.cordToInt(attriVal);
                         break;
-                    case "lon":
+                    case "lat":
                         latitude = Util.cordToInt(attriVal);
                         break;
                 }
@@ -114,7 +114,7 @@ public class XMLGraphExtractor extends DefaultHandler {
                 Node node1 = nodeMap.get(ndID);
                 Node node2 = nodeMap.get(lastNdID);
                 lastNdID = ndID;
-                float d = Util.sphericalDistance(node1, node2);
+                double d = Util.flatEarthDistance(node1, node2);
                 graph.addEdge(node1, node2, d);
                 graph.addEdge(node2, node1, d);
             }
