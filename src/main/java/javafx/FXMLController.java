@@ -94,6 +94,10 @@ public class FXMLController implements Initializable {
         if (fileType.equals("pbf")) {
             loadPBF(fileName);
         }
+        if (gc != null) {
+            nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
+            edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
+        }
     }
 
     private void loadOSM(String fileName) {
@@ -117,10 +121,10 @@ public class FXMLController implements Initializable {
     }
 
     private void setRatios() {
-        // determine the width and height ratio because we need to magnify the map to fit into the given image dimension
+        // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
         double mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
         double mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
-        // using different ratios for width and height will cause the map to be stretched. So, we have to determine
+        // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
     }
@@ -162,7 +166,6 @@ public class FXMLController implements Initializable {
             }
         }
     }
-
 
     private Edge findOppositeEdge(java.util.List<java.util.List<Edge>> adjList, int i, Edge edge) {
         Edge oppositeEdge = null;
@@ -237,8 +240,6 @@ public class FXMLController implements Initializable {
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
         distance_label.setText("Total distance: " + Util.roundDouble(res.d));
-        nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
-        edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
     }
 
     public void handleAStarEvent() {
@@ -247,24 +248,10 @@ public class FXMLController implements Initializable {
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawGraph();
         distance_label.setText("Total distance: " + Util.roundDouble(res.d));
-        nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
-        edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
-    }
-
-    private void clearCanvas() {
-        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-    }
-
-    public void handleCanvasDrawing() {
-        drawGraph();
     }
 
     public void handleSeedEvent() {
         Dijkstra.seed++;
-    }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
     }
 
     public void handleChooseFileEvent(ActionEvent actionEvent) {
@@ -274,6 +261,16 @@ public class FXMLController implements Initializable {
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")
         );
         File selectedFile = fileChooser.showOpenDialog(stage);
+        clearCanvas();
         setUpNewGraph(selectedFile.getAbsolutePath());
+    }
+
+    // Some utility methods
+    private void clearCanvas() {
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
 }
