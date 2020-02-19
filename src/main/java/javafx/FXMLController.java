@@ -25,6 +25,7 @@ public class FXMLController implements Initializable {
 
     @FXML private Canvas canvas;
     @FXML private Label distance_label;
+    @FXML private Label nodes_visited_label;
     @FXML private Label nodes_label;
     @FXML private Label edges_label;
     private Stage stage;
@@ -233,7 +234,8 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
-        distance_label.setText("Total distance: " + Util.roundDouble(res.d));
+        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
+        nodes_visited_label.setText("Nodes Visited: " + res.path.size());
     }
 
     public void handleAStarEvent() {
@@ -241,7 +243,8 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawGraph();
-        distance_label.setText("Total distance: " + Util.roundDouble(res.d));
+        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
+        nodes_visited_label.setText("Nodes Visited: " + res.path.size());
     }
 
     public void handleSeedEvent() {
