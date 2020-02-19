@@ -1,6 +1,6 @@
 package swingui;
 
-import model.*;
+import old_model.*;
 import paths.*;
 
 import javax.swing.*;
@@ -13,7 +13,7 @@ public class SimpleUI extends JFrame {
 
     private Graph graph;
     private int coordToPos = 1000;
-    private double zoom = 10000000;
+    private int zoom = 10000000;
     private int xoffset = -3900;
     private int yoffset = 7900;
 
@@ -83,14 +83,14 @@ public class SimpleUI extends JFrame {
 
         JButton dPath = new JButton("d path");
         dPath.addActionListener(e -> {
-            Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            DijkOld.randomPath(graph, AlgorithmMode.DIJKSTRA);
             repaint();
         });
         panel.add(dPath);
 
         JButton aPath = new JButton("a path");
         aPath.addActionListener(e -> {
-            Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+            DijkOld.randomPath(graph, AlgorithmMode.A_STAR_DIST);
             repaint();
         });
         panel.add(aPath);

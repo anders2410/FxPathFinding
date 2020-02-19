@@ -1,12 +1,12 @@
 package swingui;
 
 
-import model.Graph;
+import old_model.Graph;
 import org.junit.Before;
 import org.junit.Test;
 import paths.Dijkstra;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
+import old_xml.XMLFilter;
+import old_xml.XMLGraphExtractor;
 
 public class UITest {
 
