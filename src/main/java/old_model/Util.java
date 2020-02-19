@@ -1,11 +1,8 @@
 package old_model;
 
 public class Util {
-    public static float getNodeDistance(Node node1, Node node2) {
-        return flatEarthDistance(node1, node2);
-    }
 
-    private static float flatEarthDistance(Node node1, Node node2) {
+    public static float flatEarthDistance(Node node1, Node node2) {
         int latDif = node1.latitude - node2.latitude;
         int lonDif = node1.longitude - node2.longitude;
         return (float) Math.sqrt(Math.pow(latDif, 2) + Math.pow(lonDif, 2));
