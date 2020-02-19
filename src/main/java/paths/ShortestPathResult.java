@@ -5,11 +5,11 @@ import java.util.List;
 public class ShortestPathResult {
     public double d;
     public List<Integer> path;
-    public int seenNodes;
+    public int visitedNodes;
 
-    public ShortestPathResult(double d, List<Integer> path, int seenNodes) {
+    public ShortestPathResult(double d, List<Integer> path, int visitedNodes) {
         this.d = d;
         this.path = path;
-        this.seenNodes = seenNodes;
+        this.visitedNodes = visitedNodes;
     }
 }

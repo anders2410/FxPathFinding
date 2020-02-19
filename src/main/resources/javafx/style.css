@@ -64,7 +64,12 @@
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
-/* Distance Label */
-#distance_label {
+/* Info box in TOP RIGHT corner: also include different labels */
+#info_box {
     -fx-background-color: #F6F6F2;
+    -fx-opacity: 92%;
+}
+
+#distance_label, #nodes_visited_label, #nodes_label, #edges_label {
+    -fx-padding: 3px;
 }

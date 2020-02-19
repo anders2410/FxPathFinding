@@ -39,8 +39,11 @@ public class FXMLController implements Initializable {
     private double globalRatio;
     private float zoomFactor;
     private int widthOfBoundingBox;
+    private int heightofBoundingBox;
+    private double mapWidthRatio;
+    private double mapHeightRatio;
 
-    private BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
+    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -78,7 +81,7 @@ public class FXMLController implements Initializable {
         }
         System.out.println(Math.abs(maxXY.x - minXY.x));
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
-        System.out.println(widthOfBoundingBox);
+        heightofBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
     private void loadGraph(String fileName) {
@@ -116,10 +119,10 @@ public class FXMLController implements Initializable {
     }
 
     private void setRatios() {
-        // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        double mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
-        double mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
-        // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
+        // determine the width and height ratio because we need to magnify the map to fit into the given image dimension
+        mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
+        mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
+        // using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
     }
@@ -193,25 +196,25 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (0.001*widthOfBoundingBox/zoomFactor);
+        yOffset -= (zoomFactor <= 1) ? ((0.1*heightofBoundingBox*mapHeightRatio)/zoomFactor) : ((0.1*heightofBoundingBox*mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (0.001*widthOfBoundingBox/zoomFactor);
+        yOffset += (zoomFactor <= 1) ? ((0.1*heightofBoundingBox*mapHeightRatio)/zoomFactor) : ((0.1*heightofBoundingBox*mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += (0.001*widthOfBoundingBox/zoomFactor);
+        xOffset += (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (0.001*widthOfBoundingBox/zoomFactor);
+        xOffset -= (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
@@ -234,8 +237,8 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
-        nodes_visited_label.setText("Nodes Visited: " + res.path.size());
+        distance_label.setText("Total Distance: " + Util.roundDouble(res.d/100000));
+        nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
     }
 
     public void handleAStarEvent() {
@@ -243,8 +246,8 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
-        nodes_visited_label.setText("Nodes Visited: " + res.path.size());
+        distance_label.setText("Total Distance: " + Util.roundDouble(res.d/100000));
+        nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
     }
 
     public void handleSeedEvent() {
