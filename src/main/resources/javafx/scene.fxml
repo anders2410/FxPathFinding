@@ -35,7 +35,7 @@
     <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
         <StackPane id="canvasWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650" minWidth="950">
             <children>
-                <Canvas fx:id="canvas" height="643.0" width="943.0" />
+                <Canvas fx:id="canvas" height="650.0" width="950.0" />
             </children>
         </StackPane>
         <GridPane layoutX="20.0" layoutY="560.0" prefHeight="70.0" prefWidth="100.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
@@ -56,7 +56,7 @@
                 <Button id="nav_down" mnemonicParsing="false" onAction="#handleNavDownEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             </children>
         </GridPane>
-        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="71.0" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="20.0">
+        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.bottomAnchor="43.0" AnchorPane.rightAnchor="20.0">
             <Button id="zoom_in" mnemonicParsing="false" onAction="#handleZoomInEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button" />
             <Button id="zoom_out" mnemonicParsing="false" onAction="#handleZoomOutEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button">
                 <HBox.margin>
@@ -64,7 +64,7 @@
                 </HBox.margin>
             </Button>
         </HBox>
-        <VBox alignment="TOP_RIGHT" minHeight="20.0" prefWidth="155.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
+        <VBox id="info_box" alignment="TOP_RIGHT" minHeight="20.0" prefWidth="160.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
             <children>
                 <Label fx:id="distance_label" prefHeight="20.0" prefWidth="200.0" text="Total Distance: " />
                 <Label fx:id="nodes_visited_label" prefHeight="20.0" prefWidth="200.0" text="Nodes Visited: " />
