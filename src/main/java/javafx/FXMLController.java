@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.BiFunction;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -41,6 +42,8 @@ public class FXMLController implements Initializable {
     private double globalRatio;
     private float zoomFactor;
     private int widthOfBoundingBox;
+
+    private BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -94,6 +97,7 @@ public class FXMLController implements Initializable {
         XMLFilter xmlFilter = new XMLFilter(fileName);
         xmlFilter.executeFilter();
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
+        xmlGraphExtractor.setDistanceStrategy(distanceStrategy);
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
     }
@@ -101,6 +105,7 @@ public class FXMLController implements Initializable {
     private void loadPBF(String fileName) {
         try {
             PBFParser pbfParser = new PBFParser(fileName);
+            pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
         } catch (FileNotFoundException e) {
@@ -225,6 +230,7 @@ public class FXMLController implements Initializable {
 
     public void handleDijkstraEvent() {
         clearCanvas();
+        Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
         distance_label.setText("Total distance: " + Util.roundDouble(res.d));
@@ -232,6 +238,7 @@ public class FXMLController implements Initializable {
 
     public void handleAStarEvent() {
         clearCanvas();
+        Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawGraph();
         distance_label.setText("Total distance: " + Util.roundDouble(res.d));
