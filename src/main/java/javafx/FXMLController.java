@@ -23,6 +23,8 @@ import paths.AlgorithmMode;
 import paths.Dijkstra;
 import paths.ShortestPathResult;
 import pbfparsing.PBFParser;
+import xml.XMLFilter;
+import xml.XMLGraphExtractor;
 
 public class FXMLController implements Initializable {
 
@@ -45,7 +47,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("djibouti-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {
@@ -79,6 +81,24 @@ public class FXMLController implements Initializable {
     }
 
     private void loadGraph(String fileName) {
+        String fileType = fileName.substring(fileName.length() - 3);
+        if (fileType.equals("osm")) {
+            loadOSM(fileName.substring(0, fileName.length() - 4));
+        }
+        if (fileType.equals("pbf")) {
+            loadPBF(fileName);
+        }
+    }
+
+    private void loadOSM(String fileName) {
+        XMLFilter xmlFilter = new XMLFilter(fileName);
+        xmlFilter.executeFilter();
+        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
+        xmlGraphExtractor.executeExtractor();
+        graph = xmlGraphExtractor.getGraph();
+    }
+
+    private void loadPBF(String fileName) {
         try {
             PBFParser pbfParser = new PBFParser(fileName);
             pbfParser.executePBFParser();
