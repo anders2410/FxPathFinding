@@ -39,13 +39,16 @@ public class FXMLController implements Initializable {
     private double globalRatio;
     private float zoomFactor;
     private int widthOfBoundingBox;
+    private int heightofBoundingBox;
+    private double mapWidthRatio;
+    private double mapHeightRatio;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("djibouti-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {
@@ -76,6 +79,7 @@ public class FXMLController implements Initializable {
         }
 
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
+        heightofBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
     private void loadGraph(String fileName) {
@@ -90,8 +94,8 @@ public class FXMLController implements Initializable {
 
     private void setRatios() {
         // determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        double mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
-        double mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
+        mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
+        mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
         // using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
@@ -167,25 +171,25 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (0.1*widthOfBoundingBox/zoomFactor);
+        yOffset -= (0.1*heightofBoundingBox*mapHeightRatio/zoomFactor);
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (0.1*widthOfBoundingBox/zoomFactor);
+        yOffset += (0.1*heightofBoundingBox*mapHeightRatio/zoomFactor);
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += (0.1*widthOfBoundingBox/zoomFactor);
+        xOffset += (zoomFactor < 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/10*zoomFactor);
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (0.1*widthOfBoundingBox/zoomFactor);
+        xOffset -= (zoomFactor < 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/10*zoomFactor);
         drawGraph();
     }
 
