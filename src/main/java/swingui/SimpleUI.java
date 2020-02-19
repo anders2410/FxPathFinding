@@ -13,9 +13,9 @@ public class SimpleUI extends JFrame {
 
     private Graph graph;
     private int coordToPos = 1000;
-    private double zoom = 10000000;
-    private int xoffset = -3900;
-    private int yoffset = 7900;
+    private int zoom = 10000000;
+    private int xoffset = -3700;
+    private int yoffset = 7800;
 
     public SimpleUI(Graph graph) {
         this.graph = graph;
@@ -83,21 +83,21 @@ public class SimpleUI extends JFrame {
 
         JButton dPath = new JButton("d path");
         dPath.addActionListener(e -> {
-            Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            DijkOld.randomPath(graph, AlgorithmMode.DIJKSTRA);
             repaint();
         });
         panel.add(dPath);
 
         JButton aPath = new JButton("a path");
         aPath.addActionListener(e -> {
-            Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+            DijkOld.randomPath(graph, AlgorithmMode.A_STAR_DIST);
             repaint();
         });
         panel.add(aPath);
 
         JButton newSeed = new JButton("new seed");
         newSeed.addActionListener(e -> {
-            Dijkstra.seed = new Random().nextInt();
+            DijkOld.seed = new Random().nextInt();
         });
         panel.add(newSeed);
     }
@@ -123,18 +123,12 @@ public class SimpleUI extends JFrame {
         g2d.setColor(Color.BLACK);
         List<Node> nodeList = graph.getNodeList();
         for (Node nx : nodeList) {
-            double x = projectCord(nx.latitude, xoffset);
-            double y = projectCord(-nx.longitude, yoffset);
-            //System.out.println("Node(" + x + ", " + y + ")");
-            double xm = projectXCordMercator(nx.latitude, 2, -15336945000f) / 20000;
-            double ym = projectYCordMercator(-nx.longitude, 2, 0);
-            //System.out.println("NodeMercator(" + xm + ", " + ym + ")");
+            double x = projectCord(nx.longitude, xoffset);
+            double y = projectCord(-nx.latitude, yoffset);
+            System.out.println("Node(" + x + ", " + y + ")");
             g2d.setColor(Color.BLACK);
             Line2D line = new Line2D.Double(x, y, x, y);
             g2d.draw(line);
-            /*g2d.setColor(Color.MAGENTA);
-            Line2D line2 = new Line2D.Float(xm, ym, xm, ym);
-            g2d.draw(line2);*/
         }
     }
 
@@ -175,10 +169,10 @@ public class SimpleUI extends JFrame {
     }
 
     private void drawEdge(Graphics2D g2d, Node nx, Node ny, Edge edge) {
-        double x1 = projectCord(nx.latitude, xoffset);
-        double y1 = projectCord(-nx.longitude, yoffset);
-        double x2 = projectCord(ny.latitude, xoffset);
-        double y2 = projectCord(-ny.longitude, yoffset);
+        double x1 = projectCord(nx.longitude, xoffset);
+        double y1 = projectCord(-nx.latitude, yoffset);
+        double x2 = projectCord(ny.longitude, xoffset);
+        double y2 = projectCord(-ny.latitude, yoffset);
         //System.out.println("(" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
         Line2D line = new Line2D.Double(x1, y1, x2, y2);
         g2d.setStroke(new BasicStroke(1));
