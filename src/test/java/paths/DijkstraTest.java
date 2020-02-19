@@ -35,7 +35,7 @@ public class DijkstraTest {
         Dijkstra.result = true;
         ShortestPathResult dijk_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
         ShortestPathResult astar_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR_DIST);
-        assertTrue(dijk_res.seenNodes > astar_res.seenNodes);
+        assertTrue(dijk_res.visitedNodes > astar_res.visitedNodes);
         assertEquals(dijk_res.d, astar_res.d, 0);
         Dijkstra.result = false;
     }
