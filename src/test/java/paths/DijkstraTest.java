@@ -3,12 +3,10 @@ package paths;
 import model.*;
 import org.junit.Before;
 import org.junit.Test;
-import paths.AlgorithmMode;
-import paths.Dijkstra;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
+import xml.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DijkstraTest {
 
@@ -20,6 +18,7 @@ public class DijkstraTest {
         XMLFilter xmlFilter = new XMLFilter(fileName);
         xmlFilter.executeFilter();
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
+        xmlGraphExtractor.setParseCordStrategy(Util::cordToInt);
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
     }
@@ -34,9 +33,10 @@ public class DijkstraTest {
     @Test
     public void compareDijkstraAStar() {
         Dijkstra.result = true;
-        double dist_dijk = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA).d;
-        double dist_astar = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR_DIST).d;
-        assertEquals(dist_dijk, dist_astar, 0);
+        ShortestPathResult dijk_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult astar_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR_DIST);
+        assertTrue(dijk_res.seenNodes > astar_res.seenNodes);
+        assertEquals(dijk_res.d, astar_res.d, 0);
         Dijkstra.result = false;
     }
 }

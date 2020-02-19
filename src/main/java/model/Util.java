@@ -32,10 +32,7 @@ public class Util {
         return d;
     }
 
-    // Converts numeric degrees to radians
-
-
-    public static int cordToInt(String attriVal) {
+    public static double cordToInt(String attriVal) {
         String intString = attriVal.replace(".", "");
         return Integer.parseInt(intString);
     }

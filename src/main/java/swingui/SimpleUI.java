@@ -12,8 +12,6 @@ import java.util.Random;
 public class SimpleUI extends JFrame {
 
     private Graph graph;
-    private int coordToPos = 1000;
-    private int zoom = 10000000;
     private int xoffset = -3700;
     private int yoffset = 7800;
 
@@ -83,21 +81,21 @@ public class SimpleUI extends JFrame {
 
         JButton dPath = new JButton("d path");
         dPath.addActionListener(e -> {
-            DijkOld.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
             repaint();
         });
         panel.add(dPath);
 
         JButton aPath = new JButton("a path");
         aPath.addActionListener(e -> {
-            DijkOld.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+            Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
             repaint();
         });
         panel.add(aPath);
 
         JButton newSeed = new JButton("new seed");
         newSeed.addActionListener(e -> {
-            DijkOld.seed = new Random().nextInt();
+            Dijkstra.seed = new Random().nextInt();
         });
         panel.add(newSeed);
     }
@@ -189,29 +187,8 @@ public class SimpleUI extends JFrame {
         //g2d.drawString("" + Math.round(edge.d), (x1 + x2) * 0.5f, (y1 + y2) * 0.5f);
     }
 
-    private float floatPi = (float) Math.PI;
-
-    private float radConversionFactor = floatPi / 180;
-
-    private float floatPiDivFour = floatPi / 4;
-
-    private float pixels = 1;
-
-    private float degreeToRadian(int degree) {
-        return degree / 10000000f * radConversionFactor;
-    }
-
-    private float zoomFactor(float zoom) {
-        return (float) (256 / (2 * floatPi) * Math.pow(2, zoom));
-    }
-
-    private double projectXCordMercator(double cord, float zoom, float shift) {
-        return zoomFactor(zoom) * (cord + floatPi) * pixels + shift;
-    }
-
-    private float projectYCordMercator(double cord, float zoom, float shift) {
-        return zoomFactor(zoom) * (floatPi - (float) Math.log(Math.tan(floatPiDivFour + cord / 2))) * pixels + shift;
-    }
+    private int coordToPos = 1000;
+    private int zoom = 10000000;
 
     private double projectCord(double cord, int shift) {
         return (cord % zoom) / coordToPos + shift;

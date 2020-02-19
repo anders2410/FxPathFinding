@@ -10,6 +10,7 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class XMLGraphExtractor extends DefaultHandler {
 
@@ -22,6 +23,7 @@ public class XMLGraphExtractor extends DefaultHandler {
     private Graph graph;
 
     private BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
+    private Function<String, Double> parseCordStrategy = Util::cordToDouble;
 
     public XMLGraphExtractor(String fileName, Set<String> validNodes) {
         this.fileName = fileName;
@@ -80,10 +82,10 @@ public class XMLGraphExtractor extends DefaultHandler {
                         id = attriVal;
                         break;
                     case "lon":
-                        longitude = Util.cordToDouble(attriVal);
+                        longitude = parseCordStrategy.apply(attriVal);
                         break;
                     case "lat":
-                        latitude = Util.cordToDouble(attriVal);
+                        latitude = parseCordStrategy.apply(attriVal);
                         break;
                 }
             }
@@ -130,5 +132,9 @@ public class XMLGraphExtractor extends DefaultHandler {
 
     public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
+    }
+
+    public void setParseCordStrategy(Function<String, Double> parseCordStrategy) {
+        this.parseCordStrategy = parseCordStrategy;
     }
 }

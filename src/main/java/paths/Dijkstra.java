@@ -4,14 +4,13 @@ import model.*;
 
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 public class Dijkstra {
 
     public static boolean trace = false;
 
-    public static int seed = 10000;
+    public static int seed = 0;
 
     public static boolean result = false;
 
@@ -29,9 +28,7 @@ public class Dijkstra {
                 return (i) -> {
                     Node curNode = nodeList.get(i);
                     Node target = nodeList.get(to);
-                    double res = nodeDist.get(i) + distanceStrategy.apply(curNode, target);
-                    assert res >= 0;
-                    return res;
+                    return nodeDist.get(i) + distanceStrategy.apply(curNode, target);
                 };
         }
     }
@@ -67,12 +64,9 @@ public class Dijkstra {
             }
             trace(nodeQueue); //Print queue if trace
         }
-        if (result) {
-            System.out.println("Number of visited nodes: " + seenNodes.size());
-        }
 
         List<Integer> shortestPath = extractPath(backPointers, adjList, from, to);
-        return new ShortestPathResult(nodeDist.get(to), shortestPath);
+        return new ShortestPathResult(nodeDist.get(to), shortestPath, seenNodes.size());
     }
 
     private static List<Integer> extractPath(List<Integer> backPointers, List<List<Edge>> adjList, int from, int to) {

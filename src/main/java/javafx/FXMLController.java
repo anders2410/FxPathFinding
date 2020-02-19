@@ -25,6 +25,7 @@ public class FXMLController implements Initializable {
 
     @FXML private Canvas canvas;
     @FXML private Label distance_label;
+    @FXML private Label nodes_visited_label;
     @FXML private Label nodes_label;
     @FXML private Label edges_label;
     private Stage stage;
@@ -78,7 +79,7 @@ public class FXMLController implements Initializable {
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
-
+        System.out.println(Math.abs(maxXY.x - minXY.x));
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
         heightofBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
@@ -246,7 +247,8 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
         drawGraph();
-        distance_label.setText("Total distance: " + Util.roundDouble(res.d));
+        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
+        nodes_visited_label.setText("Nodes Visited: " + res.path.size());
     }
 
     public void handleSeedEvent() {
