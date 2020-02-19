@@ -203,13 +203,18 @@ public class FXMLController implements Initializable {
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += (zoomFactor < 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/10*zoomFactor);
+        int zoomed = (int) ((0.1*widthOfBoundingBox*mapWidthRatio)/(100*zoomFactor));
+        int unzoomed = (int) ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor);
+        System.out.println(zoomed);
+        System.out.println(unzoomed);
+        xOffset += (zoomFactor >= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(100000000*zoomFactor));
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (zoomFactor < 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/10*zoomFactor);
+        xOffset -= (zoomFactor >= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(1000000000*zoomFactor));
+        System.out.println(xOffset);
         drawGraph();
     }
 
