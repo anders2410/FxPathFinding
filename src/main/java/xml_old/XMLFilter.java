@@ -1,4 +1,4 @@
-package old_xml;
+package xml_old;
 
 import java.io.*;
 import java.util.*;

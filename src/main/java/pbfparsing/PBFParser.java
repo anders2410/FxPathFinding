@@ -28,7 +28,7 @@ public class PBFParser {
     private int indexCounter;
     private String lastNdID;
 
-    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
+    private BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
 
     int numNodes = 0;
     int numEdges = 0;

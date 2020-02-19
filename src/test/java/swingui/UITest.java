@@ -5,14 +5,13 @@ import model.Graph;
 import org.junit.Before;
 import org.junit.Test;
 import paths.Dijkstra;
-import old_xml.XMLFilter;
-import old_xml.XMLGraphExtractor;
+import xml_old.XMLFilter;
+import xml_old.XMLGraphExtractor;
 
 public class UITest {
 
     Graph graph;
     String fileName = "jelling";
-    Dijkstra dijkstra = new Dijkstra();
 
     @Before
     public void setUp() {
@@ -31,6 +30,6 @@ public class UITest {
         simpleUI.setVisible(true);
         Dijkstra.trace = false;
         Dijkstra.result = true;
-        // while (true) {}
+        while (true) {}
     }
 }

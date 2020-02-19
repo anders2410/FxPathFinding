@@ -21,7 +21,7 @@ public class XMLGraphExtractor extends DefaultHandler {
     private Map<String, Node> nodeMap;
     private Graph graph;
 
-    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
+    private BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
 
     public XMLGraphExtractor(String fileName, Set<String> validNodes) {
         this.fileName = fileName;
