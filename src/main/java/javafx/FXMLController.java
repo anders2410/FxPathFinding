@@ -51,12 +51,6 @@ public class FXMLController implements Initializable {
         PBFParser pbfParser = new PBFParser("malta-latest.osm.pbf");
         pbfParser.executePBFParser();
         graph = pbfParser.getGraph();
-
-        XMLFilter xmlFilter = new XMLFilter(fileName);
-        xmlFilter.executeFilter();
-        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
-        xmlGraphExtractor.executeExtractor();
-        graph = xmlGraphExtractor.getGraph();
         // System.out.println(graph.getAdjList());
         System.out.println(canvasHeight);
         gc = canvas.getGraphicsContext2D();
