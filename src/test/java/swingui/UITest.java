@@ -1,7 +1,7 @@
 package swingui;
 
 
-import old_model.Graph;
+import model.Graph;
 import org.junit.Before;
 import org.junit.Test;
 import paths.Dijkstra;

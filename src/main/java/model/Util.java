@@ -11,8 +11,8 @@ public class Util {
     }
 
     public static double flatEarthDistance(Node node1, Node node2) {
-        double latDif = Math.abs(node1.latitude - node2.latitude);
-        double lonDif = Math.abs(node1.longitude - node2.longitude);
+        double latDif = node1.latitude - node2.latitude;
+        double lonDif = node1.longitude - node2.longitude;
         return Math.sqrt(Math.pow(latDif, 2) + Math.pow(lonDif, 2));
     }
 
