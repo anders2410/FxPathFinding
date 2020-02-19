@@ -24,7 +24,7 @@
                <Insets left="5.0" />
             </VBox.margin></Button>
          <Separator prefHeight="0.0" prefWidth="60.0" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="EPIC">
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleChooseFileEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="FILE">
             <VBox.margin>
                <Insets left="5.0" />
             </VBox.margin></Button>
@@ -64,7 +64,7 @@
                 </HBox.margin>
             </Button>
         </HBox>
-      <Label id="distance_label" fx:id="distance_label" alignment="TOP_RIGHT" prefHeight="20.0" prefWidth="150.0" text="Total Distance:" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="10.0" />
+      <Label fx:id="distance_label" alignment="TOP_RIGHT" prefHeight="20.0" prefWidth="150.0" text="Total Distance:" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="10.0" />
     </AnchorPane>
 
     <stylesheets>

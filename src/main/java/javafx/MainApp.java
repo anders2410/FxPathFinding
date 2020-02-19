@@ -1,6 +1,7 @@
 package javafx;
 
 import javafx.application.Application;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -23,7 +24,9 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         // Loads the FXML file and attach it to the Scene.
-        Parent root = FXMLLoader.load(getClass().getResource("/javafx/scene.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/javafx/scene.fxml"));
+        Parent root = fxmlLoader.load();
+        ((FXMLController) fxmlLoader.getController()).setStage(stage);
         Scene scene = new Scene(root);
 
         stage.setTitle("Single Source Shortest Path");

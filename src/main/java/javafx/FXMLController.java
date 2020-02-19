@@ -1,16 +1,20 @@
 package javafx;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -22,12 +26,11 @@ import pbfparsing.PBFParser;
 
 public class FXMLController implements Initializable {
 
-    @FXML
-    public Canvas canvas;
-    public Label distance_label;
+    @FXML private Canvas canvas;
+    @FXML private Label distance_label;
+    private Stage stage;
 
     Graph graph;
-    String fileType = ".osm.pbf";
     GraphicsContext gc;
     int xOffset;
     int yOffset;
@@ -35,13 +38,14 @@ public class FXMLController implements Initializable {
     private PixelPoint maxXY;
     private double globalRatio;
     private float zoomFactor;
+    private int widthOfBoundingBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("malta-latest");
+        setUpNewGraph("djibouti-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {
@@ -70,11 +74,13 @@ public class FXMLController implements Initializable {
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
+
+        widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
     }
 
     private void loadGraph(String fileName) {
         try {
-            PBFParser pbfParser = new PBFParser(fileName + fileType);
+            PBFParser pbfParser = new PBFParser(fileName);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
         } catch (FileNotFoundException e) {
@@ -161,25 +167,25 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= 1000;
+        yOffset -= (0.1*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += 1000;
+        yOffset += (0.1*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += 1000;
+        xOffset += (0.1*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= 1000;
+        xOffset -= (0.1*widthOfBoundingBox/zoomFactor);
         drawGraph();
     }
 
@@ -221,5 +227,19 @@ public class FXMLController implements Initializable {
 
     public void handleSeedEvent() {
         Dijkstra.seed++;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    public void handleChooseFileEvent(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("PBF Files", "*.pbf"),
+                new FileChooser.ExtensionFilter("OSM Files", "*.osm")
+        );
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        setUpNewGraph(selectedFile.getAbsolutePath());
     }
 }
