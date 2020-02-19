@@ -13,7 +13,6 @@ public class Util {
     public static double flatEarthDistance(Node node1, Node node2) {
         double latDif = node1.latitude - node2.latitude;
         double lonDif = node1.longitude - node2.longitude;
-        //todo why th fuck this number
         return Math.sqrt(Math.pow(latDif, 2) + Math.pow(lonDif, 2));
     }
 
@@ -29,7 +28,6 @@ public class Util {
         var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        // todo FUCKME why this 100000
         return R * c;
     }
 
