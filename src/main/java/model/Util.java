@@ -32,7 +32,7 @@ public class Util {
         return earthRadiusKm * c;
     }
 
-    public static int cordToInt(String attriVal) {
+    public static double cordToInt(String attriVal) {
         String intString = attriVal.replace(".", "");
         return Integer.parseInt(intString);
     }

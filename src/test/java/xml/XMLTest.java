@@ -41,10 +41,10 @@ public class XMLTest {
 
     @Test
     public void testCoordinateConversion() {
-        int coordinateInt = Util.cordToInt("55.7332789");
-        assertEquals(557332789, coordinateInt);
-        int negCord = Util.cordToInt("-55.7332789");
-        assertEquals(-557332789, negCord);
+        double coordinateInt = Util.cordToInt("55.7332789");
+        assertEquals(557332789.0, coordinateInt, 0);
+        double negCord = Util.cordToInt("-55.7332789");
+        assertEquals(-557332789.0, negCord, 0);
 
     }
 

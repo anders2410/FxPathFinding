@@ -64,12 +64,9 @@ public class Dijkstra {
             }
             trace(nodeQueue); //Print queue if trace
         }
-        if (result) {
-            System.out.println("Number of visited nodes: " + seenNodes.size());
-        }
 
         List<Integer> shortestPath = extractPath(backPointers, adjList, from, to);
-        return new ShortestPathResult(nodeDist.get(to), shortestPath);
+        return new ShortestPathResult(nodeDist.get(to), shortestPath, seenNodes.size());
     }
 
     private static List<Integer> extractPath(List<Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
