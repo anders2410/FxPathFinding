@@ -5,8 +5,8 @@ import model.Graph;
 import org.junit.Before;
 import org.junit.Test;
 import paths.Dijkstra;
-import old_xml.XMLFilter;
-import old_xml.XMLGraphExtractor;
+import xml.XMLFilter;
+import xml.XMLGraphExtractor;
 
 public class UITest {
 
@@ -31,6 +31,6 @@ public class UITest {
         simpleUI.setVisible(true);
         Dijkstra.trace = false;
         Dijkstra.result = true;
-        // while (true) {}
+        while (true) {}
     }
 }

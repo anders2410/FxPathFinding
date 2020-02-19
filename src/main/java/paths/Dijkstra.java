@@ -15,7 +15,7 @@ public class Dijkstra {
 
     public static boolean result = false;
 
-    public static BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
+    public static BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
 
     private static Function<Integer, Double> priorityStrategy;
 

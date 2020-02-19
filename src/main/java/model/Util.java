@@ -17,20 +17,23 @@ public class Util {
     }
 
     public static double sphericalDistance(Node node1, Node node2) {
-        var earthRadiusKm = 6371;
+        //This function takes in latitude and longitude of two location and returns the distance between them as the crow flies (in km)
 
+        var R = 6371; // km
         var dLat = degreesToRadians(node2.latitude - node1.latitude);
-        var dLon = degreesToRadians(node2.longitude - node2.longitude);
-
-        var lat1rad = degreesToRadians(node1.latitude);
-        var lat2rad = degreesToRadians(node2.latitude);
+        var dLon = degreesToRadians(node2.longitude - node1.longitude);
+        var lat1 = degreesToRadians(node1.latitude);
+        var lat2 = degreesToRadians(node2.latitude);
 
         var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1rad) * Math.cos(lat2rad);
+                Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        assert c >= 0;
-        return earthRadiusKm * c;
+        var d = R * c;
+        return d;
     }
+
+    // Converts numeric degrees to radians
+
 
     public static int cordToInt(String attriVal) {
         String intString = attriVal.replace(".", "");
