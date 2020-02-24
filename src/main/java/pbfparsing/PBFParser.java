@@ -13,12 +13,15 @@ import model.Util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.BiFunction;
 
 // A tutorial for the Framework can be found at http://jaryard.com/projects/osm4j/tutorial/index.html
+
+/**
+ * The primary goal of this class is to extract information from our .pbf file and implement it into
+ * our graph representation. This consists of Nodes and Edges.
+ */
 public class PBFParser {
 
     private Graph graph;
@@ -26,39 +29,48 @@ public class PBFParser {
     private ArrayList<Node> nodeList;
     private Map<String, Node> nodeMap;
     private int indexCounter;
-    private String lastNdID;
 
     private BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
 
-    int numNodes = 0;
-    int numEdges = 0;
-    int numWays = 0;
-
+    /**
+     * The constructor of the PBFParser.
+     * @param fileName the name of the file you want to extract information from.
+     */
     public PBFParser(String fileName) {
         this.fileName = fileName;
         nodeList = new ArrayList<>();
         nodeMap = new HashMap<>();
         indexCounter = 0;
-        lastNdID = "";
     }
 
+    /**
+     * This starts the execution. It runs through the file two times. First it finds all the nodes
+     * used in a Way. In the second iteration it build the graph with nodes and edges.
+     * @throws FileNotFoundException If the file is not found.
+     */
     public void executePBFParser() throws FileNotFoundException {
         Set<String> validNodes = findValidNodes();
         graph = new Graph(validNodes.size());
         buildGraph(validNodes);
-        System.out.println("numNodes: " + numNodes);
-        System.out.println("numEdges: " + numEdges);
-        System.out.println("numWays: " + numWays);
     }
 
+    /**
+     * This method iterates through the .pbf file. It extracts all the important information
+     * and converts it into our representation of a graph.
+     * @param validNodes A set of all the valid nodes.
+     * @throws FileNotFoundException If the file cannot be found.
+     */
     private void buildGraph(Set<String> validNodes) throws FileNotFoundException {
         File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
+
+        // Iterates over all containers in the .pbf file
         for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
                 String id = Long.toString(node.getId());
+                // If a valid node is found, it will add it to the Graph.
                 if (validNodes.contains(id)) {
                     constructGraphNode(node);
                 }
@@ -68,6 +80,7 @@ public class PBFParser {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                 String highwayValue = tags.get("highway");
+                // We filter out any unwanted type of road, and continue the search through the file.
                 if (highwayValue == null) {
                     continue;
                 }
@@ -75,9 +88,8 @@ public class PBFParser {
                 if (filtered) {
                     continue;
                 }
+                // If a valid Way is found, we iterate through it and add all the edges.
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
-                    lastNdID = "";
-                    numWays++;
                     addEdgesGraph(way);
                 }
             }
@@ -85,44 +97,36 @@ public class PBFParser {
         graph.setNodeList(nodeList);
     }
 
+    /**
+     * A helper method to convert from OsmWay to our representation of Edges.
+     * @param way An OsmWay from the .pbf file.
+     */
     private void addEdgesGraph(OsmWay way) {
-        /*if (lastNdID.equals("")) {
-            lastNdID = Long.toString(way.getNodeId(0));
-        }
-        Node firstNode1 = nodeMap.get(lastNdID);
-        Node firstNode2 = nodeMap.get(Long.toString(way.getNodeId(0)));
-        System.out.println("Starting Pair: ");
-        System.out.println(firstNode1.toString());
-        System.out.println(firstNode2.toString());
-        float firstD = Util.getNodeDistance(firstNode1, firstNode2);
-        graph.addEdge(firstNode1, firstNode2, firstD);
-        graph.addEdge(firstNode2, firstNode1, firstD);
-        numNodesWays++;*/
-
         for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
             Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
             double d = distanceStrategy.apply(node1, node2);
             graph.addEdge(node1, node2, d);
             graph.addEdge(node2, node1, d);
-            numEdges += 2;
         }
-
-        lastNdID = Long.toString(way.getNodeId(way.getNumberOfNodes() - 1));
     }
 
+    /**
+     * A helper method to convert from OsmNode to our representation of a Node.
+     * @param node An OsmNode from the .pbf file.
+     */
     private void constructGraphNode(OsmNode node) {
-       /* String latString = Double.toString(round(node.getLatitude(), 7)).replace(".","");
-        String lonString = Double.toString(round(node.getLongitude(), 7)).replace(".","");
-
-        int lat = Integer.parseInt(latString);
-        int lon = Integer.parseInt(lonString);*/
         Node n = new Node(indexCounter, node.getLatitude(), node.getLongitude());
         nodeMap.put(Long.toString(node.getId()), n);
         nodeList.add(n);
         indexCounter++;
     }
 
+    /**
+     * This method go through all the Ways can adds all USED nodes in a set.
+     * @return The set of all valid nodes.
+     * @throws FileNotFoundException Is thrown if file cannot be found.
+     */
     private Set<String> findValidNodes() throws FileNotFoundException {
         File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
@@ -144,7 +148,6 @@ public class PBFParser {
 
                 for (int i = 0; i < way.getNumberOfNodes(); i++) {
                     nodeSet.add(Long.toString(way.getNodeId(i)));
-                    numNodes++;
                 }
             }
         }
@@ -167,26 +170,4 @@ public class PBFParser {
     public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
     }
-
-    /*private void TestSpeedRaw(String filename) throws FileNotFoundException {
-        File file = new File(filename);
-        FileInputStream input = new FileInputStream(file);
-        Iterator<EntityContainer> iterator = new PbfIterator(input, false);
-        long starttime = System.currentTimeMillis();
-        while (iterator.hasNext()) {
-            EntityContainer container = iterator.next();
-        }
-        long endtime = System.currentTimeMillis();
-        System.out.println("Time to parse denmark.pbf once : " + (endtime - starttime) + " ms");
-
-        *//*File file1 = new File("denmark-latest.osm");
-        input = new FileInputStream(file1);
-        OsmXmlIterator iterator1 = new OsmXmlIterator(input, false);
-        long starttime1 = System.currentTimeMillis();
-        while (iterator1.hasNext()) {
-            EntityContainer container = iterator1.next();
-        }
-        long endtime1 = System.currentTimeMillis();
-        System.out.println("Time to parse denmark.xml once : " + (endtime1 - starttime1) + " ms");*//*
-    }*/
 }
