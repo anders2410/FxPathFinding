@@ -6,76 +6,108 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="mainWindow" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.FXMLController">
-    <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <VBox layoutY="15.0" prefHeight="650.0" prefWidth="60.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0">
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDijkstraEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DIJK">
-            <VBox.margin>
-               <Insets left="5.0" top="5.0" />
-            </VBox.margin></Button>
-         <Separator prefHeight="0.0" prefWidth="60.0" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAStarEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="A*">
-            <VBox.margin>
-               <Insets left="5.0" />
-            </VBox.margin></Button>
-         <Separator prefHeight="0.0" prefWidth="60.0" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleSeedEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="SEED">
-            <VBox.margin>
-               <Insets left="5.0" />
-            </VBox.margin></Button>
-         <Separator prefHeight="0.0" prefWidth="60.0" />
-            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleChooseFileEvent" prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="FILE">
-            <VBox.margin>
-               <Insets left="5.0" />
-            </VBox.margin></Button>
-         <Separator prefHeight="0.0" prefWidth="60" />
+<AnchorPane prefHeight="650.0" prefWidth="1000.0" styleClass="mainWindow"
+            xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="javafx.FXMLController">
+
+    <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0"
+                AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <VBox layoutY="15.0" prefHeight="650.0" prefWidth="60.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0"
+              AnchorPane.topAnchor="0">
+
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleDijkstraEvent"
+                    prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="DIJK">
+                <VBox.margin>
+                    <Insets left="5.0" top="5.0"/>
+                </VBox.margin>
+            </Button>
+
+            <Separator prefHeight="0.0" prefWidth="60.0"/>
+
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAStarEvent"
+                    prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="A*">
+                <VBox.margin>
+                    <Insets left="5.0"/>
+                </VBox.margin>
+            </Button>
+
+            <Separator prefHeight="0.0" prefWidth="60.0"/>
+
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleSeedEvent"
+                    prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="SEED">
+                <VBox.margin>
+                    <Insets left="5.0"/>
+                </VBox.margin>
+            </Button>
+
+            <Separator prefHeight="0.0" prefWidth="60.0"/>
+
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleChooseFileEvent"
+                    prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="FILE">
+                <VBox.margin>
+                    <Insets left="5.0"/>
+                </VBox.margin>
+            </Button>
+
+            <Separator prefHeight="0.0" prefWidth="60"/>
         </VBox>
     </AnchorPane>
 
-    <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+    <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0"
+                AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+
         <StackPane id="canvasWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650" minWidth="950">
-            <children>
-                <Canvas fx:id="canvas" height="650.0" width="950.0" />
-            </children>
+            <Canvas fx:id="canvas" height="650.0" width="950.0"/>
         </StackPane>
-        <GridPane layoutX="20.0" layoutY="560.0" prefHeight="70.0" prefWidth="100.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0">
+
+        <GridPane layoutX="20.0" layoutY="560.0" prefHeight="70.0" prefWidth="100.0" AnchorPane.bottomAnchor="20.0"
+                  AnchorPane.leftAnchor="20.0">
+
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
             </columnConstraints>
+
             <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             </rowConstraints>
-            <children>
-                <Button id="nav_up" mnemonicParsing="false" onAction="#handleNavUpEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="1" />
-                <Button id="nav_left" mnemonicParsing="false" onAction="#handleNavLeftEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.rowIndex="1" />
-                <Button id="nav_right" mnemonicParsing="false" onAction="#handleNavRightEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                <Button id="nav_down" mnemonicParsing="false" onAction="#handleNavDownEvent" prefWidth="33.0" styleClass="nav_buttons" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            </children>
+
+            <Button id="nav_up" mnemonicParsing="false" onAction="#handleNavUpEvent" prefWidth="33.0"
+                    styleClass="nav_buttons" GridPane.columnIndex="1"/>
+            <Button id="nav_left" mnemonicParsing="false" onAction="#handleNavLeftEvent" prefWidth="33.0"
+                    styleClass="nav_buttons" GridPane.rowIndex="1"/>
+            <Button id="nav_right" mnemonicParsing="false" onAction="#handleNavRightEvent" prefWidth="33.0"
+                    styleClass="nav_buttons" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+            <Button id="nav_down" mnemonicParsing="false" onAction="#handleNavDownEvent" prefWidth="33.0"
+                    styleClass="nav_buttons" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
         </GridPane>
-        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="70.0" AnchorPane.bottomAnchor="43.0" AnchorPane.rightAnchor="20.0">
-            <Button id="zoom_in" mnemonicParsing="false" onAction="#handleZoomInEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button" />
-            <Button id="zoom_out" mnemonicParsing="false" onAction="#handleZoomOutEvent" prefHeight="25.0" prefWidth="33.0" styleClass="zoom_button">
+        <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="70.0"
+              AnchorPane.bottomAnchor="43.0" AnchorPane.rightAnchor="20.0">
+
+            <Button id="zoom_in" mnemonicParsing="false" onAction="#handleZoomInEvent" prefHeight="25.0"
+                    prefWidth="33.0" styleClass="zoom_button"/>
+            <Button id="zoom_out" mnemonicParsing="false" onAction="#handleZoomOutEvent" prefHeight="25.0"
+                    prefWidth="33.0" styleClass="zoom_button">
                 <HBox.margin>
-                   <Insets left="5.0" />
+                    <Insets left="5.0"/>
                 </HBox.margin>
             </Button>
+
         </HBox>
-        <VBox id="info_box" alignment="TOP_RIGHT" minHeight="20.0" prefWidth="160.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
-            <children>
-                <Label fx:id="distance_label" prefHeight="20.0" prefWidth="200.0" text="Total Distance: " />
-                <Label fx:id="nodes_visited_label" prefHeight="20.0" prefWidth="200.0" text="Nodes Visited: " />
-                <Label fx:id="nodes_label" prefHeight="20.0" prefWidth="200.0" text="Number of Nodes: " />
-                <Label fx:id="edges_label" prefHeight="20.0" prefWidth="200.0" text="Number of Edges: " />
-            </children>
+        <VBox id="info_box" alignment="TOP_RIGHT" minHeight="20.0" prefWidth="160.0" AnchorPane.rightAnchor="15.0"
+              AnchorPane.topAnchor="15.0">
+            <Label fx:id="distance_label" prefHeight="20.0" prefWidth="200.0" text="Total Distance: "/>
+            <Label fx:id="nodes_visited_label" prefHeight="20.0" prefWidth="200.0" text="Nodes Visited: "/>
+            <Label fx:id="nodes_label" prefHeight="20.0" prefWidth="200.0" text="Number of Nodes: "/>
+            <Label fx:id="edges_label" prefHeight="20.0" prefWidth="200.0" text="Number of Edges: "/>
         </VBox>
     </AnchorPane>
 
     <stylesheets>
-        <URL value="@style.css" />
+        <URL value="@style.css"/>
     </stylesheets>
-
 </AnchorPane>
