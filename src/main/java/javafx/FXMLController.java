@@ -21,19 +21,24 @@ import paths.*;
 import pbfparsing.PBFParser;
 import xml.*;
 
+/**
+ * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
+ * functions for all buttons, labels and other stuff that need to be updated during runtime.
+ */
 public class FXMLController implements Initializable {
 
+    // Variables passed from the scene.fxml (instantiated by JavaFX itself)
     @FXML private Canvas canvas;
     @FXML private Label distance_label;
     @FXML private Label nodes_visited_label;
     @FXML private Label nodes_label;
     @FXML private Label edges_label;
-    private Stage stage;
 
-    Graph graph;
-    GraphicsContext gc;
-    int xOffset;
-    int yOffset;
+    private Stage stage;
+    private Graph graph;
+    private GraphicsContext gc;
+    private int xOffset;
+    private int yOffset;
     private PixelPoint minXY;
     private PixelPoint maxXY;
     private double globalRatio;
@@ -42,11 +47,11 @@ public class FXMLController implements Initializable {
     private int heightOfBoundingBox;
     private double mapWidthRatio;
     private double mapHeightRatio;
-
-    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
+    private BiFunction<Node, Node, Double> distanceStrategy;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        distanceStrategy = Util::sphericalDistance;
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
@@ -119,23 +124,31 @@ public class FXMLController implements Initializable {
     }
 
     private void setRatios() {
-        // determine the width and height ratio because we need to magnify the map to fit into the given image dimension
+        // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
         mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
         mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
-        // using different ratios for width and height will cause the map to be stretched. So, we have to determine
+        // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
     }
 
+    /**
+     * The main method that draws the Graph inside the Canvas. It iterates through all
+     * the nodes and draw the Edges.
+     */
     private void drawGraph() {
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
+        // Resets the 'isDrawn' property inside Edges.
         resetIsDrawn(adjList);
+        // Iterates through all nodes
         for (int i = 0; i < adjList.size(); i++) {
             Node nx = nodeList.get(i);
+            // Iterates through adjacent nodes/edges
             for (Edge edge : adjList.get(i)) {
                 Node ny = nodeList.get(edge.to);
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
+                // If the edge doesn't violate these constrains it will be drawn in the Canvas.
                 if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
                     double x1 = projectXCordMercator(nx.longitude) - minXY.x;
                     double y1 = projectYCordMercator(nx.latitude) - minXY.y;
@@ -148,9 +161,11 @@ public class FXMLController implements Initializable {
 
                     double adjustedX2 = ((x2 * globalRatio));
                     double adjustedY2 = (canvas.getHeight() - (y2 * globalRatio));
+
                     /*System.out.println("---------------");
                     System.out.println("(" + x1 + "," + y1 + ") -> (" + x2 + "," + y2 + ")");
                     System.out.println("(" + adjustedX1 + "," + adjustedY1 + ") -> (" + adjustedX2 + "," + adjustedY2 + ")");*/
+
                     gc.setStroke(Color.BLACK);
                     if (edge.visited) {
                         gc.setStroke(Color.BLUE);
@@ -165,7 +180,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private Edge findOppositeEdge(java.util.List<java.util.List<Edge>> adjList, int i, Edge edge) {
+    private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
         Edge oppositeEdge = null;
         for (Edge edgeTo : adjList.get(edge.to)) {
             if (edgeTo.to == i) {
@@ -175,7 +190,7 @@ public class FXMLController implements Initializable {
         return oppositeEdge;
     }
 
-    private void resetIsDrawn(java.util.List<java.util.List<Edge>> adjList) {
+    private void resetIsDrawn(List<List<Edge>> adjList) {
         for (List<Edge> edgeList : adjList) {
             for (Edge edge : edgeList) {
                 edge.isDrawn = false;
@@ -193,28 +208,32 @@ public class FXMLController implements Initializable {
         return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
     }
 
-    // Here comes all the eventHandle methods
+    // Here comes all the eventHandle methods that are called when clicked
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) : ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
+        yOffset -= (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) :
+                ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) : ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
+        yOffset += (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) :
+                ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
+        xOffset += (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) :
+                ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) : ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
+        xOffset -= (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) :
+                ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
         drawGraph();
     }
 
@@ -254,8 +273,9 @@ public class FXMLController implements Initializable {
         Dijkstra.seed++;
     }
 
-    public void handleChooseFileEvent(ActionEvent actionEvent) {
+    public void handleChooseFileEvent() {
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("PBF Files", "*.pbf"),
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")

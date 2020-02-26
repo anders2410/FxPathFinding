@@ -30,7 +30,7 @@ public class PBFParser {
     private Map<String, Node> nodeMap;
     private int indexCounter;
 
-    private BiFunction<Node, Node, Double> distanceStrategy = Util::flatEarthDistance;
+    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
 
     /**
      * The constructor of the PBFParser.
