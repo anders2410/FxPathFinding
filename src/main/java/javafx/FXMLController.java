@@ -147,7 +147,6 @@ public class FXMLController implements Initializable {
             // Iterates through adjacent nodes/edges
             for (Edge edge : adjList.get(i)) {
                 Node ny = nodeList.get(edge.to);
-                System.out.println(adjList.get(i));
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
                 // If the edge doesn't violate these constrains it will be drawn in the Canvas.
                 if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
@@ -276,6 +275,7 @@ public class FXMLController implements Initializable {
 
     public void handleChooseFileEvent() {
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("PBF Files", "*.pbf"),
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")
