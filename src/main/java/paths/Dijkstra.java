@@ -21,16 +21,18 @@ public class Dijkstra {
     private static Function<Integer, Double> choosePriorityStrategy(Graph graph, int from, int to, AlgorithmMode mode, List<Double> nodeDist) {
         List<Node> nodeList = graph.getNodeList();
         switch (mode) {
-            default:
             case DIJKSTRA:
+            case BI_DIJKSTRA:
                 return nodeDist::get;
-            case A_STAR_DIST:
+            case A_STAR:
+            case BI_A_STAR:
                 return (i) -> {
                     Node curNode = nodeList.get(i);
                     Node target = nodeList.get(to);
                     return nodeDist.get(i) + distanceStrategy.apply(curNode, target);
                 };
         }
+        return null;
     }
 
     public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
@@ -93,24 +95,19 @@ public class Dijkstra {
         Random random = new Random(seed);
         int from = random.nextInt(n);
         int to = random.nextInt(n);
-        ShortestPathResult res = sssp(graph, from, to, mode);
-        if (result) {
-            System.out.println("Distance from " + from + " to " + to + " is " + res.d);
-            System.out.println("Graph has " + n + " nodes.");
-        }
-        return res;
-    }
 
-    public static ShortestPathResult randomPathBi(Graph graph, AlgorithmMode mode) {
-        int n = graph.getNodeAmount();
-        Random random = new Random(seed);
-        int from = random.nextInt(n);
-        int to = random.nextInt(n);
-        ShortestPathResult res = bidirectional(graph, from, to, mode);
+        ShortestPathResult res;
+        if (mode == AlgorithmMode.DIJKSTRA || mode == AlgorithmMode.A_STAR) {
+            res = sssp(graph, from, to, mode);
+        } else {
+            res = bidirectional(graph, from, to, mode);
+        }
+
         if (result) {
             System.out.println("Distance from " + from + " to " + to + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");
         }
+
         return res;
     }
 
@@ -152,6 +149,7 @@ public class Dijkstra {
      * */
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
         System.out.println("Started running Bidirectional");
+        // TODO: Bidirectional A_STAR does not return the correct distance.
         graph.resetPathTrace();
         List<List<Edge>> adjListA = graph.getAdjList();
         List<List<Edge>> adjListB = graph.getAdjList();
@@ -184,9 +182,9 @@ public class Dijkstra {
         }
 
         int middlePoint = 0;
-        boolean breakable = false;
-        // Both queues need to be empty to exit the while loop.
-        while (!queueA.isEmpty() && !queueB.isEmpty() && !breakable) {
+        boolean intersectionFound = false;
+        // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
+        while (!queueA.isEmpty() && !queueB.isEmpty() && !intersectionFound) {
             int nextA = queueA.poll();
             if (nextA == to) {
                 break;
@@ -199,7 +197,7 @@ public class Dijkstra {
                 if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
                     middlePoint = edge.to;
                     System.out.println("Route found from A to B");
-                    breakable = true;
+                    intersectionFound = true;
                     break;
                 } else if (!visitedA.contains(edge.to)) {
                     queueA.add(edge.to);
@@ -219,7 +217,7 @@ public class Dijkstra {
                 if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
                     middlePoint = edge.to;
                     System.out.println("Route found from B to A");
-                    breakable = true;
+                    intersectionFound = true;
                     break;
                 } else if (!visitedB.contains(edge.to)) {
                     queueB.add(edge.to);

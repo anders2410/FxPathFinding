@@ -88,7 +88,7 @@ public class SimpleUI extends JFrame {
 
         JButton aPath = new JButton("a path");
         aPath.addActionListener(e -> {
-            Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_DIST);
+            Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
             repaint();
         });
         panel.add(aPath);
