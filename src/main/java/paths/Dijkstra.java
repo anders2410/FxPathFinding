@@ -93,7 +93,7 @@ public class Dijkstra {
         Random random = new Random(seed);
         int from = random.nextInt(n);
         int to = random.nextInt(n);
-        ShortestPathResult res = sssp(graph, from, to, mode);
+        ShortestPathResult res = bidirectional(graph, from, to, mode);
         if (result) {
             System.out.println("Distance from " + from + " to " + to + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");
@@ -140,23 +140,26 @@ public class Dijkstra {
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
         System.out.println("Started running Bidirectional");
         graph.resetPathTrace();
-        List<List<Edge>> adjList = graph.getAdjList();
-        List<Double> nodeDist = initNodeDist(from, adjList.size());
-        priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
-        Comparator<Integer> comparator = (i1, i2) -> (int) Math.signum(priorityStrategy.apply(i1) - priorityStrategy.apply(i2));
+        List<List<Edge>> adjListA = graph.getAdjList();
+        List<List<Edge>> adjListB = graph.getAdjList();
+        List<Double> nodeDistA = initNodeDist(from, adjListA.size());
+        List<Double> nodeDistB = initNodeDist(to, adjListB.size());
+        Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(graph, from, to, mode, nodeDistA);
+        Comparator<Integer> comparatorA = (i1, i2) -> (int) Math.signum(priorityStrategyA.apply(i1) - priorityStrategyA.apply(i2));
+        Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(graph, to, from, mode, nodeDistB);
+        Comparator<Integer> comparatorB = (i1, i2) -> (int) Math.signum(priorityStrategyB.apply(i1) - priorityStrategyB.apply(i2));
+
 
         // Queue to hold the paths from Node: from.
-        PriorityQueue<Integer> queueFrom = new PriorityQueue<>(comparator);
-        queueFrom.add(from);
-
-        // Queue to hold the paths from Node: to.
-        PriorityQueue<Integer> queueTo = new PriorityQueue<>(comparator);
-        queueTo.add(to);
-
+        PriorityQueue<Integer> queueA = new PriorityQueue<>(comparatorA);
+        queueA.add(from);
         // A set of visited nodes starting from Node a.
         Set<Integer> visitedA = new HashSet<>();
         List<Integer> backPointersA = new ArrayList<>();
 
+        // Queue to hold the paths from Node: to.
+        PriorityQueue<Integer> queueB = new PriorityQueue<>(comparatorB);
+        queueB.add(to);
         // A set of visited nodes starting from Node b.
         Set<Integer> visitedB = new HashSet<>();
         List<Integer> backPointersB = new ArrayList<>();
@@ -168,82 +171,72 @@ public class Dijkstra {
         }
 
         int middlePoint = 0;
+        boolean breakable = false;
         // Both queues need to be empty to exit the while loop.
-        while (!queueFrom.isEmpty() && !queueTo.isEmpty()) {
-            int nextFrom = queueFrom.poll();
-            if (nextFrom == to) {
+        while (!queueA.isEmpty() && !queueB.isEmpty() && !breakable) {
+            int nextA = queueA.poll();
+            if (nextA == to) {
                 break;
             }
 
-            for (Edge edge : adjList.get(nextFrom)) {
-                relax(nodeDist, backPointersA, nextFrom, edge);
+            for (Edge edge : adjListA.get(nextA)) {
+                relax(nodeDistA, backPointersA, nextA, edge);
                 // If the visited nodes, starting from the other direction,
                 // contain the "adjacent" node of "next", then we can terminate the search
-                if (visitedB.contains(edge.to)) {
+                if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
                     middlePoint = edge.to;
                     System.out.println("Route found from A to B");
-                    return getShortestPathResult(from, to, adjList, nodeDist, visitedA, backPointersA, visitedB, backPointersB, middlePoint);
-                } else if (visitedA.add(edge.to)) {
-                    queueFrom.add(edge.to);
-
+                    breakable = true;
+                    break;
+                } else if (!visitedA.contains(edge.to)) {
+                    queueA.add(edge.to);
+                    visitedA.add(edge.to);
                 }
             }
 
-            int nextTo = queueTo.poll();
-            if (nextTo == from) {
+            int nextB = queueB.poll();
+            if (nextB == from) {
                 break;
             }
 
-            for (Edge edge : adjList.get(nextTo)) {
-                relax(nodeDist, backPointersB, nextTo, edge);
+            for (Edge edge : adjListB.get(nextB)) {
+                relax(nodeDistB, backPointersB, nextB, edge);
                 // If the visited nodes, starting from the other direction,
                 // contain the "adjacent" node of "next", then we can terminate the search
-                if (visitedA.contains(edge.to)) {
+                if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
                     middlePoint = edge.to;
                     System.out.println("Route found from B to A");
-                    return getShortestPathResult(from, to, adjList, nodeDist, visitedA, backPointersA, visitedB, backPointersB, middlePoint);
-                } else if (visitedB.add(edge.to)){
-                    queueTo.add(edge.to);
+                    breakable = true;
+                    break;
+                } else if (!visitedB.contains(edge.to)) {
+                    queueB.add(edge.to);
+                    visitedB.add(edge.to);
                 }
             }
         }
-
-        return getShortestPathResult(from, to, adjList, nodeDist, visitedA, backPointersA, visitedB, backPointersB, middlePoint);
-    }
-
-    private static ShortestPathResult getShortestPathResult(int from, int to, List<List<Edge>> adjList, List<Double> nodeDist, Set<Integer> visitedA, List<Integer> backPointersA, Set<Integer> visitedB, List<Integer> backPointersB, Integer middlePoint) {
-//        List<Integer> mergedList = new ArrayList<>();
-//        for (int i = 0; i < backPointersA.size(); i++) {
-//            mergedList.add(0);
-//        }
-//
-//        for (int i = 0; i < backPointersA.size(); i++) {
-//            if (backPointersA.get(i) <= backPointersB.get(i)) {
-//                mergedList.set(i, backPointersB.get(i));
-//            } else {
-//                mergedList.set(i, backPointersA.get(i));
-//            }
-//        }
-//
-//        System.out.println("MergedList");
-//        System.out.println(mergedList);
-//        System.out.println(mergedList.size());
-//        System.out.println();
 
         visitedA.addAll(visitedB);
         System.out.println(visitedA);
         System.out.println(visitedA.size());
         System.out.println();
 
-        List<Integer> shortestPathA = extractPath(backPointersA, adjList, from, middlePoint);
-        List<Integer> shortestPathB = extractPath(backPointersB, adjList, to, middlePoint);
+        System.out.println("From: " + from);
+        System.out.println("MiddlePoint: " + middlePoint);
+        System.out.println("To: " + to);
+
+        System.out.println("Contains MiddlePoint A: " + visitedA.contains(middlePoint));
+        System.out.println("Contains MiddlePoint B: " + visitedB.contains(middlePoint));
+
+        System.out.println("Get MiddlePoint A: " + backPointersA.get(middlePoint));
+        System.out.println("Get MiddlePoint B: " + backPointersB.get(middlePoint));
+
+        List<Integer> shortestPathA = extractPath(backPointersA, adjListA, from, middlePoint);
+        System.out.println(shortestPathA);
+
+        List<Integer> shortestPathB = extractPath(backPointersB, adjListB, to, middlePoint);
+        System.out.println(shortestPathB);
         Collections.reverse(shortestPathB);
 
-        System.out.println(shortestPathA);
-        System.out.println(shortestPathB);
-
-        shortestPathA.addAll(shortestPathB);
-
-        return new ShortestPathResult(nodeDist.get(to), shortestPathA, visitedA.size());
+        return new ShortestPathResult(nodeDistA.get(to), shortestPathA, visitedA.size());
     }
 }
