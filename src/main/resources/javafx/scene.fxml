@@ -25,8 +25,26 @@
 
             <Separator prefHeight="0.0" prefWidth="60.0"/>
 
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleBiDijkstraEvent"
+                    prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="BiD">
+                <VBox.margin>
+                    <Insets left="5.0"/>
+                </VBox.margin>
+            </Button>
+
+            <Separator prefHeight="0.0" prefWidth="60.0"/>
+
             <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleAStarEvent"
                     prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="A*">
+                <VBox.margin>
+                    <Insets left="5.0"/>
+                </VBox.margin>
+            </Button>
+
+            <Separator prefHeight="0.0" prefWidth="60.0"/>
+
+            <Button alignment="CENTER" graphicTextGap="10.0" mnemonicParsing="false" onAction="#handleBiAStarEvent"
+                    prefHeight="50.0" prefWidth="50.0" styleClass="button1" text="BiA*">
                 <VBox.margin>
                     <Insets left="5.0"/>
                 </VBox.margin>

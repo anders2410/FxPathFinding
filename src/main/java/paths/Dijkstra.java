@@ -93,6 +93,19 @@ public class Dijkstra {
         Random random = new Random(seed);
         int from = random.nextInt(n);
         int to = random.nextInt(n);
+        ShortestPathResult res = sssp(graph, from, to, mode);
+        if (result) {
+            System.out.println("Distance from " + from + " to " + to + " is " + res.d);
+            System.out.println("Graph has " + n + " nodes.");
+        }
+        return res;
+    }
+
+    public static ShortestPathResult randomPathBi(Graph graph, AlgorithmMode mode) {
+        int n = graph.getNodeAmount();
+        Random random = new Random(seed);
+        int from = random.nextInt(n);
+        int to = random.nextInt(n);
         ShortestPathResult res = bidirectional(graph, from, to, mode);
         if (result) {
             System.out.println("Distance from " + from + " to " + to + " is " + res.d);
@@ -236,7 +249,8 @@ public class Dijkstra {
         List<Integer> shortestPathB = extractPath(backPointersB, adjListB, to, middlePoint);
         System.out.println(shortestPathB);
         Collections.reverse(shortestPathB);
+        shortestPathA.addAll(shortestPathB);
 
-        return new ShortestPathResult(nodeDistA.get(to), shortestPathA, visitedA.size());
+        return new ShortestPathResult(nodeDistA.get(middlePoint) + nodeDistB.get(middlePoint), shortestPathA, visitedA.size());
     }
 }
