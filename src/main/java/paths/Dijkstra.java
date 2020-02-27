@@ -144,11 +144,9 @@ public class Dijkstra {
         return nodeDist;
     }
 
-    /*
-     * Returns true if a path exists between Node a and b, false otherwise.
-     * */
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
         System.out.println("Started running Bidirectional");
+        // TODO: Try to integrate it with sssp Dijkstra implementation.
         // TODO: Bidirectional A_STAR does not return the correct distance.
         graph.resetPathTrace();
         List<List<Edge>> adjListA = graph.getAdjList();
@@ -185,6 +183,7 @@ public class Dijkstra {
         boolean intersectionFound = false;
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty() && !intersectionFound) {
+            // Dijkstra from the 'From'-side
             int nextA = queueA.poll();
             if (nextA == to) {
                 break;
@@ -196,7 +195,6 @@ public class Dijkstra {
                 // contain the "adjacent" node of "next", then we can terminate the search
                 if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
                     middlePoint = edge.to;
-                    System.out.println("Route found from A to B");
                     intersectionFound = true;
                     break;
                 } else if (!visitedA.contains(edge.to)) {
@@ -205,6 +203,7 @@ public class Dijkstra {
                 }
             }
 
+            // Dijkstra from the 'To'-side
             int nextB = queueB.poll();
             if (nextB == from) {
                 break;
@@ -227,28 +226,28 @@ public class Dijkstra {
         }
 
         visitedA.addAll(visitedB);
-        System.out.println(visitedA);
-        System.out.println(visitedA.size());
-        System.out.println();
-
-        System.out.println("From: " + from);
-        System.out.println("MiddlePoint: " + middlePoint);
-        System.out.println("To: " + to);
-
-        System.out.println("Contains MiddlePoint A: " + visitedA.contains(middlePoint));
-        System.out.println("Contains MiddlePoint B: " + visitedB.contains(middlePoint));
-
-        System.out.println("Get MiddlePoint A: " + backPointersA.get(middlePoint));
-        System.out.println("Get MiddlePoint B: " + backPointersB.get(middlePoint));
-
         List<Integer> shortestPathA = extractPath(backPointersA, adjListA, from, middlePoint);
-        System.out.println(shortestPathA);
-
         List<Integer> shortestPathB = extractPath(backPointersB, adjListB, to, middlePoint);
-        System.out.println(shortestPathB);
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
+        double distance = nodeDistA.get(middlePoint) + nodeDistB.get(middlePoint);
 
-        return new ShortestPathResult(nodeDistA.get(middlePoint) + nodeDistB.get(middlePoint), shortestPathA, visitedA.size());
+        if (trace) {
+            System.out.println(visitedA);
+            System.out.println(visitedA.size());
+            System.out.println();
+
+            System.out.println("From: " + from);
+            System.out.println("MiddlePoint: " + middlePoint);
+            System.out.println("To: " + to);
+
+            System.out.println("Contains MiddlePoint A: " + visitedA.contains(middlePoint));
+            System.out.println("Contains MiddlePoint B: " + visitedB.contains(middlePoint));
+
+            System.out.println("Get MiddlePoint A: " + backPointersA.get(middlePoint));
+            System.out.println("Get MiddlePoint B: " + backPointersB.get(middlePoint));
+        }
+
+        return new ShortestPathResult(distance, shortestPathA, visitedA.size());
     }
 }
