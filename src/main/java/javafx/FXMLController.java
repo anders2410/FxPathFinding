@@ -29,6 +29,7 @@ public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
     @FXML private Canvas canvas;
+    @FXML private Label algorithm_label;
     @FXML private Label distance_label;
     @FXML private Label nodes_visited_label;
     @FXML private Label nodes_label;
@@ -256,8 +257,7 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
-        nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
+        setLabels("Dijkstra", Util.roundDouble(res.d), res.visitedNodes);
     }
 
     public void handleBiDijkstraEvent(ActionEvent actionEvent) {
@@ -265,8 +265,7 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
-        nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
+        setLabels("Bidirectional Dijkstra", Util.roundDouble(res.d), res.visitedNodes);
     }
 
     public void handleAStarEvent() {
@@ -274,8 +273,7 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
-        nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
+        setLabels("A*", Util.roundDouble(res.d), res.visitedNodes);
     }
 
     public void handleBiAStarEvent(ActionEvent actionEvent) {
@@ -283,8 +281,7 @@ public class FXMLController implements Initializable {
         Dijkstra.distanceStrategy = distanceStrategy;
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR);
         drawGraph();
-        distance_label.setText("Total Distance: " + Util.roundDouble(res.d));
-        nodes_visited_label.setText("Nodes Visited: " + res.visitedNodes);
+        setLabels("Bidirectional A*", Util.roundDouble(res.d), res.visitedNodes);
     }
 
     public void handleSeedEvent() {
@@ -310,5 +307,11 @@ public class FXMLController implements Initializable {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    private void setLabels(String algo, String distance, int visitedNodes) {
+        algorithm_label.setText("Algorithm: " + algo);
+        distance_label.setText("Total Distance: " + distance);
+        nodes_visited_label.setText("Nodes Visited: " + visitedNodes);
     }
 }

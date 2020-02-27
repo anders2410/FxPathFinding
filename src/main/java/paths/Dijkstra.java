@@ -148,6 +148,7 @@ public class Dijkstra {
         System.out.println("Started running Bidirectional");
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         // TODO: Bidirectional A_STAR does not return the correct distance.
+        // TODO: OutOfMemoryError if no path can be found between from and to
         graph.resetPathTrace();
         List<List<Edge>> adjListA = graph.getAdjList();
         List<List<Edge>> adjListB = graph.getAdjList();
@@ -248,6 +249,10 @@ public class Dijkstra {
             System.out.println("Get MiddlePoint B: " + backPointersB.get(middlePoint));
         }
 
-        return new ShortestPathResult(distance, shortestPathA, visitedA.size());
+        if (middlePoint != 0) {
+            return new ShortestPathResult(distance, shortestPathA, visitedA.size());
+        }
+
+        return null;
     }
 }

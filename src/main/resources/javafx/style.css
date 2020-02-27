@@ -6,16 +6,22 @@
  Magic Mint;         #C2EDCE
  White Smoke:        #F6F6F2
 
+ TEST:
+ BLACK: #1a2639
+ DARK GREY: #3e4a61
+ ORANGE/RED: #c24d2c
+ WHITE: #d9dad7
+
  */
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* Navigation Buttons on map */
 .nav_buttons, .zoom_button {
-    -fx-background-color: #BADFE7;
+    -fx-background-color: rgba(26, 38, 57, 0.11);
 }
 
 .nav_buttons:hover, .zoom_button:hover {
-    -fx-background-color: #C2EDCE;
+    -fx-background-color: #c24d2c;
 }
 
 #nav_up, #nav_left, #nav_right, #nav_down, #zoom_in, #zoom_out {
@@ -35,41 +41,41 @@
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* The main Window */
 .mainWindow {
-    -fx-background-color: #F6F6F2;
+    -fx-background-color: #fff;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* The Canvas Window */
 #canvasWindow {
-    -fx-background-color: #F6F6F2;
+    -fx-background-color: #fff;
+    -fx-background-radius: 5px;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* The navigation menu */
 .navigation {
-    -fx-background-color: #6FB3B8;
-}
-
-.navigation VBox {
-    -fx-spacing: 5;
+    -fx-background-color: #1a2639;
 }
 
 .button1 {
-    -fx-background-color: #6FB3B8;
+    -fx-background-color: #1a2639;
     -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-radius: 0;
 }
 
 .button1:hover {
-    -fx-background-color: #F6F6F2;
+    -fx-background-color: #c24d2c;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* Info box in TOP RIGHT corner: also include different labels */
 #info_box {
-    -fx-background-color: #F6F6F2;
+    -fx-background-color: #fff;
+    -fx-background-radius: 5px;
     -fx-opacity: 92%;
 }
 
-#distance_label, #nodes_visited_label, #nodes_label, #edges_label {
+#distance_label, #nodes_visited_label, #nodes_label, #edges_label, #algorithm_label {
     -fx-padding: 3px;
 }
