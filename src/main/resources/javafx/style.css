@@ -41,13 +41,13 @@
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* The main Window */
 .mainWindow {
-    -fx-background-color: #fff;
+    -fx-background-color: #f5f5f5;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* The Canvas Window */
 #canvasWindow {
-    -fx-background-color: #fff;
+    -fx-background-color: #f5f5f5;
     -fx-background-radius: 5px;
 }
 
@@ -71,9 +71,11 @@
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* Info box in TOP RIGHT corner: also include different labels */
 #info_box {
-    -fx-background-color: #fff;
+    -fx-background-color: #f5f5f5;
     -fx-background-radius: 5px;
     -fx-opacity: 92%;
+    -fx-border-color: black;
+    -fx-border-radius: 5px;
 }
 
 #distance_label, #nodes_visited_label, #nodes_label, #edges_label, #algorithm_label {

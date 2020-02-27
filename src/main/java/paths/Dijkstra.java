@@ -150,10 +150,9 @@ public class Dijkstra {
         // TODO: Bidirectional A_STAR does not return the correct distance.
         // TODO: OutOfMemoryError if no path can be found between from and to
         graph.resetPathTrace();
-        List<List<Edge>> adjListA = graph.getAdjList();
-        List<List<Edge>> adjListB = graph.getAdjList();
-        List<Double> nodeDistA = initNodeDist(from, adjListA.size());
-        List<Double> nodeDistB = initNodeDist(to, adjListB.size());
+        List<List<Edge>> adjList = graph.getAdjList();
+        List<Double> nodeDistA = initNodeDist(from, adjList.size());
+        List<Double> nodeDistB = initNodeDist(to, adjList.size());
         Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(graph, from, to, mode, nodeDistA);
         Comparator<Integer> comparatorA = (i1, i2) -> (int) Math.signum(priorityStrategyA.apply(i1) - priorityStrategyA.apply(i2));
         Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(graph, to, from, mode, nodeDistB);
@@ -190,7 +189,7 @@ public class Dijkstra {
                 break;
             }
 
-            for (Edge edge : adjListA.get(nextA)) {
+            for (Edge edge : adjList.get(nextA)) {
                 relax(nodeDistA, backPointersA, nextA, edge);
                 // If the visited nodes, starting from the other direction,
                 // contain the "adjacent" node of "next", then we can terminate the search
@@ -210,7 +209,7 @@ public class Dijkstra {
                 break;
             }
 
-            for (Edge edge : adjListB.get(nextB)) {
+            for (Edge edge : adjList.get(nextB)) {
                 relax(nodeDistB, backPointersB, nextB, edge);
                 // If the visited nodes, starting from the other direction,
                 // contain the "adjacent" node of "next", then we can terminate the search
@@ -227,8 +226,8 @@ public class Dijkstra {
         }
 
         visitedA.addAll(visitedB);
-        List<Integer> shortestPathA = extractPath(backPointersA, adjListA, from, middlePoint);
-        List<Integer> shortestPathB = extractPath(backPointersB, adjListB, to, middlePoint);
+        List<Integer> shortestPathA = extractPath(backPointersA, adjList, from, middlePoint);
+        List<Integer> shortestPathB = extractPath(backPointersB, adjList, to, middlePoint);
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
         double distance = nodeDistA.get(middlePoint) + nodeDistB.get(middlePoint);
