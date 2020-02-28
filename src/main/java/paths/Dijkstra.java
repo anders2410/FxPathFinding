@@ -2,7 +2,6 @@ package paths;
 
 import model.*;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -146,7 +145,6 @@ public class Dijkstra {
     }
 
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
-        System.out.println("Started running Bidirectional");
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         // TODO: Bidirectional A_STAR does not return the correct distance.
         // TODO: OutOfMemoryError if no path can be found between from and to
