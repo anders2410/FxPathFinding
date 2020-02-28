@@ -56,7 +56,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("malta-latest.osm.pbf");
+        setUpNewGraph("isle-of-man-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {

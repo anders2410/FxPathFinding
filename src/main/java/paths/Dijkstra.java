@@ -145,7 +145,6 @@ public class Dijkstra {
     }
 
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
-        System.out.println("Started running Bidirectional");
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         // TODO: Bidirectional A_STAR does not return the correct distance.
         // TODO: OutOfMemoryError if no path can be found between from and to
@@ -215,7 +214,6 @@ public class Dijkstra {
                 // contain the "adjacent" node of "next", then we can terminate the search
                 if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
                     middlePoint = edge.to;
-                    System.out.println("Route found from B to A");
                     intersectionFound = true;
                     break;
                 } else if (!visitedB.contains(edge.to)) {
