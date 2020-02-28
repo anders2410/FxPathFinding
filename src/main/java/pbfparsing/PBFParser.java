@@ -34,6 +34,7 @@ public class PBFParser {
 
     /**
      * The constructor of the PBFParser.
+     *
      * @param fileName the name of the file you want to extract information from.
      */
     public PBFParser(String fileName) {
@@ -46,10 +47,11 @@ public class PBFParser {
     /**
      * This starts the execution. It runs through the file two times. First it finds all the nodes
      * used in a Way. In the second iteration it build the graph with nodes and edges.
+     *
      * @throws FileNotFoundException If the file is not found.
      */
     public void executePBFParser() throws FileNotFoundException {
-        Set<String> validNodes = findValidNodes();
+        Map<String, Integer> validNodes = findValidNodes();
         graph = new Graph(validNodes.size());
         buildGraph(validNodes);
     }
@@ -57,10 +59,11 @@ public class PBFParser {
     /**
      * This method iterates through the .pbf file. It extracts all the important information
      * and converts it into our representation of a graph.
-     * @param validNodes A set of all the valid nodes.
+     *
+     * @param validNodesMap A set of all the valid nodes.
      * @throws FileNotFoundException If the file cannot be found.
      */
-    private void buildGraph(Set<String> validNodes) throws FileNotFoundException {
+    private void buildGraph(Map<String, Integer> validNodesMap) throws FileNotFoundException {
         File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
@@ -71,7 +74,8 @@ public class PBFParser {
                 OsmNode node = (OsmNode) container.getEntity();
                 String id = Long.toString(node.getId());
                 // If a valid node is found, it will add it to the Graph.
-                if (validNodes.contains(id)) {
+                Integer refCount = validNodesMap.get(id);
+                if (refCount != null && refCount > 1) {
                     constructGraphNode(node);
                 }
             }
@@ -95,24 +99,39 @@ public class PBFParser {
             }
         }
         graph.setNodeList(nodeList);
+        System.out.println(validNodesMap.size());
+        System.out.println(graph.getAdjList().size());
+        System.out.println(graph.getNodeList().size());
     }
 
     /**
      * A helper method to convert from OsmWay to our representation of Edges.
+     *
      * @param way An OsmWay from the .pbf file.
      */
     private void addEdgesGraph(OsmWay way) {
-        for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
-            Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
-            Node node2 = nodeMap.get(Long.toString(way.getNodeId(i + 1)));
-            double d = distanceStrategy.apply(node1, node2);
-            graph.addEdge(node1, node2, d);
-            graph.addEdge(node2, node1, d);
+        int numNodes = way.getNumberOfNodes();
+        for (int i = 0; i < numNodes; i++) {
+            for (int j = 0; j < numNodes; j++) {
+                Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
+                Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
+                if (node1 == null) {
+                    break;
+                }
+                if (node2 == null) {
+                    continue;
+                }
+                double d = distanceStrategy.apply(node1, node2);
+                graph.addEdge(node1, node2, d);
+                graph.addEdge(node2, node1, d);
+                i = j;
+            }
         }
     }
 
     /**
      * A helper method to convert from OsmNode to our representation of a Node.
+     *
      * @param node An OsmNode from the .pbf file.
      */
     private void constructGraphNode(OsmNode node) {
@@ -124,14 +143,15 @@ public class PBFParser {
 
     /**
      * This method go through all the Ways can adds all USED nodes in a set.
+     *
      * @return The set of all valid nodes.
      * @throws FileNotFoundException Is thrown if file cannot be found.
      */
-    private Set<String> findValidNodes() throws FileNotFoundException {
+    private Map<String, Integer> findValidNodes() throws FileNotFoundException {
         File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
-        HashSet<String> nodeSet = new HashSet<>();
+        HashMap<String, Integer> nodeRefMap = new HashMap<>();
         for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Way) {
                 OsmWay way = (OsmWay) container.getEntity();
@@ -147,11 +167,15 @@ public class PBFParser {
                 }
 
                 for (int i = 0; i < way.getNumberOfNodes(); i++) {
-                    nodeSet.add(Long.toString(way.getNodeId(i)));
+                    int referenceCount = nodeRefMap.getOrDefault(Long.toString(way.getNodeId(i)), 0);
+                    nodeRefMap.put(Long.toString(way.getNodeId(i)), referenceCount + 1);
                 }
             }
         }
-        return nodeSet;
+        System.out.println("noderef size: " + nodeRefMap.size());
+        nodeRefMap.values().removeIf(e -> e <= 1);
+        System.out.println("noderef size: " + nodeRefMap.size());
+        return nodeRefMap;
     }
 
     private boolean shouldFilter(String hV) {
