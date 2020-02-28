@@ -2,6 +2,7 @@ package paths;
 
 import model.*;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -158,7 +159,6 @@ public class Dijkstra {
         Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(graph, to, from, mode, nodeDistB);
         Comparator<Integer> comparatorB = (i1, i2) -> (int) Math.signum(priorityStrategyB.apply(i1) - priorityStrategyB.apply(i2));
 
-
         // Queue to hold the paths from Node: from.
         PriorityQueue<Integer> queueA = new PriorityQueue<>(comparatorA);
         queueA.add(from);
@@ -184,43 +184,45 @@ public class Dijkstra {
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty() && !intersectionFound) {
             // Dijkstra from the 'From'-side
-            int nextA = queueA.poll();
-            if (nextA == to) {
-                break;
-            }
-
-            for (Edge edge : adjList.get(nextA)) {
-                relax(nodeDistA, backPointersA, nextA, edge);
-                // If the visited nodes, starting from the other direction,
-                // contain the "adjacent" node of "next", then we can terminate the search
-                if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
-                    middlePoint = edge.to;
-                    intersectionFound = true;
+            Integer nextA = queueA.poll();
+            if (nextA != null) {
+                if (nextA == to) {
                     break;
-                } else if (!visitedA.contains(edge.to)) {
-                    queueA.add(edge.to);
-                    visitedA.add(edge.to);
+                }
+
+                for (Edge edge : adjList.get(nextA)) {
+                    relax(nodeDistA, backPointersA, nextA, edge);
+                    // If the visited nodes, starting from the other direction,
+                    // contain the "adjacent" node of "next", then we can terminate the search
+                    if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
+                        middlePoint = edge.to;
+                        intersectionFound = true;
+                        break;
+                    } else if (!visitedA.contains(edge.to)) {
+                        queueA.add(edge.to);
+                        visitedA.add(edge.to);
+                    }
                 }
             }
-
             // Dijkstra from the 'To'-side
-            int nextB = queueB.poll();
-            if (nextB == from) {
-                break;
-            }
-
-            for (Edge edge : adjList.get(nextB)) {
-                relax(nodeDistB, backPointersB, nextB, edge);
-                // If the visited nodes, starting from the other direction,
-                // contain the "adjacent" node of "next", then we can terminate the search
-                if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
-                    middlePoint = edge.to;
-                    System.out.println("Route found from B to A");
-                    intersectionFound = true;
+            Integer nextB = queueB.poll();
+            if (nextB != null) {
+                if (nextB == from) {
                     break;
-                } else if (!visitedB.contains(edge.to)) {
-                    queueB.add(edge.to);
-                    visitedB.add(edge.to);
+                }
+                for (Edge edge : adjList.get(nextB)) {
+                    relax(nodeDistB, backPointersB, nextB, edge);
+                    // If the visited nodes, starting from the other direction,
+                    // contain the "adjacent" node of "next", then we can terminate the search
+                    if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
+                        middlePoint = edge.to;
+                        System.out.println("Route found from B to A");
+                        intersectionFound = true;
+                        break;
+                    } else if (!visitedB.contains(edge.to)) {
+                        queueB.add(edge.to);
+                        visitedB.add(edge.to);
+                    }
                 }
             }
         }
