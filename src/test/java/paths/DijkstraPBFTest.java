@@ -6,16 +6,12 @@ import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 import pbfparsing.PBFParser;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.BiFunction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 
 public class DijkstraPBFTest {
     Graph graph;
@@ -61,5 +57,8 @@ public class DijkstraPBFTest {
         }
 
         System.out.println(Arrays.deepToString(matrix));
+
+        int[][] zeroMatrix = new int[4][4];
+        assertArrayEquals(zeroMatrix, matrix);
     }
 }
