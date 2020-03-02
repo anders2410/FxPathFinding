@@ -3,17 +3,21 @@ package javafx;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.BiFunction;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.*;
@@ -49,14 +53,23 @@ public class FXMLController implements Initializable {
     private double mapWidthRatio;
     private double mapHeightRatio;
     private BiFunction<Node, Node, Double> distanceStrategy;
+    private List<Node> selectedNodes = new ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         distanceStrategy = Util::sphericalDistance;
+        canvas.setOnMouseClicked(event -> {
+            double x = event.getX();
+            double y = event.getY();
+            Node node = selectClosestNode(x, y);
+            selectedNodes.add(node);
+            clearCanvas();
+            drawGraph();
+        });
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("isle-of-man-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {
@@ -138,6 +151,16 @@ public class FXMLController implements Initializable {
      * the nodes and draw the Edges.
      */
     private void drawGraph() {
+        for (Node selectedNode : selectedNodes) {
+            double x1 = projectXCordMercator(selectedNode.longitude) - minXY.x;
+            double y1 = projectYCordMercator(selectedNode.latitude) - minXY.y;
+
+            double adjustedX1 = ((x1 * globalRatio));
+            double adjustedY1 = (canvas.getHeight() - (y1 * globalRatio));
+            gc.setFill(Color.PURPLE);
+            gc.fillRect(adjustedX1, adjustedY1, 10, 10);
+
+        }
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
         // Resets the 'isDrawn' property inside Edges.
@@ -199,14 +222,42 @@ public class FXMLController implements Initializable {
         }
     }
 
+    /**
+     * @param cord longitude input
+     * @return x coordinate in canvas
+     */
     private double projectXCordMercator(double cord) {
         final double RADIUS_MAJOR = 6378137.0;
         return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
     }
 
+    /**
+     * @param cord latitude input
+     * @return y coordinate in canvas
+     */
     private double projectYCordMercator(double cord) {
         final double RADIUS_MINOR = 6356752.3142;
         return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
+    }
+
+    public double nodeToPointDistance(Node node, double x, double y) {
+        double nodeX = projectXCordMercator(node.longitude);
+        double nodeY = projectYCordMercator(node.latitude);
+        return Math.sqrt(Math.pow(nodeX - x, 2) + Math.pow(nodeY - y, 2));
+    }
+
+    private Node selectClosestNode(double x, double y) {
+        List<Node> nodeList = graph.getNodeList();
+        Node closestNode = nodeList.get(0);
+        double closestDistance = nodeToPointDistance(closestNode, x, y);
+        for (Node node : nodeList) {
+            double distance = nodeToPointDistance(node, x, y);
+            if (distance < closestDistance) {
+                closestNode = node;
+                closestDistance = distance;
+            }
+        }
+        return closestNode;
     }
 
     // Here comes all the eventHandle methods that are called when clicked
