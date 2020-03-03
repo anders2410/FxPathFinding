@@ -11,8 +11,8 @@ import java.util.function.BiFunction;
 
 public class CollapsingStrategyFull implements CollapsingStrategy {
     @Override
-    public void addEdgesGraph(OsmWay way, Map<String, Node> allNodeMap, BiFunction<Node, Node, Double> distanceStrategy,
-                               Graph graph, Map<String, Node> nodeMap) {
+    public void addEdgesGraph(OsmWay way, BiFunction<Node, Node, Double> distanceStrategy,
+                              Graph graph, Map<String, Node> nodeMap, Map<String, Integer> validNodesMap) {
         int numNodes = way.getNumberOfNodes();
         boolean finished = false;
         boolean first = true;
@@ -24,26 +24,24 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 if (j == numNodes - 1) {
                     finished = true;
                 }
-                Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
-                Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
-                if (node1 == null) {
+                if (validNodesMap.get(Long.toString(way.getNodeId(i))) == null || validNodesMap.get(Long.toString(way.getNodeId(i))) < 2) {
                     break;
                 }
                 if (first) {
                     first = false;
                     lastNodeId = Long.toString(way.getNodeId(i));
                 }
-                if (node2 == null) {
-                    Node intermediateNode1 = allNodeMap.get(lastNodeId);
-                    Node intermediateNode2 = allNodeMap.get(Long.toString(way.getNodeId(j)));
+                if (validNodesMap.get(Long.toString(way.getNodeId(j))) == null || validNodesMap.get(Long.toString(way.getNodeId(j))) < 2) {
+                    Node intermediateNode1 = nodeMap.get(lastNodeId);
+                    Node intermediateNode2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                     lastNodeId = Long.toString(way.getNodeId(j));
                     cum_Dist += distanceStrategy.apply(intermediateNode1, intermediateNode2);
                     continue;
                 }
 
-                node1 = allNodeMap.get(Long.toString(way.getNodeId(i)));
-                Node intermediate = allNodeMap.get(lastNodeId);
-                node2 = allNodeMap.get(Long.toString(way.getNodeId(j)));
+                Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
+                Node intermediate = nodeMap.get(lastNodeId);
+                Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
                 graph.addEdge(node1, node2, cum_Dist);

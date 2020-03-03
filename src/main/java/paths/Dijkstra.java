@@ -160,7 +160,8 @@ public class Dijkstra {
         Collections.reverse(shortestPathB);
         shortestPath.addAll(shortestPathB);
         double distance = goalDistance;
-        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size());
+        visitedA.addAll(visitedB);
+        return new ShortestPathResult(distance, shortestPath, visitedA.size());
 
         /*if (trace) {
             printInfo(from, to, visitedA, pathMapA, visitedB, pathMapB, middlePoint);

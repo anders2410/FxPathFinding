@@ -57,9 +57,19 @@ public class PBFParser {
      * @throws FileNotFoundException If the file is not found.
      */
     public void executePBFParser() throws FileNotFoundException {
+        System.out.print("Started PBFParsing");
         Map<String, Integer> validNodes = findValidNodes();
-        graph = new Graph(validNodes.size());
+        int sumOfValid = validNodes.values().stream().map(integer -> {
+            if (integer > 1) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }).reduce(0, Integer::sum);
+
+        graph = new Graph(sumOfValid);
         buildGraph(validNodes);
+        System.out.print("Finished PBFParsing");
     }
 
     /**
@@ -73,17 +83,18 @@ public class PBFParser {
         File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
-        Map<String, Node> allNodeMap = new HashMap<>();
         // Iterates over all containers in the .pbf file
         for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
                 String id = Long.toString(node.getId());
                 Node n = constructGraphNode(node);
-                allNodeMap.put(id, n);
                 // If a valid node is found, it will add it to the Graph.
                 if (validNodesMap.containsKey(id)) {
-                    addNodeToGraph(id, n);
+                    nodeMap.put(id, n);
+                    if (validNodesMap.get(id) > 1) {
+                        addNodeToGraph(id, n);
+                    }
                 }
             }
 
@@ -97,7 +108,7 @@ public class PBFParser {
                 }
                 // If a valid Way is found, we iterate through it and add all the edges.
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
-                    collapsingStrategy.addEdgesGraph(way, allNodeMap, distanceStrategy, graph, nodeMap);
+                    collapsingStrategy.addEdgesGraph(way, distanceStrategy, graph, nodeMap, validNodesMap);
                 }
             }
         }
@@ -105,7 +116,6 @@ public class PBFParser {
     }
 
     private void addNodeToGraph(String id, Node n) {
-        nodeMap.put(id, n);
         nodeList.add(n);
         indexCounter++;
     }
@@ -137,16 +147,12 @@ public class PBFParser {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                 String roadValue = tags.get("highway");
-
                 if (filteringStrategy.shouldFilter(roadValue)) {
                     continue;
                 }
-
                 collapsingStrategy.createNodeMap(way, nodeRefMap);
             }
         }
-
-        nodeRefMap.values().removeIf(e -> e <= 1);
         return nodeRefMap;
     }
 

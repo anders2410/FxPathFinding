@@ -13,10 +13,9 @@ public class CollapsingStrategyNone implements CollapsingStrategy {
 
     @Override
     public void addEdgesGraph(OsmWay way,
-                               Map<String, Node> allNodeMap,
-                               BiFunction<Node, Node, Double> distanceStrategy,
-                               Graph graph,
-                               Map<String, Node> nodeMap) {
+                              BiFunction<Node, Node, Double> distanceStrategy,
+                              Graph graph,
+                              Map<String, Node> nodeMap, Map<String, Integer> validNodesMap) {
 
         for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
