@@ -82,27 +82,40 @@ public class DijkstraPBFTest {
         int[][] matrix = new int[4][4];
         for (int i = 0; i < 1000; i++) {
             Dijkstra.seed = i;
-            double distDijk = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA).d;
-            double distAstar = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR).d;
-            double distBiDijk = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA).d;
-            double distBiAstar = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR).d;
-            if (distAstar != distDijk) {
+            ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
+            ShortestPathResult biDijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+
+            double distDijk = dijkRes.d;
+            List<Integer> pathDijk = dijkRes.path;
+
+            double distAstar = aStarRes.d;
+            List<Integer> pathAstar = aStarRes.path;
+
+            double distBiDijk = biDijkRes.d;
+            List<Integer> pathBiDijk = biDijkRes.path;
+
+            double distBiAstar = biAStarRes.d;
+            List<Integer> pathBiAstar = biAStarRes.path;
+
+
+            if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
                 matrix[0][1]++;
             }
-
-            if (distDijk != distBiDijk) {
+            if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
                 matrix[0][2]++;
             }
-            if (distDijk != distBiAstar) {
+            if (Math.abs(distDijk - distBiAstar) > 0.00000000001 || !pathDijk.equals(pathBiAstar)) {
                 matrix[0][3]++;
             }
-            if (distAstar != distBiDijk) {
+            if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
                 matrix[1][2]++;
             }
-            if (distAstar != distBiAstar) {
+            if (Math.abs(distAstar - distBiAstar) > 0.00000000001 || !pathAstar.equals(pathBiAstar)) {
                 matrix[1][3]++;
             }
-            if (distBiDijk != distBiAstar) {
+            if (Math.abs(distBiDijk - distBiAstar) > 0.00000000001 || !pathBiDijk.equals(pathBiAstar)) {
                 matrix[2][3]++;
             }
         }

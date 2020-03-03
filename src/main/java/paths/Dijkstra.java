@@ -72,24 +72,24 @@ public class Dijkstra {
 
     private static Comparator<Integer> getComparator(Function<Integer, Double> priorityStrategy) {
         return (i1, i2) -> {
-                double doubleD = priorityStrategy.apply(i1) - priorityStrategy.apply(i2);
-                if (Math.abs(doubleD) < 0.000009) return i1 - i2;
-                if (priorityStrategy.apply(i1) < priorityStrategy.apply(i2)) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            };
+            double doubleD = priorityStrategy.apply(i1) - priorityStrategy.apply(i2);
+            if (Math.abs(doubleD) < 0.000009) return i1 - i2;
+            if (priorityStrategy.apply(i1) < priorityStrategy.apply(i2)) {
+                return -1;
+            } else {
+                return 1;
+            }
+        };
     }
 
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
+        // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         // TODO: Bidirectional A_STAR does not return the correct distance.
         // TODO: OutOfMemoryError if no path can be found between from and to
         List<List<Edge>> adjList = graph.getAdjList();
 
         //A
-
         List<Double> nodeDistA = initNodeDist(from, adjList.size());
         Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(graph, from, to, mode, nodeDistA);
         Comparator<Integer> comparatorA = getComparator(priorityStrategyA);
@@ -102,7 +102,6 @@ public class Dijkstra {
         Map<Integer, Integer> pathMapA = new HashMap<>();
 
         //B
-
         List<Double> nodeDistB = initNodeDist(to, adjList.size());
         Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(graph, to, from, mode, nodeDistB);
         Comparator<Integer> comparatorB = getComparator(priorityStrategyB);
@@ -113,54 +112,40 @@ public class Dijkstra {
         // A set of visited nodes starting from Node b.
         Set<Integer> visitedB = new HashSet<>();
         Map<Integer, Integer> pathMapB = new HashMap<>();
-
-        int middlePoint = 0;
+        double goalDistance = Double.MAX_VALUE;
         boolean intersectionFound = false;
+        int middlePoint = -1;
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
-        while (!queueA.isEmpty() && !queueB.isEmpty() && !intersectionFound) {
+        while (!queueA.isEmpty() && !queueB.isEmpty()) {
             // Dijkstra from the 'From'-side
+            if (checkTermination(nodeDistA, queueA, nodeDistB, queueB, goalDistance)) break;
             Integer nextA = queueA.poll();
             if (nextA != null) {
-                if (nextA == to) {
-                    break;
-                }
-
+                visitedA.add(nextA);
                 for (Edge edge : adjList.get(nextA)) {
                     if (visitedB.contains(edge.to)) {
-                        middlePoint = edge.to;
-                        intersectionFound = true;
-                        break;
+                        if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
+                            middlePoint = edge.to;
+                            goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
+                        }
                     }
                     relax(nodeDistA, pathMapA, nextA, queueA, edge);
-                    // If the visited nodes, starting from the other direction,
-                    // contain the "adjacent" node of "next", then we can terminate the search
-                    if (!visitedA.contains(edge.to)) {
-                        queueA.add(edge.to);
-                        visitedA.add(edge.to);
-                    }
                 }
             }
 
             // Dijkstra from the 'To'-side
+            if (checkTermination(nodeDistA, queueA, nodeDistB, queueB, goalDistance)) break;
             Integer nextB = queueB.poll();
             if (nextB != null) {
-
-                if (nextB == from) {
-                    break;
-                }
+                visitedB.add(nextB);
                 for (Edge edge : adjList.get(nextB)) {
                     if (visitedA.contains(edge.to)) {
-                        middlePoint = edge.to;
-                        intersectionFound = true;
-                        break;
+                        if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
+                            middlePoint = edge.to;
+                            goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
+                        }
                     }
                     relax(nodeDistB, pathMapB, nextB, queueB, edge);
-                    // If the visited nodes, starting from the other direction,
-                    // contain the "adjacent" node of "next", then we can terminate the search
-                    if (!visitedB.contains(edge.to)) {
-                        queueB.add(edge.to);
-                        visitedB.add(edge.to);
-                    }
                 }
             }
         }
@@ -168,11 +153,16 @@ public class Dijkstra {
         visitedA.addAll(visitedB);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, from, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, adjList, to, middlePoint);
+        if (middlePoint == -1) {
+            return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
+        }
+        shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
         shortestPath.addAll(shortestPathB);
-        double distance = nodeDistA.get(middlePoint) + nodeDistB.get(middlePoint);
+        double distance = goalDistance;
+        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size());
 
-        if (trace) {
+        /*if (trace) {
             printInfo(from, to, visitedA, pathMapA, visitedB, pathMapB, middlePoint);
         }
 
@@ -180,7 +170,18 @@ public class Dijkstra {
             return new ShortestPathResult(distance, shortestPath, visitedA.size());
         }
 
-        return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
+        return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);*/
+    }
+
+    private static boolean checkTermination(List<Double> nodeDistA, PriorityQueue<Integer> queueA, List<Double> nodeDistB, PriorityQueue<Integer> queueB, double goalDistance) {
+        Integer topA = queueA.peek();
+        Integer topB = queueB.peek();
+        if (topA != null && topB != null) {
+            if (nodeDistA.get(topA) + nodeDistB.get(topB) >= goalDistance) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void relax(List<Double> nodeDist, Map<Integer, Integer> backPointers, int from, PriorityQueue<Integer> pq, Edge edge) {
@@ -223,12 +224,7 @@ public class Dijkstra {
         int from = random.nextInt(n);
         int to = random.nextInt(n);
         ShortestPathResult res;
-        if (mode == AlgorithmMode.DIJKSTRA || mode == AlgorithmMode.A_STAR) {
-            res = sssp(graph, from, to, mode);
-        } else {
-            res = bidirectional(graph, from, to, mode);
-        }
-
+        res = sssp(graph, from, to, mode);
         if (result) {
             System.out.println("Distance from " + from + " to " + to + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");
