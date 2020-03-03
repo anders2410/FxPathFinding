@@ -85,8 +85,6 @@ public class Dijkstra {
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
-        // TODO: Bidirectional A_STAR does not return the correct distance.
-        // TODO: OutOfMemoryError if no path can be found between from and to
         List<List<Edge>> adjList = graph.getAdjList();
 
         //A
@@ -162,16 +160,6 @@ public class Dijkstra {
         double distance = goalDistance;
         visitedA.addAll(visitedB);
         return new ShortestPathResult(distance, shortestPath, visitedA.size());
-
-        /*if (trace) {
-            printInfo(from, to, visitedA, pathMapA, visitedB, pathMapB, middlePoint);
-        }
-
-        if (middlePoint != 0) {
-            return new ShortestPathResult(distance, shortestPath, visitedA.size());
-        }
-
-        return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);*/
     }
 
     private static boolean checkTermination(List<Double> nodeDistA, PriorityQueue<Integer> queueA, List<Double> nodeDistB, PriorityQueue<Integer> queueB, double goalDistance) {

@@ -75,8 +75,8 @@ public class FXMLController implements Initializable {
         canvas.setOnMouseClicked(getMouseEventEventHandler());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-
         setUpNewGraph("denmark-latest.osm.pbf");
+        Dijkstra.setDistanceStrategy(distanceStrategy);
     }
 
     private void setUpNewGraph(String fileName) {
@@ -396,7 +396,6 @@ public class FXMLController implements Initializable {
     }
 
     public void handleRunAlgorithmEvent(ActionEvent actionEvent) {
-        Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res;
         if (selectedNodes.size() > 1) {
             res = Dijkstra.sssp(graph, selectedNodes.peekFirst().index, selectedNodes.peekLast().index, algorithmMode);
