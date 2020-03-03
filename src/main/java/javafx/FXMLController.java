@@ -207,11 +207,19 @@ public class FXMLController implements Initializable {
                     double adjustedY2 = getNodeScreenPosY(ny);
 
                     gc.setStroke(chooseEdgeColor(edge));
+                    gc.setLineWidth(chooseEdgeWidth(edge));
                     gc.strokeLine(adjustedX1, adjustedY1, adjustedX2, adjustedY2);
                     edge.isDrawn = true;
                 }
             }
         }
+    }
+
+    private double chooseEdgeWidth(Edge edge) {
+        if (edge.inPath) {
+            return 2;
+        }
+        return 1;
     }
 
     private Color chooseEdgeColor(Edge edge) {

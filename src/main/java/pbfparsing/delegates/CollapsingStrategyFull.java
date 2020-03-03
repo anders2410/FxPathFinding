@@ -61,4 +61,16 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
             nodeRefMap.put(Long.toString(way.getNodeId(i)), referenceCount + 1);
         }
     }
+
+    @Override
+    public int getSumOfValid(Map<String, Integer> validNodes) {
+        int val = validNodes.values().stream().map(integer -> {
+            if (integer > 1) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }).reduce(0, Integer::sum);
+        return val;
+    }
 }

@@ -32,4 +32,9 @@ public class CollapsingStrategyNone implements CollapsingStrategy {
             nodeRefMap.put(Long.toString(way.getNodeId(i)), 2);
         }
     }
+
+    @Override
+    public int getSumOfValid(Map<String, Integer> validNodes) {
+        return validNodes.size();
+    }
 }

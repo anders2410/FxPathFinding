@@ -12,4 +12,6 @@ public interface CollapsingStrategy {
     void addEdgesGraph(OsmWay way, BiFunction<Node, Node, Double> distanceStrategy, Graph graph, Map<String, Node> nodeMap, Map<String, Integer> validNodesMap);
 
     void createNodeMap(OsmWay way, HashMap<String, Integer> nodeRefMap);
+
+    int getSumOfValid(Map<String, Integer> validNodes);
 }

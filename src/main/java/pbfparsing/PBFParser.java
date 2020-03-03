@@ -59,17 +59,21 @@ public class PBFParser {
     public void executePBFParser() throws FileNotFoundException {
         System.out.print("Started PBFParsing");
         Map<String, Integer> validNodes = findValidNodes();
-        int sumOfValid = validNodes.values().stream().map(integer -> {
-            if (integer > 1) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }).reduce(0, Integer::sum);
+        int sumOfValid = collapsingStrategy.getSumOfValid(validNodes);
 
         graph = new Graph(sumOfValid);
         buildGraph(validNodes);
         System.out.print("Finished PBFParsing");
+    }
+
+    private int getSumOfValid(Map<String, Integer> validNodes) {
+        return validNodes.values().stream().map(integer -> {
+                if (integer > 1) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }).reduce(0, Integer::sum);
     }
 
     /**
