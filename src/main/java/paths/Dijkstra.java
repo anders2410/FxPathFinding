@@ -237,18 +237,20 @@ public class Dijkstra {
             // Dijkstra from the 'To'-side
             Integer nextB = queueB.poll();
             if (nextB != null) {
+
                 if (nextB == from) {
                     break;
                 }
                 for (Edge edge : adjList.get(nextB)) {
-                    relax(nodeDistB, backPointersB, nextB, queueB, edge);
-                    // If the visited nodes, starting from the other direction,
-                    // contain the "adjacent" node of "next", then we can terminate the search
-                    if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
+                    if (visitedA.contains(edge.to)) {
                         middlePoint = edge.to;
                         intersectionFound = true;
                         break;
-                    } else if (!visitedB.contains(edge.to)) {
+                    }
+                    relax(nodeDistB, backPointersB, nextB, queueB, edge);
+                    // If the visited nodes, starting from the other direction,
+                    // contain the "adjacent" node of "next", then we can terminate the search
+                    if (!visitedB.contains(edge.to)) {
                         queueB.add(edge.to);
                         visitedB.add(edge.to);
                     }
