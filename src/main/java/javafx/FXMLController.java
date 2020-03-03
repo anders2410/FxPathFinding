@@ -1,29 +1,35 @@
 package javafx;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.function.BiFunction;
-
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import model.*;
-import paths.*;
+import model.Edge;
+import model.Graph;
+import model.Node;
+import model.Util;
+import paths.AlgorithmMode;
+import paths.Dijkstra;
+import paths.ShortestPathResult;
 import pbfparsing.PBFParser;
-import xml.*;
+import xml.XMLFilter;
+import xml.XMLGraphExtractor;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URL;
+import java.util.*;
+import java.util.function.BiFunction;
+
+import static model.Util.algorithmNames;
+import static paths.AlgorithmMode.*;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -38,6 +44,10 @@ public class FXMLController implements Initializable {
     @FXML private Label nodes_visited_label;
     @FXML private Label nodes_label;
     @FXML private Label edges_label;
+    @FXML private Button dijkstraButton;
+    @FXML private Button biDijkstraButton;
+    @FXML private Button aStarButton;
+    @FXML private Button biAStarButton;
 
     private Stage stage;
     private Graph graph;
@@ -53,7 +63,8 @@ public class FXMLController implements Initializable {
     private double mapWidthRatio;
     private double mapHeightRatio;
     private BiFunction<Node, Node, Double> distanceStrategy;
-    private List<Node> selectedNodes = new ArrayList<>();
+    private AlgorithmMode algorithmMode = DIJKSTRA;
+    private Stack<Node> selectedNodes = new Stack<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -62,7 +73,7 @@ public class FXMLController implements Initializable {
             double x = event.getX();
             double y = event.getY();
             Node node = selectClosestNode(x, y);
-            selectedNodes.add(node);
+            selectedNodes.push(node);
             clearCanvas();
             drawGraph();
         });
@@ -180,11 +191,11 @@ public class FXMLController implements Initializable {
                     double x2 = projectXCordMercator(ny.longitude) - minXY.x;
                     double y2 = projectYCordMercator(ny.latitude) - minXY.y;
 
-                    double adjustedX1 = ((x1 * globalRatio));
-                    double adjustedY1 = (canvas.getHeight() - (y1 * globalRatio));
+                    double adjustedX1 = x1 * globalRatio;
+                    double adjustedY1 = canvas.getHeight() - y1 * globalRatio;
 
-                    double adjustedX2 = ((x2 * globalRatio));
-                    double adjustedY2 = (canvas.getHeight() - (y2 * globalRatio));
+                    double adjustedX2 = x2 * globalRatio;
+                    double adjustedY2 = canvas.getHeight() - y2 * globalRatio;
 
                     /*System.out.println("---------------");
                     System.out.println("(" + x1 + "," + y1 + ") -> (" + x2 + "," + y2 + ")");
@@ -241,8 +252,8 @@ public class FXMLController implements Initializable {
     }
 
     public double nodeToPointDistance(Node node, double x, double y) {
-        double nodeX = projectXCordMercator(node.longitude);
-        double nodeY = projectYCordMercator(node.latitude);
+        double nodeX = (projectXCordMercator(node.longitude) - minXY.x) * globalRatio;
+        double nodeY = canvas.getHeight() - (projectYCordMercator(node.latitude) - minXY.y) * globalRatio;
         return Math.sqrt(Math.pow(nodeX - x, 2) + Math.pow(nodeY - y, 2));
     }
 
@@ -304,35 +315,48 @@ public class FXMLController implements Initializable {
     }
 
     public void handleDijkstraEvent() {
-        clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
-        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-        drawGraph();
-        setLabels("Dijkstra", Util.roundDouble(res.d), res.visitedNodes);
+        algorithmMode = DIJKSTRA;
+        setAlgorithmNameLabel();
+        selectButton(dijkstraButton);
     }
 
     public void handleBiDijkstraEvent(ActionEvent actionEvent) {
-        clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
-        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
-        drawGraph();
-        setLabels("Bidirectional Dijkstra", Util.roundDouble(res.d), res.visitedNodes);
+        algorithmMode = BI_DIJKSTRA;
+        setAlgorithmNameLabel();
+        selectButton(biDijkstraButton);
     }
 
     public void handleAStarEvent() {
-        clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
-        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
-        drawGraph();
-        setLabels("A*", Util.roundDouble(res.d), res.visitedNodes);
+        algorithmMode = A_STAR;
+        setAlgorithmNameLabel();
+        selectButton(aStarButton);
     }
 
     public void handleBiAStarEvent(ActionEvent actionEvent) {
+        algorithmMode = BI_A_STAR;
+        setAlgorithmNameLabel();
+        selectButton(biAStarButton);
+    }
+
+    private void selectButton(Button algoButton) {
+        dijkstraButton.setBlendMode(null);
+        biDijkstraButton.setBlendMode(null);
+        aStarButton.setBlendMode(null);
+        biAStarButton.setBlendMode(null);
+        algoButton.setBlendMode(BlendMode.GREEN);
+    }
+
+    public void handleRunAlgorithmEvent(ActionEvent actionEvent) {
         clearCanvas();
         Dijkstra.distanceStrategy = distanceStrategy;
-        ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR);
+        ShortestPathResult res;
+        if (selectedNodes.size() > 1) {
+            res = Dijkstra.sssp(graph, selectedNodes.pop().index, selectedNodes.pop().index, algorithmMode);
+        } else {
+            res = Dijkstra.randomPath(graph, algorithmMode);
+        }
         drawGraph();
-        setLabels("Bidirectional A*", Util.roundDouble(res.d), res.visitedNodes);
+        setLabels(Util.roundDouble(res.d), res.visitedNodes);
     }
 
     public void handleSeedEvent() {
@@ -360,9 +384,13 @@ public class FXMLController implements Initializable {
         this.stage = stage;
     }
 
-    private void setLabels(String algo, String distance, int visitedNodes) {
-        algorithm_label.setText("Algorithm: " + algo);
+    private void setLabels(String distance, int visitedNodes) {
+        setAlgorithmNameLabel();
         distance_label.setText("Total Distance: " + distance);
         nodes_visited_label.setText("Nodes Visited: " + visitedNodes);
+    }
+
+    private void setAlgorithmNameLabel() {
+        algorithm_label.setText("Algorithm: " + algorithmNames.get(algorithmMode));
     }
 }

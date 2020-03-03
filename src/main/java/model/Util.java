@@ -1,10 +1,24 @@
 package model;
 
+import paths.AlgorithmMode;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
+
+import static paths.AlgorithmMode.*;
 
 public class Util {
+
+    public static Map<AlgorithmMode, String> algorithmNames = new HashMap<>();
+    static {
+        algorithmNames.put(DIJKSTRA, "Dijkstra");
+        algorithmNames.put(BI_DIJKSTRA, "Bidirectional Dijkstra");
+        algorithmNames.put(A_STAR, "A*");
+        algorithmNames.put(BI_A_STAR, "Bidirectional A*");
+    }
 
     public static double degreesToRadians(double degrees) {
         return degrees * Math.PI / 180;
