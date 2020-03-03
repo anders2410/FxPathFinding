@@ -10,6 +10,7 @@ import pbfparsing.PBFParser;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -42,7 +43,7 @@ public class DijkstraPBFTest {
         }*/
         Dijkstra.seed = 1183;
         ShortestPathResult resD = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-        ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
+        ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
 
@@ -68,38 +69,28 @@ public class DijkstraPBFTest {
                 cum_distancesA.add(Util.sphericalDistance(n1, n2) + cum_distancesA.get(i - 1));
             }
         }
-        System.out.println(resA.path);
         System.out.println(resD.path);
-        System.out.println(cum_distancesA);
+        System.out.println(resA.path);
         System.out.println(cum_distancesD);
-        System.out.println(resA.d);
+        System.out.println(cum_distancesA);
         System.out.println(resD.d);
+        System.out.println(resA.d);
     }
 
     @Test
     public void testAlgorithms() {
         int[][] matrix = new int[4][4];
-        for (int i = 0; i < 1500; i++) {
+        for (int i = 0; i < 1000; i++) {
             Dijkstra.seed = i;
             double distDijk = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA).d;
             double distAstar = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR).d;
-/*          double distBiDijk = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA).d;
-            double distBiAstar = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR).d;*/
-            if (distDijk != distAstar) {
-                if (distAstar < distDijk) {
-                    System.out.println(distAstar);
-                    System.out.println(distDijk);
-                    matrix[0][1]++;
-                } else {
-                /*System.out.println(Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA).d);
-                System.out.println(Dijkstra.randomPath(graph, AlgorithmMode.A_STAR).d);
-
-                System.out.println(Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA).path);
-                System.out.println(Dijkstra.randomPath(graph, AlgorithmMode.A_STAR).path);*/
-                    matrix[0][0]++;
-                }
+            double distBiDijk = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA).d;
+            double distBiAstar = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR).d;
+            if (distAstar != distDijk) {
+                matrix[0][1]++;
             }
-           /* if (distDijk != distBiDijk) {
+
+            if (distDijk != distBiDijk) {
                 matrix[0][2]++;
             }
             if (distDijk != distBiAstar) {
@@ -113,12 +104,10 @@ public class DijkstraPBFTest {
             }
             if (distBiDijk != distBiAstar) {
                 matrix[2][3]++;
-            }*/
+            }
         }
-
-        System.out.println(Arrays.deepToString(matrix));
-
         int[][] zeroMatrix = new int[4][4];
+        System.out.println(Arrays.deepToString(matrix));
         assertArrayEquals(zeroMatrix, matrix);
     }
 }
