@@ -12,9 +12,10 @@ public class Dijkstra {
 
     public static int seed = 0;
 
+    public static PriorityQueue<Integer> nodeQueue;
     public static boolean result = false;
 
-    public static BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
+    private static BiFunction<Node, Node, Double> distanceStrategy;
 
     private static Function<Integer, Double> priorityStrategy;
 
@@ -40,25 +41,31 @@ public class Dijkstra {
         List<List<Edge>> adjList = graph.getAdjList();
         List<Double> nodeDist = initNodeDist(from, adjList.size());
         priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
-        Comparator<Integer> comparator = (i1, i2) -> (int) Math.signum(priorityStrategy.apply(i1) - priorityStrategy.apply(i2));
-        PriorityQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
+        Comparator<Integer> comparator = (i1, i2) -> {
+            double doubleD = priorityStrategy.apply(i1) - priorityStrategy.apply(i2);
+            if (Math.abs(doubleD) < 0.000009) return i1 - i2;
+            if (priorityStrategy.apply(i1) < priorityStrategy.apply(i2)) {
+                return -1;
+            } else {
+                return 1;
+            }
+        };
+        nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(from);
-        Set<Integer> seenNodes = new HashSet<>();
-        List<Integer> backPointers = new ArrayList<>();
-        for (int i = 0; i < graph.getNodeAmount(); i++) {
-            backPointers.add(0);
-        }
+        Set<Integer> seenNodes = new LinkedHashSet<>();
+        Map<Integer, Integer> pathMap = new HashMap<>();
 
         while (!nodeQueue.isEmpty()) {
-            int currentNode = nodeQueue.poll();
+            Integer currentNode = nodeQueue.poll();
+            seenNodes.add(currentNode);
             if (currentNode == to) {
                 break;
             }
             for (Edge edge : adjList.get(currentNode)) {
-                relax(nodeDist, backPointers, currentNode, edge);
-                if (!seenNodes.contains(edge.to)) {
-                    nodeQueue.add(edge.to);
-                    seenNodes.add(edge.to);
+                int neighbour = edge.to;
+                boolean neighourSeen = seenNodes.contains(neighbour);
+                if (!neighourSeen) {
+                    relax(nodeDist, pathMap, currentNode, nodeQueue, edge);
                     if (trace) {
                         System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                     }
@@ -67,16 +74,20 @@ public class Dijkstra {
             trace(nodeQueue); //Print queue if trace
         }
 
-        List<Integer> shortestPath = extractPath(backPointers, adjList, from, to);
+        List<Integer> shortestPath = extractPath(pathMap, adjList, from, to);
         return new ShortestPathResult(nodeDist.get(to), shortestPath, seenNodes.size());
     }
 
-    private static List<Integer> extractPath(List<Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
-        int curNode = to;
+    private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
+        Integer curNode = to;
         int prevNode = to;
-        List<Integer> path = new ArrayList<>(to);
+        List<Integer> path = new ArrayList<>(backPointers.size());
+        path.add(to);
         while (curNode != from) {
             curNode = backPointers.get(curNode);
+            if (curNode == null) {
+                return new ArrayList<>(0);
+            }
             // System.out.println(curNode);
             path.add(curNode);
             for (Edge edge : adjList.get(curNode)) {
@@ -88,6 +99,18 @@ public class Dijkstra {
         }
         Collections.reverse(path);
         return path;
+
+        /*List<Integer> path = new ArrayList<>();
+
+        for (Integer i : backPointers) {
+            for (Edge edge : adjList.get(i)) {
+                if (backPointers.contains(edge.to)) {
+                    edge.inPath = true;
+                }
+            }
+            path.add(i);
+        }
+        return path;*/
     }
 
     public static ShortestPathResult randomPath(Graph graph, AlgorithmMode mode) {
@@ -95,7 +118,8 @@ public class Dijkstra {
         Random random = new Random(seed);
         int from = random.nextInt(n);
         int to = random.nextInt(n);
-
+       /* System.out.println(from);
+        System.out.println(to);*/
         ShortestPathResult res;
         if (mode == AlgorithmMode.DIJKSTRA || mode == AlgorithmMode.A_STAR) {
             res = sssp(graph, from, to, mode);
@@ -112,21 +136,25 @@ public class Dijkstra {
     }
 
     private static void trace(PriorityQueue<Integer> nodeQueue) {
+        PriorityQueue<Integer> copy = new PriorityQueue<>(nodeQueue);
         if (trace) {
-            System.out.print("NodeQueue: ");
-            for (Integer integer : nodeQueue) {
-                System.out.print(integer + " ");
+            System.out.print("Nodequeue: ");
+            for (int i = 0; i < copy.size() - 1; i++) {
+                Integer object = copy.poll();
+                System.out.print(object + " ");
             }
             System.out.println();
         }
     }
 
-    private static void relax(List<Double> nodeDist, List<Integer> backPointers, int from, Edge edge) {
+    private static void relax(List<Double> nodeDist, Map<Integer, Integer> backPointers, int from, PriorityQueue<Integer> pq, Edge edge) {
         edge.visited = true;
         double newDist = nodeDist.get(from) + edge.d;
         if (newDist < nodeDist.get(edge.to)) {
+            pq.remove(edge.to);
             nodeDist.set(edge.to, newDist);
-            backPointers.set(edge.to, from);
+            backPointers.put(edge.to, from);
+            pq.add(edge.to);
         }
     }
 
@@ -162,20 +190,20 @@ public class Dijkstra {
         queueA.add(from);
         // A set of visited nodes starting from Node a.
         Set<Integer> visitedA = new HashSet<>();
-        List<Integer> backPointersA = new ArrayList<>();
+        Map<Integer, Integer> backPointersA = new HashMap<>();
 
         // Queue to hold the paths from Node: to.
         PriorityQueue<Integer> queueB = new PriorityQueue<>(comparatorB);
         queueB.add(to);
         // A set of visited nodes starting from Node b.
         Set<Integer> visitedB = new HashSet<>();
-        List<Integer> backPointersB = new ArrayList<>();
+        Map<Integer, Integer> backPointersB = new HashMap<>();
 
         // Initialize them all to be zero
-        for (int i = 0; i < graph.getNodeAmount(); i++) {
+        /*for (int i = 0; i < graph.getNodeAmount(); i++) {
             backPointersA.add(0);
             backPointersB.add(0);
-        }
+        }*/
 
         int middlePoint = 0;
         boolean intersectionFound = false;
@@ -189,7 +217,7 @@ public class Dijkstra {
                 }
 
                 for (Edge edge : adjList.get(nextA)) {
-                    relax(nodeDistA, backPointersA, nextA, edge);
+                    relax(nodeDistA, backPointersA, nextA, queueA, edge);
                     // If the visited nodes, starting from the other direction,
                     // contain the "adjacent" node of "next", then we can terminate the search
                     if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
@@ -202,6 +230,7 @@ public class Dijkstra {
                     }
                 }
             }
+
             // Dijkstra from the 'To'-side
             Integer nextB = queueB.poll();
             if (nextB != null) {
@@ -209,12 +238,11 @@ public class Dijkstra {
                     break;
                 }
                 for (Edge edge : adjList.get(nextB)) {
-                    relax(nodeDistB, backPointersB, nextB, edge);
+                    relax(nodeDistB, backPointersB, nextB, queueB, edge);
                     // If the visited nodes, starting from the other direction,
                     // contain the "adjacent" node of "next", then we can terminate the search
                     if (visitedA.contains(edge.to) && visitedB.contains(edge.to)) {
                         middlePoint = edge.to;
-                        System.out.println("Route found from B to A");
                         intersectionFound = true;
                         break;
                     } else if (!visitedB.contains(edge.to)) {
@@ -253,5 +281,9 @@ public class Dijkstra {
         }
 
         return null;
+    }
+
+    public static void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
+        Dijkstra.distanceStrategy = distanceStrategy;
     }
 }

@@ -28,12 +28,18 @@ import xml.*;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML private Canvas canvas;
-    @FXML private Label algorithm_label;
-    @FXML private Label distance_label;
-    @FXML private Label nodes_visited_label;
-    @FXML private Label nodes_label;
-    @FXML private Label edges_label;
+    @FXML
+    private Canvas canvas;
+    @FXML
+    private Label algorithm_label;
+    @FXML
+    private Label distance_label;
+    @FXML
+    private Label nodes_visited_label;
+    @FXML
+    private Label nodes_label;
+    @FXML
+    private Label edges_label;
 
     private Stage stage;
     private Graph graph;
@@ -56,7 +62,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        setUpNewGraph("isle-of-man-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
     }
 
     private void setUpNewGraph(String fileName) {
@@ -85,7 +91,6 @@ public class FXMLController implements Initializable {
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
-        System.out.println(Math.abs(maxXY.x - minXY.x));
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
@@ -212,29 +217,29 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods that are called when clicked
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) :
-                ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
+        yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
+                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) :
-                ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
+        yOffset += (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
+                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) :
-                ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
+        xOffset += (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
+                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) :
-                ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
+        xOffset -= (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
+                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
@@ -254,7 +259,7 @@ public class FXMLController implements Initializable {
 
     public void handleDijkstraEvent() {
         clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
+        Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
         drawGraph();
         setLabels("Dijkstra", Util.roundDouble(res.d), res.visitedNodes);
@@ -262,7 +267,7 @@ public class FXMLController implements Initializable {
 
     public void handleBiDijkstraEvent(ActionEvent actionEvent) {
         clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
+        Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
         drawGraph();
         setLabels("Bidirectional Dijkstra", Util.roundDouble(res.d), res.visitedNodes);
@@ -270,7 +275,7 @@ public class FXMLController implements Initializable {
 
     public void handleAStarEvent() {
         clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
+        Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
         drawGraph();
         setLabels("A*", Util.roundDouble(res.d), res.visitedNodes);
@@ -278,7 +283,7 @@ public class FXMLController implements Initializable {
 
     public void handleBiAStarEvent(ActionEvent actionEvent) {
         clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
+        Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR);
         drawGraph();
         setLabels("Bidirectional A*", Util.roundDouble(res.d), res.visitedNodes);

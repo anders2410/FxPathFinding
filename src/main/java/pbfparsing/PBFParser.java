@@ -30,7 +30,7 @@ public class PBFParser {
     private Map<String, Node> nodeMap;
     private int indexCounter;
 
-    private BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
+    private BiFunction<Node, Node, Double> distanceStrategy;
 
     /**
      * The constructor of the PBFParser.
@@ -67,16 +67,17 @@ public class PBFParser {
         File file = new File(fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
-
+        Map<String, Node> allNodeMap = new HashMap<>();
         // Iterates over all containers in the .pbf file
         for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
                 String id = Long.toString(node.getId());
+                allNodeMap.put(id, constructGraphNode(node));
                 // If a valid node is found, it will add it to the Graph.
-                Integer refCount = validNodesMap.get(id);
-                if (refCount != null && refCount > 1) {
-                    constructGraphNode(node);
+                if (validNodesMap.containsKey(id)) {
+                    Node n = constructGraphNode(node);
+                    addNodeToGraph(id, n);
                 }
             }
 
@@ -94,36 +95,66 @@ public class PBFParser {
                 }
                 // If a valid Way is found, we iterate through it and add all the edges.
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
-                    addEdgesGraph(way);
+                    addEdgesGraph(way, allNodeMap);
                 }
             }
         }
         graph.setNodeList(nodeList);
-        System.out.println(validNodesMap.size());
-        System.out.println(graph.getAdjList().size());
-        System.out.println(graph.getNodeList().size());
+    }
+
+    private void addNodeToGraph(String id, Node n) {
+        nodeMap.put(id, n);
+        nodeList.add(n);
+        indexCounter++;
     }
 
     /**
      * A helper method to convert from OsmWay to our representation of Edges.
      *
-     * @param way An OsmWay from the .pbf file.
+     * @param way        An OsmWay from the .pbf file.
+     * @param allNodeMap
      */
-    private void addEdgesGraph(OsmWay way) {
+    private void addEdgesGraph(OsmWay way, Map<String, Node> allNodeMap) {
         int numNodes = way.getNumberOfNodes();
+        boolean finished = false;
+        boolean first = true;
+        String lastNodeId = null;
+        double cum_Dist = 0;
         for (int i = 0; i < numNodes; i++) {
-            for (int j = 0; j < numNodes; j++) {
+            if (finished) return;
+            for (int j = 1; j < numNodes; j++) {
+                if (j == numNodes - 1) {
+                    finished = true;
+                }
                 Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
                 Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                 if (node1 == null) {
                     break;
                 }
+                if (first) {
+                    first = false;
+                    lastNodeId = Long.toString(way.getNodeId(i));
+                }
                 if (node2 == null) {
+                    Node intermediateNode1 = allNodeMap.get(lastNodeId);
+                    Node intermediateNode2 = allNodeMap.get(Long.toString(way.getNodeId(j)));
+                    lastNodeId = Long.toString(way.getNodeId(j));
+                    cum_Dist += distanceStrategy.apply(intermediateNode1, intermediateNode2);
                     continue;
                 }
-                double d = distanceStrategy.apply(node1, node2);
-                graph.addEdge(node1, node2, d);
-                graph.addEdge(node2, node1, d);
+
+                node1 = allNodeMap.get(Long.toString(way.getNodeId(i)));
+                Node intermediate = allNodeMap.get(lastNodeId);
+                node2 = allNodeMap.get(Long.toString(way.getNodeId(j)));
+                cum_Dist += distanceStrategy.apply(intermediate, node2);
+
+                graph.addEdge(node1, node2, cum_Dist);
+                graph.addEdge(node2, node1, cum_Dist);
+                /*graph.addEdge(node1, node2, distanceStrategy.apply(node1, node2));
+                graph.addEdge(node2, node1, distanceStrategy.apply(node1, node2));*/
+
+                cum_Dist = 0;
+                lastNodeId = Long.toString(way.getNodeId(j));
                 i = j;
             }
         }
@@ -134,11 +165,11 @@ public class PBFParser {
      *
      * @param node An OsmNode from the .pbf file.
      */
-    private void constructGraphNode(OsmNode node) {
-        Node n = new Node(indexCounter, node.getLatitude(), node.getLongitude());
-        nodeMap.put(Long.toString(node.getId()), n);
-        nodeList.add(n);
-        indexCounter++;
+    private Node constructGraphNode(OsmNode node) {
+        double lat = Math.round(node.getLatitude() * 100000000.0) / 100000000.0;
+        double lon = Math.round(node.getLongitude() * 100000000.0) / 100000000.0;
+        Node n = new Node(indexCounter, lat, lon);
+        return n;
     }
 
     /**
