@@ -177,9 +177,8 @@ public class Dijkstra {
         Integer topA = queueA.peek();
         Integer topB = queueB.peek();
         if (topA != null && topB != null) {
-            if (nodeDistA.get(topA) + nodeDistB.get(topB) >= goalDistance) {
-                return true;
-            }
+            double combinedDistance = nodeDistA.get(topA) + nodeDistB.get(topB);
+            return combinedDistance >= goalDistance;
         }
         return false;
     }

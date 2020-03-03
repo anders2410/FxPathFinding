@@ -9,6 +9,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.BlendMode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -83,7 +84,7 @@ public class FXMLController implements Initializable {
         setGraphBounds();
         zoomFactor = 1;
         setRatios();
-        drawGraph();
+        redrawGraph();
     }
 
     private void setGraphBounds() {
@@ -155,8 +156,37 @@ public class FXMLController implements Initializable {
      * The main method that draws the Graph inside the Canvas. It iterates through all
      * the nodes and draw the Edges.
      */
-    private void drawGraph() {
+    private void redrawGraph() {
+        clearCanvas();
+        drawAllEdges();
         drawSelectedNodes();
+    }
+
+    private void drawSelectedNodes() {
+        if (selectedNodes.isEmpty()) {
+            return;
+        }
+        gc.setFill(Color.GREEN);
+        gc.setStroke(Color.BLACK);
+        Node from = selectedNodes.removeFirst();
+        drawNode(from);
+        gc.setFill(Color.DARKRED);
+        for (Node node : selectedNodes) {
+            drawNode(node);
+        }
+        selectedNodes.addFirst(from);
+    }
+
+    private void drawNode(Node node) {
+        double adjustedX1 = getNodeScreenPosX(node);
+        double adjustedY1 = getNodeScreenPosY(node);
+        double radius = 6;
+        double shift = radius / 2;
+        gc.fillOval(adjustedX1 - shift, adjustedY1 - shift, radius, radius);
+        gc.strokeOval(adjustedX1 - shift, adjustedY1 - shift, radius, radius);
+    }
+
+    private void drawAllEdges() {
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
         // Resets the 'isDrawn' property inside Edges.
@@ -176,7 +206,7 @@ public class FXMLController implements Initializable {
                     double adjustedX2 = getNodeScreenPosX(ny);
                     double adjustedY2 = getNodeScreenPosY(ny);
 
-                    gc.setStroke(chooseStrokeColor(edge));
+                    gc.setStroke(chooseEdgeColor(edge));
                     gc.strokeLine(adjustedX1, adjustedY1, adjustedX2, adjustedY2);
                     edge.isDrawn = true;
                 }
@@ -184,7 +214,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private Color chooseStrokeColor(Edge edge) {
+    private Color chooseEdgeColor(Edge edge) {
         if (edge.inPath) {
             return Color.RED;
         }
@@ -192,15 +222,6 @@ public class FXMLController implements Initializable {
             return Color.BLUE;
         }
         return Color.BLACK;
-    }
-
-    private void drawSelectedNodes() {
-        for (Node selectedNode : selectedNodes) {
-            double adjustedX1 = getNodeScreenPosX(selectedNode);
-            double adjustedY1 = getNodeScreenPosY(selectedNode);
-            gc.setFill(Color.PURPLE);
-            gc.fillRect(adjustedX1, adjustedY1, 10, 10);
-        }
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
@@ -271,59 +292,67 @@ public class FXMLController implements Initializable {
 
     // Here comes all the eventHandle methods that are called when clicked
     public void handleNavUpEvent() {
-        clearCanvas();
         yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
                 ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
-        drawGraph();
+        redrawGraph();
     }
 
     public void handleNavDownEvent() {
-        clearCanvas();
         yOffset += (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
                 ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
-        drawGraph();
+        redrawGraph();
     }
 
     public void handleNavLeftEvent() {
-        clearCanvas();
+
         xOffset += (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
                 ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
-        drawGraph();
+        redrawGraph();
     }
 
     public void handleNavRightEvent() {
-        clearCanvas();
+
         xOffset -= (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
                 ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
-        drawGraph();
+        redrawGraph();
     }
 
     public void handleZoomInEvent() {
         zoomFactor *= 1.1f;
         setRatios();
-        clearCanvas();
-        drawGraph();
+        redrawGraph();
     }
 
     public void handleZoomOutEvent() {
         zoomFactor *= 0.9f;
         setRatios();
-        clearCanvas();
-        drawGraph();
+        redrawGraph();
     }
 
     private EventHandler<MouseEvent> getMouseEventEventHandler() {
         return event -> {
-            double x = event.getX();
-            double y = event.getY();
-            Node node = selectClosestNode(x, y);
-            selectedNodes.addLast(node);
-            if (selectedNodes.size() > 2) {
-                selectedNodes.removeFirst();
+            if (event.getButton() == MouseButton.PRIMARY) {
+                handleLeftClick(event);
             }
-            clearCanvas();
-            drawGraph();
+            if (event.getButton() == MouseButton.SECONDARY) {
+                handleRightClick(event);
+            }
         };
+    }
+
+    private void handleLeftClick(MouseEvent event) {
+        double x = event.getX();
+        double y = event.getY();
+        Node node = selectClosestNode(x, y);
+        selectedNodes.addLast(node);
+        graph.resetPathTrace();
+        redrawGraph();
+    }
+
+    private void handleRightClick(MouseEvent event) {
+        selectedNodes = new ArrayDeque<>();
+        graph.resetPathTrace();
+        redrawGraph();
     }
 
     public void handleDijkstraEvent() {
@@ -359,7 +388,6 @@ public class FXMLController implements Initializable {
     }
 
     public void handleRunAlgorithmEvent(ActionEvent actionEvent) {
-        clearCanvas();
         Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res;
         if (selectedNodes.size() > 1) {
@@ -367,7 +395,7 @@ public class FXMLController implements Initializable {
         } else {
             res = Dijkstra.randomPath(graph, algorithmMode);
         }
-        drawGraph();
+        redrawGraph();
         setLabels(Util.roundDouble(res.d), res.visitedNodes);
     }
 
@@ -383,7 +411,6 @@ public class FXMLController implements Initializable {
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")
         );
         File selectedFile = fileChooser.showOpenDialog(stage);
-        clearCanvas();
         setUpNewGraph(selectedFile.getAbsolutePath());
     }
 
