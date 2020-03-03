@@ -37,6 +37,9 @@ public class Dijkstra {
     }
 
     public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
+        if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR) {
+            return bidirectional(graph, from, to, mode);
+        }
         graph.resetPathTrace();
         List<List<Edge>> adjList = graph.getAdjList();
         List<Double> nodeDist = initNodeDist(from, adjList.size());

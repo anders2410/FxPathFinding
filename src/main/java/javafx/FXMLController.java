@@ -1,6 +1,7 @@
 package javafx;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
@@ -8,6 +9,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.BlendMode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -64,19 +66,12 @@ public class FXMLController implements Initializable {
     private double mapHeightRatio;
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
-    private Stack<Node> selectedNodes = new Stack<>();
+    private Deque<Node> selectedNodes = new ArrayDeque<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         distanceStrategy = Util::sphericalDistance;
-        canvas.setOnMouseClicked(event -> {
-            double x = event.getX();
-            double y = event.getY();
-            Node node = selectClosestNode(x, y);
-            selectedNodes.push(node);
-            clearCanvas();
-            drawGraph();
-        });
+        canvas.setOnMouseClicked(getMouseEventEventHandler());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
@@ -313,6 +308,20 @@ public class FXMLController implements Initializable {
         drawGraph();
     }
 
+    private EventHandler<MouseEvent> getMouseEventEventHandler() {
+        return event -> {
+            double x = event.getX();
+            double y = event.getY();
+            Node node = selectClosestNode(x, y);
+            selectedNodes.addLast(node);
+            if (selectedNodes.size() > 2) {
+                selectedNodes.removeFirst();
+            }
+            clearCanvas();
+            drawGraph();
+        };
+    }
+
     public void handleDijkstraEvent() {
         algorithmMode = DIJKSTRA;
         setAlgorithmNameLabel();
@@ -350,7 +359,7 @@ public class FXMLController implements Initializable {
         Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res;
         if (selectedNodes.size() > 1) {
-            res = Dijkstra.sssp(graph, selectedNodes.pop().index, selectedNodes.pop().index, algorithmMode);
+            res = Dijkstra.sssp(graph, selectedNodes.peekFirst().index, selectedNodes.peekLast().index, algorithmMode);
         } else {
             res = Dijkstra.randomPath(graph, algorithmMode);
         }
