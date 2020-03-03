@@ -8,7 +8,11 @@ import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
 import model.Graph;
 import model.Node;
-import model.Util;
+import pbfparsing.delegates.CollapsingStrategyFull;
+import pbfparsing.delegates.CollapsingStrategyNone;
+import pbfparsing.delegates.StandardFilteringStrategy;
+import pbfparsing.interfaces.CollapsingStrategy;
+import pbfparsing.interfaces.FilteringStrategy;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +35,8 @@ public class PBFParser {
     private int indexCounter;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
+    private FilteringStrategy filteringStrategy = new StandardFilteringStrategy();
+    private CollapsingStrategy collapsingStrategy = new CollapsingStrategyFull();
 
     /**
      * The constructor of the PBFParser.
@@ -60,7 +66,7 @@ public class PBFParser {
      * This method iterates through the .pbf file. It extracts all the important information
      * and converts it into our representation of a graph.
      *
-     * @param validNodesMap A set of all the valid nodes.
+     * @param validNodesMap A map of all the valid nodes.
      * @throws FileNotFoundException If the file cannot be found.
      */
     private void buildGraph(Map<String, Integer> validNodesMap) throws FileNotFoundException {
@@ -73,10 +79,10 @@ public class PBFParser {
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
                 String id = Long.toString(node.getId());
-                allNodeMap.put(id, constructGraphNode(node));
+                Node n = constructGraphNode(node);
+                allNodeMap.put(id, n);
                 // If a valid node is found, it will add it to the Graph.
                 if (validNodesMap.containsKey(id)) {
-                    Node n = constructGraphNode(node);
                     addNodeToGraph(id, n);
                 }
             }
@@ -84,18 +90,14 @@ public class PBFParser {
             if (container.getType() == EntityType.Way) {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
-                String highwayValue = tags.get("highway");
+                String roadValue = tags.get("highway");
                 // We filter out any unwanted type of road, and continue the search through the file.
-                if (highwayValue == null) {
-                    continue;
-                }
-                boolean filtered = shouldFilter(highwayValue);
-                if (filtered) {
+                if (filteringStrategy.shouldFilter(roadValue)) {
                     continue;
                 }
                 // If a valid Way is found, we iterate through it and add all the edges.
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
-                    addEdgesGraph(way, allNodeMap);
+                    collapsingStrategy.addEdgesGraph(way, allNodeMap, distanceStrategy, graph, nodeMap);
                 }
             }
         }
@@ -109,58 +111,6 @@ public class PBFParser {
     }
 
     /**
-     * A helper method to convert from OsmWay to our representation of Edges.
-     *
-     * @param way        An OsmWay from the .pbf file.
-     * @param allNodeMap
-     */
-    private void addEdgesGraph(OsmWay way, Map<String, Node> allNodeMap) {
-        int numNodes = way.getNumberOfNodes();
-        boolean finished = false;
-        boolean first = true;
-        String lastNodeId = null;
-        double cum_Dist = 0;
-        for (int i = 0; i < numNodes; i++) {
-            if (finished) return;
-            for (int j = 1; j < numNodes; j++) {
-                if (j == numNodes - 1) {
-                    finished = true;
-                }
-                Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
-                Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
-                if (node1 == null) {
-                    break;
-                }
-                if (first) {
-                    first = false;
-                    lastNodeId = Long.toString(way.getNodeId(i));
-                }
-                if (node2 == null) {
-                    Node intermediateNode1 = allNodeMap.get(lastNodeId);
-                    Node intermediateNode2 = allNodeMap.get(Long.toString(way.getNodeId(j)));
-                    lastNodeId = Long.toString(way.getNodeId(j));
-                    cum_Dist += distanceStrategy.apply(intermediateNode1, intermediateNode2);
-                    continue;
-                }
-
-                node1 = allNodeMap.get(Long.toString(way.getNodeId(i)));
-                Node intermediate = allNodeMap.get(lastNodeId);
-                node2 = allNodeMap.get(Long.toString(way.getNodeId(j)));
-                cum_Dist += distanceStrategy.apply(intermediate, node2);
-
-                graph.addEdge(node1, node2, cum_Dist);
-                graph.addEdge(node2, node1, cum_Dist);
-                /*graph.addEdge(node1, node2, distanceStrategy.apply(node1, node2));
-                graph.addEdge(node2, node1, distanceStrategy.apply(node1, node2));*/
-
-                cum_Dist = 0;
-                lastNodeId = Long.toString(way.getNodeId(j));
-                i = j;
-            }
-        }
-    }
-
-    /**
      * A helper method to convert from OsmNode to our representation of a Node.
      *
      * @param node An OsmNode from the .pbf file.
@@ -168,8 +118,7 @@ public class PBFParser {
     private Node constructGraphNode(OsmNode node) {
         double lat = Math.round(node.getLatitude() * 100000000.0) / 100000000.0;
         double lon = Math.round(node.getLongitude() * 100000000.0) / 100000000.0;
-        Node n = new Node(indexCounter, lat, lon);
-        return n;
+        return new Node(indexCounter, lat, lon);
     }
 
     /**
@@ -187,35 +136,18 @@ public class PBFParser {
             if (container.getType() == EntityType.Way) {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
-                String highwayValue = tags.get("highway");
-                if (highwayValue == null) {
+                String roadValue = tags.get("highway");
+
+                if (filteringStrategy.shouldFilter(roadValue)) {
                     continue;
                 }
 
-                boolean filtered = shouldFilter(highwayValue);
-                if (filtered) {
-                    continue;
-                }
-
-                for (int i = 0; i < way.getNumberOfNodes(); i++) {
-                    int referenceCount = nodeRefMap.getOrDefault(Long.toString(way.getNodeId(i)), 0);
-                    nodeRefMap.put(Long.toString(way.getNodeId(i)), referenceCount + 1);
-                }
+                collapsingStrategy.createNodeMap(way, nodeRefMap);
             }
         }
-        System.out.println("noderef size: " + nodeRefMap.size());
-        nodeRefMap.values().removeIf(e -> e <= 1);
-        System.out.println("noderef size: " + nodeRefMap.size());
-        return nodeRefMap;
-    }
 
-    private boolean shouldFilter(String hV) {
-        // TODO: Add more filters from main project.
-        return hV.equals("cycleway") || hV.equals("footway") || hV.equals("path") || hV.equals("construction")
-                || hV.equals("proposed") || hV.equals("raceway") || hV.equals("escape")
-                || hV.equals("pedestrian") || hV.equals("track") || hV.equals("service")
-                || hV.equals("bus_guideway") || hV.equals("steps")
-                || hV.equals("corridor");
+        nodeRefMap.values().removeIf(e -> e <= 1);
+        return nodeRefMap;
     }
 
     public Graph getGraph() {
