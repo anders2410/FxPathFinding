@@ -40,8 +40,8 @@
 
             <Separator prefHeight="0.0" prefWidth="55" style="-fx-background-color: white"/>
 
-            <Button alignment="CENTER" mnemonicParsing="false" onAction="#handleRunAlgorithmEvent"
-                    prefHeight="55.0" prefWidth="55.0" styleClass="button1" text="Run">
+            <Button alignment="CENTER" mnemonicParsing="false" onAction="#handleLandmarksEvent"
+                    prefHeight="55.0" prefWidth="55.0" styleClass="button1" text="Land">
             </Button>
 
             <Separator prefHeight="0.0" prefWidth="55" style="-fx-background-color: white"/>
@@ -111,6 +111,7 @@
             <Label fx:id="nodes_visited_label" prefHeight="20.0" prefWidth="200.0" text="Nodes Visited: "/>
             <Label fx:id="nodes_label" prefHeight="20.0" prefWidth="200.0" text="Number of Nodes: "/>
             <Label fx:id="edges_label" prefHeight="20.0" prefWidth="200.0" text="Number of Edges: "/>
+            <Label fx:id="seed_label" prefHeight="20.0" prefWidth="200.0" text="Seed: "/>
         </VBox>
     </AnchorPane>
 

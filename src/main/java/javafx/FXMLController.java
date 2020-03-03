@@ -1,6 +1,5 @@
 package javafx;
 
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -33,6 +32,7 @@ import java.util.function.BiFunction;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
+import static paths.Dijkstra.seed;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -47,6 +47,7 @@ public class FXMLController implements Initializable {
     @FXML private Label nodes_visited_label;
     @FXML private Label nodes_label;
     @FXML private Label edges_label;
+    @FXML private Label seed_label;
     @FXML private Button dijkstraButton;
     @FXML private Button biDijkstraButton;
     @FXML private Button aStarButton;
@@ -75,8 +76,9 @@ public class FXMLController implements Initializable {
         canvas.setOnMouseClicked(getMouseEventEventHandler());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("denmark-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
         Dijkstra.setDistanceStrategy(distanceStrategy);
+        setSeedLabel();
     }
 
     private void setUpNewGraph(String fileName) {
@@ -141,6 +143,15 @@ public class FXMLController implements Initializable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public void runAlgorithm() {
+        if (selectedNodes.size() <= 1) {
+            return;
+        }
+        ShortestPathResult res = Dijkstra.sssp(graph, selectedNodes.peekFirst().index, selectedNodes.peekLast().index, algorithmMode);
+        redrawGraph();
+        setLabels(Util.roundDouble(res.d), res.visitedNodes);
     }
 
     private void setRatios() {
@@ -345,6 +356,7 @@ public class FXMLController implements Initializable {
             if (event.getButton() == MouseButton.SECONDARY) {
                 handleRightClick(event);
             }
+
         };
     }
 
@@ -353,8 +365,12 @@ public class FXMLController implements Initializable {
         double y = event.getY();
         Node node = selectClosestNode(x, y);
         selectedNodes.addLast(node);
-        graph.resetPathTrace();
-        redrawGraph();
+        if (selectedNodes.size() > 1) {
+            runAlgorithm();
+        } else {
+            graph.resetPathTrace();
+            redrawGraph();
+        }
     }
 
     private void handleRightClick(MouseEvent event) {
@@ -365,24 +381,28 @@ public class FXMLController implements Initializable {
 
     public void handleDijkstraEvent() {
         algorithmMode = DIJKSTRA;
+        runAlgorithm();
         setAlgorithmNameLabel();
         selectButton(dijkstraButton);
     }
 
-    public void handleBiDijkstraEvent(ActionEvent actionEvent) {
+    public void handleBiDijkstraEvent() {
         algorithmMode = BI_DIJKSTRA;
+        runAlgorithm();
         setAlgorithmNameLabel();
         selectButton(biDijkstraButton);
     }
 
     public void handleAStarEvent() {
         algorithmMode = A_STAR;
+        runAlgorithm();
         setAlgorithmNameLabel();
         selectButton(aStarButton);
     }
 
-    public void handleBiAStarEvent(ActionEvent actionEvent) {
+    public void handleBiAStarEvent() {
         algorithmMode = BI_A_STAR;
+        runAlgorithm();
         setAlgorithmNameLabel();
         selectButton(biAStarButton);
     }
@@ -395,22 +415,23 @@ public class FXMLController implements Initializable {
         algoButton.setBlendMode(BlendMode.GREEN);
     }
 
-    public void handleRunAlgorithmEvent(ActionEvent actionEvent) {
-        ShortestPathResult res;
-        if (selectedNodes.size() > 1) {
-            res = Dijkstra.sssp(graph, selectedNodes.peekFirst().index, selectedNodes.peekLast().index, algorithmMode);
-        } else {
-            res = Dijkstra.randomPath(graph, algorithmMode);
-        }
-        redrawGraph();
-        setLabels(Util.roundDouble(res.d), res.visitedNodes);
+    public void handleLandmarksEvent() {
+
     }
 
     public void handleSeedEvent() {
-        Dijkstra.seed++;
+        seed++;
+        int n = graph.getNodeAmount();
+        Random random = new Random(seed);
+        selectedNodes = new ArrayDeque<>();
+        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
+        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
+        runAlgorithm();
+        setSeedLabel();
     }
 
     public void handleChooseFileEvent() {
+        selectedNodes = new ArrayDeque<>();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
         fileChooser.getExtensionFilters().addAll(
@@ -438,5 +459,9 @@ public class FXMLController implements Initializable {
 
     private void setAlgorithmNameLabel() {
         algorithm_label.setText("Algorithm: " + algorithmNames.get(algorithmMode));
+    }
+
+    private void setSeedLabel() {
+        seed_label.setText("Seed: " + Dijkstra.seed);
     }
 }
