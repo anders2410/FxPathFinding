@@ -280,7 +280,7 @@ public class Dijkstra {
             return new ShortestPathResult(distance, shortestPathA, visitedA.size());
         }
 
-        return null;
+        return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
     }
 
     public static void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
