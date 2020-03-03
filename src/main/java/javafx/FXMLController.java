@@ -156,16 +156,7 @@ public class FXMLController implements Initializable {
      * the nodes and draw the Edges.
      */
     private void drawGraph() {
-        for (Node selectedNode : selectedNodes) {
-            double x1 = projectXCordMercator(selectedNode.longitude) - minXY.x;
-            double y1 = projectYCordMercator(selectedNode.latitude) - minXY.y;
-
-            double adjustedX1 = ((x1 * globalRatio));
-            double adjustedY1 = (canvas.getHeight() - (y1 * globalRatio));
-            gc.setFill(Color.PURPLE);
-            gc.fillRect(adjustedX1, adjustedY1, 10, 10);
-
-        }
+        drawSelectedNodes();
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
         // Resets the 'isDrawn' property inside Edges.
@@ -179,33 +170,36 @@ public class FXMLController implements Initializable {
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
                 // If the edge doesn't violate these constrains it will be drawn in the Canvas.
                 if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
-                    double x1 = projectXCordMercator(nx.longitude) - minXY.x;
-                    double y1 = projectYCordMercator(nx.latitude) - minXY.y;
+                    double adjustedX1 = getNodeScreenPosX(nx);
+                    double adjustedY1 = getNodeScreenPosY(nx);
 
-                    double x2 = projectXCordMercator(ny.longitude) - minXY.x;
-                    double y2 = projectYCordMercator(ny.latitude) - minXY.y;
+                    double adjustedX2 = getNodeScreenPosX(ny);
+                    double adjustedY2 = getNodeScreenPosY(ny);
 
-                    double adjustedX1 = x1 * globalRatio;
-                    double adjustedY1 = canvas.getHeight() - y1 * globalRatio;
-
-                    double adjustedX2 = x2 * globalRatio;
-                    double adjustedY2 = canvas.getHeight() - y2 * globalRatio;
-
-                    /*System.out.println("---------------");
-                    System.out.println("(" + x1 + "," + y1 + ") -> (" + x2 + "," + y2 + ")");
-                    System.out.println("(" + adjustedX1 + "," + adjustedY1 + ") -> (" + adjustedX2 + "," + adjustedY2 + ")");*/
-
-                    gc.setStroke(Color.BLACK);
-                    if (edge.visited) {
-                        gc.setStroke(Color.BLUE);
-                    }
-                    if (edge.inPath) {
-                        gc.setStroke(Color.RED);
-                    }
+                    gc.setStroke(chooseStrokeColor(edge));
                     gc.strokeLine(adjustedX1, adjustedY1, adjustedX2, adjustedY2);
                     edge.isDrawn = true;
                 }
             }
+        }
+    }
+
+    private Color chooseStrokeColor(Edge edge) {
+        if (edge.inPath) {
+            return Color.RED;
+        }
+        if (edge.visited) {
+            return Color.BLUE;
+        }
+        return Color.BLACK;
+    }
+
+    private void drawSelectedNodes() {
+        for (Node selectedNode : selectedNodes) {
+            double adjustedX1 = getNodeScreenPosX(selectedNode);
+            double adjustedY1 = getNodeScreenPosY(selectedNode);
+            gc.setFill(Color.PURPLE);
+            gc.fillRect(adjustedX1, adjustedY1, 10, 10);
         }
     }
 
@@ -236,6 +230,11 @@ public class FXMLController implements Initializable {
         return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
     }
 
+    private double getNodeScreenPosX(Node node) {
+        double x = projectXCordMercator(node.longitude) - minXY.x;
+        return x * globalRatio;
+    }
+
     /**
      * @param cord latitude input
      * @return y coordinate in canvas
@@ -245,9 +244,14 @@ public class FXMLController implements Initializable {
         return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
     }
 
+    private double getNodeScreenPosY(Node node) {
+        double y = projectYCordMercator(node.latitude) - minXY.y;
+        return canvas.getHeight() - y * globalRatio;
+    }
+
     public double nodeToPointDistance(Node node, double x, double y) {
-        double nodeX = (projectXCordMercator(node.longitude) - minXY.x) * globalRatio;
-        double nodeY = canvas.getHeight() - (projectYCordMercator(node.latitude) - minXY.y) * globalRatio;
+        double nodeX = getNodeScreenPosX(node);
+        double nodeY = getNodeScreenPosY(node);
         return Math.sqrt(Math.pow(nodeX - x, 2) + Math.pow(nodeY - y, 2));
     }
 
