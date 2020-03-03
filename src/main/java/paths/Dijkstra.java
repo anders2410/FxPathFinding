@@ -57,19 +57,19 @@ public class Dijkstra {
 
         while (!nodeQueue.isEmpty()) {
             Integer currentNode = nodeQueue.poll();
+            if (seenNodes.contains(currentNode)) {
+                continue;
+            }
             seenNodes.add(currentNode);
             if (currentNode == to) {
                 break;
             }
             for (Edge edge : adjList.get(currentNode)) {
-                int neighbour = edge.to;
-                boolean neighourSeen = seenNodes.contains(neighbour);
-                if (!neighourSeen) {
-                    relax(nodeDist, pathMap, currentNode, nodeQueue, edge);
-                    if (trace) {
-                        System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
-                    }
+                relax(nodeDist, pathMap, currentNode, nodeQueue, edge);
+                if (trace) {
+                    System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
+
             }
             trace(nodeQueue); //Print queue if trace
         }
