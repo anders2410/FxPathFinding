@@ -109,7 +109,6 @@ public class FXMLController implements Initializable {
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
-        System.out.println(Math.abs(maxXY.x - minXY.x));
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
@@ -274,29 +273,29 @@ public class FXMLController implements Initializable {
     // Here comes all the eventHandle methods that are called when clicked
     public void handleNavUpEvent() {
         clearCanvas();
-        yOffset -= (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) :
-                ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
+        yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
+                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
     public void handleNavDownEvent() {
         clearCanvas();
-        yOffset += (zoomFactor <= 1) ? ((0.1* heightOfBoundingBox *mapHeightRatio)/zoomFactor) :
-                ((0.1* heightOfBoundingBox *mapHeightRatio)/(2.5*zoomFactor));
+        yOffset += (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
+                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
     public void handleNavLeftEvent() {
         clearCanvas();
-        xOffset += (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) :
-                ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
+        xOffset += (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
+                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
     public void handleNavRightEvent() {
         clearCanvas();
-        xOffset -= (zoomFactor <= 1) ? ((0.1*widthOfBoundingBox*mapWidthRatio)/zoomFactor) :
-                ((0.1*widthOfBoundingBox*mapWidthRatio)/(2.5*zoomFactor));
+        xOffset -= (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
+                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
         drawGraph();
     }
 
@@ -348,7 +347,7 @@ public class FXMLController implements Initializable {
 
     public void handleRunAlgorithmEvent(ActionEvent actionEvent) {
         clearCanvas();
-        Dijkstra.distanceStrategy = distanceStrategy;
+        Dijkstra.setDistanceStrategy(distanceStrategy);
         ShortestPathResult res;
         if (selectedNodes.size() > 1) {
             res = Dijkstra.sssp(graph, selectedNodes.pop().index, selectedNodes.pop().index, algorithmMode);
