@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static java.util.Collections.singletonList;
+
 public class Dijkstra {
 
     public static boolean trace = false;
@@ -21,6 +23,7 @@ public class Dijkstra {
     private static Function<Integer, Double> choosePriorityStrategy(Graph graph, int from, int to, AlgorithmMode mode, List<Double> nodeDist) {
         List<Node> nodeList = graph.getNodeList();
         switch (mode) {
+            default:
             case DIJKSTRA:
             case BI_DIJKSTRA:
                 return nodeDist::get;
@@ -32,12 +35,14 @@ public class Dijkstra {
                     return nodeDist.get(i) + distanceStrategy.apply(curNode, target);
                 };
         }
-        return null;
     }
 
     public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
         graph.resetPathTrace();
         globalNodeList = graph.getNodeList();
+        if (from == to) {
+            return new ShortestPathResult(0, singletonList(from), 0);
+        }
         ShortestPathResult result;
         if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR) {
             result = biDirectional(graph, from, to, mode);
@@ -56,7 +61,7 @@ public class Dijkstra {
             estimatedDist.put(from, 0.0);
         }
         Function<Integer, Double> priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
-        Comparator<Integer> comparator = getComparator(priorityStrategy);
+        Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(from);
         Set<Integer> seenNodes = new LinkedHashSet<>();
@@ -84,10 +89,6 @@ public class Dijkstra {
         return new ShortestPathResult(nodeDist.get(to), shortestPath, seenNodes.size());
     }
 
-    private static Comparator<Integer> getComparator(Function<Integer, Double> priorityStrategy) {
-        return Comparator.comparingDouble(priorityStrategy::apply);
-    }
-
     public static ShortestPathResult biDirectional(Graph graph, int from, int to, AlgorithmMode mode) {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
@@ -101,7 +102,7 @@ public class Dijkstra {
             estimatedDistA.put(from, 0.0);
         }
         Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(graph, from, to, mode, nodeDistA);
-        Comparator<Integer> comparatorA = getComparator(priorityStrategyA);
+        Comparator<Integer> comparatorA = Comparator.comparingDouble(priorityStrategyA::apply);
 
         // Queue to hold the paths from Node: from.
         PriorityQueue<Integer> queueA = new PriorityQueue<>(comparatorA);
@@ -118,7 +119,7 @@ public class Dijkstra {
             estimatedDistB.put(to, 0.0);
         }
         Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(graph, to, from, mode, nodeDistB);
-        Comparator<Integer> comparatorB = getComparator(priorityStrategyB);
+        Comparator<Integer> comparatorB = Comparator.comparingDouble(priorityStrategyB::apply);
 
         // Queue to hold the paths from Node: to.
         PriorityQueue<Integer> queueB = new PriorityQueue<>(comparatorB);
