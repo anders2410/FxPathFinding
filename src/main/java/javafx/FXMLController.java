@@ -441,8 +441,10 @@ public class FXMLController implements Initializable {
         int n = graph.getNodeAmount();
         Random random = new Random(seed);
         selectedNodes = new ArrayDeque<>();
-        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
-        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
+//        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
+//        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
+        selectedNodes.add(graph.getNodeList().get(1100));
+        selectedNodes.add(graph.getNodeList().get(10676));
         runAlgorithm();
         setSeedLabel();
     }

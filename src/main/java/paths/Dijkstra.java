@@ -26,6 +26,34 @@ public class Dijkstra {
 
     private static AlgorithmMode mode;
 
+    private static BiTerminationStrategy chooseTerminationStrategy(int to) {
+        switch (mode) {
+            default:
+
+            case BI_DIJKSTRA:
+                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
+                    Integer topA = forwardQueue.peek();
+                    Integer topB = backwardQueue.peek();
+                    if (topA != null && topB != null) {
+                        double combinedDistance = forwardNodeDist.get(topA) + backwardNodeDist.get(topB);
+                        return combinedDistance >= goal;
+                    }
+                    return false;
+                };
+
+            case BI_A_STAR:
+                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
+                    Integer topA = forwardQueue.peek();
+                    Integer topB = backwardQueue.peek();
+                    if (topA != null && topB != null) {
+                        double combinedDistance = forwardEstimatedNodeDist.get(topA) + backwardEstimatedNodeDist.get(topB);
+                        return combinedDistance >= goal + distanceStrategy.apply(nodeList.get(to), nodeList.get(source)) - distanceStrategy.apply(nodeList.get(to), nodeList.get(to));
+                    }
+                    return false;
+                };
+        }
+    }
+
     private static Function<Integer, Double> choosePriorityStrategy(List<Double> nodeDist) {
         List<Node> nodeList = graph.getNodeList();
         switch (mode) {
@@ -60,11 +88,25 @@ public class Dijkstra {
                     }
                 };
             case A_STAR:
-            case BI_A_STAR:
                 return (from, edge) -> {
                     edge.visited = true;
                     double newDist = nodeDist.get(from) + edge.d;
                     double weirdWeight = estimatedDist.get(from) + edge.d - distanceStrategy.apply(nodeList.get(from), nodeList.get(target)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(target));
+                    if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
+                        pq.remove(edge.to);
+                        estimatedDist.put(edge.to, weirdWeight);
+                        nodeDist.set(edge.to, newDist);
+                        pathMap.put(edge.to, from);
+                        pq.add(edge.to);
+                    }
+                };
+            case BI_A_STAR:
+                return (from, edge) -> {
+                    edge.visited = true;
+                    double newDist = nodeDist.get(from) + edge.d;
+                    double potentialFunc = -distanceStrategy.apply(nodeList.get(from), nodeList.get(target)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(target));
+                    double potentialFuncStart = -distanceStrategy.apply(nodeList.get(from), nodeList.get(source)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source));
+                    double weirdWeight = estimatedDist.get(from) + edge.d + potentialFunc;
                     if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
                         pq.remove(edge.to);
                         estimatedDist.put(edge.to, weirdWeight);
@@ -142,7 +184,7 @@ public class Dijkstra {
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
-
+        BiTerminationStrategy terminationStrategy = chooseTerminationStrategy(target);
         //A
         List<Double> nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDistA = null;
@@ -185,7 +227,6 @@ public class Dijkstra {
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty()) {
             // Dijkstra from the 'From'-side
-            if (checkTermination(nodeDistA, queueA, nodeDistB, queueB, goalDistance)) break;
             Integer nextA = queueA.poll();
             if (nextA != null) {
                 visitedA.add(nextA);
@@ -201,7 +242,6 @@ public class Dijkstra {
             }
 
             // Dijkstra from the 'To'-side
-            if (checkTermination(nodeDistA, queueA, nodeDistB, queueB, goalDistance)) break;
             Integer nextB = queueB.poll();
             if (nextB != null) {
                 visitedB.add(nextB);
@@ -214,6 +254,9 @@ public class Dijkstra {
                     }
                     relaxStrategyB.relax(nextB, edge);
                 }
+            }
+            if (terminationStrategy.checkTermination(nodeDistA, estimatedDistA, queueA, nodeDistB, estimatedDistB, queueB, goalDistance)) {
+                break;
             }
         }
 

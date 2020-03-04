@@ -33,9 +33,9 @@ public class DijkstraPBFTest {
 
     @Test
     public void testDifferenceInPath() {
-        Dijkstra.seed = 1183;
-        ShortestPathResult resD = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
-        ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
+        Dijkstra.seed = 2477;
+        ShortestPathResult resD = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
+        ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
 
@@ -73,7 +73,7 @@ public class DijkstraPBFTest {
     @Test
     public void testAlgorithms() {
         int[][] matrix = new int[4][4];
-        for (int i = 0; i < 400; i++) {
+        for (int i = 0; i < 4000; i++) {
             Dijkstra.seed = i;
             ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
@@ -108,6 +108,7 @@ public class DijkstraPBFTest {
                 matrix[0][2]++;
             }
             if (Math.abs(distDijk - distBiAstar) > 0.00000000001 || !pathDijk.equals(pathBiAstar)) {
+                System.out.println(i);
                 matrix[0][3]++;
             }
             if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
