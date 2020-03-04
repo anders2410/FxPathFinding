@@ -12,15 +12,21 @@ public class Dijkstra {
 
     public static boolean trace = false;
 
+    public static boolean traceResult = false;
+
     public static int seed = 0;
 
-    public static boolean result = false;
-
-    private static List<Node> globalNodeList;
+    private static List<Node> nodeList;
 
     private static BiFunction<Node, Node, Double> distanceStrategy;
 
-    private static Function<Integer, Double> choosePriorityStrategy(Graph graph, int from, int to, AlgorithmMode mode, List<Double> nodeDist) {
+    private static Graph graph;
+
+    private static int source, target;
+
+    private static AlgorithmMode mode;
+
+    private static Function<Integer, Double> choosePriorityStrategy(List<Double> nodeDist) {
         List<Node> nodeList = graph.getNodeList();
         switch (mode) {
             default:
@@ -31,41 +37,83 @@ public class Dijkstra {
             case BI_A_STAR:
                 return (i) -> {
                     Node curNode = nodeList.get(i);
-                    Node target = nodeList.get(to);
-                    return nodeDist.get(i) + distanceStrategy.apply(curNode, target);
+                    Node targetNode = nodeList.get(target);
+                    return nodeDist.get(i) + distanceStrategy.apply(curNode, targetNode);
                 };
         }
     }
 
-    public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
+    private static RelaxStrategy chooseRelaxStrategy(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq) {
+        switch (mode) {
+            default:
+            case DIJKSTRA:
+            case BI_DIJKSTRA:
+                return (from, edge) -> {
+                    edge.visited = true;
+                    double newDist = nodeDist.get(from) + edge.d;
+
+                    if (newDist < nodeDist.get(edge.to)) {
+                        pq.remove(edge.to);
+                        nodeDist.set(edge.to, newDist);
+                        pathMap.put(edge.to, from);
+                        pq.add(edge.to);
+                    }
+                };
+            case A_STAR:
+            case BI_A_STAR:
+                return (from, edge) -> {
+                    edge.visited = true;
+                    double newDist = nodeDist.get(from) + edge.d;
+                    double weirdWeight = estimatedDist.get(from) + edge.d - distanceStrategy.apply(nodeList.get(from), nodeList.get(target)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(target));
+                    if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
+                        pq.remove(edge.to);
+                        estimatedDist.put(edge.to, weirdWeight);
+                        nodeDist.set(edge.to, newDist);
+                        pathMap.put(edge.to, from);
+                        pq.add(edge.to);
+                    }
+                };
+        }
+    }
+
+    private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP){
+        graph = graphP;
         graph.resetPathTrace();
-        globalNodeList = graph.getNodeList();
-        if (from == to) {
-            return new ShortestPathResult(0, singletonList(from), 0);
+        nodeList = graph.getNodeList();
+        mode = modeP;
+        source = sourceP;
+        target = targetP;
+    }
+
+    public static ShortestPathResult sssp(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
+        initializeGlobalFields(graphP, modeP, sourceP, targetP);
+        if (source == target) {
+            return new ShortestPathResult(0, singletonList(source), 0);
         }
         ShortestPathResult result;
         if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR) {
-            result = biDirectional(graph, from, to, mode);
+            result = biDirectional();
         } else {
-            result = oneDirectional(graph, from, to, mode);
+            result = oneDirectional();
         }
         return result;
     }
 
-    private static ShortestPathResult oneDirectional(Graph graph, int from, int to, AlgorithmMode mode) {
+    private static ShortestPathResult oneDirectional() {
         List<List<Edge>> adjList = graph.getAdjList();
-        List<Double> nodeDist = initNodeDist(from, adjList.size());
+        List<Double> nodeDist = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDist = null;
         if (mode == AlgorithmMode.A_STAR) {
             estimatedDist = new HashMap<>();
-            estimatedDist.put(from, 0.0);
+            estimatedDist.put(source, 0.0);
         }
-        Function<Integer, Double> priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
+        Function<Integer, Double> priorityStrategy = choosePriorityStrategy(nodeDist);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
-        nodeQueue.add(from);
+        nodeQueue.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         Map<Integer, Integer> pathMap = new HashMap<>();
+        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDist, estimatedDist, pathMap, nodeQueue);
 
         while (!nodeQueue.isEmpty()) {
             Integer currentNode = nodeQueue.poll();
@@ -73,11 +121,11 @@ public class Dijkstra {
                 continue;
             }
             seenNodes.add(currentNode);
-            if (currentNode == to) {
+            if (currentNode == target) {
                 break;
             }
             for (Edge edge : adjList.get(currentNode)) {
-                relax(nodeDist, estimatedDist, pathMap, currentNode, nodeQueue, edge, to);
+                relaxStrategy.relax(currentNode, edge);
                 if (trace) {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
@@ -85,48 +133,51 @@ public class Dijkstra {
             trace(nodeQueue); //Print queue if trace
         }
 
-        List<Integer> shortestPath = extractPath(pathMap, adjList, from, to);
-        return new ShortestPathResult(nodeDist.get(to), shortestPath, seenNodes.size());
+        List<Integer> shortestPath = extractPath(pathMap, adjList, source, target);
+        return new ShortestPathResult(nodeDist.get(target), shortestPath, seenNodes.size());
     }
 
-    public static ShortestPathResult biDirectional(Graph graph, int from, int to, AlgorithmMode mode) {
+    private static ShortestPathResult biDirectional() {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         List<List<Edge>> adjList = graph.getAdjList();
 
         //A
-        List<Double> nodeDistA = initNodeDist(from, adjList.size());
+        List<Double> nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDistA = null;
         if (mode == AlgorithmMode.BI_A_STAR) {
             estimatedDistA = new HashMap<>();
-            estimatedDistA.put(from, 0.0);
+            estimatedDistA.put(source, 0.0);
         }
-        Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(graph, from, to, mode, nodeDistA);
+        Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(nodeDistA);
         Comparator<Integer> comparatorA = Comparator.comparingDouble(priorityStrategyA::apply);
 
-        // Queue to hold the paths from Node: from.
+        // Queue to hold the paths from Node: source.
         PriorityQueue<Integer> queueA = new PriorityQueue<>(comparatorA);
-        queueA.add(from);
+        queueA.add(source);
         // A set of visited nodes starting from Node a.
         Set<Integer> visitedA = new HashSet<>();
         Map<Integer, Integer> pathMapA = new HashMap<>();
+        RelaxStrategy relaxStrategyA = chooseRelaxStrategy(nodeDistA, estimatedDistA, pathMapA, queueA);
 
         //B
-        List<Double> nodeDistB = initNodeDist(to, adjList.size());
+        List<Double> nodeDistB = initNodeDist(target, adjList.size());
         Map<Integer, Double> estimatedDistB = null;
         if (mode == AlgorithmMode.BI_A_STAR) {
             estimatedDistB = new HashMap<>();
-            estimatedDistB.put(to, 0.0);
+            estimatedDistB.put(target, 0.0);
         }
-        Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(graph, to, from, mode, nodeDistB);
+        Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(nodeDistB);
         Comparator<Integer> comparatorB = Comparator.comparingDouble(priorityStrategyB::apply);
 
         // Queue to hold the paths from Node: to.
         PriorityQueue<Integer> queueB = new PriorityQueue<>(comparatorB);
-        queueB.add(to);
+        queueB.add(target);
         // A set of visited nodes starting from Node b.
         Set<Integer> visitedB = new HashSet<>();
         Map<Integer, Integer> pathMapB = new HashMap<>();
+        RelaxStrategy relaxStrategyB = chooseRelaxStrategy(nodeDistB, estimatedDistB, pathMapB, queueB);
+
         double goalDistance = Double.MAX_VALUE;
         boolean intersectionFound = false;
         int middlePoint = -1;
@@ -144,7 +195,7 @@ public class Dijkstra {
                             goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
                         }
                     }
-                    relax(nodeDistA, estimatedDistA, pathMapA, nextA, queueA, edge, to);
+                    relaxStrategyA.relax(nextA, edge);
                 }
             }
 
@@ -160,14 +211,14 @@ public class Dijkstra {
                             goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
                         }
                     }
-                    relax(nodeDistB, estimatedDistB, pathMapB, nextB, queueB, edge, to);
+                    relaxStrategyB.relax(nextB, edge);
                 }
             }
         }
 
         visitedA.addAll(visitedB);
-        List<Integer> shortestPath = extractPath(pathMapA, adjList, from, middlePoint);
-        List<Integer> shortestPathB = extractPath(pathMapB, adjList, to, middlePoint);
+        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, middlePoint);
+        List<Integer> shortestPathB = extractPath(pathMapB, adjList, target, middlePoint);
         if (middlePoint == -1) {
             return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
         }
@@ -187,28 +238,6 @@ public class Dijkstra {
             return combinedDistance >= goalDistance;
         }
         return false;
-    }
-
-    private static void relax(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> backPointers, int from, AbstractQueue<Integer> pq, Edge edge, int to) {
-        edge.visited = true;
-        double newDist = nodeDist.get(from) + edge.d;
-        if (estimatedDist == null) {
-            if (newDist < nodeDist.get(edge.to)) {
-                pq.remove(edge.to);
-                nodeDist.set(edge.to, newDist);
-                backPointers.put(edge.to, from);
-                pq.add(edge.to);
-            }
-        } else {
-            double weirdWeight = estimatedDist.get(from) + edge.d - distanceStrategy.apply(globalNodeList.get(from), globalNodeList.get(to)) + distanceStrategy.apply(globalNodeList.get(edge.to), globalNodeList.get(to));
-            if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
-                pq.remove(edge.to);
-                estimatedDist.put(edge.to, weirdWeight);
-                nodeDist.set(edge.to, newDist);
-                backPointers.put(edge.to, from);
-                pq.add(edge.to);
-            }
-        }
     }
 
     private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
@@ -234,18 +263,18 @@ public class Dijkstra {
         return path;
     }
 
-    public static ShortestPathResult randomPath(Graph graph, AlgorithmMode mode) {
-        int n = graph.getNodeAmount();
+    public static ShortestPathResult randomPath(Graph graphP, AlgorithmMode modeP) {
+        int n = graphP.getNodeAmount();
         Random random = new Random(seed);
-        int from = random.nextInt(n);
-        int to = random.nextInt(n);
+        int sourceR = random.nextInt(n);
+        int targetR = random.nextInt(n);
+        initializeGlobalFields(graphP, modeP, sourceR, targetR);
         ShortestPathResult res;
-        res = sssp(graph, from, to, mode);
-        if (result) {
-            System.out.println("Distance from " + from + " to " + to + " is " + res.d);
+        res = sssp(graph, source, target, mode);
+        if (traceResult) {
+            System.out.println("Distance from " + source + " to " + target + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");
         }
-
         return res;
     }
 
@@ -262,7 +291,7 @@ public class Dijkstra {
     }
 
     /**
-     * @param from id of source node
+     * @param from from
      * @param size number of nodes in total
      * @return a list of integers with max values in every entry, but that of the source node which is 0.
      */
@@ -275,14 +304,14 @@ public class Dijkstra {
         return nodeDist;
     }
 
-    private static void printInfo(int from, int to, Set<Integer> visitedA, Map<Integer, Integer> backPointersA, Set<Integer> visitedB, Map<Integer, Integer> backPointersB, int middlePoint) {
+    private static void printInfo(Set<Integer> visitedA, Map<Integer, Integer> backPointersA, Set<Integer> visitedB, Map<Integer, Integer> backPointersB, int middlePoint) {
         System.out.println(visitedA);
         System.out.println(visitedA.size());
         System.out.println();
 
-        System.out.println("From: " + from);
+        System.out.println("From: " + source);
         System.out.println("MiddlePoint: " + middlePoint);
-        System.out.println("To: " + to);
+        System.out.println("To: " + target);
 
         System.out.println("Contains MiddlePoint A: " + visitedA.contains(middlePoint));
         System.out.println("Contains MiddlePoint B: " + visitedB.contains(middlePoint));

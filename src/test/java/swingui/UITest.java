@@ -31,7 +31,7 @@ public class UITest {
         simpleUI.generateUI();
         simpleUI.setVisible(true);
         Dijkstra.trace = false;
-        Dijkstra.result = true;
+        Dijkstra.traceResult = true;
         while (true) {}
     }
 }
