@@ -56,7 +56,11 @@ public class Graph {
             for (Edge e : restoredList.get(i)) {
                 if (e.visited) {
                     for (int j = 0; j < mergeList.get(i).size(); j++) {
-                        if (e.to == mergeList.get(i).get(j).to) {
+                        Edge reciever = mergeList.get(i).get(j);
+                        if (e.to == reciever.to) {
+                            if (reciever.inPath) {
+                                e.inPath = true;
+                            }
                             e.visitedReverse = true;
                             mergeList.get(i).set(j, e);
                         }
@@ -72,7 +76,6 @@ public class Graph {
         for (int i = 0; i < nodeSize; i++) {
             reversedList.add(new LinkedList<>());
         }
-
         for (int i = 0; i < originalList.size(); i++) {
             for (Edge e : originalList.get(i)) {
                 Edge replacement = new Edge(i, e.d, e.visited, e.inPath, e.isDrawn, e.visitedReverse);

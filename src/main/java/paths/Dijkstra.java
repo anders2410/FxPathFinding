@@ -76,7 +76,7 @@ public class Dijkstra {
         }
     }
 
-    private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP){
+    private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         graph = graphP;
         graph.resetPathTrace();
         nodeList = graph.getNodeList();
@@ -141,6 +141,7 @@ public class Dijkstra {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         List<List<Edge>> adjList = graph.getAdjList();
+        List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
 
         //A
         List<Double> nodeDistA = initNodeDist(source, adjList.size());
@@ -204,7 +205,7 @@ public class Dijkstra {
             Integer nextB = queueB.poll();
             if (nextB != null) {
                 visitedB.add(nextB);
-                for (Edge edge : adjList.get(nextB)) {
+                for (Edge edge : revAdjList.get(nextB)) {
                     if (visitedA.contains(edge.to)) {
                         if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
                             middlePoint = edge.to;
@@ -218,7 +219,9 @@ public class Dijkstra {
 
         visitedA.addAll(visitedB);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, middlePoint);
-        List<Integer> shortestPathB = extractPath(pathMapB, adjList, target, middlePoint);
+        List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
+        graph.reversePaintEdges(revAdjList, adjList);
+
         if (middlePoint == -1) {
             return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
         }

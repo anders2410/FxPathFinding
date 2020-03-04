@@ -251,7 +251,7 @@ public class FXMLController implements Initializable {
             return Color.RED;
         }
         if (edge.visitedReverse) {
-            return Color.PURPLE;
+            return Color.DARKTURQUOISE;
         }
         if (edge.visited) {
             return Color.BLUE;
