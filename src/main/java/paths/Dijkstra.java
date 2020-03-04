@@ -38,9 +38,16 @@ public class Dijkstra {
     public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
         graph.resetPathTrace();
         globalNodeList = graph.getNodeList();
+        ShortestPathResult result;
         if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR) {
-            return bidirectional(graph, from, to, mode);
+            result = biDirectional(graph, from, to, mode);
+        } else {
+            result = oneDirectional(graph, from, to, mode);
         }
+        return result;
+    }
+
+    private static ShortestPathResult oneDirectional(Graph graph, int from, int to, AlgorithmMode mode) {
         List<List<Edge>> adjList = graph.getAdjList();
         List<Double> nodeDist = initNodeDist(from, adjList.size());
         Map<Integer, Double> estimatedDist = null;
@@ -81,7 +88,7 @@ public class Dijkstra {
         return Comparator.comparingDouble(priorityStrategy::apply);
     }
 
-    public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
+    public static ShortestPathResult biDirectional(Graph graph, int from, int to, AlgorithmMode mode) {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         List<List<Edge>> adjList = graph.getAdjList();
