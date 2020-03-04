@@ -42,7 +42,7 @@ public class Dijkstra {
         List<Double> nodeDist = initNodeDist(from, adjList.size());
         Function<Integer, Double> priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
         Comparator<Integer> comparator = getComparator(priorityStrategy);
-        PriorityQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
+        AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(from);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         Map<Integer, Integer> pathMap = new HashMap<>();
@@ -172,7 +172,7 @@ public class Dijkstra {
         return false;
     }
 
-    private static void relax(List<Double> nodeDist, Map<Integer, Integer> backPointers, int from, PriorityQueue<Integer> pq, Edge edge) {
+    private static void relax(List<Double> nodeDist, Map<Integer, Integer> backPointers, int from, AbstractQueue<Integer> pq, Edge edge) {
         edge.visited = true;
         double newDist = nodeDist.get(from) + edge.d;
         if (newDist < nodeDist.get(edge.to)) {
@@ -221,7 +221,7 @@ public class Dijkstra {
         return res;
     }
 
-    private static void trace(PriorityQueue<Integer> nodeQueue) {
+    private static void trace(AbstractQueue<Integer> nodeQueue) {
         PriorityQueue<Integer> copy = new PriorityQueue<>(nodeQueue);
         if (trace) {
             System.out.print("Nodequeue: ");
