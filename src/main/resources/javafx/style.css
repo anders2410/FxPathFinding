@@ -7,21 +7,21 @@
  White Smoke:        #F6F6F2
 
  TEST:
- BLACK: #1a2639
- DARK GREY: #3e4a61
- ORANGE/RED: #c24d2c
- WHITE: #d9dad7
+ BLACK:         #1a2639
+ DARK GREY:     #3e4a61
+ ORANGE/RED:    #c24d2c
+ WHITE:         #d9dad7
 
  */
 
 /* ----------------------------------------------------------------------------------------------------------------- */
 /* Navigation Buttons on map */
-.nav_buttons, .zoom_button {
+.map_nav_buttons, .map_zoom_button {
     -fx-background-color: rgba(26, 38, 57, 0.11);
     -fx-pref-width: 33.0;
 }
 
-.nav_buttons:hover, .zoom_button:hover {
+.map_nav_buttons:hover, .map_zoom_button:hover {
     -fx-background-color: #c24d2c;
 }
 
@@ -58,7 +58,7 @@
     -fx-background-color: #1a2639;
 }
 
-.button1 {
+.nav_button {
     -fx-background-color: #1a2639;
     -fx-font-weight: bold;
     -fx-text-fill: white;
@@ -67,7 +67,11 @@
     -fx-pref-width: 55.0;
 }
 
-.button1:hover {
+.nav_button:hover {
+    -fx-background-color: #c24d2c;
+}
+
+.nav_button:selected {
     -fx-background-color: #c24d2c;
 }
 

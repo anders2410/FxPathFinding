@@ -16,28 +16,28 @@
         <VBox layoutY="15.0" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0"
               AnchorPane.topAnchor="0">
 
-            <Button fx:id="dijkstraButton" styleClass="button1" alignment="CENTER" onAction="#handleDijkstraEvent"
+            <Button fx:id="dijkstraButton" styleClass="nav_button" alignment="CENTER" onAction="#handleDijkstraEvent"
                     text="DIJK"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="biDijkstraButton" styleClass="button1" alignment="CENTER" onAction="#handleBiDijkstraEvent"
+            <Button fx:id="biDijkstraButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiDijkstraEvent"
                     text="BiD"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="aStarButton" styleClass="button1" alignment="CENTER" onAction="#handleAStarEvent" text="A*"/>
+            <Button fx:id="aStarButton" styleClass="nav_button" alignment="CENTER" onAction="#handleAStarEvent" text="A*"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="biAStarButton" styleClass="button1" alignment="CENTER" onAction="#handleBiAStarEvent"
+            <Button fx:id="biAStarButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiAStarEvent"
                     text="BiA*"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="landmarkButton" styleClass="button1" alignment="CENTER" onAction="#handleLandmarksEvent" text="LAND"/>
+            <Button fx:id="landmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleLandmarksEvent" text="LAND"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button styleClass="button1" alignment="CENTER" onAction="#handleSeedEvent" text="SEED"/>
+            <Button styleClass="nav_button" alignment="CENTER" onAction="#handleSeedEvent" text="SEED"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button styleClass="button1" alignment="CENTER" onAction="#handleChooseFileEvent" text="FILE" />
+            <Button styleClass="nav_button" alignment="CENTER" onAction="#handleChooseFileEvent" text="FILE" />
             <Separator styleClass="nav_separator"/>
         </VBox>
     </AnchorPane>
@@ -64,18 +64,18 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             </rowConstraints>
 
-            <Button id="nav_up" styleClass="nav_buttons" onAction="#handleNavUpEvent" GridPane.columnIndex="1"/>
-            <Button id="nav_left" styleClass="nav_buttons" onAction="#handleNavLeftEvent" GridPane.rowIndex="1"/>
-            <Button id="nav_right" styleClass="nav_buttons"
+            <Button id="nav_up" styleClass="map_nav_buttons" onAction="#handleNavUpEvent" GridPane.columnIndex="1"/>
+            <Button id="nav_left" styleClass="map_nav_buttons" onAction="#handleNavLeftEvent" GridPane.rowIndex="1"/>
+            <Button id="nav_right" styleClass="map_nav_buttons"
                     onAction="#handleNavRightEvent" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-            <Button id="nav_down" styleClass="nav_buttons"
+            <Button id="nav_down" styleClass="map_nav_buttons"
                     onAction="#handleNavDownEvent" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
         </GridPane>
         <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="70.0"
               AnchorPane.bottomAnchor="43.0" AnchorPane.rightAnchor="20.0">
 
-            <Button id="zoom_in" styleClass="zoom_button" onAction="#handleZoomInEvent"/>
-            <Button id="zoom_out" styleClass="zoom_button" onAction="#handleZoomOutEvent">
+            <Button id="zoom_in" styleClass="map_zoom_button" onAction="#handleZoomInEvent"/>
+            <Button id="zoom_out" styleClass="map_zoom_button" onAction="#handleZoomOutEvent">
                 <HBox.margin>
                     <Insets left="5.0"/>
                 </HBox.margin>

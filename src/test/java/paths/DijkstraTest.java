@@ -32,11 +32,11 @@ public class DijkstraTest {
 
     @Test
     public void compareDijkstraAStar() {
-        Dijkstra.result = true;
+        Dijkstra.traceResult = true;
         ShortestPathResult dijk_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
         ShortestPathResult astar_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR);
         assertTrue(dijk_res.visitedNodes > astar_res.visitedNodes);
         assertEquals(dijk_res.d, astar_res.d, 0);
-        Dijkstra.result = false;
+        Dijkstra.traceResult = false;
     }
 }

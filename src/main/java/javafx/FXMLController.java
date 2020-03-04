@@ -1,5 +1,6 @@
 package javafx;
 
+import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -10,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -422,11 +424,12 @@ public class FXMLController implements Initializable {
     }
 
     private void selectButton(Button algoButton) {
-        dijkstraButton.setBlendMode(null);
-        biDijkstraButton.setBlendMode(null);
-        aStarButton.setBlendMode(null);
-        biAStarButton.setBlendMode(null);
-        algoButton.setBlendMode(BlendMode.GREEN);
+        PseudoClass pseudoClass = PseudoClass.getPseudoClass("selected");
+        dijkstraButton.pseudoClassStateChanged(pseudoClass, false);
+        biDijkstraButton.pseudoClassStateChanged(pseudoClass, false);
+        aStarButton.pseudoClassStateChanged(pseudoClass, false);
+        biAStarButton.pseudoClassStateChanged(pseudoClass, false);
+        algoButton.pseudoClassStateChanged(pseudoClass, true);
     }
 
     public void handleLandmarksEvent() {
