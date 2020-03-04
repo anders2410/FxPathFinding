@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static java.util.Collections.singletonList;
+
 public class Dijkstra {
 
     public static boolean trace = false;
@@ -38,6 +40,9 @@ public class Dijkstra {
     public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
         graph.resetPathTrace();
         globalNodeList = graph.getNodeList();
+        if (from == to) {
+            return new ShortestPathResult(0, singletonList(from), 0);
+        }
         ShortestPathResult result;
         if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR) {
             result = biDirectional(graph, from, to, mode);
