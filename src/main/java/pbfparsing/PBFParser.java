@@ -151,7 +151,7 @@ public class PBFParser {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                 String roadValue = tags.get("highway");
-                if (filteringStrategy.shouldFilter(roadValue)) {
+                if (filteringStrategy.shouldFilter(roadValue) || !tags.containsKey("highway")) {
                     continue;
                 }
                 collapsingStrategy.createNodeMap(way, nodeRefMap);
