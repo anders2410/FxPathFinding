@@ -66,16 +66,6 @@ public class PBFParser {
         System.out.print("Finished PBFParsing");
     }
 
-    private int getSumOfValid(Map<String, Integer> validNodes) {
-        return validNodes.values().stream().map(integer -> {
-                if (integer > 1) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }).reduce(0, Integer::sum);
-    }
-
     /**
      * This method iterates through the .pbf file. It extracts all the important information
      * and converts it into our representation of a graph.

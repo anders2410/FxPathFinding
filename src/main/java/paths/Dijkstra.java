@@ -221,7 +221,6 @@ public class Dijkstra {
             if (curNode == null) {
                 return new ArrayList<>(0);
             }
-            // System.out.println(curNode);
             path.add(curNode);
             for (Edge edge : adjList.get(curNode)) {
                 if (edge.to == prevNode) {

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 public class CollapsingStrategyFull implements CollapsingStrategy {
-    boolean oneWayFlag = false;
+    boolean oneWayFlag = true;
 
     @Override
     public void addEdgesGraph(OsmWay way, BiFunction<Node, Node, Double> distanceStrategy,
@@ -47,17 +47,17 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
-                graph.addEdge(node1, node2, cum_Dist);
+                graph.addEdge(node2, node1, cum_Dist);
 
                 // Flag to decide whether to use oneWay roads.
                 if (oneWayFlag) {
                     Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                     String roadValue = tags.get("oneway");
                     if (roadValue == null || !roadValue.equals("yes")) {
-                        graph.addEdge(node2, node1, cum_Dist);
+                        graph.addEdge(node1, node2, cum_Dist);
                     }
                 } else {
-                    graph.addEdge(node2, node1, cum_Dist);
+                    graph.addEdge(node1, node2, cum_Dist);
                 }
 
                 cum_Dist = 0;

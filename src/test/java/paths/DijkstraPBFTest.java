@@ -119,19 +119,9 @@ public class DijkstraPBFTest {
                 matrix[1][2]++;
             }
             if (Math.abs(distAstar - distBiAstar) > 0.00000000001 || !pathAstar.equals(pathBiAstar)) {
-                System.out.println("--------BiAstar vs Astar -----------");
-                System.out.println(distAstar);
-                System.out.println(distBiAstar);
-                System.out.println(pathAstar);
-                System.out.println(pathBiAstar);
                 matrix[1][3]++;
             }
             if (Math.abs(distBiDijk - distBiAstar) > 0.00000000001 || !pathBiDijk.equals(pathBiAstar)) {
-                System.out.println("--------BiDijk vs BiAstar -----------");
-                System.out.println(distBiDijk);
-                System.out.println(distBiAstar);
-                System.out.println(pathBiDijk);
-                System.out.println(pathBiAstar);
                 matrix[2][3]++;
             }
         }
