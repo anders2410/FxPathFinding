@@ -73,7 +73,7 @@ public class DijkstraPBFTest {
     @Test
     public void testAlgorithms() {
         int[][] matrix = new int[4][4];
-        for (int i = 0; i < 40000; i++) {
+        for (int i = 0; i < 400; i++) {
             Dijkstra.seed = i;
             ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);

@@ -41,17 +41,28 @@ import static paths.Dijkstra.seed;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML private Canvas canvas;
-    @FXML private Label algorithm_label;
-    @FXML private Label distance_label;
-    @FXML private Label nodes_visited_label;
-    @FXML private Label nodes_label;
-    @FXML private Label edges_label;
-    @FXML private Label seed_label;
-    @FXML private Button dijkstraButton;
-    @FXML private Button biDijkstraButton;
-    @FXML private Button aStarButton;
-    @FXML private Button biAStarButton;
+    @FXML
+    private Canvas canvas;
+    @FXML
+    private Label algorithm_label;
+    @FXML
+    private Label distance_label;
+    @FXML
+    private Label nodes_visited_label;
+    @FXML
+    private Label nodes_label;
+    @FXML
+    private Label edges_label;
+    @FXML
+    private Label seed_label;
+    @FXML
+    private Button dijkstraButton;
+    @FXML
+    private Button biDijkstraButton;
+    @FXML
+    private Button aStarButton;
+    @FXML
+    private Button biAStarButton;
 
     private Stage stage;
     private Graph graph;
@@ -236,6 +247,9 @@ public class FXMLController implements Initializable {
     private Color chooseEdgeColor(Edge edge) {
         if (edge.inPath) {
             return Color.RED;
+        }
+        if (edge.visitedReverse) {
+            return Color.PURPLE;
         }
         if (edge.visited) {
             return Color.BLUE;
