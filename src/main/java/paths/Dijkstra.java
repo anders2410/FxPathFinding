@@ -14,6 +14,8 @@ public class Dijkstra {
 
     public static boolean result = false;
 
+    private static List<Node> globalNodeList;
+
     private static BiFunction<Node, Node, Double> distanceStrategy;
 
     private static Function<Integer, Double> choosePriorityStrategy(Graph graph, int from, int to, AlgorithmMode mode, List<Double> nodeDist) {
@@ -35,11 +37,17 @@ public class Dijkstra {
 
     public static ShortestPathResult sssp(Graph graph, int from, int to, AlgorithmMode mode) {
         graph.resetPathTrace();
+        globalNodeList = graph.getNodeList();
         if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR) {
             return bidirectional(graph, from, to, mode);
         }
         List<List<Edge>> adjList = graph.getAdjList();
         List<Double> nodeDist = initNodeDist(from, adjList.size());
+        Map<Integer, Double> estimatedDist = null;
+        if (mode == AlgorithmMode.A_STAR) {
+            estimatedDist = new HashMap<>();
+            estimatedDist.put(from, 0.0);
+        }
         Function<Integer, Double> priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
         Comparator<Integer> comparator = getComparator(priorityStrategy);
         PriorityQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
@@ -57,29 +65,21 @@ public class Dijkstra {
                 break;
             }
             for (Edge edge : adjList.get(currentNode)) {
-                relax(nodeDist, pathMap, currentNode, nodeQueue, edge);
+                relax(nodeDist, estimatedDist, pathMap, currentNode, nodeQueue, edge, to);
                 if (trace) {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
-
             }
             trace(nodeQueue); //Print queue if trace
         }
 
+        double a = nodeDist.get(to);
         List<Integer> shortestPath = extractPath(pathMap, adjList, from, to);
         return new ShortestPathResult(nodeDist.get(to), shortestPath, seenNodes.size());
     }
 
     private static Comparator<Integer> getComparator(Function<Integer, Double> priorityStrategy) {
-        return (i1, i2) -> {
-            double doubleD = priorityStrategy.apply(i1) - priorityStrategy.apply(i2);
-            if (Math.abs(doubleD) < 0.000009) return i1 - i2;
-            if (priorityStrategy.apply(i1) < priorityStrategy.apply(i2)) {
-                return -1;
-            } else {
-                return 1;
-            }
-        };
+        return Comparator.comparingDouble(priorityStrategy::apply);
     }
 
     public static ShortestPathResult bidirectional(Graph graph, int from, int to, AlgorithmMode mode) {
@@ -89,6 +89,11 @@ public class Dijkstra {
 
         //A
         List<Double> nodeDistA = initNodeDist(from, adjList.size());
+        Map<Integer, Double> estimatedDistA = null;
+        if (mode == AlgorithmMode.BI_A_STAR) {
+            estimatedDistA = new HashMap<>();
+            estimatedDistA.put(from, 0.0);
+        }
         Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(graph, from, to, mode, nodeDistA);
         Comparator<Integer> comparatorA = getComparator(priorityStrategyA);
 
@@ -101,6 +106,11 @@ public class Dijkstra {
 
         //B
         List<Double> nodeDistB = initNodeDist(to, adjList.size());
+        Map<Integer, Double> estimatedDistB = null;
+        if (mode == AlgorithmMode.BI_A_STAR) {
+            estimatedDistB = new HashMap<>();
+            estimatedDistB.put(to, 0.0);
+        }
         Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(graph, to, from, mode, nodeDistB);
         Comparator<Integer> comparatorB = getComparator(priorityStrategyB);
 
@@ -127,7 +137,7 @@ public class Dijkstra {
                             goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
                         }
                     }
-                    relax(nodeDistA, pathMapA, nextA, queueA, edge);
+                    relax(nodeDistA, estimatedDistA, pathMapA, nextA, queueA, edge, to);
                 }
             }
 
@@ -143,7 +153,7 @@ public class Dijkstra {
                             goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
                         }
                     }
-                    relax(nodeDistB, pathMapB, nextB, queueB, edge);
+                    relax(nodeDistB, estimatedDistB, pathMapB, nextB, queueB, edge, to);
                 }
             }
         }
@@ -172,28 +182,38 @@ public class Dijkstra {
         return false;
     }
 
-    private static void relax(List<Double> nodeDist, Map<Integer, Integer> backPointers, int from, PriorityQueue<Integer> pq, Edge edge) {
+    private static void relax(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> backPointers, int from, PriorityQueue<Integer> pq, Edge edge, int to) {
         edge.visited = true;
         double newDist = nodeDist.get(from) + edge.d;
-        if (newDist < nodeDist.get(edge.to)) {
-            pq.remove(edge.to);
-            nodeDist.set(edge.to, newDist);
-            backPointers.put(edge.to, from);
-            pq.add(edge.to);
+        if (estimatedDist == null) {
+            if (newDist < nodeDist.get(edge.to)) {
+                pq.remove(edge.to);
+                nodeDist.set(edge.to, newDist);
+                backPointers.put(edge.to, from);
+                pq.add(edge.to);
+            }
+        } else {
+            double weirdWeight = estimatedDist.get(from) + edge.d - distanceStrategy.apply(globalNodeList.get(from), globalNodeList.get(to)) + distanceStrategy.apply(globalNodeList.get(edge.to), globalNodeList.get(to));
+            if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
+                pq.remove(edge.to);
+                estimatedDist.put(edge.to, weirdWeight);
+                nodeDist.set(edge.to, newDist);
+                backPointers.put(edge.to, from);
+                pq.add(edge.to);
+            }
         }
     }
 
     private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
         Integer curNode = to;
         int prevNode = to;
-        List<Integer> path = new ArrayList<>(backPointers.size());
+        List<Integer> path = new ArrayList<>();
         path.add(to);
         while (curNode != from) {
             curNode = backPointers.get(curNode);
             if (curNode == null) {
                 return new ArrayList<>(0);
             }
-            // System.out.println(curNode);
             path.add(curNode);
             for (Edge edge : adjList.get(curNode)) {
                 if (edge.to == prevNode) {

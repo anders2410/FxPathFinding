@@ -42,7 +42,7 @@ public class DijkstraPBFTest {
             }
         }*/
         Dijkstra.seed = 1183;
-        ShortestPathResult resD = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult resD = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
         ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
@@ -69,6 +69,7 @@ public class DijkstraPBFTest {
                 cum_distancesA.add(Util.sphericalDistance(n1, n2) + cum_distancesA.get(i - 1));
             }
         }
+        System.out.println();
         System.out.println(resD.path);
         System.out.println(resA.path);
         System.out.println(cum_distancesD);
@@ -80,12 +81,12 @@ public class DijkstraPBFTest {
     @Test
     public void testAlgorithms() {
         int[][] matrix = new int[4][4];
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 4000; i++) {
             Dijkstra.seed = i;
             ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
-            ShortestPathResult biDijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            ShortestPathResult biDijkRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
+            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR);
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
@@ -98,10 +99,12 @@ public class DijkstraPBFTest {
 
             double distBiAstar = biAStarRes.d;
             List<Integer> pathBiAstar = biAStarRes.path;
-
-
             if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
                 matrix[0][1]++;
+                System.out.println(distAstar);
+                System.out.println(distDijk);
+                System.out.println(pathAstar);
+                System.out.println(pathDijk);
             }
             if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
                 matrix[0][2]++;
