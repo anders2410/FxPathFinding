@@ -101,12 +101,12 @@ public class DijkstraPBFTest {
             List<Integer> pathBiAstar = biAStarRes.path;
             if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
                 matrix[0][1]++;
-                System.out.println(distAstar);
-                System.out.println(distDijk);
-                System.out.println(pathAstar);
-                System.out.println(pathDijk);
             }
             if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
+                System.out.println(distBiDijk);
+                System.out.println(distDijk);
+                System.out.println(pathDijk);
+                System.out.println(pathBiDijk);
                 matrix[0][2]++;
             }
             if (Math.abs(distDijk - distBiAstar) > 0.00000000001 || !pathDijk.equals(pathBiAstar)) {
