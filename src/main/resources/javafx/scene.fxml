@@ -10,8 +10,8 @@
             xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="javafx.FXMLController">
 
-    <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0.0"
-                AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <AnchorPane prefHeight="650.0" prefWidth="55.0" styleClass="navigation" AnchorPane.bottomAnchor="0"
+                AnchorPane.leftAnchor="0" AnchorPane.topAnchor="0">
 
         <VBox layoutY="15.0" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0"
               AnchorPane.topAnchor="0">
@@ -74,8 +74,8 @@
         <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="70.0"
               AnchorPane.bottomAnchor="43.0" AnchorPane.rightAnchor="20.0">
 
-            <Button id="zoom_in" styleClass="zoom_button" onAction="#handleZoomInEvent" prefHeight="25.0"/>
-            <Button id="zoom_out" styleClass="zoom_button" onAction="#handleZoomOutEvent" prefHeight="25.0">
+            <Button id="zoom_in" styleClass="zoom_button" onAction="#handleZoomInEvent"/>
+            <Button id="zoom_out" styleClass="zoom_button" onAction="#handleZoomOutEvent">
                 <HBox.margin>
                     <Insets left="5.0"/>
                 </HBox.margin>
