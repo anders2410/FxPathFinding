@@ -18,6 +18,7 @@
 /* Navigation Buttons on map */
 .nav_buttons, .zoom_button {
     -fx-background-color: rgba(26, 38, 57, 0.11);
+    -fx-pref-width: 33.0;
 }
 
 .nav_buttons:hover, .zoom_button:hover {
@@ -62,10 +63,18 @@
     -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-background-radius: 0;
+    -fx-pref-height: 55.0;
+    -fx-pref-width: 55.0;
 }
 
 .button1:hover {
     -fx-background-color: #c24d2c;
+}
+
+.nav_separator {
+    -fx-pref-height: 0.0;
+    -fx-pref-width: 55.0;
+    -fx-background-color: white;
 }
 
 /* ----------------------------------------------------------------------------------------------------------------- */
@@ -78,6 +87,8 @@
     -fx-border-radius: 5px;
 }
 
-#distance_label, #nodes_visited_label, #nodes_label, #edges_label, #algorithm_label {
+.info_label {
     -fx-padding: 3px;
+    -fx-pref-height: 20.0;
+    -fx-pref-width: 200.0;
 }
