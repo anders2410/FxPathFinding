@@ -33,14 +33,6 @@ public class DijkstraPBFTest {
 
     @Test
     public void testDifferenceInPath() {
-        /*for (int i = 0; i < 99999; i++) {
-            Dijkstra.seed = i;
-            ShortestPathResult resD = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-            ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
-            if (resD.path.size() < 10 && resA.d != resD.d) {
-                System.out.println("Found good seed: " + i);
-            }
-        }*/
         Dijkstra.seed = 1183;
         ShortestPathResult resD = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
         ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
@@ -81,7 +73,7 @@ public class DijkstraPBFTest {
     @Test
     public void testAlgorithms() {
         int[][] matrix = new int[4][4];
-        for (int i = 0; i < 4000; i++) {
+        for (int i = 0; i < 40000; i++) {
             Dijkstra.seed = i;
             ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
@@ -100,9 +92,15 @@ public class DijkstraPBFTest {
             double distBiAstar = biAStarRes.d;
             List<Integer> pathBiAstar = biAStarRes.path;
             if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
+                System.out.println("--------Dijk vs Astar -----------");
+                System.out.println(distAstar);
+                System.out.println(distDijk);
+                System.out.println(pathAstar);
+                System.out.println(pathDijk);
                 matrix[0][1]++;
             }
             if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
+                System.out.println("--------BiDijk vs Dijk -----------");
                 System.out.println(distBiDijk);
                 System.out.println(distDijk);
                 System.out.println(pathDijk);
@@ -113,12 +111,27 @@ public class DijkstraPBFTest {
                 matrix[0][3]++;
             }
             if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
+                System.out.println("--------BiDijk vs Astar -----------");
+                System.out.println(distAstar);
+                System.out.println(distBiDijk);
+                System.out.println(pathAstar);
+                System.out.println(pathBiDijk);
                 matrix[1][2]++;
             }
             if (Math.abs(distAstar - distBiAstar) > 0.00000000001 || !pathAstar.equals(pathBiAstar)) {
+                System.out.println("--------BiAstar vs Astar -----------");
+                System.out.println(distAstar);
+                System.out.println(distBiAstar);
+                System.out.println(pathAstar);
+                System.out.println(pathBiAstar);
                 matrix[1][3]++;
             }
             if (Math.abs(distBiDijk - distBiAstar) > 0.00000000001 || !pathBiDijk.equals(pathBiAstar)) {
+                System.out.println("--------BiDijk vs BiAstar -----------");
+                System.out.println(distBiDijk);
+                System.out.println(distBiAstar);
+                System.out.println(pathBiDijk);
+                System.out.println(pathBiAstar);
                 matrix[2][3]++;
             }
         }
