@@ -50,7 +50,7 @@ public class Dijkstra {
         }
         Function<Integer, Double> priorityStrategy = choosePriorityStrategy(graph, from, to, mode, nodeDist);
         Comparator<Integer> comparator = getComparator(priorityStrategy);
-        PriorityQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
+        AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(from);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         Map<Integer, Integer> pathMap = new HashMap<>();
@@ -73,7 +73,6 @@ public class Dijkstra {
             trace(nodeQueue); //Print queue if trace
         }
 
-        double a = nodeDist.get(to);
         List<Integer> shortestPath = extractPath(pathMap, adjList, from, to);
         return new ShortestPathResult(nodeDist.get(to), shortestPath, seenNodes.size());
     }
@@ -182,7 +181,7 @@ public class Dijkstra {
         return false;
     }
 
-    private static void relax(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> backPointers, int from, PriorityQueue<Integer> pq, Edge edge, int to) {
+    private static void relax(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> backPointers, int from, AbstractQueue<Integer> pq, Edge edge, int to) {
         edge.visited = true;
         double newDist = nodeDist.get(from) + edge.d;
         if (estimatedDist == null) {
@@ -207,13 +206,14 @@ public class Dijkstra {
     private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
         Integer curNode = to;
         int prevNode = to;
-        List<Integer> path = new ArrayList<>();
+        List<Integer> path = new ArrayList<>(backPointers.size());
         path.add(to);
         while (curNode != from) {
             curNode = backPointers.get(curNode);
             if (curNode == null) {
                 return new ArrayList<>(0);
             }
+            // System.out.println(curNode);
             path.add(curNode);
             for (Edge edge : adjList.get(curNode)) {
                 if (edge.to == prevNode) {
@@ -241,7 +241,7 @@ public class Dijkstra {
         return res;
     }
 
-    private static void trace(PriorityQueue<Integer> nodeQueue) {
+    private static void trace(AbstractQueue<Integer> nodeQueue) {
         PriorityQueue<Integer> copy = new PriorityQueue<>(nodeQueue);
         if (trace) {
             System.out.print("Nodequeue: ");

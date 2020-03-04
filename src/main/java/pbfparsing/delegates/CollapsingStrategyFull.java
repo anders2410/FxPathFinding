@@ -1,6 +1,7 @@
 package pbfparsing.delegates;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
+import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import model.Graph;
 import model.Node;
 import pbfparsing.interfaces.CollapsingStrategy;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 public class CollapsingStrategyFull implements CollapsingStrategy {
+    boolean oneWayFlag = false;
+
     @Override
     public void addEdgesGraph(OsmWay way, BiFunction<Node, Node, Double> distanceStrategy,
                               Graph graph, Map<String, Node> nodeMap, Map<String, Integer> validNodesMap) {
@@ -45,7 +48,17 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
                 graph.addEdge(node1, node2, cum_Dist);
-                graph.addEdge(node2, node1, cum_Dist);
+
+                // Flag to decide whether to use oneWay roads.
+                if (oneWayFlag) {
+                    Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
+                    String roadValue = tags.get("oneway");
+                    if (roadValue == null || !roadValue.equals("yes")) {
+                        graph.addEdge(node2, node1, cum_Dist);
+                    }
+                } else {
+                    graph.addEdge(node2, node1, cum_Dist);
+                }
 
                 cum_Dist = 0;
                 lastNodeId = Long.toString(way.getNodeId(j));
