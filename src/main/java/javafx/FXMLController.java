@@ -1,21 +1,22 @@
 package javafx;
 
+import javafx.application.Platform;
 import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -32,10 +33,11 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
-import static paths.Dijkstra.seed;
+import static paths.Dijkstra.*;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -44,28 +46,19 @@ import static paths.Dijkstra.seed;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML
-    private Canvas canvas;
-    @FXML
-    private Label algorithm_label;
-    @FXML
-    private Label distance_label;
-    @FXML
-    private Label nodes_visited_label;
-    @FXML
-    private Label nodes_label;
-    @FXML
-    private Label edges_label;
-    @FXML
-    private Label seed_label;
-    @FXML
-    private Button dijkstraButton;
-    @FXML
-    private Button biDijkstraButton;
-    @FXML
-    private Button aStarButton;
-    @FXML
-    private Button biAStarButton;
+    @FXML private Canvas canvas;
+    @FXML private Label algorithm_label;
+    @FXML private Label distance_label;
+    @FXML private Label nodes_visited_label;
+    @FXML private Label nodes_label;
+    @FXML private Label edges_label;
+    @FXML private Label source_label;
+    @FXML private Label target_label;
+    @FXML private Label seed_label;
+    @FXML private Button dijkstraButton;
+    @FXML private Button biDijkstraButton;
+    @FXML private Button aStarButton;
+    @FXML private Button biAStarButton;
 
     private Stage stage;
     private Graph graph;
@@ -90,6 +83,7 @@ public class FXMLController implements Initializable {
         canvas.setOnMouseClicked(onMouseClicked());
         canvas.setOnMousePressed(onMousePressed());
         canvas.setOnMouseDragged(onMouseDragged());
+        canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
         setUpNewGraph("malta-latest.osm.pbf");
@@ -425,7 +419,19 @@ public class FXMLController implements Initializable {
                 onLeftClick(event);
             }
             if (event.getButton() == MouseButton.SECONDARY) {
-                onRightClick(event);
+                onRightClick();
+            }
+        };
+    }
+
+    private EventHandler<? super ScrollEvent> onMouseScrolled() {
+        return event -> {
+            if (event.getEventType() == ScrollEvent.SCROLL) {
+                if (event.getDeltaY() < 0) {
+                    handleZoomOutEvent();
+                } else {
+                    handleZoomInEvent();
+                }
             }
         };
     }
@@ -446,7 +452,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private void onRightClick(MouseEvent event) {
+    private void onRightClick() {
         selectedNodes = new ArrayDeque<>();
         graph.resetPathTrace();
         redrawGraph();
@@ -455,28 +461,28 @@ public class FXMLController implements Initializable {
     public void handleDijkstraEvent() {
         algorithmMode = DIJKSTRA;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(dijkstraButton);
     }
 
     public void handleBiDijkstraEvent() {
         algorithmMode = BI_DIJKSTRA;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(biDijkstraButton);
     }
 
     public void handleAStarEvent() {
         algorithmMode = A_STAR;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(aStarButton);
     }
 
     public void handleBiAStarEvent() {
         algorithmMode = BI_A_STAR;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(biAStarButton);
     }
 
@@ -490,7 +496,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLandmarksEvent() {
-
+        // TODO: Add algorithm for landmarks
     }
 
     public void handleSeedEvent() {
@@ -516,7 +522,7 @@ public class FXMLController implements Initializable {
         setUpNewGraph(selectedFile.getAbsolutePath());
     }
 
-    // Some utility methods
+    // UTILITIES
     private void clearCanvas() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
@@ -526,16 +532,87 @@ public class FXMLController implements Initializable {
     }
 
     private void setLabels(String distance, int visitedNodes) {
-        setAlgorithmNameLabel();
-        distance_label.setText("Total Distance: " + distance);
+        setAlgorithmLabels();
+        if (Double.parseDouble(distance) == Double.MAX_VALUE) {
+            distance_label.setText("Total Distance: UNDEFINED");
+        } else {
+            distance_label.setText("Total Distance: " + distance);
+        }
         nodes_visited_label.setText("Nodes Visited: " + visitedNodes);
     }
 
-    private void setAlgorithmNameLabel() {
+    private void setAlgorithmLabels() {
         algorithm_label.setText("Algorithm: " + algorithmNames.get(algorithmMode));
+        source_label.setText("Source: " + Dijkstra.getSource());
+        target_label.setText("Target: " + Dijkstra.getTarget());
+        setSeedLabel();
     }
 
     private void setSeedLabel() {
         seed_label.setText("Seed: " + Dijkstra.seed);
+    }
+
+    // https://code.makery.ch/blog/javafx-dialogs-official/
+    public void handleSetParameterEvent() {
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Set your parameters");
+
+        // Set the button types.
+        ButtonType acceptButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(acceptButton, ButtonType.CANCEL);
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(acceptButton);
+        okButton.setDisable(true);
+
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.setPadding(new Insets(20, 10, 10, 10));
+
+
+        NumericTextField from = new NumericTextField();
+        from.setPromptText("From");
+        NumericTextField to = new NumericTextField();
+        to.setPromptText("To");
+        NumericTextField seed = new NumericTextField();
+        seed.setPromptText("Seed");
+
+        from.textProperty().addListener((observable, oldValue, newValue) -> {
+            okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size());
+        });
+
+        to.textProperty().addListener((observable, oldValue, newValue) -> {
+            okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size());
+        });
+
+        gridPane.add(new Label("From:"), 0, 0);
+        gridPane.add(from, 1, 0);
+        gridPane.add(new Label("To:"), 2, 0);
+        gridPane.add(to, 3, 0);
+        gridPane.add(new Label("Seed:"), 0, 1);
+        gridPane.add(seed, 1, 1);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        // Request focus on the username field by default.
+        Platform.runLater(from::requestFocus);
+
+        // Convert the result to a username-password-pair when the login button is clicked.
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == acceptButton) {
+                onRightClick();
+                if (seed.getText().equals("")) {
+                    Dijkstra.seed = 0;
+                } else {
+                    Dijkstra.seed = Integer.parseInt(seed.getText());
+                }
+                setSeedLabel();
+                List<Node> nodeList = graph.getNodeList();
+                selectedNodes.add(nodeList.get(Integer.parseInt(from.getText())));
+                selectedNodes.add(nodeList.get(Integer.parseInt(to.getText())));
+                runAlgorithm();
+            }
+            return null;
+        });
+        dialog.show();
     }
 }

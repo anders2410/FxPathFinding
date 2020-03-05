@@ -11,21 +11,16 @@ import static java.util.Collections.singletonList;
 public class Dijkstra {
 
     public static boolean trace = false;
-
     public static boolean traceResult = false;
-
     public static int seed = 0;
 
     private static List<Node> nodeList;
-
     private static BiFunction<Node, Node, Double> distanceStrategy;
 
     private static HeuristicFunction heuristicFunction;
 
     private static Graph graph;
-
     private static int source, target;
-
     private static AlgorithmMode mode;
 
     private static BiTerminationStrategy chooseTerminationStrategy(int to) {
@@ -446,5 +441,13 @@ public class Dijkstra {
 
     public static void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
         Dijkstra.distanceStrategy = distanceStrategy;
+    }
+
+    public static int getSource() {
+        return source;
+    }
+
+    public static int getTarget() {
+        return target;
     }
 }

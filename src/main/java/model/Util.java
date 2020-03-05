@@ -2,7 +2,6 @@ package model;
 
 import paths.AlgorithmMode;
 
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.HashMap;
