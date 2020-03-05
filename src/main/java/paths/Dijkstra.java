@@ -50,7 +50,7 @@ public class Dijkstra {
                     if (topA != null && topB != null) {
                         double potentialForwardNode = heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
                         double potentialBackwardNode = heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source));
-                        double potentialForwardSource = heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target));
+
                         /*double potentialForwardSource = heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target));
                         double potentialForwardNode = heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
 
@@ -64,7 +64,7 @@ public class Dijkstra {
                         double potentialForwardTarget = heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source));
                         double combinedDistance = Math.abs(forwardEstimatedNodeDist.get(topA) - potentialForwardSource) + Math.abs(backwardEstimatedNodeDist.get(topB) - potentialBackwardTarget);*/
                         double potentialBackwardTarget = heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source));
-                        double combinedDistance = forwardEstimatedNodeDist.get(topA) + backwardEstimatedNodeDist.get(topB) + potentialForwardNode + potentialBackwardNode;
+                        double combinedDistance = forwardEstimatedNodeDist.get(topA) + backwardEstimatedNodeDist.get(topB);
                         return combinedDistance >= goal + potentialBackwardTarget;
                     }
                     return false;
@@ -296,12 +296,9 @@ public class Dijkstra {
                             double pathLengthForwards = nodeDistA.get(nextA) + potentialForwardNode - potentialForwardSource;
                             double estimatedLength = pathLengthForwards + pathLengthBackwards;
 
-                            estimatedLength = estimatedDistA.get(nextA) + potentialForwardNode - potentialForwardSource + edge.d + estimatedDistB.get(edge.to) + potentialForwardNode - potentialBackwardTarget;
-/*
                             estimatedLength = estimatedDistA.get(nextA) + edge.d + estimatedDistB.get(edge.to);
-*/
+
                             if (estimatedLength < goalDistance) {
-                                System.out.println(goalDistance);
                                 middlePoint = edge.to;
                                 goalDistance = estimatedLength;
                             }
@@ -336,16 +333,12 @@ public class Dijkstra {
                             double pathLengthBackwards = nodeDistB.get(nextB) + potentialBackwardNode - potentialBackwardTarget;
                             double estimatedLength = pathLengthBackwards + pathLengthForward;
 
-                            estimatedLength = estimatedDistB.get(nextB) + potentialBackwardNode - potentialBackwardTarget + edge.d + estimatedDistA.get(edge.to) + potentialForwardNode - potentialForwardSource;
-/*
                             estimatedLength = estimatedDistB.get(nextB) + edge.d + estimatedDistA.get(edge.to);
-*/
-                            ;
-                            if (estimatedLength < goalDistance) {
-                                System.out.println(goalDistance);
 
+                            if (estimatedLength < goalDistance) {
                                 middlePoint = edge.to;
                                 goalDistance = estimatedLength;
+                                ;
                             }
                         }
                     }
