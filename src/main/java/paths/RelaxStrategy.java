@@ -8,5 +8,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface RelaxStrategy {
-    void relax(int from, Edge edge);
+    void relax(int from, Edge edge, boolean directionForward);
 }
