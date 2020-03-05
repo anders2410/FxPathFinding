@@ -502,7 +502,7 @@ public class FXMLController implements Initializable {
     public void handleSeedEvent() {
         seed++;
         int n = graph.getNodeAmount();
-        Random random = new Random(seed);
+        Random random = new Random(2261);
         selectedNodes = new ArrayDeque<>();
         selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
         selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
