@@ -16,8 +16,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -37,7 +35,7 @@ import java.util.function.BiFunction;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
-import static paths.Dijkstra.seed;
+import static paths.Dijkstra.*;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -52,6 +50,8 @@ public class FXMLController implements Initializable {
     @FXML private Label nodes_visited_label;
     @FXML private Label nodes_label;
     @FXML private Label edges_label;
+    @FXML private Label source_label;
+    @FXML private Label target_label;
     @FXML private Label seed_label;
     @FXML private Button dijkstraButton;
     @FXML private Button biDijkstraButton;
@@ -459,28 +459,28 @@ public class FXMLController implements Initializable {
     public void handleDijkstraEvent() {
         algorithmMode = DIJKSTRA;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(dijkstraButton);
     }
 
     public void handleBiDijkstraEvent() {
         algorithmMode = BI_DIJKSTRA;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(biDijkstraButton);
     }
 
     public void handleAStarEvent() {
         algorithmMode = A_STAR;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(aStarButton);
     }
 
     public void handleBiAStarEvent() {
         algorithmMode = BI_A_STAR;
         runAlgorithm();
-        setAlgorithmNameLabel();
+        setAlgorithmLabels();
         selectButton(biAStarButton);
     }
 
@@ -530,19 +530,27 @@ public class FXMLController implements Initializable {
     }
 
     private void setLabels(String distance, int visitedNodes) {
-        setAlgorithmNameLabel();
-        distance_label.setText("Total Distance: " + distance);
+        setAlgorithmLabels();
+        if (Double.parseDouble(distance) == Double.MAX_VALUE) {
+            distance_label.setText("Total Distance: UNDEFINED");
+        } else {
+            distance_label.setText("Total Distance: " + distance);
+        }
         nodes_visited_label.setText("Nodes Visited: " + visitedNodes);
     }
 
-    private void setAlgorithmNameLabel() {
+    private void setAlgorithmLabels() {
         algorithm_label.setText("Algorithm: " + algorithmNames.get(algorithmMode));
+        source_label.setText("Source: " + Dijkstra.getSource());
+        target_label.setText("Target: " + Dijkstra.getTarget());
+        setSeedLabel();
     }
 
     private void setSeedLabel() {
         seed_label.setText("Seed: " + Dijkstra.seed);
     }
 
+    // https://code.makery.ch/blog/javafx-dialogs-official/
     public void handleSetParameterEvent(ActionEvent actionEvent) {
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Set your parameters");

@@ -92,6 +92,8 @@
             <Label fx:id="nodes_visited_label" styleClass="info_label" text="Nodes Visited: "/>
             <Label fx:id="nodes_label" styleClass="info_label" text="Number of Nodes: "/>
             <Label fx:id="edges_label" styleClass="info_label" text="Number of Edges: "/>
+            <Label fx:id="source_label" styleClass="info_label" text="Source: "/>
+            <Label fx:id="target_label" styleClass="info_label" text="Target: "/>
             <Label fx:id="seed_label" styleClass="info_label" text="Seed: "/>
         </VBox>
     </AnchorPane>
