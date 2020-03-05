@@ -4,14 +4,15 @@ import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.effect.BlendMode;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -86,12 +87,18 @@ public class FXMLController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         distanceStrategy = Util::sphericalDistance;
-        canvas.setOnMouseClicked(getMouseEventEventHandler());
+        canvas.setOnMouseClicked(onMouseClicked());
+        canvas.setOnMousePressed(onMousePressed());
+        canvas.setOnMouseDragged(onMouseDragged());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
         setUpNewGraph("malta-latest.osm.pbf");
         Dijkstra.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
+    }
+
+    public void setSceneListeners(Scene scene) {
+        scene.setOnKeyPressed(onKeyPressed());
     }
 
     private void setUpNewGraph(String fileName) {
@@ -364,19 +371,69 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
-    private EventHandler<MouseEvent> getMouseEventEventHandler() {
+    // W A S D navigation TODO: Find out how arrow keys are triggered
+    private EventHandler<? super KeyEvent> onKeyPressed() {
         return event -> {
-            if (event.getButton() == MouseButton.PRIMARY) {
-                handleLeftClick(event);
+            switch (event.getCode()) {
+                case W: case UP:
+                    handleNavUpEvent();
+                    break;
+                case A: case LEFT:
+                    handleNavLeftEvent();
+                    break;
+                case S: case DOWN:
+                    handleNavDownEvent();
+                    break;
+                case D: case RIGHT:
+                    handleNavRightEvent();
+                    break;
             }
-            if (event.getButton() == MouseButton.SECONDARY) {
-                handleRightClick(event);
-            }
-
         };
     }
 
-    private void handleLeftClick(MouseEvent event) {
+    // Used for calculating how far to drag
+    private double clickX = 0, clickY = 0;
+    // Used for deciding whether a drag should interrupt a normal click
+    private int dragCounter = 0, dragLimit = 5;
+
+    private EventHandler<? super MouseEvent> onMousePressed() {
+        return event -> {
+            clickX = event.getX();
+            clickY = event.getY();
+            dragCounter = 0;
+        };
+    }
+
+    private EventHandler<? super MouseEvent> onMouseDragged() {
+        return event -> {
+            // TODO: Make completely smooth by doing reverse mercator
+            double factor = 50/zoomFactor;
+            double dx = event.getX() - clickX;
+            double dy = clickY - event.getY();
+            xOffset += factor * dx;
+            yOffset += factor * dy;
+            clickX = event.getX();
+            clickY = event.getY();
+            dragCounter++;
+            redrawGraph();
+        };
+    }
+
+    private EventHandler<MouseEvent> onMouseClicked() {
+        return event -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                onLeftClick(event);
+            }
+            if (event.getButton() == MouseButton.SECONDARY) {
+                onRightClick(event);
+            }
+        };
+    }
+
+    private void onLeftClick(MouseEvent event) {
+        if (dragCounter > dragLimit) {
+            return;
+        }
         double x = event.getX();
         double y = event.getY();
         Node node = selectClosestNode(x, y);
@@ -389,7 +446,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private void handleRightClick(MouseEvent event) {
+    private void onRightClick(MouseEvent event) {
         selectedNodes = new ArrayDeque<>();
         graph.resetPathTrace();
         redrawGraph();

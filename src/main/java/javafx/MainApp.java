@@ -1,12 +1,9 @@
 package javafx;
 
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.Stage;
 
 /**
@@ -26,8 +23,10 @@ public class MainApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/javafx/scene.fxml"));
         Parent root = fxmlLoader.load();
         // Transfer an instance of the Stage to the FXMLController
-        ((FXMLController) fxmlLoader.getController()).setStage(stage);
+        FXMLController fxmlController = fxmlLoader.getController();
+        fxmlController.setStage(stage);
         Scene scene = new Scene(root);
+        fxmlController.setSceneListeners(scene);
 
         // Set the title of the Stage and show it
         stage.setTitle("Single Source Shortest Path");
