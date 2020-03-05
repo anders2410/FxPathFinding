@@ -1,18 +1,23 @@
 package javafx;
 
+import javafx.application.Platform;
 import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.input.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -412,7 +417,7 @@ public class FXMLController implements Initializable {
                 onLeftClick(event);
             }
             if (event.getButton() == MouseButton.SECONDARY) {
-                onRightClick(event);
+                onRightClick();
             }
         };
     }
@@ -445,7 +450,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private void onRightClick(MouseEvent event) {
+    private void onRightClick() {
         selectedNodes = new ArrayDeque<>();
         graph.resetPathTrace();
         redrawGraph();
@@ -536,5 +541,53 @@ public class FXMLController implements Initializable {
 
     private void setSeedLabel() {
         seed_label.setText("Seed: " + Dijkstra.seed);
+    }
+
+    public void handleSetParameterEvent(ActionEvent actionEvent) {
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Set your parameters");
+
+        // Set the button types.
+        ButtonType acceptButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(acceptButton, ButtonType.CANCEL);
+
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.setPadding(new Insets(20, 10, 10, 10));
+
+        TextField from = new TextField();
+        from.setPromptText("From");
+        TextField to = new TextField();
+        to.setPromptText("To");
+        TextField seed = new TextField();
+        seed.setPromptText("Seed");
+
+        gridPane.add(new Label("From:"), 0, 0);
+        gridPane.add(from, 1, 0);
+        gridPane.add(new Label("To:"), 2, 0);
+        gridPane.add(to, 3, 0);
+        gridPane.add(new Label("Seed:"), 0, 1);
+        gridPane.add(seed, 1, 1);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        // Request focus on the username field by default.
+        Platform.runLater(from::requestFocus);
+
+        // Convert the result to a username-password-pair when the login button is clicked.
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == acceptButton) {
+                onRightClick();
+                Dijkstra.seed = Integer.parseInt(seed.getText());
+                setSeedLabel();
+                List<Node> nodeList = graph.getNodeList();
+                selectedNodes.add(nodeList.get(Integer.parseInt(from.getText())));
+                selectedNodes.add(nodeList.get(Integer.parseInt(to.getText())));
+                runAlgorithm();
+            }
+            return null;
+        });
+        dialog.show();
     }
 }
