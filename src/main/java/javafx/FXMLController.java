@@ -16,6 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -32,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
@@ -551,25 +553,36 @@ public class FXMLController implements Initializable {
     }
 
     // https://code.makery.ch/blog/javafx-dialogs-official/
-    public void handleSetParameterEvent(ActionEvent actionEvent) {
+    public void handleSetParameterEvent() {
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Set your parameters");
 
         // Set the button types.
         ButtonType acceptButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(acceptButton, ButtonType.CANCEL);
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(acceptButton);
+        okButton.setDisable(true);
 
         GridPane gridPane = new GridPane();
         gridPane.setHgap(10);
         gridPane.setVgap(10);
         gridPane.setPadding(new Insets(20, 10, 10, 10));
 
-        TextField from = new TextField();
+
+        NumericTextField from = new NumericTextField();
         from.setPromptText("From");
-        TextField to = new TextField();
+        NumericTextField to = new NumericTextField();
         to.setPromptText("To");
-        TextField seed = new TextField();
+        NumericTextField seed = new NumericTextField();
         seed.setPromptText("Seed");
+
+        from.textProperty().addListener((observable, oldValue, newValue) -> {
+            okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size());
+        });
+
+        to.textProperty().addListener((observable, oldValue, newValue) -> {
+            okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size());
+        });
 
         gridPane.add(new Label("From:"), 0, 0);
         gridPane.add(from, 1, 0);
@@ -587,7 +600,11 @@ public class FXMLController implements Initializable {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == acceptButton) {
                 onRightClick();
-                Dijkstra.seed = Integer.parseInt(seed.getText());
+                if (seed.getText().equals("")) {
+                    Dijkstra.seed = 0;
+                } else {
+                    Dijkstra.seed = Integer.parseInt(seed.getText());
+                }
                 setSeedLabel();
                 List<Node> nodeList = graph.getNodeList();
                 selectedNodes.add(nodeList.get(Integer.parseInt(from.getText())));
