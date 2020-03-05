@@ -9,10 +9,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -44,28 +41,17 @@ import static paths.Dijkstra.seed;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML
-    private Canvas canvas;
-    @FXML
-    private Label algorithm_label;
-    @FXML
-    private Label distance_label;
-    @FXML
-    private Label nodes_visited_label;
-    @FXML
-    private Label nodes_label;
-    @FXML
-    private Label edges_label;
-    @FXML
-    private Label seed_label;
-    @FXML
-    private Button dijkstraButton;
-    @FXML
-    private Button biDijkstraButton;
-    @FXML
-    private Button aStarButton;
-    @FXML
-    private Button biAStarButton;
+    @FXML private Canvas canvas;
+    @FXML private Label algorithm_label;
+    @FXML private Label distance_label;
+    @FXML private Label nodes_visited_label;
+    @FXML private Label nodes_label;
+    @FXML private Label edges_label;
+    @FXML private Label seed_label;
+    @FXML private Button dijkstraButton;
+    @FXML private Button biDijkstraButton;
+    @FXML private Button aStarButton;
+    @FXML private Button biAStarButton;
 
     private Stage stage;
     private Graph graph;
@@ -90,6 +76,7 @@ public class FXMLController implements Initializable {
         canvas.setOnMouseClicked(onMouseClicked());
         canvas.setOnMousePressed(onMousePressed());
         canvas.setOnMouseDragged(onMouseDragged());
+        canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
         setUpNewGraph("malta-latest.osm.pbf");
@@ -430,6 +417,18 @@ public class FXMLController implements Initializable {
         };
     }
 
+    private EventHandler<? super ScrollEvent> onMouseScrolled() {
+        return event -> {
+            if (event.getEventType() == ScrollEvent.SCROLL) {
+                if (event.getDeltaY() < 0) {
+                    handleZoomOutEvent();
+                } else {
+                    handleZoomInEvent();
+                }
+            }
+        };
+    }
+
     private void onLeftClick(MouseEvent event) {
         if (dragCounter > dragLimit) {
             return;
@@ -490,7 +489,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLandmarksEvent() {
-
+        // TODO: Add algorithm for landmarks
     }
 
     public void handleSeedEvent() {
@@ -498,10 +497,8 @@ public class FXMLController implements Initializable {
         int n = graph.getNodeAmount();
         Random random = new Random(seed);
         selectedNodes = new ArrayDeque<>();
-//        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
-//        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
-        selectedNodes.add(graph.getNodeList().get(1100));
-        selectedNodes.add(graph.getNodeList().get(10676));
+        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
+        selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
         runAlgorithm();
         setSeedLabel();
     }
@@ -518,7 +515,7 @@ public class FXMLController implements Initializable {
         setUpNewGraph(selectedFile.getAbsolutePath());
     }
 
-    // Some utility methods
+    // UTILITIES
     private void clearCanvas() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
