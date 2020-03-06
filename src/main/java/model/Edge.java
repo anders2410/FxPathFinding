@@ -5,20 +5,22 @@ import java.util.Comparator;
 public class Edge {
     public int to;
     public double d;
-    public boolean visited, inPath, isDrawn, visitedReverse;
+    public boolean visited, inPath, isDrawn, visitedReverse, visitedBothways;
 
     public Edge(int to, double d) {
         this.to = to;
         this.d = d;
         visited = false;
         visitedReverse = false;
+        visitedBothways = false;
         inPath = false;
         isDrawn = false;
     }
 
-    public Edge(int to, double d, boolean visited, boolean inPath, boolean isDrawn, boolean visitedReverse) {
+    public Edge(int to, double d, boolean visited, boolean inPath, boolean isDrawn, boolean visitedReverse, boolean visitedBothWays) {
         this.to = to;
         this.d = d;
+        this.visitedBothways = visitedBothWays;
         this.visited = visited;
         this.inPath = inPath;
         this.isDrawn = isDrawn;
@@ -38,6 +40,9 @@ public class Edge {
             compVal++;
         }
         if (edge.visited) {
+            compVal++;
+        }
+        if (edge.visitedBothways) {
             compVal++;
         }
         if (edge.visitedReverse) {

@@ -46,19 +46,32 @@ import static paths.Dijkstra.*;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML private Canvas canvas;
-    @FXML private Label algorithm_label;
-    @FXML private Label distance_label;
-    @FXML private Label nodes_visited_label;
-    @FXML private Label nodes_label;
-    @FXML private Label edges_label;
-    @FXML private Label source_label;
-    @FXML private Label target_label;
-    @FXML private Label seed_label;
-    @FXML private Button dijkstraButton;
-    @FXML private Button biDijkstraButton;
-    @FXML private Button aStarButton;
-    @FXML private Button biAStarButton;
+    @FXML
+    private Canvas canvas;
+    @FXML
+    private Label algorithm_label;
+    @FXML
+    private Label distance_label;
+    @FXML
+    private Label nodes_visited_label;
+    @FXML
+    private Label nodes_label;
+    @FXML
+    private Label edges_label;
+    @FXML
+    private Label source_label;
+    @FXML
+    private Label target_label;
+    @FXML
+    private Label seed_label;
+    @FXML
+    private Button dijkstraButton;
+    @FXML
+    private Button biDijkstraButton;
+    @FXML
+    private Button aStarButton;
+    @FXML
+    private Button biAStarButton;
 
     private Stage stage;
     private Graph graph;
@@ -251,8 +264,11 @@ public class FXMLController implements Initializable {
         if (edge.inPath) {
             return Color.RED;
         }
-        if (edge.visitedReverse) {
+        if (edge.visitedBothways) {
             return Color.DARKTURQUOISE;
+        }
+        if (edge.visitedReverse) {
+            return Color.MEDIUMTURQUOISE;
         }
         if (edge.visited) {
             return Color.BLUE;
@@ -369,16 +385,20 @@ public class FXMLController implements Initializable {
     private EventHandler<? super KeyEvent> onKeyPressed() {
         return event -> {
             switch (event.getCode()) {
-                case W: case UP:
+                case W:
+                case UP:
                     handleNavUpEvent();
                     break;
-                case A: case LEFT:
+                case A:
+                case LEFT:
                     handleNavLeftEvent();
                     break;
-                case S: case DOWN:
+                case S:
+                case DOWN:
                     handleNavDownEvent();
                     break;
-                case D: case RIGHT:
+                case D:
+                case RIGHT:
                     handleNavRightEvent();
                     break;
             }
@@ -401,7 +421,7 @@ public class FXMLController implements Initializable {
     private EventHandler<? super MouseEvent> onMouseDragged() {
         return event -> {
             // TODO: Make completely smooth by doing reverse mercator
-            double factor = 50/zoomFactor;
+            double factor = 50 / zoomFactor;
             double dx = event.getX() - clickX;
             double dy = clickY - event.getY();
             xOffset += factor * dx;
@@ -502,7 +522,7 @@ public class FXMLController implements Initializable {
     public void handleSeedEvent() {
         seed++;
         int n = graph.getNodeAmount();
-        Random random = new Random(2261);
+        Random random = new Random(seed);
         selectedNodes = new ArrayDeque<>();
         selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
         selectedNodes.add(graph.getNodeList().get(random.nextInt(n)));
@@ -533,11 +553,8 @@ public class FXMLController implements Initializable {
 
     private void setLabels(String distance, int visitedNodes) {
         setAlgorithmLabels();
-        if (Double.parseDouble(distance) == Double.MAX_VALUE) {
-            distance_label.setText("Total Distance: UNDEFINED");
-        } else {
-            distance_label.setText("Total Distance: " + distance);
-        }
+
+        distance_label.setText("Total Distance: " + distance);
         nodes_visited_label.setText("Nodes Visited: " + visitedNodes);
     }
 

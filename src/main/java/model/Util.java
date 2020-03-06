@@ -2,9 +2,12 @@ package model;
 
 import paths.AlgorithmMode;
 
+import java.io.UnsupportedEncodingException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static paths.AlgorithmMode.*;
@@ -12,6 +15,7 @@ import static paths.AlgorithmMode.*;
 public class Util {
 
     public static Map<AlgorithmMode, String> algorithmNames = new HashMap<>();
+
     static {
         algorithmNames.put(DIJKSTRA, "Dijkstra");
         algorithmNames.put(BI_DIJKSTRA, "Bidirectional Dijkstra");
@@ -90,7 +94,20 @@ public class Util {
     }
 
     public static String roundDouble(double value) {
+        if (value == Double.MAX_VALUE) {
+            String infinitySymbol;
+            try {
+                return new String(String.valueOf(Character.toString('\u221E')).getBytes("UTF-8"), "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                return infinitySymbol = "NO REACH";
+            }
+        }
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
+/*
         DecimalFormat df = new DecimalFormat("##.#####");
+*/
+        DecimalFormat df = (DecimalFormat) nf;
+        df.setMaximumFractionDigits(4);
         df.setRoundingMode(RoundingMode.CEILING);
         return df.format(value);
     }

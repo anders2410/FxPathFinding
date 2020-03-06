@@ -25,7 +25,7 @@ public class Dijkstra {
     private static double goalDistance;
     private static int middlePoint;
 
-    private static BiTerminationStrategy chooseTerminationStrategy(int to) {
+    private static BiTerminationStrategy chooseTerminationStrategy(int to, Set<Integer> visitedForward, Set<Integer> visitedBackward) {
         switch (mode) {
             default:
 
@@ -34,8 +34,9 @@ public class Dijkstra {
                     Integer topA = forwardQueue.peek();
                     Integer topB = backwardQueue.peek();
                     if (topA != null && topB != null) {
-                        double combinedDistance = forwardNodeDist.get(topA) + backwardNodeDist.get(topB);
-                        return combinedDistance >= goal;
+                        return visitedBackward.contains(topA) || visitedForward.contains(topB);
+                        /*double combinedDistance = forwardNodeDist.get(topA) + backwardNodeDist.get(topB);
+                        return combinedDistance >= goal;*/
                     }
                     return false;
                 };
@@ -65,8 +66,11 @@ public class Dijkstra {
                         double topBackward = Math.abs(backwardNodeDist.get(topB) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source)));
                         double combinedDistance = forwardEstimatedNodeDist.get(topA) + backwardEstimatedNodeDist.get(topB);
                         return topForward + topBackward >= Math.abs(goal - heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target)));*/
-                        double combinedDistance = forwardNodeDist.get(topA) + backwardNodeDist.get(topB);
-                        return combinedDistance >= goal + heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target));
+                        double keyValueForward = forwardNodeDist.get(topA) + heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
+                        double keyValueBackwards = backwardNodeDist.get(topB) + heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source));
+                        return keyValueBackwards >= goal || keyValueBackwards >= goal;
+                        /*double combinedDistance = forwardNodeDist.get(topA) + backwardNodeDist.get(topB);
+                        return combinedDistance >= goal + heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target));*/
                     }
                     return false;
                 };
@@ -229,7 +233,6 @@ public class Dijkstra {
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
-        BiTerminationStrategy terminationStrategy = chooseTerminationStrategy(target);
         //A
         List<Double> nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDistA = null;
@@ -246,6 +249,7 @@ public class Dijkstra {
         // A set of visited nodes starting from Node a.
         Set<Integer> visitedA = new HashSet<>();
         Map<Integer, Integer> pathMapA = new HashMap<>();
+
         //B
         List<Double> nodeDistB = initNodeDist(target, adjList.size());
         Map<Integer, Double> estimatedDistB = null;
@@ -265,49 +269,51 @@ public class Dijkstra {
         Map<Integer, Integer> pathMapB = new HashMap<>();
         RelaxStrategy relaxStrategyB = chooseRelaxStrategy(nodeDistB, estimatedDistB, pathMapB, queueB);
 
+        BiTerminationStrategy terminationStrategy = chooseTerminationStrategy(target, visitedA, visitedB);
+
         goalDistance = Double.MAX_VALUE;
         boolean intersectionFound = false;
         middlePoint = -1;
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty()) {
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
+                if (terminationStrategy.checkTermination(nodeDistA, estimatedDistA, queueA, nodeDistB, estimatedDistB, queueB, goalDistance)) {
+                    break;
+                }
                 // Dijkstra from the 'From'-side
                 Integer nextA = queueA.poll();
                 if (nextA != null) {
                     visitedA.add(nextA);
                     for (Edge edge : adjList.get(nextA)) {
-                        if (!visitedA.contains(edge.to)) {
+                        if (!visitedB.contains(edge.to)) {
                             relaxStrategyA.relax(nextA, edge, true);
-                            if (visitedB.contains(edge.to)) {
-                                if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
-                                    middlePoint = edge.to;
-                                    goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
-                                }
+                            if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
+                                middlePoint = edge.to;
+                                goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
                             }
                         }
                     }
                 }
             } else {
+                if (terminationStrategy.checkTermination(nodeDistA, estimatedDistA, queueA, nodeDistB, estimatedDistB, queueB, goalDistance)) {
+                    break;
+                }
                 // Dijkstra from the 'To'-side
                 Integer nextB = queueB.poll();
                 if (nextB != null) {
                     visitedB.add(nextB);
                     for (Edge edge : revAdjList.get(nextB)) {
-                        if (!visitedB.contains(edge.to)) {
+                        if (!visitedA.contains(edge.to)) {
                             relaxStrategyB.relax(nextB, edge, false);
-                            if (visitedA.contains(edge.to)) {
-                                if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
-                                    middlePoint = edge.to;
-                                    goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
-                                }
+                            if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
+                                middlePoint = edge.to;
+                                goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
                             }
                         }
                     }
                 }
             }
-            if (terminationStrategy.checkTermination(nodeDistA, estimatedDistA, queueA, nodeDistB, estimatedDistB, queueB, goalDistance)) {
-                break;
-            }
+
         }
 
         if (middlePoint == -1) {

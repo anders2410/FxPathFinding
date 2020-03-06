@@ -46,11 +46,12 @@ public class Graph {
                 edge.visitedReverse = false;
                 edge.visited = false;
                 edge.inPath = false;
+                edge.visitedBothways = false;
             }
         }
     }
 
-    public List<List<Edge>> reversePaintEdges(List<List<Edge>> revAdjList, List<List<Edge>> mergeList) {
+    public void reversePaintEdges(List<List<Edge>> revAdjList, List<List<Edge>> mergeList) {
         List<List<Edge>> restoredList = reverseAdjacencyList(revAdjList);
         for (int i = 0; i < restoredList.size(); i++) {
             for (Edge e : restoredList.get(i)) {
@@ -61,24 +62,29 @@ public class Graph {
                             if (reciever.inPath) {
                                 e.inPath = true;
                             }
+                            if (reciever.visited) {
+                                // Can happen due to both forward/backward visiting node, but also if one of the searches went back and forth down a road.
+                                e.visitedBothways = true;
+                            }
                             e.visitedReverse = true;
+
+
                             mergeList.get(i).set(j, e);
                         }
                     }
                 }
             }
         }
-        return mergeList;
     }
 
     public List<List<Edge>> reverseAdjacencyList(List<List<Edge>> originalList) {
-        List<List<Edge>> reversedList = new ArrayList<>();
+        List<List<Edge>> reversedList = new ArrayList<>(originalList.size());
         for (int i = 0; i < nodeSize; i++) {
             reversedList.add(new LinkedList<>());
         }
         for (int i = 0; i < originalList.size(); i++) {
             for (Edge e : originalList.get(i)) {
-                Edge replacement = new Edge(i, e.d, e.visited, e.inPath, e.isDrawn, e.visitedReverse);
+                Edge replacement = new Edge(i, e.d, e.visited, e.inPath, e.isDrawn, e.visitedReverse, e.visitedBothways);
                 reversedList.get(e.to).add(replacement);
             }
         }
