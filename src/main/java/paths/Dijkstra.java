@@ -44,8 +44,9 @@ public class Dijkstra {
                     Integer topA = forwardQueue.peek();
                     Integer topB = backwardQueue.peek();
                     if (topA != null && topB != null) {
+                        double keyValueForward = forwardNodeDist.get(topA) + heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
                         double keyValueBackwards = backwardNodeDist.get(topB) + heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source));
-                        return keyValueBackwards >= goal || keyValueBackwards >= goal;
+                        return keyValueBackwards >= goal || keyValueForward >= goal;
                     }
                     return false;
                 };
@@ -200,6 +201,7 @@ public class Dijkstra {
     private static ShortestPathResult biDirectional() {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
+        // TODO: Implement Bi-ASTAR using consistent approach. Symmetric approach visits a lot of stuff.
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
 
@@ -292,7 +294,8 @@ public class Dijkstra {
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
         graph.reversePaintEdges(revAdjList, adjList);
-
+        List<Edge> e1 = adjList.get(7715);
+        List<Edge> e2 = adjList.get(6320);
         shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
         shortestPath.addAll(shortestPathB);
