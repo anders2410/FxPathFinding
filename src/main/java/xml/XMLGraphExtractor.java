@@ -90,7 +90,7 @@ public class XMLGraphExtractor extends DefaultHandler {
                 }
             }
             if (validNodes.contains(id)) {
-                Node node = new Node(indexCounter, latitude, longitude);
+                Node node = new Node(indexCounter, longitude, latitude);
                 nodeMap.put(id, node);
                 nodeList.add(node);
                 indexCounter++;

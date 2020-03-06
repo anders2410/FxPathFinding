@@ -320,7 +320,7 @@ public class FXMLController implements Initializable {
     }
 
     Node toNode(PixelPoint p) {
-        return new Node(-1, toLongitude(p.x), toLatitude(p.y));
+        return new Node(-1, toLatitude(p.y), toLongitude(p.x));
     }
 
     final double RADIUS_MAJOR = 6378137.0;

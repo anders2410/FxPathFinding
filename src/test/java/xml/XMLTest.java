@@ -5,7 +5,6 @@ import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -50,8 +49,8 @@ public class XMLTest {
 
     @Test
     public void testNodeDistanceSelf() {
-        Node n1 = new Node(0, 557332789, 597332789);
-        Node n2 = new Node(2, 557332789, 597332789);
+        Node n1 = new Node(0, 597332789, 557332789);
+        Node n2 = new Node(2, 597332789, 557332789);
         double distance = Util.flatEarthDistance(n1, n2);
         double sdistance = Util.sphericalDistance(n1, n2);
         assertEquals(0.0, distance, 0);

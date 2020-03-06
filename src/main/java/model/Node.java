@@ -2,10 +2,10 @@ package model;
 
 public class Node {
     public int index;
-    public double latitude;
     public double longitude;
+    public double latitude;
 
-    public Node(int index, double latitude, double longitude) {
+    public Node(int index, double longitude, double latitude) {
         this.index = index;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -13,6 +13,6 @@ public class Node {
 
     @Override
     public String toString() {
-        return "Node(" + index + ", " + latitude + ", " + longitude + ")";
+        return "Node(" + index + ", " + longitude + ", " + latitude + ")";
     }
 }
