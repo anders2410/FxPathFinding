@@ -320,7 +320,7 @@ public class FXMLController implements Initializable {
     }
 
     Node toNode(PixelPoint p) {
-        return new Node(-1, toLatitude(p.y), toLongitude(p.x));
+        return new Node(-1, toLongitude(p.x), toLatitude(p.y));
     }
 
     final double RADIUS_MAJOR = 6378137.0;
@@ -396,11 +396,6 @@ public class FXMLController implements Initializable {
         return new PixelPoint(canvas.getWidth()/2,canvas.getHeight()/2);
     }
 
-    private void shiftOffset(PixelPoint point, PixelPoint newLocation) {
-        xOffset += newLocation.x - point.x;
-        yOffset += newLocation.y - point.y;
-    }
-
 
     // Here comes all the eventHandle methods that are called when clicked
 
@@ -429,22 +424,25 @@ public class FXMLController implements Initializable {
     }
 
     public void handleZoomInEvent() {
-        Node centerNode = toNode(getScreenCenter());
-        System.out.println("Center point before zoom " + getScreenCenter());
-        System.out.println(centerNode);
-        System.out.println(selectClosestNode(getScreenCenter()));
-        System.out.println("Center nodepoint after zoom " + toScreenPos(centerNode));
-
-        zoomFactor *= 1.1f;
-        setRatios();
-
-        //shiftOffset(toScreenPos(centerNode), getScreenCenter());
-        redrawGraph();
+        zoom(1.1f);
     }
 
     public void handleZoomOutEvent() {
-        zoomFactor *= 1/1.1f;
+        zoom(1/1.1f);
+    }
+
+    private void zoom(float v) {
+        Node centerNode = toNode(getScreenCenter());
+        zoomFactor *= v;
         setRatios();
+
+        PixelPoint oldCenter = toScreenPos(centerNode);
+        PixelPoint screenCenter = getScreenCenter();
+        // TODO: Fix magic factor??
+        double magicFactor = 50 / zoomFactor;
+        xOffset += magicFactor * (screenCenter.x - oldCenter.x);
+        yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
+
         redrawGraph();
     }
 
@@ -488,11 +486,11 @@ public class FXMLController implements Initializable {
     private EventHandler<? super MouseEvent> onMouseDragged() {
         return event -> {
             // TODO: Make completely smooth by doing reverse mercator
-            double factor = 50 / zoomFactor;
+            double magicFactor = 50 / zoomFactor;
             double dx = event.getX() - clickX;
             double dy = clickY - event.getY();
-            xOffset += factor * dx;
-            yOffset += factor * dy;
+            xOffset += magicFactor * dx;
+            yOffset += magicFactor * dy;
             clickX = event.getX();
             clickY = event.getY();
             dragCounter++;
