@@ -280,16 +280,19 @@ public class FXMLController implements Initializable {
         if (edge.inPath) {
             return Color.RED;
         }
-        if (edge.visitedBothways) {
-            return Color.DARKTURQUOISE;
-        }
         if (edge.visitedReverse) {
-            return Color.MEDIUMTURQUOISE;
+            return Color.TURQUOISE;
         }
         if (edge.visited) {
             return Color.BLUE;
         }
         return Color.BLACK;
+    }
+
+    private Color shiftColorByRound(Color color, int roundVisit, int totalrounds) {
+        double scaleFactor = Math.min(totalrounds % ((double) roundVisit / (double) totalrounds), 1);
+        Color newcolor = color.deriveColor(1, 1, scaleFactor, 1);
+        return color;
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {

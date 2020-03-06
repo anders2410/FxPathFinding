@@ -35,8 +35,6 @@ public class Dijkstra {
                     Integer topB = backwardQueue.peek();
                     if (topA != null && topB != null) {
                         return visitedBackward.contains(topA) || visitedForward.contains(topB);
-                        /*double combinedDistance = forwardNodeDist.get(topA) + backwardNodeDist.get(topB);
-                        return combinedDistance >= goal;*/
                     }
                     return false;
                 };
@@ -46,31 +44,8 @@ public class Dijkstra {
                     Integer topA = forwardQueue.peek();
                     Integer topB = backwardQueue.peek();
                     if (topA != null && topB != null) {
-                        double potentialForwardNode = heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
-                        double potentialBackwardNode = heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source));
-
-                        /*double potentialForwardSource = heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target));
-                        double potentialForwardNode = heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
-
-                        double potentialBackwardTarget = heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source));
-                        double potentialBackwardNode = heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source));
-
-                        double pathLengthBackwards = backwardEstimatedNodeDist.get(topB) + potentialBackwardNode;
-                        double pathLengthForwards = forwardEstimatedNodeDist.get(topA) + potentialForwardNode;*/
-                        /*double potentialForwardSource = heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(source));
-                        double potentialBackwardTarget = heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source)) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(target));
-                        double potentialForwardTarget = heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source));
-                        double combinedDistance = Math.abs(forwardEstimatedNodeDist.get(topA) - potentialForwardSource) + Math.abs(backwardEstimatedNodeDist.get(topB) - potentialBackwardTarget);*/
-                        /*double potentialBackwardTarget = heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source));
-                        double topForward = Math.abs(forwardNodeDist.get(topA) - heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target)));
-                        double topBackward = Math.abs(backwardNodeDist.get(topB) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source)));
-                        double combinedDistance = forwardEstimatedNodeDist.get(topA) + backwardEstimatedNodeDist.get(topB);
-                        return topForward + topBackward >= Math.abs(goal - heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target)));*/
-                        double keyValueForward = forwardNodeDist.get(topA) + heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
                         double keyValueBackwards = backwardNodeDist.get(topB) + heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source));
                         return keyValueBackwards >= goal || keyValueBackwards >= goal;
-                        /*double combinedDistance = forwardNodeDist.get(topA) + backwardNodeDist.get(topB);
-                        return combinedDistance >= goal + heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target));*/
                     }
                     return false;
                 };
@@ -92,11 +67,10 @@ public class Dijkstra {
                 };
             case BI_A_STAR:
                 return (i) -> {
+                    Node curNode = nodeList.get(i);
                     if (forwardDirection) {
-                        Node curNode = nodeList.get(i);
                         return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(target));
                     } else {
-                        Node curNode = nodeList.get(i);
                         return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(source));
                     }
                 };
@@ -104,9 +78,7 @@ public class Dijkstra {
     }
 
     private static HeuristicFunction chooseHeuristicFunction() {
-        return (node, target) -> {
-            return distanceStrategy.apply(node, target);
-        };
+        return (node, target) -> distanceStrategy.apply(node, target);
     }
 
     private static RelaxStrategy chooseRelaxStrategy(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq) {
@@ -114,7 +86,7 @@ public class Dijkstra {
             default:
             case DIJKSTRA:
             case BI_DIJKSTRA:
-                return (from, edge, directionFoward) -> {
+                return (from, edge, directionForward) -> {
                     edge.visited = true;
                     double newDist = nodeDist.get(from) + edge.d;
 
@@ -126,27 +98,21 @@ public class Dijkstra {
                     }
                 };
             case A_STAR:
-                return (from, edge, directionFoward) -> {
+                return (from, edge, directionForward) -> {
                     edge.visited = true;
                     double newDist = nodeDist.get(from) + edge.d;
                     double heuristicFrom = heuristicFunction.applyHeuristic(nodeList.get(from), nodeList.get(target));
                     double heuristicNeighbour = heuristicFunction.applyHeuristic(nodeList.get(edge.to), nodeList.get(target));
                     double weirdWeight = estimatedDist.get(from) + edge.d - heuristicFrom + heuristicNeighbour;
-                    if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
-                        pq.remove(edge.to);
-                        estimatedDist.put(edge.to, weirdWeight);
-                        nodeDist.set(edge.to, newDist);
-                        pathMap.put(edge.to, from);
-                        pq.add(edge.to);
-                    }
+                    updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
             case BI_A_STAR:
-                return (from, edge, directionFoward) -> {
+                return (from, edge, directionForward) -> {
                     edge.visited = true;
                     double newDist = nodeDist.get(from) + edge.d;
                     double newEst = estimatedDist.get(from) + edge.d;
                     double potentialFunc;
-                    if (directionFoward) {
+                    if (directionForward) {
                         potentialFunc = distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(target)) - distanceStrategy.apply(nodeList.get(from), nodeList.get(target));
                     } else {
                         potentialFunc = distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source)) - distanceStrategy.apply(nodeList.get(from), nodeList.get(source));
@@ -155,14 +121,18 @@ public class Dijkstra {
                     double potentialFuncStart = -distanceStrategy.apply(nodeList.get(from), nodeList.get(source)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source));
 */
                     double weirdWeight = newEst + potentialFunc;
-                    if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
-                        pq.remove(edge.to);
-                        estimatedDist.put(edge.to, weirdWeight);
-                        nodeDist.set(edge.to, newDist);
-                        pathMap.put(edge.to, from);
-                        pq.add(edge.to);
-                    }
+                    updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
+        }
+    }
+
+    private static void updateNode(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq, int from, Edge edge, double newDist, double weirdWeight) {
+        if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
+            pq.remove(edge.to);
+            estimatedDist.put(edge.to, weirdWeight);
+            nodeDist.set(edge.to, newDist);
+            pathMap.put(edge.to, from);
+            pq.add(edge.to);
         }
     }
 
@@ -232,7 +202,8 @@ public class Dijkstra {
         // TODO: Try to integrate it with sssp Dijkstra implementation.
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
-        //A
+
+        // A-direction
         List<Double> nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDistA = null;
         if (mode == AlgorithmMode.BI_A_STAR) {
@@ -249,7 +220,7 @@ public class Dijkstra {
         Set<Integer> visitedA = new HashSet<>();
         Map<Integer, Integer> pathMapA = new HashMap<>();
 
-        //B
+        // B-direction
         List<Double> nodeDistB = initNodeDist(target, adjList.size());
         Map<Integer, Double> estimatedDistB = null;
         if (mode == AlgorithmMode.BI_A_STAR) {
@@ -271,7 +242,6 @@ public class Dijkstra {
         BiTerminationStrategy terminationStrategy = chooseTerminationStrategy(target, visitedA, visitedB);
 
         goalDistance = Double.MAX_VALUE;
-        boolean intersectionFound = false;
         middlePoint = -1;
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty()) {
@@ -340,7 +310,7 @@ public class Dijkstra {
             if (curNode == null) {
                 return new ArrayList<>(0);
             }
-            // System.out.println(curNode);
+
             path.add(curNode);
             for (Edge edge : adjList.get(curNode)) {
                 if (edge.to == prevNode) {
