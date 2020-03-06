@@ -2,7 +2,6 @@ package javafx;
 
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -16,7 +15,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.converter.IntegerStringConverter;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -33,7 +31,6 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.UnaryOperator;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
@@ -122,15 +119,15 @@ public class FXMLController implements Initializable {
 
         List<Node> nodeList = graph.getNodeList();
         for (Node n : nodeList) {
-            double x = projectXCordMercator(n.longitude);
-            double y = projectYCordMercator(n.latitude);
+            double x = mercatorX(n.longitude);
+            double y = mercatorY(n.latitude);
             minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
             minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
         }
 
         for (Node n : nodeList) {
-            double x = projectXCordMercator(n.longitude) - minXY.x;
-            double y = projectYCordMercator(n.latitude) - minXY.y;
+            double x = mercatorX(n.longitude) - minXY.x;
+            double y = mercatorY(n.latitude) - minXY.y;
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
@@ -316,35 +313,47 @@ public class FXMLController implements Initializable {
         }
     }
 
+    //Projections
+
+    final double RADIUS_MAJOR = 6378137.0;
+
     /**
      * @param cord longitude input
      * @return x coordinate in canvas
      */
-    private double projectXCordMercator(double cord) {
-        final double RADIUS_MAJOR = 6378137.0;
+    double mercatorX(double cord) {
         return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
     }
 
-    private double getNodeScreenPosX(Node node) {
-        double x = projectXCordMercator(node.longitude) - minXY.x;
+    double reverseMercatorX(double x) {
+        return Math.toDegrees((x - xOffset)/RADIUS_MAJOR);
+    }
+
+    double getNodeScreenPosX(Node node) {
+        double x = mercatorX(node.longitude) - minXY.x;
         return x * globalRatio;
     }
+
+    final double RADIUS_MINOR = 6356752.3142;
 
     /**
      * @param cord latitude input
      * @return y coordinate in canvas
      */
-    private double projectYCordMercator(double cord) {
-        final double RADIUS_MINOR = 6356752.3142;
+    double mercatorY(double cord) {
         return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
     }
 
-    private double getNodeScreenPosY(Node node) {
-        double y = projectYCordMercator(node.latitude) - minXY.y;
+    double reverseMercatorY(double y) {
+        return Math.toDegrees(2*Math.atan(Math.exp((y - yOffset)/RADIUS_MINOR)) - Math.PI/2);
+    }
+
+    double getNodeScreenPosY(Node node) {
+        double y = mercatorY(node.latitude) - minXY.y;
         return canvas.getHeight() - y * globalRatio;
     }
 
-    public double nodeToPointDistance(Node node, double x, double y) {
+    double nodeToPointDistance(Node node, double x, double y) {
         double nodeX = getNodeScreenPosX(node);
         double nodeY = getNodeScreenPosY(node);
         return Math.sqrt(Math.pow(nodeX - x, 2) + Math.pow(nodeY - y, 2));
@@ -364,7 +373,9 @@ public class FXMLController implements Initializable {
         return closestNode;
     }
 
+
     // Here comes all the eventHandle methods that are called when clicked
+
     public void handleNavUpEvent() {
         yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
                 ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
