@@ -12,15 +12,13 @@ public class Edge {
         this.d = d;
         visited = false;
         visitedReverse = false;
-        visitedBothways = false;
         inPath = false;
         isDrawn = false;
     }
 
-    public Edge(int to, double d, boolean visited, boolean inPath, boolean isDrawn, boolean visitedReverse, boolean visitedBothWays) {
+    public Edge(int to, double d, boolean visited, boolean inPath, boolean isDrawn, boolean visitedReverse) {
         this.to = to;
         this.d = d;
-        this.visitedBothways = visitedBothWays;
         this.visited = visited;
         this.inPath = inPath;
         this.isDrawn = isDrawn;
@@ -40,9 +38,6 @@ public class Edge {
             compVal++;
         }
         if (edge.visited) {
-            compVal++;
-        }
-        if (edge.visitedBothways) {
             compVal++;
         }
         if (edge.visitedReverse) {

@@ -46,7 +46,6 @@ public class Graph {
                 edge.visitedReverse = false;
                 edge.visited = false;
                 edge.inPath = false;
-                edge.visitedBothways = false;
             }
         }
     }
@@ -61,10 +60,6 @@ public class Graph {
                         if (e.to == reciever.to) {
                             if (reciever.inPath) {
                                 e.inPath = true;
-                            }
-                            if (reciever.visited) {
-                                // Can happen due to both forward/backward visiting node, but also if one of the searches went back and forth down a road.
-                                e.visitedBothways = true;
                             }
                             e.visitedReverse = true;
 
@@ -84,7 +79,7 @@ public class Graph {
         }
         for (int i = 0; i < originalList.size(); i++) {
             for (Edge e : originalList.get(i)) {
-                Edge replacement = new Edge(i, e.d, e.visited, e.inPath, e.isDrawn, e.visitedReverse, e.visitedBothways);
+                Edge replacement = new Edge(i, e.d, e.visited, e.inPath, e.isDrawn, e.visitedReverse);
                 reversedList.get(e.to).add(replacement);
             }
         }
