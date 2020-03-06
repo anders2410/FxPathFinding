@@ -57,12 +57,12 @@ public class Graph {
             for (Edge e : restoredList.get(i)) {
                 if (e.visited) {
                     for (int j = 0; j < mergeList.get(i).size(); j++) {
-                        Edge reciever = mergeList.get(i).get(j);
-                        if (e.to == reciever.to) {
-                            if (reciever.inPath) {
+                        Edge receiver = mergeList.get(i).get(j);
+                        if (e.to == receiver.to) {
+                            if (receiver.inPath) {
                                 e.inPath = true;
                             }
-                            if (reciever.visited) {
+                            if (receiver.visited) {
                                 // Can happen due to both forward/backward visiting node, but also if one of the searches went back and forth down a road.
                                 e.visitedBothways = true;
                             }
