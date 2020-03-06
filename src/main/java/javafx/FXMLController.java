@@ -500,14 +500,21 @@ public class FXMLController implements Initializable {
 
     private EventHandler<MouseEvent> onMouseClicked() {
         return event -> {
-            if (event.getButton() == MouseButton.PRIMARY) {
-                onLeftClick(event);
-            }
-            if (event.getButton() == MouseButton.SECONDARY) {
-                onRightClick();
+            switch (event.getButton()) {
+                case PRIMARY:
+                    onLeftClick(event);
+                    break;
+                case MIDDLE:
+                    onMiddleClick();
+                    break;
+                case SECONDARY:
+                    onRightClick();
+                    break;
             }
         };
     }
+
+    public boolean includePathFromClickToPoint = false;
 
     private void onLeftClick(MouseEvent event) {
         if (dragCounter > dragLimit) {
@@ -515,6 +522,14 @@ public class FXMLController implements Initializable {
         }
         PixelPoint mousePos = new PixelPoint(event.getX(), event.getY());
         Node node = selectClosestNode(mousePos);
+        if (includePathFromClickToPoint) {
+            Node mouseNode = toNode(mousePos);
+            double dist = distanceStrategy.apply(mouseNode, node);
+            graph.addNode(mouseNode);
+            graph.addEdge(mouseNode, node, dist);
+            graph.addEdge(node, mouseNode, dist);
+            node = mouseNode;
+        }
         selectedNodes.addLast(node);
         if (selectedNodes.size() > 1) {
             runAlgorithm();
@@ -522,6 +537,10 @@ public class FXMLController implements Initializable {
             graph.resetPathTrace();
             redrawGraph();
         }
+    }
+
+    private void onMiddleClick() {
+        includePathFromClickToPoint = !includePathFromClickToPoint;
     }
 
     private void onRightClick() {
