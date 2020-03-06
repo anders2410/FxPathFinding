@@ -10,6 +10,9 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -30,6 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiFunction;
 
 import static model.Util.algorithmNames;
@@ -75,8 +79,8 @@ public class FXMLController implements Initializable {
     private GraphicsContext gc;
     private int xOffset;
     private int yOffset;
-    private PixelPoint minXY;
-    private PixelPoint maxXY;
+    private PixelPoint minXY = new PixelPoint(-1, -1);
+    private PixelPoint maxXY = new PixelPoint(-1, -1);
     private double globalRatio;
     private float zoomFactor;
     private int widthOfBoundingBox;
@@ -232,12 +236,11 @@ public class FXMLController implements Initializable {
     }
 
     private void drawNode(Node node) {
-        double adjustedX1 = getNodeScreenPosX(node);
-        double adjustedY1 = getNodeScreenPosY(node);
+        PixelPoint np = toScreenPos(node);
         double radius = 6;
         double shift = radius / 2;
-        gc.fillOval(adjustedX1 - shift, adjustedY1 - shift, radius, radius);
-        gc.strokeOval(adjustedX1 - shift, adjustedY1 - shift, radius, radius);
+        gc.fillOval(np.x - shift, np.y - shift, radius, radius);
+        gc.strokeOval(np.x - shift, np.y - shift, radius, radius);
     }
 
     private void drawAllEdges() {
@@ -247,22 +250,19 @@ public class FXMLController implements Initializable {
         resetIsDrawn(adjList);
         // Iterates through all nodes
         for (int i = 0; i < adjList.size(); i++) {
-            Node nx = nodeList.get(i);
+            Node from = nodeList.get(i);
             // Iterates through adjacent nodes/edges
             for (Edge edge : adjList.get(i)) {
-                Node ny = nodeList.get(edge.to);
+                Node to = nodeList.get(edge.to);
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
                 // If the edge doesn't violate these constrains it will be drawn in the Canvas.
                 if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
-                    double adjustedX1 = getNodeScreenPosX(nx);
-                    double adjustedY1 = getNodeScreenPosY(nx);
-
-                    double adjustedX2 = getNodeScreenPosX(ny);
-                    double adjustedY2 = getNodeScreenPosY(ny);
+                    PixelPoint pFrom = toScreenPos(from);
+                    PixelPoint pTo = toScreenPos(to);
 
                     gc.setStroke(chooseEdgeColor(edge));
                     gc.setLineWidth(chooseEdgeWidth(edge));
-                    gc.strokeLine(adjustedX1, adjustedY1, adjustedX2, adjustedY2);
+                    gc.strokeLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
                     edge.isDrawn = true;
                 }
             }
@@ -315,6 +315,14 @@ public class FXMLController implements Initializable {
 
     //Projections
 
+    PixelPoint toScreenPos(Node node) {
+        return new PixelPoint(toScreenPosX(node.longitude), toScreenPosY(node.latitude));
+    }
+
+    Node toNode(PixelPoint p) {
+        return new Node(-1, toLongitude(p.x), toLatitude(p.y));
+    }
+
     final double RADIUS_MAJOR = 6378137.0;
 
     /**
@@ -325,13 +333,17 @@ public class FXMLController implements Initializable {
         return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
     }
 
-    double reverseMercatorX(double x) {
+    double invMercatorX(double x) {
         return Math.toDegrees((x - xOffset)/RADIUS_MAJOR);
     }
 
-    double getNodeScreenPosX(Node node) {
-        double x = mercatorX(node.longitude) - minXY.x;
+    double toScreenPosX(double longitude) {
+        double x = mercatorX(longitude) - minXY.x;
         return x * globalRatio;
+    }
+
+    double toLongitude(double x) {
+        return invMercatorX(x/globalRatio + minXY.x);
     }
 
     final double RADIUS_MINOR = 6356752.3142;
@@ -344,27 +356,34 @@ public class FXMLController implements Initializable {
         return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
     }
 
-    double reverseMercatorY(double y) {
+    double invMercatorY(double y) {
         return Math.toDegrees(2*Math.atan(Math.exp((y - yOffset)/RADIUS_MINOR)) - Math.PI/2);
     }
 
-    double getNodeScreenPosY(Node node) {
-        double y = mercatorY(node.latitude) - minXY.y;
+    double toScreenPosY(double latitude) {
+        double y = mercatorY(latitude) - minXY.y;
         return canvas.getHeight() - y * globalRatio;
     }
 
-    double nodeToPointDistance(Node node, double x, double y) {
-        double nodeX = getNodeScreenPosX(node);
-        double nodeY = getNodeScreenPosY(node);
-        return Math.sqrt(Math.pow(nodeX - x, 2) + Math.pow(nodeY - y, 2));
+    double toLatitude(double y) {
+        return invMercatorY((canvas.getHeight() - y)/globalRatio + minXY.y);
     }
 
-    private Node selectClosestNode(double x, double y) {
+    double nodeToPointDistance(Node node, PixelPoint p) {
+        PixelPoint nodeP = toScreenPos(node);
+        return distance(nodeP, p);
+    }
+
+    double distance(PixelPoint p1, PixelPoint p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    }
+
+    private Node selectClosestNode(PixelPoint p) {
         List<Node> nodeList = graph.getNodeList();
         Node closestNode = nodeList.get(0);
-        double closestDistance = nodeToPointDistance(closestNode, x, y);
+        double closestDistance = nodeToPointDistance(closestNode, p);
         for (Node node : nodeList) {
-            double distance = nodeToPointDistance(node, x, y);
+            double distance = nodeToPointDistance(node, p);
             if (distance < closestDistance) {
                 closestNode = node;
                 closestDistance = distance;
@@ -481,9 +500,8 @@ public class FXMLController implements Initializable {
         if (dragCounter > dragLimit) {
             return;
         }
-        double x = event.getX();
-        double y = event.getY();
-        Node node = selectClosestNode(x, y);
+        PixelPoint mousePos = new PixelPoint(event.getX(), event.getY());
+        Node node = selectClosestNode(mousePos);
         selectedNodes.addLast(node);
         if (selectedNodes.size() > 1) {
             runAlgorithm();
