@@ -100,7 +100,7 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("poland-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
         Dijkstra.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }
@@ -392,6 +392,15 @@ public class FXMLController implements Initializable {
         return closestNode;
     }
 
+    private PixelPoint getScreenCenter() {
+        return new PixelPoint(canvas.getWidth()/2,canvas.getHeight()/2);
+    }
+
+    private void shiftOffset(PixelPoint point, PixelPoint newLocation) {
+        xOffset += newLocation.x - point.x;
+        yOffset += newLocation.y - point.y;
+    }
+
 
     // Here comes all the eventHandle methods that are called when clicked
 
@@ -408,27 +417,33 @@ public class FXMLController implements Initializable {
     }
 
     public void handleNavLeftEvent() {
-
         xOffset += (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
                 ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
         redrawGraph();
     }
 
     public void handleNavRightEvent() {
-
         xOffset -= (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
                 ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
         redrawGraph();
     }
 
     public void handleZoomInEvent() {
+        Node centerNode = toNode(getScreenCenter());
+        System.out.println("Center point before zoom " + getScreenCenter());
+        System.out.println(centerNode);
+        System.out.println(selectClosestNode(getScreenCenter()));
+        System.out.println("Center nodepoint after zoom " + toScreenPos(centerNode));
+
         zoomFactor *= 1.1f;
         setRatios();
+
+        //shiftOffset(toScreenPos(centerNode), getScreenCenter());
         redrawGraph();
     }
 
     public void handleZoomOutEvent() {
-        zoomFactor *= 0.9f;
+        zoomFactor *= 1/1.1f;
         setRatios();
         redrawGraph();
     }
