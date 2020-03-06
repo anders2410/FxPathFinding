@@ -168,7 +168,6 @@ public class Dijkstra {
 
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         graph = graphP;
-        graph.resetPathTrace();
         nodeList = graph.getNodeList();
         mode = modeP;
         source = sourceP;

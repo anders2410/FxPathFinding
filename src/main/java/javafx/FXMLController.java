@@ -176,9 +176,28 @@ public class FXMLController implements Initializable {
         if (selectedNodes.size() <= 1) {
             return;
         }
-        ShortestPathResult res = Dijkstra.sssp(graph, selectedNodes.peekFirst().index, selectedNodes.peekLast().index, algorithmMode);
+        graph.resetPathTrace();
+        Deque<Node> selectedNodesCopy = new ArrayDeque<>(selectedNodes);
+        selectedNodesCopy.pollFirst();
+        Node lastNode = selectedNodes.pollLast();
+        assert selectedNodes.size() == selectedNodesCopy.size();
+        List<ShortestPathResult> results = new ArrayList<>();
+        for (Node fromNode : selectedNodes) {
+            Node toNode = selectedNodesCopy.pollFirst();
+            assert toNode != null;
+            results.add(Dijkstra.sssp(graph, fromNode.index, toNode.index, algorithmMode));
+        }
+        selectedNodes.addLast(lastNode);
         redrawGraph();
-        setLabels(Util.roundDouble(res.d), res.visitedNodes);
+        Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
+                    List<Integer> combinedPath = new ArrayList<>(res1.path);
+                    combinedPath.addAll(res2.path.subList(1, res2.path.size()));
+                    return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes);
+                });
+        if (optCombinedRes.isPresent()) {
+            ShortestPathResult combinedRes = optCombinedRes.get();
+            setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodes);
+        }
     }
 
     private void setRatios() {
@@ -444,18 +463,6 @@ public class FXMLController implements Initializable {
         };
     }
 
-    private EventHandler<? super ScrollEvent> onMouseScrolled() {
-        return event -> {
-            if (event.getEventType() == ScrollEvent.SCROLL) {
-                if (event.getDeltaY() < 0) {
-                    handleZoomOutEvent();
-                } else {
-                    handleZoomInEvent();
-                }
-            }
-        };
-    }
-
     private void onLeftClick(MouseEvent event) {
         if (dragCounter > dragLimit) {
             return;
@@ -476,6 +483,18 @@ public class FXMLController implements Initializable {
         selectedNodes = new ArrayDeque<>();
         graph.resetPathTrace();
         redrawGraph();
+    }
+
+    private EventHandler<? super ScrollEvent> onMouseScrolled() {
+        return event -> {
+            if (event.getEventType() == ScrollEvent.SCROLL) {
+                if (event.getDeltaY() < 0) {
+                    handleZoomOutEvent();
+                } else {
+                    handleZoomInEvent();
+                }
+            }
+        };
     }
 
     public void handleDijkstraEvent() {
