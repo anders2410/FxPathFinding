@@ -90,6 +90,7 @@ public class FXMLController implements Initializable {
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
     private Deque<Node> selectedNodes = new ArrayDeque<>();
+    private int mouseNodes = 0;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -262,6 +263,11 @@ public class FXMLController implements Initializable {
 
                     gc.setStroke(chooseEdgeColor(edge));
                     gc.setLineWidth(chooseEdgeWidth(edge));
+                    if (edge.mouseEdge) {
+                        gc.setLineDashes(7);
+                    } else {
+                        gc.setLineDashes(0);
+                    }
                     gc.strokeLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
                     edge.isDrawn = true;
                 }
@@ -526,10 +532,15 @@ public class FXMLController implements Initializable {
             Node mouseNode = toNode(mousePos);
             double dist = distanceStrategy.apply(mouseNode, node);
             graph.addNode(mouseNode);
-            graph.addEdge(mouseNode, node, dist);
-            graph.addEdge(node, mouseNode, dist);
+            Edge forth = new Edge(node.index, dist);
+            forth.mouseEdge = true;
+            graph.addEdge(mouseNode, forth);
+            Edge back = new Edge(mouseNode.index, dist);
+            back.mouseEdge = true;
+            graph.addEdge(node, back);
             node = mouseNode;
         }
+        mouseNodes++;
         selectedNodes.addLast(node);
         if (selectedNodes.size() > 1) {
             runAlgorithm();
@@ -544,7 +555,13 @@ public class FXMLController implements Initializable {
     }
 
     private void onRightClick() {
+        resetSelection();
+    }
+
+    private void resetSelection() {
         selectedNodes = new ArrayDeque<>();
+        graph.removeNodesFromEnd(mouseNodes);
+        mouseNodes = 0;
         graph.resetPathTrace();
         redrawGraph();
     }

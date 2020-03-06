@@ -5,7 +5,7 @@ import java.util.Comparator;
 public class Edge {
     public int to;
     public double d;
-    public boolean visited, inPath, isDrawn, visitedReverse, visitedBothWays;
+    public boolean visited, inPath, isDrawn, visitedReverse, visitedBothWays, mouseEdge;
 
     public Edge(int to, double d) {
         this.to = to;
@@ -14,6 +14,7 @@ public class Edge {
         visitedReverse = false;
         inPath = false;
         isDrawn = false;
+        mouseEdge = false;
     }
 
     public Edge(int to, double d, boolean visited, boolean inPath, boolean isDrawn, boolean visitedReverse) {

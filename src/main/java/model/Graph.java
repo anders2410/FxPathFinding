@@ -92,6 +92,7 @@ public class Graph {
     public void addNode(Node node) {
         node.index = nodeSize;
         nodeList.add(node);
+        nodeList.indexOf(node);
         adjList.add(emptyAdjList());
         nodeSize++;
     }
@@ -110,5 +111,20 @@ public class Graph {
 
     public void setNodeList(List<Node> nodeList) {
         this.nodeList = nodeList;
+    }
+
+    public void removeNodesFromEnd(int number) {
+        adjList = adjList.subList(0, nodeSize - number);
+        for (int i = 0; i < number; i++) {
+            nodeSize--;
+            nodeList.remove(nodeSize);
+            removeAllEdgesTo(nodeSize);
+        }
+    }
+
+    private void removeAllEdgesTo(int index) {
+        for (List<Edge> edges : adjList) {
+            edges.removeIf(edge -> edge.to == index);
+        }
     }
 }
