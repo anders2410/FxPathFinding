@@ -100,7 +100,7 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("malta-latest.osm.pbf");
+        setUpNewGraph("denmark-latest.osm.pbf");
         Dijkstra.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }
@@ -566,7 +566,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleBiAStarEvent() {
-        algorithmMode = BI_A_STAR;
+        algorithmMode = BI_A_STAR_CONSISTENT;
         runAlgorithm();
         setAlgorithmLabels();
         selectButton(biAStarButton);

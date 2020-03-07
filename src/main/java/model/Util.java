@@ -20,7 +20,9 @@ public class Util {
         algorithmNames.put(DIJKSTRA, "Dijkstra");
         algorithmNames.put(BI_DIJKSTRA, "Bidirectional Dijkstra");
         algorithmNames.put(A_STAR, "A*");
-        algorithmNames.put(BI_A_STAR, "Bidirectional A*");
+        algorithmNames.put(BI_A_STAR_SYMMETRIC, "Bidirectional A*");
+        algorithmNames.put(BI_A_STAR_CONSISTENT, "Bidirectional A*");
+
     }
 
     public static double degreesToRadians(double degrees) {

@@ -35,7 +35,7 @@ public class DijkstraPBFTest {
     public void testDifferenceInPath() {
         Dijkstra.seed = 1;
         ShortestPathResult resD = Dijkstra.sssp(graph,6318, 7717, AlgorithmMode.BI_DIJKSTRA);
-        ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR);
+        ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
 
@@ -78,7 +78,7 @@ public class DijkstraPBFTest {
             ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
             ShortestPathResult biDijkRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
-            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR);
+            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
