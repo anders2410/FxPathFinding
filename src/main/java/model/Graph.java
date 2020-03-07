@@ -7,10 +7,6 @@ public class Graph {
     private List<List<Edge>> adjList;
     private int nodeSize;
 
-    public int getNodeAmount() {
-        return nodeSize;
-    }
-
     public Graph(int nodeSize) {
         init(nodeSize);
     }
@@ -20,24 +16,12 @@ public class Graph {
         nodeList = new ArrayList<>();
         adjList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            adjList.add(new LinkedList<>());
+            adjList.add(emptyAdjList());
         }
     }
 
-    public List<List<Edge>> getAdjList() {
-        return adjList;
-    }
-
-    public List<Node> getNodeList() {
-        return nodeList;
-    }
-
-    public void addEdge(Node node1, Node node2, double d) {
-        adjList.get(node1.index).add(new Edge(node2.index, d));
-    }
-
-    public void setNodeList(List<Node> nodeList) {
-        this.nodeList = nodeList;
+    private List<Edge> emptyAdjList() {
+        return new LinkedList<>();
     }
 
     public void resetPathTrace() {
@@ -75,7 +59,7 @@ public class Graph {
     public List<List<Edge>> reverseAdjacencyList(List<List<Edge>> originalList) {
         List<List<Edge>> reversedList = new ArrayList<>(originalList.size());
         for (int i = 0; i < nodeSize; i++) {
-            reversedList.add(new LinkedList<>());
+            reversedList.add(emptyAdjList());
         }
         for (int i = 0; i < originalList.size(); i++) {
             for (Edge e : originalList.get(i)) {
@@ -95,5 +79,52 @@ public class Graph {
         }
 
         return total;
+    }
+
+    public List<List<Edge>> getAdjList() {
+        return adjList;
+    }
+
+    public List<Node> getNodeList() {
+        return nodeList;
+    }
+
+    public void addNode(Node node) {
+        node.index = nodeSize;
+        nodeList.add(node);
+        nodeList.indexOf(node);
+        adjList.add(emptyAdjList());
+        nodeSize++;
+    }
+
+    public int getNodeAmount() {
+        return nodeSize;
+    }
+
+    public void addEdge(Node from, Node to, double d) {
+        adjList.get(from.index).add(new Edge(to.index, d));
+    }
+
+    public void addEdge(Node from, Edge edge) {
+        adjList.get(from.index).add(edge);
+    }
+
+    public void setNodeList(List<Node> nodeList) {
+        this.nodeList = nodeList;
+    }
+
+    public void removeNodesFromEnd(int number) {
+        adjList = adjList.subList(0, nodeSize - number);
+        for (int i = 0; i < number; i++) {
+            nodeSize--;
+            nodeList.remove(nodeSize);
+            removeAllEdgesTo(nodeSize);
+        }
+    }
+
+    private void removeAllEdgesTo(int index) {
+        for (List<Edge> edges : adjList) {
+            edges.removeIf(edge -> edge.to == index);
+        }
     }
 }
