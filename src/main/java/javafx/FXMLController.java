@@ -192,10 +192,10 @@ public class FXMLController implements Initializable {
         selectedNodes.addLast(lastNode);
         redrawGraph();
         Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
-                    List<Integer> combinedPath = new ArrayList<>(res1.path);
-                    combinedPath.addAll(res2.path.subList(1, res2.path.size()));
-                    return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes);
-                });
+            List<Integer> combinedPath = new ArrayList<>(res1.path);
+            combinedPath.addAll(res2.path.subList(1, res2.path.size()));
+            return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes);
+        });
         if (optCombinedRes.isPresent()) {
             ShortestPathResult combinedRes = optCombinedRes.get();
             setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodes);
@@ -296,9 +296,9 @@ public class FXMLController implements Initializable {
     }
 
     private Color shiftColorByRound(Color color, int roundVisit, int totalrounds) {
-        double scaleFactor = Math.min(totalrounds % ((double) roundVisit / (double) totalrounds), 1);
-        Color newcolor = color.deriveColor(1, 1, scaleFactor, 1);
-        return color;
+        double scaleFactor = Math.max(((double) roundVisit / (double) totalrounds), 0.3);
+        Color newcolor = Color.hsb(color.getHue(), color.getSaturation(), color.getBrightness() * scaleFactor, color.getOpacity());
+        return newcolor;
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
@@ -340,7 +340,7 @@ public class FXMLController implements Initializable {
     }
 
     double invMercatorX(double x) {
-        return Math.toDegrees((x - xOffset)/RADIUS_MAJOR);
+        return Math.toDegrees((x - xOffset) / RADIUS_MAJOR);
     }
 
     double toScreenPosX(double longitude) {
@@ -349,7 +349,7 @@ public class FXMLController implements Initializable {
     }
 
     double toLongitude(double x) {
-        return invMercatorX(x/globalRatio + minXY.x);
+        return invMercatorX(x / globalRatio + minXY.x);
     }
 
     final double RADIUS_MINOR = 6356752.3142;
@@ -363,7 +363,7 @@ public class FXMLController implements Initializable {
     }
 
     double invMercatorY(double y) {
-        return Math.toDegrees(2*Math.atan(Math.exp((y - yOffset)/RADIUS_MINOR)) - Math.PI/2);
+        return Math.toDegrees(2 * Math.atan(Math.exp((y - yOffset) / RADIUS_MINOR)) - Math.PI / 2);
     }
 
     double toScreenPosY(double latitude) {
@@ -372,7 +372,7 @@ public class FXMLController implements Initializable {
     }
 
     double toLatitude(double y) {
-        return invMercatorY((canvas.getHeight() - y)/globalRatio + minXY.y);
+        return invMercatorY((canvas.getHeight() - y) / globalRatio + minXY.y);
     }
 
     double nodeToPointDistance(Node node, PixelPoint p) {
@@ -399,7 +399,7 @@ public class FXMLController implements Initializable {
     }
 
     private PixelPoint getScreenCenter() {
-        return new PixelPoint(canvas.getWidth()/2,canvas.getHeight()/2);
+        return new PixelPoint(canvas.getWidth() / 2, canvas.getHeight() / 2);
     }
 
 
@@ -434,7 +434,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleZoomOutEvent() {
-        zoom(1/1.1f);
+        zoom(1 / 1.1f);
     }
 
     private void zoom(float v) {

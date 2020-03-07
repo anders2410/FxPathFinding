@@ -280,7 +280,6 @@ public class Dijkstra {
         Set<Integer> visitedB = new HashSet<>();
         Map<Integer, Integer> pathMapB = new HashMap<>();
         RelaxStrategy relaxStrategyB = chooseRelaxStrategy(nodeDistB, estimatedDistB, pathMapB, queueB);
-
         BiTerminationStrategy terminationStrategy = chooseTerminationStrategy(target, visitedA, visitedB);
 
         goalDistance = Double.MAX_VALUE;
