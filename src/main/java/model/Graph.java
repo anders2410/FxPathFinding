@@ -1,10 +1,14 @@
 package model;
 
+import paths.AlgorithmMode;
+import paths.Dijkstra;
+
 import java.util.*;
 
 public class Graph {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
+    private Set<Integer> landmarks;
     private int nodeSize;
 
     public Graph(int nodeSize) {
@@ -15,9 +19,42 @@ public class Graph {
         this.nodeSize = size;
         nodeList = new ArrayList<>();
         adjList = new ArrayList<>();
+        landmarks = new HashSet<>();
         for (int i = 0; i < size; i++) {
             adjList.add(emptyAdjList());
         }
+    }
+
+    public Set<Integer> extractLandmarks(int goalamount) {
+        // Current implementation is 'optimised random'
+        // Simple but slow. MaxCover yields better results - TODO MaxCover for landmark selection
+        if (landmarks.isEmpty()) {
+            Random randomiser = new Random();
+            randomiser.setSeed(666);
+            int startingVertice = randomiser.nextInt(nodeList.size());
+            landmarks.add(startingVertice);
+        }
+        while (landmarks.size() < goalamount) {
+            double furthestdistance = -1;
+            int furthestCandidate = -1;
+            for (Node n : nodeList) {
+                double candidateDistance = 0;
+                for (int i : landmarks) {
+                    double distance = Dijkstra.sssp(this, n.index, i, AlgorithmMode.BI_A_STAR_CONSISTENT).d;
+                    if (distance == Double.MAX_VALUE) {
+                        // Graph not fully connected. Approximate length by spherical distance.
+                        distance = Util.sphericalDistance(nodeList.get(i), n);
+                    }
+                    candidateDistance += distance;
+                }
+                if (candidateDistance > furthestdistance) {
+                    furthestCandidate = n.index;
+                    furthestdistance = candidateDistance;
+                }
+            }
+            landmarks.add(furthestCandidate);
+        }
+        return landmarks;
     }
 
     private List<Edge> emptyAdjList() {
@@ -96,6 +133,7 @@ public class Graph {
         adjList.add(emptyAdjList());
         nodeSize++;
     }
+
 
     public int getNodeAmount() {
         return nodeSize;

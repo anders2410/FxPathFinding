@@ -101,7 +101,7 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("denmark-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
         Dijkstra.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }
@@ -617,6 +617,22 @@ public class FXMLController implements Initializable {
 
     public void handleLandmarksEvent() {
         // TODO: Add algorithm for landmarks
+        Set<Integer> marks = graph.extractLandmarks(16);
+        for (Integer index : marks) {
+            Node n = graph.getNodeList().get(index);
+            drawLandMark(n);
+        }
+
+    }
+
+    private void drawLandMark(Node n) {
+        PixelPoint p = toScreenPos(n);
+        double radius = 30;
+        double shift = radius / 2;
+        gc.setStroke(Color.HOTPINK);
+        gc.fillOval(p.x - shift, p.y - shift, radius, radius);
+        gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
+
     }
 
     public void handleSeedEvent() {
