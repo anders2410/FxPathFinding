@@ -185,6 +185,39 @@ public class Dijkstra {
         target = targetP;
     }
 
+    public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
+        graph = graphP;
+        nodeList = graph.getNodeList();
+        mode = AlgorithmMode.DIJKSTRA;
+        source = sourceP;
+        List<List<Edge>> adjList = graph.getAdjList();
+        List<Double> nodeDist = initNodeDist(source, adjList.size());
+        Map<Integer, Double> estimatedDist = null;
+        Function<Integer, Double> priorityStrategy = choosePriorityStrategy(nodeDist, true);
+        Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
+        AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
+        nodeQueue.add(source);
+        Set<Integer> seenNodes = new LinkedHashSet<>();
+        Map<Integer, Integer> pathMap = new HashMap<>();
+        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDist, null, pathMap, nodeQueue);
+
+        while (!nodeQueue.isEmpty()) {
+            Integer currentNode = nodeQueue.poll();
+            if (seenNodes.contains(currentNode)) {
+                continue;
+            }
+            seenNodes.add(currentNode);
+            for (Edge edge : adjList.get(currentNode)) {
+                relaxStrategy.relax(currentNode, edge, true);
+                if (trace) {
+                    System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
+                }
+            }
+        }
+        List<Integer> shortestPath = extractPath(pathMap, adjList, source, target);
+        return new ShortestPathResult(nodeDist.get(target), shortestPath, seenNodes.size(), nodeDist);
+    }
+
     public static ShortestPathResult sssp(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
         initializeGlobalFields(graphP, modeP, sourceP, targetP);
         heuristicFunction = chooseHeuristicFunction();

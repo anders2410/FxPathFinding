@@ -46,9 +46,9 @@ public class Graph {
         return hop;
     }
 
-    public Set<Integer> extractLandmarks(int goalamount) {
-        // Current implementation is 'optimised random'
-        // Simple but slow. MaxCover yields better results - TODO MaxCover for landmark selection
+    public Set<Integer> extractLandmarksFarthest(int goalamount) {
+        // Current implementation is 'FarthestB' (B - breadth)
+        // Simple but not necessarily best. MaxCover yields better results - TODO MaxCover for landmark selection
         int[][] resArr = new int[goalamount][nodeSize];
         if (landmarks.isEmpty()) {
             Random randomiser = new Random();
@@ -77,8 +77,7 @@ public class Graph {
             }
             resArr[landmarks.size()] = BFSMaxDistance(furthestCandidate);
             landmarks.add(furthestCandidate);
-            System.out.println(furthestCandidate);
-        }
+            }
         return landmarks;
     }
 

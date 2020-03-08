@@ -32,9 +32,16 @@ public class DijkstraPBFTest {
     }
 
     @Test
+    public void testSingleSourceAll() {
+        Dijkstra.seed = 1;
+        ShortestPathResult res = Dijkstra.singleToAllPath(graph,300);
+        System.out.println("Finito");
+    }
+
+    @Test
     public void testDifferenceInPath() {
         Dijkstra.seed = 1;
-        ShortestPathResult resD = Dijkstra.sssp(graph,6318, 7717, AlgorithmMode.BI_DIJKSTRA);
+        ShortestPathResult resD = Dijkstra.sssp(graph, 6318, 7717, AlgorithmMode.BI_DIJKSTRA);
         ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
