@@ -101,7 +101,7 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("malta-latest.osm.pbf");
+        setUpNewGraph("denmark-latest.osm.pbf");
         Dijkstra.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }

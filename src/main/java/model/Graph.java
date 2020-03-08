@@ -25,34 +25,59 @@ public class Graph {
         }
     }
 
+    public int[] BFSMaxDistance(int startNode) {
+        int[] hop = new int[nodeSize];
+        boolean[] seen = new boolean[nodeSize];
+        Queue<Integer> queue = new ArrayDeque<>(nodeSize);
+        queue.add(startNode);
+        hop[startNode] = 0;
+        seen[startNode] = true;
+        while (!queue.isEmpty()) {
+            int top = queue.poll();
+            for (Edge e : adjList.get(top)) {
+                if (!seen[e.to]) {
+                    hop[e.to] = hop[top] + 1;
+                    queue.add(e.to);
+                    seen[e.to] = true;
+                }
+            }
+        }
+
+        return hop;
+    }
+
     public Set<Integer> extractLandmarks(int goalamount) {
         // Current implementation is 'optimised random'
         // Simple but slow. MaxCover yields better results - TODO MaxCover for landmark selection
+        int[][] resArr = new int[goalamount][nodeSize];
         if (landmarks.isEmpty()) {
             Random randomiser = new Random();
-            randomiser.setSeed(666);
             int startingVertice = randomiser.nextInt(nodeList.size());
-            landmarks.add(startingVertice);
+            int[] arr = BFSMaxDistance(startingVertice);
+            int max = 0;
+            for (int i = 0; i < arr.length; i++) {
+                max = arr[i] > arr[max] ? i : max;
+            }
+            resArr[0] = arr;
+            landmarks.add(max);
         }
         while (landmarks.size() < goalamount) {
-            double furthestdistance = -1;
-            int furthestCandidate = -1;
+            int furthestdistance = 0;
+            int furthestCandidate = 0;
             for (Node n : nodeList) {
-                double candidateDistance = 0;
-                for (int i : landmarks) {
-                    double distance = Dijkstra.sssp(this, n.index, i, AlgorithmMode.BI_A_STAR_CONSISTENT).d;
-                    if (distance == Double.MAX_VALUE) {
-                        // Graph not fully connected. Approximate length by spherical distance.
-                        distance = Util.sphericalDistance(nodeList.get(i), n);
-                    }
-                    candidateDistance += distance;
+                if (landmarks.contains(n.index)) continue;
+                int candidateDistance = 0;
+                for (int i = 0; i < landmarks.size(); i++) {
+                    candidateDistance += resArr[i][n.index];
                 }
                 if (candidateDistance > furthestdistance) {
                     furthestCandidate = n.index;
                     furthestdistance = candidateDistance;
                 }
             }
+            resArr[landmarks.size()] = BFSMaxDistance(furthestCandidate);
             landmarks.add(furthestCandidate);
+            System.out.println(furthestCandidate);
         }
         return landmarks;
     }
