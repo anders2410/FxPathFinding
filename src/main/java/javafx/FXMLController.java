@@ -73,6 +73,8 @@ public class FXMLController implements Initializable {
     private Button aStarButton;
     @FXML
     private Button biAStarButton;
+    @FXML
+    private Button landmarkButton;
 
     private Stage stage;
     private Graph graph;
@@ -612,17 +614,21 @@ public class FXMLController implements Initializable {
         biDijkstraButton.pseudoClassStateChanged(pseudoClass, false);
         aStarButton.pseudoClassStateChanged(pseudoClass, false);
         biAStarButton.pseudoClassStateChanged(pseudoClass, false);
+        landmarkButton.pseudoClassStateChanged(pseudoClass, false);
         algoButton.pseudoClassStateChanged(pseudoClass, true);
     }
 
     public void handleLandmarksEvent() {
         // TODO: Add algorithm for landmarks
         Set<Integer> marks = graph.extractLandmarksFarthest(16);
+        algorithmMode = A_STAR_LANDMARKS_BI;
+        runAlgorithm();
         for (Integer index : marks) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);
         }
-
+        setAlgorithmLabels();
+        selectButton(landmarkButton);
     }
 
     private void drawLandMark(Node n) {

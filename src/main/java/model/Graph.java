@@ -8,11 +8,20 @@ import java.util.*;
 public class Graph {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
+
+    public void setAdjList(List<List<Edge>> adjList) {
+        this.adjList = adjList;
+    }
+
     private Set<Integer> landmarks;
     private int nodeSize;
 
     public Graph(int nodeSize) {
         init(nodeSize);
+    }
+
+    public Set<Integer> getLandmarks() {
+        return landmarks;
     }
 
     public void init(int size) {
@@ -77,7 +86,7 @@ public class Graph {
             }
             resArr[landmarks.size()] = BFSMaxDistance(furthestCandidate);
             landmarks.add(furthestCandidate);
-            }
+        }
         return landmarks;
     }
 

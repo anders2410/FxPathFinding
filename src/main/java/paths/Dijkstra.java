@@ -24,6 +24,7 @@ public class Dijkstra {
     private static AlgorithmMode mode;
     private static double goalDistance;
     private static int middlePoint;
+    private static double[][] landmarkArr;
 
     private static BiTerminationStrategy chooseTerminationStrategy(int to, Set<Integer> visitedForward, Set<Integer> visitedBackward) {
         switch (mode) {
@@ -66,6 +67,7 @@ public class Dijkstra {
                     Node targetNode = nodeList.get(target);
                     return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, targetNode);
                 };
+            case A_STAR_LANDMARKS_BI:
             case BI_A_STAR_CONSISTENT:
                 return (i) -> {
                     Node curNode = nodeList.get(i);
@@ -89,7 +91,24 @@ public class Dijkstra {
     }
 
     private static HeuristicFunction chooseHeuristicFunction() {
-        return (node, target) -> distanceStrategy.apply(node, target);
+        switch (mode) {
+            case A_STAR_LANDMARKS_BI:
+                return (startnode, target) -> {
+                    double maxLandmarkValue = 0;
+                    //32 because |landmarks| = 16. *2 for 2 ways.
+                    for (int i = 0; i < 32; i++) {
+                        double landmarkvalueforward = landmarkArr[i][target.index] - landmarkArr[i][startnode.index];
+                        double landmarkvaluebackward = landmarkArr[i + 1][startnode.index] - landmarkArr[i + 1][target.index];
+                        if (Math.max(landmarkvaluebackward, landmarkvalueforward) > maxLandmarkValue) {
+                            maxLandmarkValue = Math.max(landmarkvaluebackward, landmarkvalueforward);
+                        }
+                        i++;
+                    }
+                    return maxLandmarkValue;
+                };
+            default:
+                return (node, target) -> distanceStrategy.apply(node, target);
+        }
     }
 
     private static RelaxStrategy chooseRelaxStrategy(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq) {
@@ -128,9 +147,6 @@ public class Dijkstra {
                     } else {
                         potentialFunc = distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source)) - distanceStrategy.apply(nodeList.get(from), nodeList.get(source));
                     }
-/*
-                    double potentialFuncStart = -distanceStrategy.apply(nodeList.get(from), nodeList.get(source)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source));
-*/
                     double weirdWeight = newEst + potentialFunc;
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
@@ -178,9 +194,28 @@ public class Dijkstra {
     }
 
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
+        mode = modeP;
+        if (mode == AlgorithmMode.A_STAR_LANDMARKS_BI) {
+            if (!graphP.getLandmarks().isEmpty()) {
+                landmarkArr = new double[32][graphP.getNodeAmount()];
+                int index = 0;
+                List<List<Edge>> originalList = graphP.getAdjList();
+                for (Integer landmarkIndex : graphP.getLandmarks()) {
+                    List<Double> forwardDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
+                    double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
+                    graphP.setAdjList(graphP.reverseAdjacencyList(graphP.getAdjList()));
+                    List<Double> backDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
+                    double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
+                    graphP.setAdjList(originalList);
+                    landmarkArr[index] = arrForward;
+                    landmarkArr[index + 1] = arrBackward;
+                }
+            }
+        }
+        graphP.resetPathTrace();
+        mode = modeP;
         graph = graphP;
         nodeList = graph.getNodeList();
-        mode = modeP;
         source = sourceP;
         target = targetP;
     }
@@ -215,7 +250,7 @@ public class Dijkstra {
             }
         }
         List<Integer> shortestPath = extractPath(pathMap, adjList, source, target);
-        return new ShortestPathResult(nodeDist.get(target), shortestPath, seenNodes.size(), nodeDist);
+        return new ShortestPathResult(0, shortestPath, seenNodes.size(), nodeDist);
     }
 
     public static ShortestPathResult sssp(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
@@ -225,7 +260,7 @@ public class Dijkstra {
             return new ShortestPathResult(0, singletonList(source), 0);
         }
         ShortestPathResult result;
-        if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT) {
+        if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.A_STAR_LANDMARKS_BI) {
             result = biDirectional();
         } else {
             result = oneDirectional();
@@ -366,8 +401,6 @@ public class Dijkstra {
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
         graph.reversePaintEdges(revAdjList, adjList);
-        List<Edge> e1 = adjList.get(7715);
-        List<Edge> e2 = adjList.get(6320);
         shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
         shortestPath.addAll(shortestPathB);
