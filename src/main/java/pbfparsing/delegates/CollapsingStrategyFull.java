@@ -53,8 +53,11 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 if (oneWayFlag) {
                     Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                     String roadValue = tags.get("oneway");
+                    String roundabout = tags.get("junction");
                     if (roadValue == null || !roadValue.equals("yes")) {
-                        graph.addEdge(node1, node2, cum_Dist);
+                        if (roundabout == null || !roundabout.equals("roundabout")) {
+                            graph.addEdge(node1, node2, cum_Dist);
+                        }
                     }
                 } else {
                     graph.addEdge(node1, node2, cum_Dist);
@@ -77,13 +80,12 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
 
     @Override
     public int getSumOfValid(Map<String, Integer> validNodes) {
-        int val = validNodes.values().stream().map(integer -> {
+        return validNodes.values().stream().map(integer -> {
             if (integer > 1) {
                 return 1;
             } else {
                 return 0;
             }
         }).reduce(0, Integer::sum);
-        return val;
     }
 }
