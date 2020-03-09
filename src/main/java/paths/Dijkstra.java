@@ -113,20 +113,6 @@ public class Dijkstra {
 
     private static RelaxStrategy chooseRelaxStrategy(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq) {
         switch (mode) {
-            default:
-            case DIJKSTRA:
-            case BI_DIJKSTRA:
-                return (from, edge, directionForward) -> {
-                    edge.visited = true;
-                    double newDist = nodeDist.get(from) + edge.d;
-
-                    if (newDist < nodeDist.get(edge.to)) {
-                        pq.remove(edge.to);
-                        nodeDist.set(edge.to, newDist);
-                        pathMap.put(edge.to, from);
-                        pq.add(edge.to);
-                    }
-                };
             case A_STAR:
                 return (from, edge, directionForward) -> {
                     edge.visited = true;
@@ -150,6 +136,7 @@ public class Dijkstra {
                     double weirdWeight = newEst + potentialFunc;
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
+            case A_STAR_LANDMARKS_BI:
             case BI_A_STAR_CONSISTENT:
                 return (from, edge, directionForward) -> {
                     edge.visited = true;
@@ -179,6 +166,18 @@ public class Dijkstra {
 */
                     double weirdWeight = newEst + potentialFunc;
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
+                };
+            default:
+                return (from, edge, directionForward) -> {
+                    edge.visited = true;
+                    double newDist = nodeDist.get(from) + edge.d;
+
+                    if (newDist < nodeDist.get(edge.to)) {
+                        pq.remove(edge.to);
+                        nodeDist.set(edge.to, newDist);
+                        pathMap.put(edge.to, from);
+                        pq.add(edge.to);
+                    }
                 };
         }
     }
@@ -316,7 +315,7 @@ public class Dijkstra {
         // A-direction
         List<Double> nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDistA = null;
-        if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT) {
+        if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.A_STAR_LANDMARKS_BI) {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
@@ -333,7 +332,7 @@ public class Dijkstra {
         // B-direction
         List<Double> nodeDistB = initNodeDist(target, adjList.size());
         Map<Integer, Double> estimatedDistB = null;
-        if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT) {
+        if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.A_STAR_LANDMARKS_BI) {
             estimatedDistB = new HashMap<>();
             estimatedDistB.put(target, 0.0);
         }
