@@ -195,7 +195,7 @@ public class Dijkstra {
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
         if (mode == AlgorithmMode.A_STAR_LANDMARKS_BI) {
-            if (!graphP.getLandmarks().isEmpty()) {
+            if (landmarkArr == null && !graphP.getLandmarks().isEmpty()) {
                 landmarkArr = new double[32][graphP.getNodeAmount()];
                 int index = 0;
                 List<List<Edge>> originalList = graphP.getAdjList();
