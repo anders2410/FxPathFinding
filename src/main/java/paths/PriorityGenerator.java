@@ -1,25 +1,24 @@
 package paths;
 
 import java.util.List;
-import java.util.function.Function;
 
 import static paths.DirAB.A;
+import static paths.SSSP.*;
 
 public class PriorityGenerator {
-    public static Function<Integer, Double> getDijkstra(DirAB dir) {
-        return SSSP.getNodeDist(dir)::get;
+    public static PriorityStrategy getDijkstra() {
+        return (i, dir) -> getNodeDist(dir).get(i);
     }
 
-    public static Function<Integer, Double> getAStar(DirAB dir) {
-        List<Double> nodeDist = SSSP.getNodeDist(dir);
-        return (i) -> nodeDist.get(i) + SSSP.getHeuristicFunction().apply(i, SSSP.getTarget());
+    public static PriorityStrategy getAStar() {
+        return (i, dir) -> getNodeDist(dir).get(i) + getHeuristicFunction().apply(i, getTarget());
     }
 
-    public static Function<Integer, Double> getBiAStar(DirAB dir) {
-        List<Double> nodeDist = SSSP.getNodeDist(dir);
-        return (i) -> {
-            HeuristicFunction heuristicFunction = SSSP.getHeuristicFunction();
-            double pFunctionForward = (heuristicFunction.apply(i, SSSP.getTarget()) - heuristicFunction.apply(i, SSSP.getSource())) / 2;
+    public static PriorityStrategy getBiAStar() {
+        return (i, dir) -> {
+            List<Double> nodeDist = getNodeDist(dir);
+            HeuristicFunction heuristicFunction = getHeuristicFunction();
+            double pFunctionForward = (heuristicFunction.apply(i, getTarget()) - heuristicFunction.apply(i, getSource())) / 2;
             if (dir == A) {
                 return nodeDist.get(i) + pFunctionForward;
             } else {
@@ -28,14 +27,14 @@ public class PriorityGenerator {
         };
     }
 
-    public static Function<Integer, Double> getBiAStarSymmetric(DirAB dir) {
-        List<Double> nodeDist = SSSP.getNodeDist(dir);
-        return (i) -> {
-            HeuristicFunction heuristicFunction = SSSP.getHeuristicFunction();
+    public static PriorityStrategy getBiAStarSymmetric() {
+        return (i, dir) -> {
+            List<Double> nodeDist = getNodeDist(dir);
+            HeuristicFunction heuristicFunction = getHeuristicFunction();
             if (dir == A) {
-                return nodeDist.get(i) + heuristicFunction.apply(i, SSSP.getTarget());
+                return nodeDist.get(i) + heuristicFunction.apply(i, getTarget());
             } else {
-                return nodeDist.get(i) + heuristicFunction.apply(i, SSSP.getSource());
+                return nodeDist.get(i) + heuristicFunction.apply(i, getSource());
             }
         };
     }

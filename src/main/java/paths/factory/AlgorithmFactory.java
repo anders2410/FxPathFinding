@@ -1,20 +1,17 @@
 package paths.factory;
 
-import paths.DirAB;
-import paths.HeuristicFunction;
-import paths.RelaxStrategy;
-import paths.TerminationStrategy;
+import paths.*;
 
 import java.util.function.Function;
 
 public interface AlgorithmFactory {
     boolean isBiDirectional();
 
-    Function<Integer, Double> getPriorityStrategy(DirAB dir);
+    PriorityStrategy getPriorityStrategy();
 
     HeuristicFunction getHeuristicFunction();
 
-    RelaxStrategy getRelaxStrategy(DirAB dir);
+    RelaxStrategy getRelaxStrategy();
 
     TerminationStrategy getTerminationStrategy();
 }

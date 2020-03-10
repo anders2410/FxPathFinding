@@ -12,8 +12,8 @@ import static paths.SSSP.*;
 
 public class RelaxGenerator {
 
-    public static RelaxStrategy getDijkstra(DirAB dir) {
-        return (from, edge, direction) -> {
+    public static RelaxStrategy getDijkstra() {
+        return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
 
@@ -26,8 +26,8 @@ public class RelaxGenerator {
         };
     }
 
-    public static RelaxStrategy getAStar(DirAB dir) {
-        return (from, edge, direction) -> {
+    public static RelaxStrategy getAStar() {
+        return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
             double heuristicFrom = getHeuristicFunction().apply(from, getTarget());
@@ -37,13 +37,13 @@ public class RelaxGenerator {
         };
     }
 
-    public static RelaxStrategy getSymmetric(DirAB dir) {
-        return (from, edge, direction) -> {
+    public static RelaxStrategy getSymmetric() {
+        return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
             double newEst = getEstimatedDist(dir).get(from) + edge.d;
             double potentialFunc;
-            if (direction == A) {
+            if (dir == A) {
                 potentialFunc = getHeuristicFunction().apply(edge.to, getTarget()) - getHeuristicFunction().apply(from, getTarget());
             } else {
                 potentialFunc = getHeuristicFunction().apply(edge.to, getSource()) - getHeuristicFunction().apply(from, getSource());
@@ -53,8 +53,8 @@ public class RelaxGenerator {
         };
     }
 
-    public static RelaxStrategy getConsistent(DirAB dir) {
-        return (from, edge, direction) -> {
+    public static RelaxStrategy getConsistent() {
+        return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
             double newEst = getEstimatedDist(dir).get(from) + edge.d;

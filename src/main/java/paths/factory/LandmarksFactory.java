@@ -11,8 +11,8 @@ public class LandmarksFactory implements AlgorithmFactory {
     }
 
     @Override
-    public Function<Integer, Double> getPriorityStrategy(DirAB dir) {
-        return PriorityGenerator.getBiAStar(dir);
+    public PriorityStrategy getPriorityStrategy() {
+        return PriorityGenerator.getBiAStar();
     }
 
     @Override
@@ -21,8 +21,8 @@ public class LandmarksFactory implements AlgorithmFactory {
     }
 
     @Override
-    public RelaxStrategy getRelaxStrategy(DirAB dir) {
-        return RelaxGenerator.getConsistent(dir);
+    public RelaxStrategy getRelaxStrategy() {
+        return RelaxGenerator.getConsistent();
     }
 
     @Override
