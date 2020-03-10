@@ -293,6 +293,8 @@ public class SSSP {
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
 
+        TerminationStrategy terminationStrategy = chooseTerminationStrategy(target, visitedA, visitedB);
+
         // A-direction
         List<Double> nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDistA = null;
