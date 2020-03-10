@@ -29,34 +29,7 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
 
-    private static Function<Integer, Double> choosePriorityStrategy(List<Double> nodeDist, boolean forwardDirection) {
-        switch (mode) {
-            default:
-            case DIJKSTRA:
-            case BI_DIJKSTRA:
-                return nodeDist::get;
-            case A_STAR:
-                return (i) -> nodeDist.get(i) + heuristicFunction.apply(i, target);
-            case BI_A_STAR_LANDMARKS:
-            case BI_A_STAR_CONSISTENT:
-                return (i) -> {
-                    double potentialFunctionForward = (heuristicFunction.apply(i, target) - heuristicFunction.apply(i, source)) / 2;
-                    if (forwardDirection) {
-                        return nodeDist.get(i) + potentialFunctionForward;
-                    } else {
-                        return nodeDist.get(i) + (-potentialFunctionForward);
-                    }
-                };
-            case BI_A_STAR_SYMMETRIC:
-                return (i) -> {
-                    if (forwardDirection) {
-                        return nodeDist.get(i) + heuristicFunction.apply(i, target);
-                    } else {
-                        return nodeDist.get(i) + heuristicFunction.apply(i, source);
-                    }
-                };
-        }
-    }
+    private static AlgorithmFactory factory;
 
     private static RelaxStrategy chooseRelaxStrategy(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq) {
         switch (mode) {
@@ -154,21 +127,23 @@ public class SSSP {
         target = targetP;
     }
 
+    private static List<Double> nodeDistA;
+    private static List<Double> nodeDistB;
+
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
         graph = graphP;
         nodeList = graph.getNodeList();
         mode = DIJKSTRA;
         source = sourceP;
         List<List<Edge>> adjList = graph.getAdjList();
-        List<Double> nodeDist = initNodeDist(source, adjList.size());
-        Map<Integer, Double> estimatedDist = null;
-        Function<Integer, Double> priorityStrategy = choosePriorityStrategy(nodeDist, true);
+        nodeDistA = initNodeDist(source, adjList.size());
+        Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(true);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         Map<Integer, Integer> pathMap = new HashMap<>();
-        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDist, null, pathMap, nodeQueue);
+        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDistA, null, pathMap, nodeQueue);
 
         while (!nodeQueue.isEmpty()) {
             Integer currentNode = nodeQueue.poll();
@@ -184,7 +159,7 @@ public class SSSP {
             }
         }
         List<Integer> shortestPath = extractPath(pathMap, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, seenNodes.size(), nodeDist);
+        return new ShortestPathResult(0, shortestPath, seenNodes.size(), nodeDistA);
     }
 
     private static Map<AlgorithmMode, AlgorithmFactory> factoryMap = new HashMap<>();
@@ -198,7 +173,8 @@ public class SSSP {
     }
 
     public static ShortestPathResult sssp(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
-        applyFactory(factoryMap.get(modeP));
+        factory = factoryMap.get(modeP);
+        applyFactory(factory);
         initializeGlobalFields(graphP, modeP, sourceP, targetP);
         if (source == target) {
             return new ShortestPathResult(0, singletonList(source), 0);
@@ -213,25 +189,25 @@ public class SSSP {
     }
 
     private static void applyFactory(AlgorithmFactory factory) {
-        terminationStrategy = factory.getTerminationStrategy();
         heuristicFunction = factory.getHeuristicFunction();
+        terminationStrategy = factory.getTerminationStrategy();
     }
 
     private static ShortestPathResult oneDirectional() {
         List<List<Edge>> adjList = graph.getAdjList();
-        List<Double> nodeDist = initNodeDist(source, adjList.size());
+        nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDist = null;
         if (mode == AlgorithmMode.A_STAR) {
             estimatedDist = new HashMap<>();
             estimatedDist.put(source, 0.0);
         }
-        Function<Integer, Double> priorityStrategy = choosePriorityStrategy(nodeDist, true);
+        Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(true);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
         nodeQueue.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         Map<Integer, Integer> pathMap = new HashMap<>();
-        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDist, estimatedDist, pathMap, nodeQueue);
+        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDistA, estimatedDist, pathMap, nodeQueue);
 
         while (!nodeQueue.isEmpty()) {
             Integer currentNode = nodeQueue.poll();
@@ -252,7 +228,7 @@ public class SSSP {
         }
 
         List<Integer> shortestPath = extractPath(pathMap, adjList, source, target);
-        return new ShortestPathResult(nodeDist.get(target), shortestPath, seenNodes.size());
+        return new ShortestPathResult(nodeDistA.get(target), shortestPath, seenNodes.size());
     }
 
     private static Set<Integer> visitedA;
@@ -266,13 +242,13 @@ public class SSSP {
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
 
         // A-direction
-        List<Double> nodeDistA = initNodeDist(source, adjList.size());
+        nodeDistA = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDistA = null;
         if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        Function<Integer, Double> priorityStrategyA = choosePriorityStrategy(nodeDistA, true);
+        Function<Integer, Double> priorityStrategyA = factory.getPriorityStrategy(true);
         Comparator<Integer> comparatorA = Comparator.comparingDouble(priorityStrategyA::apply);
 
         // Queue to hold the paths from Node: source.
@@ -283,13 +259,13 @@ public class SSSP {
         Map<Integer, Integer> pathMapA = new HashMap<>();
 
         // B-direction
-        List<Double> nodeDistB = initNodeDist(target, adjList.size());
+        nodeDistB = initNodeDist(target, adjList.size());
         Map<Integer, Double> estimatedDistB = null;
         if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
             estimatedDistB = new HashMap<>();
             estimatedDistB.put(target, 0.0);
         }
-        Function<Integer, Double> priorityStrategyB = choosePriorityStrategy(nodeDistB, false);
+        Function<Integer, Double> priorityStrategyB = factory.getPriorityStrategy(false);
         Comparator<Integer> comparatorB = Comparator.comparingDouble(priorityStrategyB::apply);
         RelaxStrategy relaxStrategyA = chooseRelaxStrategy(nodeDistA, estimatedDistA, pathMapA, queueA);
 
@@ -447,6 +423,10 @@ public class SSSP {
         return distanceStrategy;
     }
 
+    public static HeuristicFunction getHeuristicFunction() {
+        return heuristicFunction;
+    }
+
     public static int getSource() {
         return source;
     }
@@ -469,5 +449,13 @@ public class SSSP {
 
     public static double[][] getLandmarkArray() {
         return landmarkArray;
+    }
+
+    public static List<Double> getNodeDistA() {
+        return nodeDistA;
+    }
+
+    public static List<Double> getNodeDistB() {
+        return nodeDistB;
     }
 }

@@ -11,8 +11,8 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
     }
 
     @Override
-    public Function<Integer, Double> getPriorityStrategy() {
-        return null;
+    public Function<Integer, Double> getPriorityStrategy(boolean isForward) {
+        return PriorityGenerator.getBiAStar(isForward);
     }
 
     @Override

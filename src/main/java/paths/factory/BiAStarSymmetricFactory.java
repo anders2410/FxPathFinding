@@ -11,8 +11,8 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
     }
 
     @Override
-    public Function<Integer, Double> getPriorityStrategy() {
-        return null;
+    public Function<Integer, Double> getPriorityStrategy(boolean isForward) {
+        return PriorityGenerator.getBiAStarSymmetric(isForward);
     }
 
     @Override
