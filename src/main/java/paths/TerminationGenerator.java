@@ -1,9 +1,5 @@
 package paths;
 
-import model.Node;
-
-import java.util.List;
-
 public class TerminationGenerator {
 
     public static TerminationStrategy getConsistentStrategy() {
@@ -11,7 +7,7 @@ public class TerminationGenerator {
             Integer topA = forwardQueue.peek();
             Integer topB = backwardQueue.peek();
             if (topA != null && topB != null) {
-                return SSSP.getVisitedB().contains(topA) || SSSP.getVisitedA().contains(topB);
+                return SSSP.getVisited(false).contains(topA) || SSSP.getVisited(true).contains(topB);
             }
             return false;
         };

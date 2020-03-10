@@ -43,10 +43,10 @@ public class SSSP {
     private static Map<Integer, Double> estimatedDistB;
 
     private static RelaxStrategy chooseRelaxStrategy(boolean isForward) {
-        List<Double> nodeDist = isForward ? SSSP.getNodeDistA() : SSSP.getNodeDistB();
-        Map<Integer, Double> estimatedDist = isForward ? SSSP.getEstimatedDistA() : SSSP.getEstimatedDistB();
-        PriorityQueue<Integer> pq = isForward ? SSSP.getQueueA() : SSSP.getQueueB();
-        Map<Integer, Integer> pathMap = isForward ? SSSP.getPathMapA() : SSSP.getPathMapB();
+        List<Double> nodeDist = getNodeDist(isForward);
+        Map<Integer, Double> estimatedDist = getEstimatedDist(isForward);
+        PriorityQueue<Integer> pq = getQueue(isForward);
+        Map<Integer, Integer> pathMap = getPathMap(isForward);
         switch (mode) {
             case A_STAR:
                 return (from, edge, directionForward) -> {
@@ -58,8 +58,8 @@ public class SSSP {
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
             case BI_A_STAR_SYMMETRIC:
-                return (from, edge, directionForward) -> {
-                    edge.visited = true;
+            return (from, edge, directionForward) -> {
+                edge.visited = true;
                     double newDist = nodeDist.get(from) + edge.d;
                     double newEst = estimatedDist.get(from) + edge.d;
                     double potentialFunc;
@@ -447,47 +447,27 @@ public class SSSP {
         return graph;
     }
 
-    public static Set<Integer> getVisitedA() {
-        return visitedA;
-    }
-
-    public static Set<Integer> getVisitedB() {
-        return visitedB;
-    }
-
     public static double[][] getLandmarkArray() {
         return landmarkArray;
     }
 
-    public static List<Double> getNodeDistA() {
-        return nodeDistA;
+    public static Set<Integer> getVisited(boolean isForward) {
+        return isForward ? visitedA : visitedB;
     }
 
-    public static List<Double> getNodeDistB() {
-        return nodeDistB;
+    public static List<Double> getNodeDist(boolean isForward) {
+        return isForward ? nodeDistA : nodeDistB;
     }
 
-    public static Map<Integer, Integer> getPathMapA() {
-        return pathMapA;
+    public static Map<Integer, Integer> getPathMap(boolean isForward) {
+        return isForward ? pathMapA : pathMapB;
     }
 
-    public static Map<Integer, Integer> getPathMapB() {
-        return pathMapB;
+    public static PriorityQueue<Integer> getQueue(boolean isForward) {
+        return isForward ? queueA : queueB;
     }
 
-    public static PriorityQueue<Integer> getQueueA() {
-        return queueA;
-    }
-
-    public static PriorityQueue<Integer> getQueueB() {
-        return queueB;
-    }
-
-    public static Map<Integer, Double> getEstimatedDistA() {
-        return estimatedDistA;
-    }
-
-    public static Map<Integer, Double> getEstimatedDistB() {
-        return estimatedDistB;
+    public static Map<Integer, Double> getEstimatedDist(boolean isForward) {
+        return isForward ? estimatedDistA : estimatedDistB;
     }
 }
