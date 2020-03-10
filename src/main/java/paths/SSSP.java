@@ -5,12 +5,11 @@ import paths.factory.*;
 
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
-import static paths.DirAB.A;
-import static paths.DirAB.B;
+import static paths.ABDir.A;
+import static paths.ABDir.B;
 
 public class SSSP {
 
@@ -25,6 +24,7 @@ public class SSSP {
     private static TerminationStrategy terminationStrategy;
     private static PriorityStrategy priorityStrategy;
     private static RelaxStrategy relaxStrategy;
+    private static Comparator<Integer> comparator;
 
     private static Graph graph;
     private static int source, target;
@@ -82,7 +82,7 @@ public class SSSP {
         List<List<Edge>> adjList = graph.getAdjList();
         nodeDistA = initNodeDist(source, adjList.size());
         PriorityStrategy priorityStrategy = dijkstraFactory.getPriorityStrategy();
-        Comparator<Integer> comparator = Comparator.comparingDouble((i) -> priorityStrategy.apply(i, A));
+        Comparator<Integer> comparator = getComparator(priorityStrategy, A);
         queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
@@ -137,6 +137,11 @@ public class SSSP {
         terminationStrategy = factory.getTerminationStrategy();
         priorityStrategy = factory.getPriorityStrategy();
         relaxStrategy = factory.getRelaxStrategy();
+        comparator = getComparator(priorityStrategy, A);
+    }
+
+    private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
+        return Comparator.comparingDouble((i) -> priorityStrategy.apply(i, dir));
     }
 
     private static ShortestPathResult oneDirectional() {
@@ -146,7 +151,6 @@ public class SSSP {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        Comparator<Integer> comparator = Comparator.comparingDouble((i) -> priorityStrategy.apply(i, A));
         queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
@@ -188,11 +192,9 @@ public class SSSP {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        PriorityStrategy priorityStrategyA = priorityStrategy;
-        Comparator<Integer> comparatorA = Comparator.comparingDouble((i) -> priorityStrategyA.apply(i, A));
 
         // Queue to hold the paths from Node: source.
-        queueA = new PriorityQueue<>(comparatorA);
+        queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         // A set of visited nodes starting from Node a.
         visitedA = new HashSet<>();
@@ -206,8 +208,7 @@ public class SSSP {
             estimatedDistB.put(target, 0.0);
         }
         PriorityStrategy priorityStrategyB = priorityStrategy;
-        Comparator<Integer> comparatorB = Comparator.comparingDouble((i) -> priorityStrategyB.apply(i, B));
-        RelaxStrategy relaxStrategyA = relaxStrategy;
+        Comparator<Integer> comparatorB = getComparator(priorityStrategyB, B);
 
         // Queue to hold the paths from Node: to.
         queueB = new PriorityQueue<>(comparatorB);
@@ -231,7 +232,7 @@ public class SSSP {
                     visitedA.add(nextA);
                     for (Edge edge : adjList.get(nextA)) {
                         if (!visitedB.contains(edge.to)) {
-                            relaxStrategyA.relax(nextA, edge, A);
+                            relaxStrategy.relax(nextA, edge, A);
                             if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
                                 middlePoint = edge.to;
                                 goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
@@ -383,23 +384,23 @@ public class SSSP {
         return landmarkArray;
     }
 
-    public static Set<Integer> getVisited(DirAB dir) {
+    public static Set<Integer> getVisited(ABDir dir) {
         return dir == A ? visitedA : visitedB;
     }
 
-    public static List<Double> getNodeDist(DirAB dir) {
+    public static List<Double> getNodeDist(ABDir dir) {
         return dir == A ? nodeDistA : nodeDistB;
     }
 
-    public static Map<Integer, Integer> getPathMap(DirAB dir) {
+    public static Map<Integer, Integer> getPathMap(ABDir dir) {
         return dir == A ? pathMapA : pathMapB;
     }
 
-    public static PriorityQueue<Integer> getQueue(DirAB dir) {
+    public static PriorityQueue<Integer> getQueue(ABDir dir) {
         return dir == A ? queueA : queueB;
     }
 
-    public static Map<Integer, Double> getEstimatedDist(DirAB dir) {
+    public static Map<Integer, Double> getEstimatedDist(ABDir dir) {
         return dir == A ? estimatedDistA : estimatedDistB;
     }
 }

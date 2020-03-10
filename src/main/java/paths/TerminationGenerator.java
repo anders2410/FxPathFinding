@@ -1,5 +1,5 @@
 package paths;
-import static paths.DirAB.*;
+import static paths.ABDir.*;
 
 public class TerminationGenerator {
 

@@ -2,7 +2,7 @@ package paths;
 
 import java.util.List;
 
-import static paths.DirAB.A;
+import static paths.ABDir.A;
 import static paths.SSSP.*;
 
 public class PriorityGenerator {

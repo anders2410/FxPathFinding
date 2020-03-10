@@ -2,12 +2,8 @@ package paths;
 
 import model.Edge;
 
-import java.util.AbstractQueue;
-import java.util.List;
-import java.util.Map;
-
-import static paths.DirAB.A;
-import static paths.DirAB.B;
+import static paths.ABDir.A;
+import static paths.ABDir.B;
 import static paths.SSSP.*;
 
 public class RelaxGenerator {
@@ -70,7 +66,7 @@ public class RelaxGenerator {
         };
     }
 
-    private static void updateNode(DirAB dir, int from, Edge edge, double newDist, double weirdWeight) {
+    private static void updateNode(ABDir dir, int from, Edge edge, double newDist, double weirdWeight) {
         if (weirdWeight < getEstimatedDist(dir).getOrDefault(edge.to, Double.MAX_VALUE)) {
             getQueue(dir).remove(edge.to);
             getEstimatedDist(dir).put(edge.to, weirdWeight);

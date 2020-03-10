@@ -1,5 +1,5 @@
 package paths;
 
-public enum DirAB {
+public enum ABDir {
     A, B
 }

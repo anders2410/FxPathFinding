@@ -1,5 +1,5 @@
 package paths;
 
 public interface PriorityStrategy {
-    double apply(int node, DirAB dir);
+    double apply(int node, ABDir dir);
 }
