@@ -31,7 +31,22 @@ public class SSSP {
 
     private static AlgorithmFactory factory;
 
-    private static RelaxStrategy chooseRelaxStrategy(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq) {
+    private static List<Double> nodeDistA;
+    private static List<Double> nodeDistB;
+    private static Set<Integer> visitedA;
+    private static Set<Integer> visitedB;
+    private static Map<Integer, Integer> pathMapA;
+    private static Map<Integer, Integer> pathMapB;
+    private static PriorityQueue<Integer> queueA;
+    private static PriorityQueue<Integer> queueB;
+    private static Map<Integer, Double> estimatedDistA;
+    private static Map<Integer, Double> estimatedDistB;
+
+    private static RelaxStrategy chooseRelaxStrategy(boolean isForward) {
+        List<Double> nodeDist = isForward ? SSSP.getNodeDistA() : SSSP.getNodeDistB();
+        Map<Integer, Double> estimatedDist = isForward ? SSSP.getEstimatedDistA() : SSSP.getEstimatedDistB();
+        PriorityQueue<Integer> pq = isForward ? SSSP.getQueueA() : SSSP.getQueueB();
+        Map<Integer, Integer> pathMap = isForward ? SSSP.getPathMapA() : SSSP.getPathMapB();
         switch (mode) {
             case A_STAR:
                 return (from, edge, directionForward) -> {
@@ -127,9 +142,6 @@ public class SSSP {
         target = targetP;
     }
 
-    private static List<Double> nodeDistA;
-    private static List<Double> nodeDistB;
-
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
         graph = graphP;
         nodeList = graph.getNodeList();
@@ -139,14 +151,14 @@ public class SSSP {
         nodeDistA = initNodeDist(source, adjList.size());
         Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(true);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
-        AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
-        nodeQueue.add(source);
+        queueA = new PriorityQueue<>(comparator);
+        queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
-        Map<Integer, Integer> pathMap = new HashMap<>();
-        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDistA, null, pathMap, nodeQueue);
+        pathMapA = new HashMap<>();
+        RelaxStrategy relaxStrategy = chooseRelaxStrategy(true);
 
-        while (!nodeQueue.isEmpty()) {
-            Integer currentNode = nodeQueue.poll();
+        while (!queueA.isEmpty()) {
+            Integer currentNode = queueA.poll();
             if (seenNodes.contains(currentNode)) {
                 continue;
             }
@@ -158,7 +170,7 @@ public class SSSP {
                 }
             }
         }
-        List<Integer> shortestPath = extractPath(pathMap, adjList, source, target);
+        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(0, shortestPath, seenNodes.size(), nodeDistA);
     }
 
@@ -196,21 +208,20 @@ public class SSSP {
     private static ShortestPathResult oneDirectional() {
         List<List<Edge>> adjList = graph.getAdjList();
         nodeDistA = initNodeDist(source, adjList.size());
-        Map<Integer, Double> estimatedDist = null;
         if (mode == AlgorithmMode.A_STAR) {
-            estimatedDist = new HashMap<>();
-            estimatedDist.put(source, 0.0);
+            estimatedDistA = new HashMap<>();
+            estimatedDistA.put(source, 0.0);
         }
         Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(true);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
-        AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
-        nodeQueue.add(source);
+        queueA = new PriorityQueue<>(comparator);
+        queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
-        Map<Integer, Integer> pathMap = new HashMap<>();
-        RelaxStrategy relaxStrategy = chooseRelaxStrategy(nodeDistA, estimatedDist, pathMap, nodeQueue);
+        pathMapA = new HashMap<>();
+        RelaxStrategy relaxStrategy = chooseRelaxStrategy(true);
 
-        while (!nodeQueue.isEmpty()) {
-            Integer currentNode = nodeQueue.poll();
+        while (!queueA.isEmpty()) {
+            Integer currentNode = queueA.poll();
             if (seenNodes.contains(currentNode)) {
                 continue;
             }
@@ -224,15 +235,12 @@ public class SSSP {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
             }
-            trace(nodeQueue); //Print queue if trace
+            trace(queueA); //Print queue if trace
         }
 
-        List<Integer> shortestPath = extractPath(pathMap, adjList, source, target);
+        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, seenNodes.size());
     }
-
-    private static Set<Integer> visitedA;
-    private static Set<Integer> visitedB;
 
     private static ShortestPathResult biDirectional() {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
@@ -243,7 +251,7 @@ public class SSSP {
 
         // A-direction
         nodeDistA = initNodeDist(source, adjList.size());
-        Map<Integer, Double> estimatedDistA = null;
+        estimatedDistA = null;
         if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
@@ -252,30 +260,30 @@ public class SSSP {
         Comparator<Integer> comparatorA = Comparator.comparingDouble(priorityStrategyA::apply);
 
         // Queue to hold the paths from Node: source.
-        PriorityQueue<Integer> queueA = new PriorityQueue<>(comparatorA);
+        queueA = new PriorityQueue<>(comparatorA);
         queueA.add(source);
         // A set of visited nodes starting from Node a.
         visitedA = new HashSet<>();
-        Map<Integer, Integer> pathMapA = new HashMap<>();
+        pathMapA = new HashMap<>();
 
         // B-direction
         nodeDistB = initNodeDist(target, adjList.size());
-        Map<Integer, Double> estimatedDistB = null;
+        estimatedDistB = null;
         if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
             estimatedDistB = new HashMap<>();
             estimatedDistB.put(target, 0.0);
         }
         Function<Integer, Double> priorityStrategyB = factory.getPriorityStrategy(false);
         Comparator<Integer> comparatorB = Comparator.comparingDouble(priorityStrategyB::apply);
-        RelaxStrategy relaxStrategyA = chooseRelaxStrategy(nodeDistA, estimatedDistA, pathMapA, queueA);
+        RelaxStrategy relaxStrategyA = chooseRelaxStrategy(true);
 
         // Queue to hold the paths from Node: to.
-        PriorityQueue<Integer> queueB = new PriorityQueue<>(comparatorB);
+        queueB = new PriorityQueue<>(comparatorB);
         queueB.add(target);
         // A set of visited nodes starting from Node b.
         visitedB = new HashSet<>();
-        Map<Integer, Integer> pathMapB = new HashMap<>();
-        RelaxStrategy relaxStrategyB = chooseRelaxStrategy(nodeDistB, estimatedDistB, pathMapB, queueB);
+        pathMapB = new HashMap<>();
+        RelaxStrategy relaxStrategyB = chooseRelaxStrategy(false);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
@@ -457,5 +465,29 @@ public class SSSP {
 
     public static List<Double> getNodeDistB() {
         return nodeDistB;
+    }
+
+    public static Map<Integer, Integer> getPathMapA() {
+        return pathMapA;
+    }
+
+    public static Map<Integer, Integer> getPathMapB() {
+        return pathMapB;
+    }
+
+    public static PriorityQueue<Integer> getQueueA() {
+        return queueA;
+    }
+
+    public static PriorityQueue<Integer> getQueueB() {
+        return queueB;
+    }
+
+    public static Map<Integer, Double> getEstimatedDistA() {
+        return estimatedDistA;
+    }
+
+    public static Map<Integer, Double> getEstimatedDistB() {
+        return estimatedDistB;
     }
 }

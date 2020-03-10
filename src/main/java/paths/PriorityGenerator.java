@@ -20,11 +20,11 @@ public class PriorityGenerator {
         List<Double> nodeDist = isForward ? SSSP.getNodeDistA() : SSSP.getNodeDistB();
         return (i) -> {
             HeuristicFunction heuristicFunction = SSSP.getHeuristicFunction();
-            double potentialFunctionForward = (heuristicFunction.apply(i, SSSP.getTarget()) - heuristicFunction.apply(i, SSSP.getSource())) / 2;
+            double pFunctionForward = (heuristicFunction.apply(i, SSSP.getTarget()) - heuristicFunction.apply(i, SSSP.getSource())) / 2;
             if (isForward) {
-                return nodeDist.get(i) + potentialFunctionForward;
+                return nodeDist.get(i) + pFunctionForward;
             } else {
-                return nodeDist.get(i) + (-potentialFunctionForward);
+                return nodeDist.get(i) + (-pFunctionForward);
             }
         };
     }
