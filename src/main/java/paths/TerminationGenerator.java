@@ -11,7 +11,7 @@ public class TerminationGenerator {
             Integer topA = forwardQueue.peek();
             Integer topB = backwardQueue.peek();
             if (topA != null && topB != null) {
-                return SSSP.getVisitedA().contains(topA) || SSSP.getVisitedB().contains(topB);
+                return SSSP.getVisitedB().contains(topA) || SSSP.getVisitedA().contains(topB);
             }
             return false;
         };

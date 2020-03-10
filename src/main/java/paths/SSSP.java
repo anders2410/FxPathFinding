@@ -29,34 +29,6 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
 
-    private static TerminationStrategy chooseTerminationStrategy(int to, Set<Integer> visitedForward, Set<Integer> visitedBackward) {
-        switch (mode) {
-            default:
-            case BI_A_STAR_CONSISTENT:
-            case BI_DIJKSTRA:
-                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
-                    Integer topA = forwardQueue.peek();
-                    Integer topB = backwardQueue.peek();
-                    if (topA != null && topB != null) {
-                        return visitedBackward.contains(topA) || visitedForward.contains(topB);
-                    }
-                    return false;
-                };
-
-            case BI_A_STAR_SYMMETRIC:
-                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
-                    Integer topA = forwardQueue.peek();
-                    Integer topB = backwardQueue.peek();
-                    if (topA != null && topB != null) {
-                        double keyValueForward = forwardNodeDist.get(topA) + heuristicFunction.apply(topA, target);
-                        double keyValueBackwards = backwardNodeDist.get(topB) + heuristicFunction.apply(topB, source);
-                        return keyValueBackwards >= goal || keyValueForward >= goal;
-                    }
-                    return false;
-                };
-        }
-    }
-
     private static Function<Integer, Double> choosePriorityStrategy(List<Double> nodeDist, boolean forwardDirection) {
         switch (mode) {
             default:
@@ -292,8 +264,6 @@ public class SSSP {
         // TODO: Implement Bi-ASTAR using consistent approach. Symmetric approach visits a lot of stuff.
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
-
-        TerminationStrategy terminationStrategy = chooseTerminationStrategy(target, visitedA, visitedB);
 
         // A-direction
         List<Double> nodeDistA = initNodeDist(source, adjList.size());
