@@ -621,7 +621,7 @@ public class FXMLController implements Initializable {
     public void handleLandmarksEvent() {
         // TODO: Add algorithm for landmarks
         Set<Integer> marks = graph.extractLandmarksFarthest(16);
-        algorithmMode = A_STAR_LANDMARKS_BI;
+        algorithmMode = A_STAR_LANDMARKS;
 
         runAlgorithm();
         for (Integer index : marks) {

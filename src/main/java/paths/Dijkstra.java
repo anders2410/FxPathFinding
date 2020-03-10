@@ -29,6 +29,7 @@ public class Dijkstra {
     private static BiTerminationStrategy chooseTerminationStrategy(int to, Set<Integer> visitedForward, Set<Integer> visitedBackward) {
         switch (mode) {
             default:
+            case A_STAR_LANDMARKS_BI:
             case BI_A_STAR_CONSISTENT:
             case BI_DIJKSTRA:
                 return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
@@ -39,7 +40,20 @@ public class Dijkstra {
                     }
                     return false;
                 };
-
+                /*return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
+                    Integer topA = forwardQueue.peek();
+                    Integer topB = backwardQueue.peek();
+                    if (topA != null && topB != null) {
+                        Node curForwardNode = nodeList.get(topA);
+                        Node curBackwardNode = nodeList.get(topB);
+                        double potentialfunctionForward = (heuristicFunction.applyHeuristic(curForwardNode, nodeList.get(target)) - heuristicFunction.applyHeuristic(curForwardNode, nodeList.get(source))) / 2;
+                        double potentialfunctionBackwards = (heuristicFunction.applyHeuristic(curBackwardNode, nodeList.get(target)) - heuristicFunction.applyHeuristic(curBackwardNode, nodeList.get(source))) / 2;
+                        double keyValueForward = forwardEstimatedNodeDist.get(topA);
+                        double keyValueBackward = backwardEstimatedNodeDist.get(topB);
+                        return keyValueBackward + keyValueForward > goal + ((heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(source))) / 2);
+                    }
+                    return false;
+                };*/
             case BI_A_STAR_SYMMETRIC:
                 return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
                     Integer topA = forwardQueue.peek();
@@ -62,6 +76,7 @@ public class Dijkstra {
             case BI_DIJKSTRA:
                 return nodeDist::get;
             case A_STAR:
+            case A_STAR_LANDMARKS:
                 return (i) -> {
                     Node curNode = nodeList.get(i);
                     Node targetNode = nodeList.get(target);
@@ -71,7 +86,7 @@ public class Dijkstra {
             case BI_A_STAR_CONSISTENT:
                 return (i) -> {
                     Node curNode = nodeList.get(i);
-                    double potentialfunctionForward = (heuristicFunction.applyHeuristic(curNode, nodeList.get(target)) - heuristicFunction.applyHeuristic(curNode, nodeList.get(source))) / 2;
+                    double potentialfunctionForward = ((heuristicFunction.applyHeuristic(curNode, nodeList.get(target)) - heuristicFunction.applyHeuristic(curNode, nodeList.get(source))) / 2);
                     if (forwardDirection) {
                         return nodeDist.get(i) + potentialfunctionForward;
                     } else {
@@ -93,6 +108,7 @@ public class Dijkstra {
     private static HeuristicFunction chooseHeuristicFunction() {
         switch (mode) {
             case A_STAR_LANDMARKS_BI:
+            case A_STAR_LANDMARKS:
                 return (startnode, target) -> {
                     double maxLandmarkValue = 0;
                     //32 because |landmarks| = 16. *2 for 2 ways.
@@ -104,6 +120,7 @@ public class Dijkstra {
                         }
                         i++;
                     }
+                    assert maxLandmarkValue >= 0;
                     return maxLandmarkValue;
                 };
             default:
@@ -157,13 +174,9 @@ public class Dijkstra {
                         potentialFunc = (potentialForwardToNode - potentialForwardFromNode);
 
                     } else {
-                        double potentialBackwardFromNode = -potentialForwardFromNode;
-                        double potentialBackwardToNode = -potentialForwardToNode;
-                        potentialFunc = (potentialBackwardToNode - potentialBackwardFromNode);
+                        potentialFunc = -(potentialForwardToNode - potentialForwardToNode);
                     }
-/*
-                    double potentialFuncStart = -distanceStrategy.apply(nodeList.get(from), nodeList.get(source)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source));
-*/
+                    assert edge.d + potentialFunc >= 0;
                     double weirdWeight = newEst + potentialFunc;
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
@@ -194,7 +207,7 @@ public class Dijkstra {
 
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
-        if (mode == AlgorithmMode.A_STAR_LANDMARKS_BI) {
+        if (mode == AlgorithmMode.A_STAR_LANDMARKS_BI || mode == AlgorithmMode.A_STAR_LANDMARKS) {
             if (landmarkArr == null && !graphP.getLandmarks().isEmpty()) {
                 landmarkArr = new double[32][graphP.getNodeAmount()];
                 int index = 0;
@@ -228,7 +241,6 @@ public class Dijkstra {
         source = sourceP;
         List<List<Edge>> adjList = graph.getAdjList();
         List<Double> nodeDist = initNodeDist(source, adjList.size());
-        Map<Integer, Double> estimatedDist = null;
         Function<Integer, Double> priorityStrategy = choosePriorityStrategy(nodeDist, true);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         AbstractQueue<Integer> nodeQueue = new PriorityQueue<>(comparator);
@@ -273,7 +285,7 @@ public class Dijkstra {
         List<List<Edge>> adjList = graph.getAdjList();
         List<Double> nodeDist = initNodeDist(source, adjList.size());
         Map<Integer, Double> estimatedDist = null;
-        if (mode == AlgorithmMode.A_STAR) {
+        if (mode == AlgorithmMode.A_STAR || mode == AlgorithmMode.A_STAR_LANDMARKS) {
             estimatedDist = new HashMap<>();
             estimatedDist.put(source, 0.0);
         }
