@@ -11,8 +11,8 @@ public class AStarFactory implements AlgorithmFactory {
     }
 
     @Override
-    public Function<Integer, Double> getPriorityStrategy(boolean isForward) {
-        return PriorityGenerator.getAStar(isForward);
+    public Function<Integer, Double> getPriorityStrategy(DirAB dir) {
+        return PriorityGenerator.getAStar(dir);
     }
 
     @Override
@@ -21,8 +21,8 @@ public class AStarFactory implements AlgorithmFactory {
     }
 
     @Override
-    public RelaxStrategy getRelaxStrategy() {
-        return null;
+    public RelaxStrategy getRelaxStrategy(DirAB dir) {
+        return RelaxGenerator.getAStar(dir);
     }
 
     @Override

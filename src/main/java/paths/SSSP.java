@@ -9,6 +9,8 @@ import java.util.function.Function;
 
 import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
+import static paths.DirAB.A;
+import static paths.DirAB.B;
 
 public class SSSP {
 
@@ -41,78 +43,6 @@ public class SSSP {
     private static PriorityQueue<Integer> queueB;
     private static Map<Integer, Double> estimatedDistA;
     private static Map<Integer, Double> estimatedDistB;
-
-    private static RelaxStrategy chooseRelaxStrategy(boolean isForward) {
-        List<Double> nodeDist = getNodeDist(isForward);
-        Map<Integer, Double> estimatedDist = getEstimatedDist(isForward);
-        PriorityQueue<Integer> pq = getQueue(isForward);
-        Map<Integer, Integer> pathMap = getPathMap(isForward);
-        switch (mode) {
-            case A_STAR:
-                return (from, edge, directionForward) -> {
-                    edge.visited = true;
-                    double newDist = nodeDist.get(from) + edge.d;
-                    double heuristicFrom = heuristicFunction.apply(from, target);
-                    double heuristicNeighbour = heuristicFunction.apply(edge.to, target);
-                    double weirdWeight = estimatedDist.get(from) + edge.d - heuristicFrom + heuristicNeighbour;
-                    updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
-                };
-            case BI_A_STAR_SYMMETRIC:
-            return (from, edge, directionForward) -> {
-                edge.visited = true;
-                    double newDist = nodeDist.get(from) + edge.d;
-                    double newEst = estimatedDist.get(from) + edge.d;
-                    double potentialFunc;
-                    if (directionForward) {
-                        potentialFunc = heuristicFunction.apply(edge.to, target) - heuristicFunction.apply(from, target);
-                    } else {
-                        potentialFunc = heuristicFunction.apply(edge.to, source) - heuristicFunction.apply(from, source);
-                    }
-                    double weirdWeight = newEst + potentialFunc;
-                    updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
-                };
-            case BI_A_STAR_LANDMARKS:
-            case BI_A_STAR_CONSISTENT:
-                return (from, edge, directionForward) -> {
-                    edge.visited = true;
-                    double newDist = nodeDist.get(from) + edge.d;
-                    double newEst = estimatedDist.get(from) + edge.d;
-                    double pForwardFrom = (heuristicFunction.apply(from, target) - heuristicFunction.apply(from, source)) / 2;
-                    double pForwardTo = (heuristicFunction.apply(edge.to, target) - heuristicFunction.apply(edge.to, source)) / 2;
-                    double pFunc = pForwardTo - pForwardFrom;
-                    if (!directionForward) {
-                        pFunc = -pFunc;
-                    }
-/*
-                    double potentialFuncStart = -distanceStrategy.apply(nodeList.get(from), nodeList.get(source)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source));
-*/
-                    double estimatedWeight = newEst + pFunc;
-                    updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, estimatedWeight);
-                };
-            default:
-                return (from, edge, directionForward) -> {
-                    edge.visited = true;
-                    double newDist = nodeDist.get(from) + edge.d;
-
-                    if (newDist < nodeDist.get(edge.to)) {
-                        pq.remove(edge.to);
-                        nodeDist.set(edge.to, newDist);
-                        pathMap.put(edge.to, from);
-                        pq.add(edge.to);
-                    }
-                };
-        }
-    }
-
-    private static void updateNode(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq, int from, Edge edge, double newDist, double weirdWeight) {
-        if (weirdWeight < estimatedDist.getOrDefault(edge.to, Double.MAX_VALUE)) {
-            pq.remove(edge.to);
-            estimatedDist.put(edge.to, weirdWeight);
-            nodeDist.set(edge.to, newDist);
-            pathMap.put(edge.to, from);
-            pq.add(edge.to);
-        }
-    }
 
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
@@ -149,13 +79,13 @@ public class SSSP {
         source = sourceP;
         List<List<Edge>> adjList = graph.getAdjList();
         nodeDistA = initNodeDist(source, adjList.size());
-        Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(true);
+        Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(A);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         pathMapA = new HashMap<>();
-        RelaxStrategy relaxStrategy = chooseRelaxStrategy(true);
+        RelaxStrategy relaxStrategy = factory.getRelaxStrategy(A);
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();
@@ -164,7 +94,7 @@ public class SSSP {
             }
             seenNodes.add(currentNode);
             for (Edge edge : adjList.get(currentNode)) {
-                relaxStrategy.relax(currentNode, edge, true);
+                relaxStrategy.relax(currentNode, edge, A);
                 if (trace) {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
@@ -212,13 +142,13 @@ public class SSSP {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(true);
+        Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(A);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         pathMapA = new HashMap<>();
-        RelaxStrategy relaxStrategy = chooseRelaxStrategy(true);
+        RelaxStrategy relaxStrategy = factory.getRelaxStrategy(A);
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();
@@ -230,7 +160,7 @@ public class SSSP {
                 break;
             }
             for (Edge edge : adjList.get(currentNode)) {
-                relaxStrategy.relax(currentNode, edge, true);
+                relaxStrategy.relax(currentNode, edge, A);
                 if (trace) {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
@@ -256,7 +186,7 @@ public class SSSP {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        Function<Integer, Double> priorityStrategyA = factory.getPriorityStrategy(true);
+        Function<Integer, Double> priorityStrategyA = factory.getPriorityStrategy(A);
         Comparator<Integer> comparatorA = Comparator.comparingDouble(priorityStrategyA::apply);
 
         // Queue to hold the paths from Node: source.
@@ -273,9 +203,9 @@ public class SSSP {
             estimatedDistB = new HashMap<>();
             estimatedDistB.put(target, 0.0);
         }
-        Function<Integer, Double> priorityStrategyB = factory.getPriorityStrategy(false);
+        Function<Integer, Double> priorityStrategyB = factory.getPriorityStrategy(B);
         Comparator<Integer> comparatorB = Comparator.comparingDouble(priorityStrategyB::apply);
-        RelaxStrategy relaxStrategyA = chooseRelaxStrategy(true);
+        RelaxStrategy relaxStrategyA = factory.getRelaxStrategy(A);
 
         // Queue to hold the paths from Node: to.
         queueB = new PriorityQueue<>(comparatorB);
@@ -283,7 +213,7 @@ public class SSSP {
         // A set of visited nodes starting from Node b.
         visitedB = new HashSet<>();
         pathMapB = new HashMap<>();
-        RelaxStrategy relaxStrategyB = chooseRelaxStrategy(false);
+        RelaxStrategy relaxStrategyB = factory.getRelaxStrategy(B);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
@@ -299,7 +229,7 @@ public class SSSP {
                     visitedA.add(nextA);
                     for (Edge edge : adjList.get(nextA)) {
                         if (!visitedB.contains(edge.to)) {
-                            relaxStrategyA.relax(nextA, edge, true);
+                            relaxStrategyA.relax(nextA, edge, A);
                             if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
                                 middlePoint = edge.to;
                                 goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
@@ -317,7 +247,7 @@ public class SSSP {
                     visitedB.add(nextB);
                     for (Edge edge : revAdjList.get(nextB)) {
                         if (!visitedA.contains(edge.to)) {
-                            relaxStrategyB.relax(nextB, edge, false);
+                            relaxStrategyB.relax(nextB, edge, B);
                             if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
                                 middlePoint = edge.to;
                                 goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
@@ -451,23 +381,23 @@ public class SSSP {
         return landmarkArray;
     }
 
-    public static Set<Integer> getVisited(boolean isForward) {
-        return isForward ? visitedA : visitedB;
+    public static Set<Integer> getVisited(DirAB dir) {
+        return dir == A ? visitedA : visitedB;
     }
 
-    public static List<Double> getNodeDist(boolean isForward) {
-        return isForward ? nodeDistA : nodeDistB;
+    public static List<Double> getNodeDist(DirAB dir) {
+        return dir == A ? nodeDistA : nodeDistB;
     }
 
-    public static Map<Integer, Integer> getPathMap(boolean isForward) {
-        return isForward ? pathMapA : pathMapB;
+    public static Map<Integer, Integer> getPathMap(DirAB dir) {
+        return dir == A ? pathMapA : pathMapB;
     }
 
-    public static PriorityQueue<Integer> getQueue(boolean isForward) {
-        return isForward ? queueA : queueB;
+    public static PriorityQueue<Integer> getQueue(DirAB dir) {
+        return dir == A ? queueA : queueB;
     }
 
-    public static Map<Integer, Double> getEstimatedDist(boolean isForward) {
-        return isForward ? estimatedDistA : estimatedDistB;
+    public static Map<Integer, Double> getEstimatedDist(DirAB dir) {
+        return dir == A ? estimatedDistA : estimatedDistB;
     }
 }

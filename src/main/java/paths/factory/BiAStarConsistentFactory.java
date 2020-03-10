@@ -11,8 +11,8 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
     }
 
     @Override
-    public Function<Integer, Double> getPriorityStrategy(boolean isForward) {
-        return PriorityGenerator.getBiAStar(isForward);
+    public Function<Integer, Double> getPriorityStrategy(DirAB dir) {
+        return PriorityGenerator.getBiAStar(dir);
     }
 
     @Override
@@ -21,8 +21,8 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
     }
 
     @Override
-    public RelaxStrategy getRelaxStrategy() {
-        return null;
+    public RelaxStrategy getRelaxStrategy(DirAB dir) {
+        return RelaxGenerator.getConsistent(dir);
     }
 
     @Override

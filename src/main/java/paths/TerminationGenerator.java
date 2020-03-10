@@ -1,4 +1,5 @@
 package paths;
+import static paths.DirAB.*;
 
 public class TerminationGenerator {
 
@@ -7,7 +8,7 @@ public class TerminationGenerator {
             Integer topA = forwardQueue.peek();
             Integer topB = backwardQueue.peek();
             if (topA != null && topB != null) {
-                return SSSP.getVisited(false).contains(topA) || SSSP.getVisited(true).contains(topB);
+                return SSSP.getVisited(B).contains(topA) || SSSP.getVisited(A).contains(topB);
             }
             return false;
         };

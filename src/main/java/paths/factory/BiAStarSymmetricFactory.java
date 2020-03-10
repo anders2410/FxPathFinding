@@ -11,8 +11,8 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
     }
 
     @Override
-    public Function<Integer, Double> getPriorityStrategy(boolean isForward) {
-        return PriorityGenerator.getBiAStarSymmetric(isForward);
+    public Function<Integer, Double> getPriorityStrategy(DirAB dir) {
+        return PriorityGenerator.getBiAStarSymmetric(dir);
     }
 
     @Override
@@ -21,8 +21,8 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
     }
 
     @Override
-    public RelaxStrategy getRelaxStrategy() {
-        return null;
+    public RelaxStrategy getRelaxStrategy(DirAB dir) {
+        return RelaxGenerator.getSymmetric(dir);
     }
 
     @Override

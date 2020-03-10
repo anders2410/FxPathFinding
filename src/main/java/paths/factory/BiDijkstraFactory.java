@@ -11,8 +11,8 @@ public class BiDijkstraFactory implements AlgorithmFactory {
     }
 
     @Override
-    public Function<Integer, Double> getPriorityStrategy(boolean isForward) {
-        return PriorityGenerator.getDijkstra(isForward);
+    public Function<Integer, Double> getPriorityStrategy(DirAB dir) {
+        return PriorityGenerator.getDijkstra(dir);
     }
 
     @Override
@@ -21,8 +21,8 @@ public class BiDijkstraFactory implements AlgorithmFactory {
     }
 
     @Override
-    public RelaxStrategy getRelaxStrategy() {
-        return null;
+    public RelaxStrategy getRelaxStrategy(DirAB dir) {
+        return RelaxGenerator.getDijkstra(dir);
     }
 
     @Override
