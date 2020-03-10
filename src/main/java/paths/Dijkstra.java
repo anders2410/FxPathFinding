@@ -208,6 +208,8 @@ public class Dijkstra {
                     graphP.setAdjList(originalList);
                     landmarkArr[index] = arrForward;
                     landmarkArr[index + 1] = arrBackward;
+                    index++;
+                    index++;
                 }
             }
         }

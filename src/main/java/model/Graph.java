@@ -71,17 +71,25 @@ public class Graph {
             landmarks.add(max);
         }
         while (landmarks.size() < goalamount) {
-            int furthestdistance = 0;
+            int highesteMinimal = 0;
             int furthestCandidate = 0;
             for (Node n : nodeList) {
                 if (landmarks.contains(n.index)) continue;
+/*
                 int candidateDistance = 0;
+*/
+                int lowestCandidateDistance = Integer.MAX_VALUE;
                 for (int i = 0; i < landmarks.size(); i++) {
+                    if (lowestCandidateDistance > resArr[i][n.index]) {
+                        lowestCandidateDistance = resArr[i][n.index];
+                    }
+/*
                     candidateDistance += resArr[i][n.index];
+*/
                 }
-                if (candidateDistance > furthestdistance) {
+                if (lowestCandidateDistance > highesteMinimal) {
                     furthestCandidate = n.index;
-                    furthestdistance = candidateDistance;
+                    highesteMinimal = lowestCandidateDistance;
                 }
             }
             resArr[landmarks.size()] = BFSMaxDistance(furthestCandidate);
