@@ -1,8 +1,5 @@
 package model;
 
-import paths.AlgorithmMode;
-import paths.Dijkstra;
-
 import java.util.*;
 
 public class Graph {

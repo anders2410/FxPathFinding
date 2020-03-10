@@ -15,7 +15,7 @@ import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertArrayEquals;
 
-public class DijkstraPBFTest {
+public class SSSPPBFTest {
     Graph graph;
     String fileName = "malta-latest.osm.pbf";
 
@@ -25,7 +25,7 @@ public class DijkstraPBFTest {
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
 
-        Dijkstra.setDistanceStrategy(distanceStrategy1);
+        SSSP.setDistanceStrategy(distanceStrategy1);
         pbfParser.setDistanceStrategy(distanceStrategy2);
         pbfParser.executePBFParser();
         graph = pbfParser.getGraph();
@@ -33,16 +33,16 @@ public class DijkstraPBFTest {
 
     @Test
     public void testSingleSourceAll() {
-        Dijkstra.seed = 1;
-        ShortestPathResult res = Dijkstra.singleToAllPath(graph,300);
+        SSSP.seed = 1;
+        ShortestPathResult res = SSSP.singleToAllPath(graph,300);
         System.out.println("Finito");
     }
 
     @Test
     public void testDifferenceInPath() {
-        Dijkstra.seed = 1;
-        ShortestPathResult resD = Dijkstra.sssp(graph, 6318, 7717, AlgorithmMode.BI_DIJKSTRA);
-        ShortestPathResult resA = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
+        SSSP.seed = 1;
+        ShortestPathResult resD = SSSP.sssp(graph, 6318, 7717, AlgorithmMode.BI_DIJKSTRA);
+        ShortestPathResult resA = SSSP.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
 
@@ -81,11 +81,11 @@ public class DijkstraPBFTest {
     public void testAlgorithms() {
         int[][] matrix = new int[4][4];
         for (int i = 0; i < 4000; i++) {
-            Dijkstra.seed = i;
-            ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
-            ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
-            ShortestPathResult biDijkRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
-            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
+            SSSP.seed = i;
+            ShortestPathResult dijkRes = SSSP.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            ShortestPathResult aStarRes = SSSP.randomPath(graph, AlgorithmMode.A_STAR);
+            ShortestPathResult biDijkRes = SSSP.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
+            ShortestPathResult biAStarRes = SSSP.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;

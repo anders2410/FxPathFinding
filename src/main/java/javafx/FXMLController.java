@@ -1,5 +1,7 @@
 package javafx;
 
+// TODO: toggle graphical info about landmarks
+
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
@@ -23,7 +25,7 @@ import model.Graph;
 import model.Node;
 import model.Util;
 import paths.AlgorithmMode;
-import paths.Dijkstra;
+import paths.SSSP;
 import paths.ShortestPathResult;
 import pbfparsing.PBFParser;
 import xml.XMLFilter;
@@ -38,7 +40,7 @@ import java.util.function.BiFunction;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
-import static paths.Dijkstra.*;
+import static paths.SSSP.*;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -103,8 +105,8 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("denmark-latest.osm.pbf");
-        Dijkstra.setDistanceStrategy(distanceStrategy);
+        setUpNewGraph("malta-latest.osm.pbf");
+        SSSP.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }
 
@@ -189,7 +191,7 @@ public class FXMLController implements Initializable {
         for (Node fromNode : selectedNodes) {
             Node toNode = selectedNodesCopy.pollFirst();
             assert toNode != null;
-            results.add(Dijkstra.sssp(graph, fromNode.index, toNode.index, algorithmMode));
+            results.add(SSSP.sssp(graph, fromNode.index, toNode.index, algorithmMode));
         }
         selectedNodes.addLast(lastNode);
         redrawGraph();
@@ -621,7 +623,7 @@ public class FXMLController implements Initializable {
     public void handleLandmarksEvent() {
         // TODO: Add algorithm for landmarks
         Set<Integer> marks = graph.extractLandmarksFarthest(16);
-        algorithmMode = A_STAR_LANDMARKS_BI;
+        algorithmMode = BI_A_STAR_LANDMARKS;
 
         runAlgorithm();
         for (Integer index : marks) {
@@ -684,13 +686,13 @@ public class FXMLController implements Initializable {
 
     private void setAlgorithmLabels() {
         algorithm_label.setText("Algorithm: " + algorithmNames.get(algorithmMode));
-        source_label.setText("Source: " + Dijkstra.getSource());
-        target_label.setText("Target: " + Dijkstra.getTarget());
+        source_label.setText("Source: " + SSSP.getSource());
+        target_label.setText("Target: " + SSSP.getTarget());
         setSeedLabel();
     }
 
     private void setSeedLabel() {
-        seed_label.setText("Seed: " + Dijkstra.seed);
+        seed_label.setText("Seed: " + SSSP.seed);
     }
 
     // https://code.makery.ch/blog/javafx-dialogs-official/
@@ -742,9 +744,9 @@ public class FXMLController implements Initializable {
             if (dialogButton == acceptButton) {
                 onRightClick();
                 if (seed.getText().equals("")) {
-                    Dijkstra.seed = 0;
+                    SSSP.seed = 0;
                 } else {
-                    Dijkstra.seed = Integer.parseInt(seed.getText());
+                    SSSP.seed = Integer.parseInt(seed.getText());
                 }
                 setSeedLabel();
                 List<Node> nodeList = graph.getNodeList();
