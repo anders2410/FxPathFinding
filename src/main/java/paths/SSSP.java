@@ -75,17 +75,17 @@ public class SSSP {
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
         graph = graphP;
         nodeList = graph.getNodeList();
-        mode = DIJKSTRA;
+        AlgorithmFactory newFactory = new DijkstraFactory();
         source = sourceP;
         List<List<Edge>> adjList = graph.getAdjList();
         nodeDistA = initNodeDist(source, adjList.size());
-        Function<Integer, Double> priorityStrategy = factory.getPriorityStrategy(A);
+        Function<Integer, Double> priorityStrategy = newFactory.getPriorityStrategy(A);
         Comparator<Integer> comparator = Comparator.comparingDouble(priorityStrategy::apply);
         queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         pathMapA = new HashMap<>();
-        RelaxStrategy relaxStrategy = factory.getRelaxStrategy(A);
+        RelaxStrategy relaxStrategy = newFactory.getRelaxStrategy(A);
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();

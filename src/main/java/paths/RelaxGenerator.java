@@ -61,7 +61,7 @@ public class RelaxGenerator {
             double pForwardFrom = (getHeuristicFunction().apply(from, getTarget()) - getHeuristicFunction().apply(from, getSource())) / 2;
             double pForwardTo = (getHeuristicFunction().apply(edge.to, getTarget()) - getHeuristicFunction().apply(edge.to, getSource())) / 2;
             double pFunc = pForwardTo - pForwardFrom;
-            if (direction == B) {
+            if (dir == B) {
                 pFunc = -pFunc;
             }
             // double potentialFuncStart = -distanceStrategy.apply(nodeList.get(from), nodeList.get(source)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source));
