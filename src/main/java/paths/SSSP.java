@@ -23,6 +23,8 @@ public class SSSP {
 
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
+    private static PriorityStrategy priorityStrategy;
+    private static RelaxStrategy relaxStrategy;
 
     private static Graph graph;
     private static int source, target;
@@ -75,17 +77,17 @@ public class SSSP {
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
         graph = graphP;
         nodeList = graph.getNodeList();
-        AlgorithmFactory newFactory = new DijkstraFactory();
+        AlgorithmFactory dijkstraFactory = new DijkstraFactory();
         source = sourceP;
         List<List<Edge>> adjList = graph.getAdjList();
         nodeDistA = initNodeDist(source, adjList.size());
-        PriorityStrategy priorityStrategy = newFactory.getPriorityStrategy();
+        PriorityStrategy priorityStrategy = dijkstraFactory.getPriorityStrategy();
         Comparator<Integer> comparator = Comparator.comparingDouble((i) -> priorityStrategy.apply(i, A));
         queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         pathMapA = new HashMap<>();
-        RelaxStrategy relaxStrategy = newFactory.getRelaxStrategy();
+        RelaxStrategy relaxStrategy = dijkstraFactory.getRelaxStrategy();
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();
@@ -133,6 +135,8 @@ public class SSSP {
     private static void applyFactory(AlgorithmFactory factory) {
         heuristicFunction = factory.getHeuristicFunction();
         terminationStrategy = factory.getTerminationStrategy();
+        priorityStrategy = factory.getPriorityStrategy();
+        relaxStrategy = factory.getRelaxStrategy();
     }
 
     private static ShortestPathResult oneDirectional() {
@@ -142,13 +146,11 @@ public class SSSP {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        PriorityStrategy priorityStrategy = factory.getPriorityStrategy();
         Comparator<Integer> comparator = Comparator.comparingDouble((i) -> priorityStrategy.apply(i, A));
         queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         pathMapA = new HashMap<>();
-        RelaxStrategy relaxStrategy = factory.getRelaxStrategy();
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();
@@ -186,7 +188,7 @@ public class SSSP {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        PriorityStrategy priorityStrategyA = factory.getPriorityStrategy();
+        PriorityStrategy priorityStrategyA = priorityStrategy;
         Comparator<Integer> comparatorA = Comparator.comparingDouble((i) -> priorityStrategyA.apply(i, A));
 
         // Queue to hold the paths from Node: source.
@@ -203,9 +205,9 @@ public class SSSP {
             estimatedDistB = new HashMap<>();
             estimatedDistB.put(target, 0.0);
         }
-        PriorityStrategy priorityStrategyB = factory.getPriorityStrategy();
+        PriorityStrategy priorityStrategyB = priorityStrategy;
         Comparator<Integer> comparatorB = Comparator.comparingDouble((i) -> priorityStrategyB.apply(i, B));
-        RelaxStrategy relaxStrategyA = factory.getRelaxStrategy();
+        RelaxStrategy relaxStrategyA = relaxStrategy;
 
         // Queue to hold the paths from Node: to.
         queueB = new PriorityQueue<>(comparatorB);
@@ -213,7 +215,7 @@ public class SSSP {
         // A set of visited nodes starting from Node b.
         visitedB = new HashSet<>();
         pathMapB = new HashMap<>();
-        RelaxStrategy relaxStrategyB = factory.getRelaxStrategy();
+        RelaxStrategy relaxStrategyB = relaxStrategy;
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
