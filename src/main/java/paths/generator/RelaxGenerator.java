@@ -1,4 +1,4 @@
-package paths.generators;
+package paths.generator;
 
 import model.Edge;
 import paths.ABDir;

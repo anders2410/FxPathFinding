@@ -1,9 +1,9 @@
 package paths.factory;
 
-import paths.generators.HeuristicGenerator;
-import paths.generators.PriorityGenerator;
-import paths.generators.RelaxGenerator;
-import paths.generators.TerminationGenerator;
+import paths.generator.HeuristicGenerator;
+import paths.generator.PriorityGenerator;
+import paths.generator.RelaxGenerator;
+import paths.generator.TerminationGenerator;
 import paths.strategy.HeuristicFunction;
 import paths.strategy.PriorityStrategy;
 import paths.strategy.RelaxStrategy;

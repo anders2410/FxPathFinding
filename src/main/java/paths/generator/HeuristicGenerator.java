@@ -1,4 +1,4 @@
-package paths.generators;
+package paths.generator;
 
 import model.Node;
 import paths.strategy.HeuristicFunction;

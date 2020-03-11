@@ -20,7 +20,6 @@ public class SSSP {
     public static boolean traceResult = false;
     public static int seed = 0;
 
-    private static List<Node> nodeList;
     private static BiFunction<Node, Node, Double> distanceStrategy;
 
     private static HeuristicFunction heuristicFunction;
@@ -73,14 +72,12 @@ public class SSSP {
         }
         mode = modeP;
         graph = graphP;
-        nodeList = graph.getNodeList();
         source = sourceP;
         target = targetP;
     }
 
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
         graph = graphP;
-        nodeList = graph.getNodeList();
         AlgorithmFactory dijkstraFactory = new DijkstraFactory();
         source = sourceP;
         List<List<Edge>> adjList = graph.getAdjList();
@@ -121,7 +118,7 @@ public class SSSP {
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
     }
 
-    public static ShortestPathResult sssp(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
+    public static ShortestPathResult findShortestPath(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
         factory = factoryMap.get(modeP);
         applyFactory(factory);
         initializeGlobalFields(graphP, modeP, sourceP, targetP);
@@ -312,7 +309,7 @@ public class SSSP {
         int targetR = random.nextInt(n);
         initializeGlobalFields(graphP, modeP, sourceR, targetR);
         ShortestPathResult res;
-        res = sssp(graph, source, target, mode);
+        res = findShortestPath(graph, source, target, mode);
         if (traceResult) {
             System.out.println("Distance from " + source + " to " + target + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");

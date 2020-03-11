@@ -220,7 +220,7 @@ public class FXMLController implements Initializable {
         for (Node fromNode : selectedNodes) {
             Node toNode = selectedNodesCopy.pollFirst();
             assert toNode != null;
-            results.add(SSSP.sssp(graph, fromNode.index, toNode.index, algorithmMode));
+            results.add(SSSP.findShortestPath(graph, fromNode.index, toNode.index, algorithmMode));
         }
         selectedNodes.addLast(lastNode);
         redrawGraph();

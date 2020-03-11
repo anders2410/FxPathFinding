@@ -41,7 +41,7 @@ public class SSSPPBFTest {
     @Test
     public void testDifferenceInPath() {
         SSSP.seed = 1;
-        ShortestPathResult resD = SSSP.sssp(graph, 6318, 7717, AlgorithmMode.BI_DIJKSTRA);
+        ShortestPathResult resD = SSSP.findShortestPath(graph, 6318, 7717, AlgorithmMode.BI_DIJKSTRA);
         ShortestPathResult resA = SSSP.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();

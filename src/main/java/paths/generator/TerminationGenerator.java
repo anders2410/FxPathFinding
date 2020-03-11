@@ -1,4 +1,4 @@
-package paths.generators;
+package paths.generator;
 import paths.strategy.HeuristicFunction;
 import paths.SSSP;
 import paths.strategy.TerminationStrategy;

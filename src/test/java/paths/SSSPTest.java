@@ -33,8 +33,8 @@ public class SSSPTest {
     @Test
     public void compareDijkstraAStar() {
         SSSP.traceResult = true;
-        ShortestPathResult dijk_res = SSSP.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
-        ShortestPathResult astar_res = SSSP.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR);
+        ShortestPathResult dijk_res = SSSP.findShortestPath(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult astar_res = SSSP.findShortestPath(graph, 2590, 1897, AlgorithmMode.A_STAR);
         assertTrue(dijk_res.visitedNodes > astar_res.visitedNodes);
         assertEquals(dijk_res.d, astar_res.d, 0);
         SSSP.traceResult = false;
