@@ -233,27 +233,6 @@ public class SSSP {
         return new ShortestPathResult(distance, shortestPath, visitedA.size());
     }
 
-    private static void generateLandmarks() {
-        if (landmarkArray == null && !graph.getLandmarks().isEmpty()) {
-            landmarkArray = new double[32][graph.getNodeAmount()];
-            int index = 0;
-            List<List<Edge>> originalList = graph.getAdjList();
-            for (Integer landmarkIndex : graph.getLandmarks()) {
-                List<Double> forwardDistance = singleToAllPath(graph, landmarkIndex).nodeDistance;
-                double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                graph.setAdjList(graph.reverseAdjacencyList(graph.getAdjList()));
-                List<Double> backDistance = singleToAllPath(graph, landmarkIndex).nodeDistance;
-                double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                graph.setAdjList(originalList);
-                landmarkArray[index] = arrForward;
-                landmarkArray[index + 1] = arrBackward;
-                index++;
-                index++;
-            }
-            graph.resetPathTrace();
-        }
-    }
-
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
         initFields(graphP, DIJKSTRA, sourceP, 0);
         AlgorithmFactory dijkstraFactory = new DijkstraFactory();
