@@ -4,5 +4,5 @@ import model.Edge;
 import model.Node;
 
 public interface HeuristicFunction {
-    double applyHeuristic(Node from, Node target);
+    double apply(int from, int to);
 }
