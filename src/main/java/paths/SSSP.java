@@ -64,6 +64,7 @@ public class SSSP {
                     index++;
                     index++;
                 }
+                graphP.resetPathTrace();
             }
         }
         mode = modeP;
@@ -123,6 +124,7 @@ public class SSSP {
         if (source == target) {
             return new ShortestPathResult(0, singletonList(source), 0);
         }
+
         ShortestPathResult result;
         if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
             result = biDirectional();
@@ -147,7 +149,7 @@ public class SSSP {
     private static ShortestPathResult oneDirectional() {
         List<List<Edge>> adjList = graph.getAdjList();
         nodeDistA = initNodeDist(source, adjList.size());
-        if (mode == AlgorithmMode.A_STAR) {
+        if (mode == A_STAR || mode == A_STAR_LANDMARKS) {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }

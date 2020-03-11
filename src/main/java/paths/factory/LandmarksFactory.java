@@ -22,7 +22,7 @@ public class LandmarksFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getConsistent();
+        return RelaxGenerator.getAStar();
     }
 
     @Override
