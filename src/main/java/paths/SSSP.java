@@ -72,6 +72,7 @@ public class SSSP {
     }
 
     private static Map<AlgorithmMode, AlgorithmFactory> factoryMap = new HashMap<>();
+
     static {
         factoryMap.put(DIJKSTRA, new DijkstraFactory());
         factoryMap.put(BI_DIJKSTRA, new BiDijkstraFactory());
@@ -112,43 +113,31 @@ public class SSSP {
         queueA.add(source);
 
         while (!queueA.isEmpty()) {
-            // TODO: Try to integrate it with the takeStep method
-            Integer currentNode = queueA.poll();
-            if (visitedA.contains(currentNode)) {
-                continue;
-            }
-            getVisited(A).add(currentNode);
-            if (currentNode == target) {
-                break;
-            }
-            for (Edge edge : adjList.get(currentNode)) {
-                getRelaxStrategy(A).relax(currentNode, edge, A);
-                if (trace) {
-                    System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
-                }
-            }
-            trace(queueA); //Print queue if trace
+            if (queueA.peek() == target) break;
+            takeStep(adjList, A, false);
         }
 
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size());
     }
 
-    private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
+    private static void takeStep(List<List<Edge>> adjList, ABDir dir, boolean biDirectional) {
         ABDir revDir = dir == A ? B : A;
         Integer currentNode = getQueue(dir).poll();
-        if (currentNode == null) {
+        if (currentNode == null || getVisited(dir).contains(currentNode)) {
             return;
         }
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            if (!getVisited(revDir).contains(edge.to)) {
-                getRelaxStrategy(dir).relax(currentNode, edge, dir);
-                if (getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
-                    middlePoint = edge.to;
-                    goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
-                }
+            if (getVisited(revDir).contains(edge.to)) {
+                return;
             }
+            getRelaxStrategy(dir).relax(currentNode, edge, dir);
+            if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
+                middlePoint = edge.to;
+                goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
+            }
+            traceRelax(currentNode, edge);
         }
     }
 
@@ -171,9 +160,9 @@ public class SSSP {
         while (!queueA.isEmpty() && !queueB.isEmpty()) {
             if (terminationStrategy.checkTermination(goalDistance)) break;
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
-                takeStep(adjList, A);
+                takeStep(adjList, A, true);
             } else {
-                takeStep(revAdjList, B);
+                takeStep(revAdjList, B, true);
             }
         }
 
@@ -210,9 +199,7 @@ public class SSSP {
             visitedA.add(currentNode);
             for (Edge edge : adjList.get(currentNode)) {
                 relaxStrategyA.relax(currentNode, edge, A);
-                if (trace) {
-                    System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
-                }
+                traceRelax(currentNode, edge);
             }
         }
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
@@ -295,6 +282,12 @@ public class SSSP {
 
         System.out.println("Get MiddlePoint A: " + backPointersA.get(middlePoint));
         System.out.println("Get MiddlePoint B: " + backPointersB.get(middlePoint));
+    }
+
+    private static void traceRelax(Integer currentNode, Edge edge) {
+        if (trace) {
+            System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
+        }
     }
 
     public static void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
