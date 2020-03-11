@@ -133,6 +133,23 @@ public class SSSP {
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size());
     }
 
+    private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
+        ABDir revDir = dir == A ? B : A;
+        Integer next = getQueue(dir).poll();
+        if (next != null) {
+            getVisited(dir).add(next);
+            for (Edge edge : adjList.get(next)) {
+                if (!getVisited(revDir).contains(edge.to)) {
+                    getRelaxStrategy(dir).relax(next, edge, dir);
+                    if (getNodeDist(dir).get(next) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
+                        middlePoint = edge.to;
+                        goalDistance = getNodeDist(dir).get(next) + edge.d + getNodeDist(revDir).get(edge.to);
+                    }
+                }
+            }
+        }
+    }
+
     private static ShortestPathResult biDirectional() {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
@@ -151,58 +168,26 @@ public class SSSP {
         middlePoint = -1;
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty()) {
+            if (terminationStrategy.checkTermination(goalDistance)) break;
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
-                if (terminationStrategy.checkTermination(goalDistance)) {
-                    break;
-                }
-                // Dijkstra from the 'From'-side
-                Integer nextA = queueA.poll();
-                if (nextA != null) {
-                    visitedA.add(nextA);
-                    for (Edge edge : adjList.get(nextA)) {
-                        if (!visitedB.contains(edge.to)) {
-                            relaxStrategyA.relax(nextA, edge, A);
-                            if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
-                                middlePoint = edge.to;
-                                goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
-                            }
-                        }
-                    }
-                }
+                takeStep(adjList, A);
             } else {
-                if (terminationStrategy.checkTermination(goalDistance)) {
-                    break;
-                }
-                // Dijkstra from the 'To'-side
-                Integer nextB = queueB.poll();
-                if (nextB != null) {
-                    visitedB.add(nextB);
-                    for (Edge edge : revAdjList.get(nextB)) {
-                        if (!visitedA.contains(edge.to)) {
-                            relaxStrategyB.relax(nextB, edge, B);
-                            if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
-                                middlePoint = edge.to;
-                                goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
-                            }
-                        }
-                    }
-                }
+                takeStep(revAdjList, B);
             }
-
         }
 
         if (middlePoint == -1) {
             return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
         }
         visitedA.addAll(visitedB);
-        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, middlePoint);
+        List<Integer> shortestPathA = extractPath(pathMapA, adjList, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
         graph.reversePaintEdges(revAdjList, adjList);
         shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
-        shortestPath.addAll(shortestPathB);
+        shortestPathA.addAll(shortestPathB);
         double distance = goalDistance;
-        return new ShortestPathResult(distance, shortestPath, visitedA.size());
+        return new ShortestPathResult(distance, shortestPathA, visitedA.size());
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
@@ -341,6 +326,10 @@ public class SSSP {
 
     public static void setLandmarkArray(double[][] pLandmarkArray) {
         landmarkArray = pLandmarkArray;
+    }
+
+    public static RelaxStrategy getRelaxStrategy(ABDir dir) {
+        return dir == A ? relaxStrategyA : relaxStrategyB;
     }
 
     public static Set<Integer> getVisited(ABDir dir) {
