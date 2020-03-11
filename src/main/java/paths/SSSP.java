@@ -117,12 +117,12 @@ public class SSSP {
             if (visitedA.contains(currentNode)) {
                 continue;
             }
-            visitedA.add(currentNode);
+            getVisited(A).add(currentNode);
             if (currentNode == target) {
                 break;
             }
             for (Edge edge : adjList.get(currentNode)) {
-                relaxStrategyA.relax(currentNode, edge, A);
+                getRelaxStrategy(A).relax(currentNode, edge, A);
                 if (trace) {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
@@ -136,16 +136,17 @@ public class SSSP {
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
         ABDir revDir = dir == A ? B : A;
-        Integer next = getQueue(dir).poll();
-        if (next != null) {
-            getVisited(dir).add(next);
-            for (Edge edge : adjList.get(next)) {
-                if (!getVisited(revDir).contains(edge.to)) {
-                    getRelaxStrategy(dir).relax(next, edge, dir);
-                    if (getNodeDist(dir).get(next) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
-                        middlePoint = edge.to;
-                        goalDistance = getNodeDist(dir).get(next) + edge.d + getNodeDist(revDir).get(edge.to);
-                    }
+        Integer currentNode = getQueue(dir).poll();
+        if (currentNode == null) {
+            return;
+        }
+        getVisited(dir).add(currentNode);
+        for (Edge edge : adjList.get(currentNode)) {
+            if (!getVisited(revDir).contains(edge.to)) {
+                getRelaxStrategy(dir).relax(currentNode, edge, dir);
+                if (getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
+                    middlePoint = edge.to;
+                    goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
                 }
             }
         }
@@ -179,15 +180,19 @@ public class SSSP {
         if (middlePoint == -1) {
             return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
         }
-        visitedA.addAll(visitedB);
+        List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
+        double distance = goalDistance;
+        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size());
+    }
+
+    private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
         List<Integer> shortestPathA = extractPath(pathMapA, adjList, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
         graph.reversePaintEdges(revAdjList, adjList);
         shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
-        double distance = goalDistance;
-        return new ShortestPathResult(distance, shortestPathA, visitedA.size());
+        return shortestPathA;
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
