@@ -29,13 +29,12 @@ public class Dijkstra {
     private static BiTerminationStrategy chooseTerminationStrategy(int to, Set<Integer> visitedForward, Set<Integer> visitedBackward) {
         switch (mode) {
             default:
-            case BI_A_STAR_CONSISTENT:
-                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
+                /*return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
                     Integer topA = forwardQueue.peek();
                     Integer topB = backwardQueue.peek();
                     if (topA != null && topB != null) {
-                        double topVal = forwardNodeDist.get(topA) + ((heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(source))) / 2);
-                        double reverseTopVal = backwardNodeDist.get(topB) - ((heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source))) / 2);
+                        double topVal = forwardEstimatedNodeDist.get(topA) *//*+ ((heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(source))) / 2)*//*;
+                        double reverseTopVal = backwardEstimatedNodeDist.get(topB) *//*- ((heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source))) / 2)*//*;
 
                         boolean breakcheck = topVal + reverseTopVal > goal - ((heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source))) / 2);
                         if (breakcheck) {
@@ -51,16 +50,9 @@ public class Dijkstra {
 
                     }
                     return false;
-                };
+                };*/
             case BI_DIJKSTRA:
-                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
-                    Integer topA = forwardQueue.peek();
-                    Integer topB = backwardQueue.peek();
-                    if (topA != null && topB != null) {
-                        return forwardNodeDist.get(topA) + backwardNodeDist.get(topB) > goal;
-                    }
-                    return false;
-                };
+            case BI_A_STAR_CONSISTENT:
             case A_STAR_LANDMARKS_BI:
                 return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
                     Integer topA = forwardQueue.peek();
@@ -186,13 +178,12 @@ public class Dijkstra {
                     double heuristicFrom = heuristicFunction.applyHeuristic(nodeList.get(from), nodeList.get(target));
                     double heuristicNeighbour = heuristicFunction.applyHeuristic(nodeList.get(edge.to), nodeList.get(target));
                     double weirdWeight = estimatedDist.get(from) + edge.d - heuristicFrom + heuristicNeighbour;
-                    if (edge.d - heuristicFrom + heuristicNeighbour < 0) {
+                    /*if (edge.d - heuristicFrom + heuristicNeighbour < 0) {
                         System.out.println(edge.d);
                         System.out.println(heuristicFrom);
                         System.out.println(heuristicNeighbour);
                         System.out.println(edge.d - heuristicFrom + heuristicNeighbour);
-                    }
-                    assert edge.d - heuristicFrom + heuristicNeighbour >= 0;
+                    }*/
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
             case BI_A_STAR_SYMMETRIC:
@@ -433,13 +424,12 @@ public class Dijkstra {
                 if (nextA != null) {
                     visitedA.add(nextA);
                     for (Edge edge : adjList.get(nextA)) {
-                        if (!visitedB.contains(edge.to)) {
-                            relaxStrategyA.relax(nextA, edge, true);
-                            if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
-                                middlePoint = edge.to;
-                                goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
-                            }
+                        relaxStrategyA.relax(nextA, edge, true);
+                        if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
+                            middlePoint = edge.to;
+                            goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
                         }
+
                     }
                 }
             } else {
@@ -451,12 +441,10 @@ public class Dijkstra {
                 if (nextB != null) {
                     visitedB.add(nextB);
                     for (Edge edge : revAdjList.get(nextB)) {
-                        if (!visitedA.contains(edge.to)) {
-                            relaxStrategyB.relax(nextB, edge, false);
-                            if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
-                                middlePoint = edge.to;
-                                goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
-                            }
+                        relaxStrategyB.relax(nextB, edge, false);
+                        if (nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to) < goalDistance) {
+                            middlePoint = edge.to;
+                            goalDistance = nodeDistB.get(nextB) + edge.d + nodeDistA.get(edge.to);
                         }
                     }
                 }

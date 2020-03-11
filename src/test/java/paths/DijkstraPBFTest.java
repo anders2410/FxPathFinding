@@ -8,6 +8,7 @@ import org.junit.Test;
 import pbfparsing.PBFParser;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,8 +21,8 @@ public class DijkstraPBFTest {
     String fileName = "malta-latest.osm.pbf";
 
     @Before
-    public void setUp() throws FileNotFoundException {
-        PBFParser pbfParser = new PBFParser(fileName);
+    public void setUp() throws IOException {
+        PBFParser pbfParser = new PBFParser(fileName, true);
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
 
