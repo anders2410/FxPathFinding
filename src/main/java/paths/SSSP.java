@@ -174,16 +174,6 @@ public class SSSP {
         return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size());
     }
 
-    private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
-        List<Integer> shortestPathA = extractPath(pathMapA, adjList, source, middlePoint);
-        List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
-        graph.reversePaintEdges(revAdjList, adjList);
-        shortestPathB.remove(shortestPathB.size() - 1);
-        Collections.reverse(shortestPathB);
-        shortestPathA.addAll(shortestPathB);
-        return shortestPathA;
-    }
-
     public static ShortestPathResult singleToAllPath(int sourceP) {
         applyFactory(new DijkstraFactory());
         initFields(DIJKSTRA, sourceP, 0);
@@ -196,6 +186,16 @@ public class SSSP {
         }
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA);
+    }
+
+    private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
+        List<Integer> shortestPathA = extractPath(pathMapA, adjList, source, middlePoint);
+        List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
+        graph.reversePaintEdges(revAdjList, adjList);
+        shortestPathB.remove(shortestPathB.size() - 1);
+        Collections.reverse(shortestPathB);
+        shortestPathA.addAll(shortestPathB);
+        return shortestPathA;
     }
 
     private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
