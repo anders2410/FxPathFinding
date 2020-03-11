@@ -13,9 +13,7 @@ import pbfparsing.delegates.StandardFilteringStrategy;
 import pbfparsing.interfaces.CollapsingStrategy;
 import pbfparsing.interfaces.FilteringStrategy;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -32,6 +30,7 @@ public class PBFParser {
     private ArrayList<Node> nodeList;
     private Map<String, Node> nodeMap;
     private int indexCounter;
+    private boolean preProcess;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
     private FilteringStrategy filteringStrategy = new StandardFilteringStrategy();
@@ -42,8 +41,9 @@ public class PBFParser {
      *
      * @param fileName the name of the file you want to extract information from.
      */
-    public PBFParser(String fileName) {
+    public PBFParser(String fileName, boolean preProcess) {
         this.fileName = fileName;
+        this.preProcess = preProcess;
         nodeList = new ArrayList<>();
         nodeMap = new HashMap<>();
         indexCounter = 0;
@@ -55,14 +55,28 @@ public class PBFParser {
      *
      * @throws FileNotFoundException If the file is not found.
      */
-    public void executePBFParser() throws FileNotFoundException {
-        System.out.print("Started PBFParsing");
+    public void executePBFParser() throws IOException {
+        System.out.print("Started PBFParsing\n");
         Map<String, Integer> validNodes = findValidNodes();
         int sumOfValid = collapsingStrategy.getSumOfValid(validNodes);
 
         graph = new Graph(sumOfValid);
         buildGraph(validNodes);
-        System.out.print("Finished PBFParsing");
+
+        if (preProcess) {
+            String name = fileName.substring(0, fileName.indexOf('.'));
+            FileOutputStream fos = new FileOutputStream(name + "-node-list.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(graph.getNodeList());
+            oos.close();
+
+            FileOutputStream fos1 = new FileOutputStream(name + "-adj-list.tmp");
+            ObjectOutputStream oos1 = new ObjectOutputStream(fos1);
+            oos1.writeObject(graph.getAdjList());
+            oos1.close();
+        }
+
+        System.out.print("Finished PBFParsing\n");
     }
 
     /**
@@ -86,7 +100,8 @@ public class PBFParser {
                 if (validNodesMap.containsKey(id)) {
                     nodeMap.put(id, n);
                     if (validNodesMap.get(id) > 1) {
-                        addNodeToGraph(id, n);
+                        nodeList.add(n);
+                        indexCounter++;
                     }
                 }
             }
@@ -105,12 +120,8 @@ public class PBFParser {
                 }
             }
         }
-        graph.setNodeList(nodeList);
-    }
 
-    private void addNodeToGraph(String id, Node n) {
-        nodeList.add(n);
-        indexCounter++;
+        graph.setNodeList(nodeList);
     }
 
     /**

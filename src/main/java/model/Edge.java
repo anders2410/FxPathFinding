@@ -1,11 +1,11 @@
 package model;
 
-import java.util.Comparator;
+import java.io.Serializable;
 
-public class Edge {
+public class Edge implements Serializable {
     public int to;
     public double d;
-    public boolean visited, inPath, isDrawn, visitedReverse, visitedBothWays, mouseEdge;
+    public boolean visited, inPath, isDrawn, visitedReverse, mouseEdge;
 
     public Edge(int to, double d) {
         this.to = to;
@@ -45,5 +45,13 @@ public class Edge {
             compVal++;
         }
         return compVal;
+    }
+
+    @Override
+    public String toString() {
+        return "Edge{" +
+                "to=" + to +
+                ", d=" + d +
+                "}\n";
     }
 }
