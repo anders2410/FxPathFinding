@@ -34,20 +34,21 @@ public class SSSPPBFTest {
             e.printStackTrace();
         }
         graph = pbfParser.getGraph();
+        SSSP.setGraph(graph);
     }
 
     @Test
     public void testSingleSourceAll() {
         SSSP.seed = 1;
-        ShortestPathResult res = SSSP.singleToAllPath(graph,300);
+        ShortestPathResult res = SSSP.singleToAllPath(300);
         System.out.println("Finito");
     }
 
     @Test
     public void testDifferenceInPath() {
         SSSP.seed = 1;
-        ShortestPathResult resD = SSSP.findShortestPath(graph, 6318, 7717, AlgorithmMode.BI_DIJKSTRA);
-        ShortestPathResult resA = SSSP.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
+        ShortestPathResult resD = SSSP.findShortestPath(6318, 7717, AlgorithmMode.BI_DIJKSTRA);
+        ShortestPathResult resA = SSSP.randomPath(AlgorithmMode.BI_A_STAR_SYMMETRIC);
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
 
@@ -88,11 +89,11 @@ public class SSSPPBFTest {
         graph.extractLandmarksFarthest(16);
         for (int i = 0; i < 400; i++) {
             SSSP.seed = i;
-            ShortestPathResult dijkRes = SSSP.randomPath(graph, AlgorithmMode.DIJKSTRA);
-            ShortestPathResult aStarRes = SSSP.randomPath(graph, AlgorithmMode.A_STAR);
-            ShortestPathResult biDijkRes = SSSP.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
-            ShortestPathResult biAStarRes = SSSP.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
-            ShortestPathResult landmarksRes = SSSP.randomPath(graph, AlgorithmMode.A_STAR_LANDMARKS);
+            ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            ShortestPathResult aStarRes = SSSP.randomPath(AlgorithmMode.A_STAR);
+            ShortestPathResult biDijkRes = SSSP.randomPath(AlgorithmMode.BI_DIJKSTRA);
+            ShortestPathResult biAStarRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_SYMMETRIC);
+            ShortestPathResult landmarksRes = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;

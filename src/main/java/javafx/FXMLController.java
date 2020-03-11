@@ -221,7 +221,7 @@ public class FXMLController implements Initializable {
         for (Node fromNode : selectedNodes) {
             Node toNode = selectedNodesCopy.pollFirst();
             assert toNode != null;
-            results.add(SSSP.findShortestPath(graph, fromNode.index, toNode.index, algorithmMode));
+            results.add(SSSP.findShortestPath(fromNode.index, toNode.index, algorithmMode));
         }
         selectedNodes.addLast(lastNode);
         redrawGraph();
@@ -331,8 +331,7 @@ public class FXMLController implements Initializable {
 
     private Color shiftColorByRound(Color color, int roundVisit, int totalrounds) {
         double scaleFactor = Math.max(((double) roundVisit / (double) totalrounds), 0.3);
-        Color newcolor = Color.hsb(color.getHue(), color.getSaturation(), color.getBrightness() * scaleFactor, color.getOpacity());
-        return newcolor;
+        return Color.hsb(color.getHue(), color.getSaturation(), color.getBrightness() * scaleFactor, color.getOpacity());
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {

@@ -21,20 +21,21 @@ public class SSSPTest {
         xmlGraphExtractor.setParseCordStrategy(Util::cordToInt);
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
+        SSSP.setGraph(graph);
     }
 
     @Test
     public void testDijkstra() {
         SSSP.trace = true;
-        double dist = SSSP.randomPath(graph, AlgorithmMode.DIJKSTRA).d;
+        double dist = SSSP.randomPath(AlgorithmMode.DIJKSTRA).d;
         SSSP.trace = false;
     }
 
     @Test
     public void compareDijkstraAStar() {
         SSSP.traceResult = true;
-        ShortestPathResult dijk_res = SSSP.findShortestPath(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
-        ShortestPathResult astar_res = SSSP.findShortestPath(graph, 2590, 1897, AlgorithmMode.A_STAR);
+        ShortestPathResult dijk_res = SSSP.findShortestPath(2590, 1897, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult astar_res = SSSP.findShortestPath(2590, 1897, AlgorithmMode.A_STAR);
         assertTrue(dijk_res.visitedNodes > astar_res.visitedNodes);
         assertEquals(dijk_res.d, astar_res.d, 0);
         SSSP.traceResult = false;

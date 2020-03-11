@@ -95,11 +95,10 @@ public class SSSP {
 
     // Path finding
 
-    public static ShortestPathResult findShortestPath(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
+    public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
         if (sourceP == targetP) {
             return new ShortestPathResult(0, singletonList(sourceP), 0);
         }
-        graph = graphP;
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
         initDataStructures();
@@ -153,7 +152,7 @@ public class SSSP {
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty()) {
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
-                if (terminationStrategy.checkTermination(nodeDistA, estimatedDistA, queueA, nodeDistB, estimatedDistB, queueB, goalDistance)) {
+                if (terminationStrategy.checkTermination(goalDistance)) {
                     break;
                 }
                 // Dijkstra from the 'From'-side
@@ -171,7 +170,7 @@ public class SSSP {
                     }
                 }
             } else {
-                if (terminationStrategy.checkTermination(nodeDistA, estimatedDistA, queueA, nodeDistB, estimatedDistB, queueB, goalDistance)) {
+                if (terminationStrategy.checkTermination(goalDistance)) {
                     break;
                 }
                 // Dijkstra from the 'To'-side
@@ -206,16 +205,12 @@ public class SSSP {
         return new ShortestPathResult(distance, shortestPath, visitedA.size());
     }
 
-    public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
-        AlgorithmFactory dijkstraFactory = new DijkstraFactory();
+    public static ShortestPathResult singleToAllPath(int sourceP) {
+        applyFactory(new DijkstraFactory());
         initFields(DIJKSTRA, sourceP, 0);
         initDataStructures();
         List<List<Edge>> adjList = graph.getAdjList();
-        PriorityStrategy priorityStrategy = dijkstraFactory.getPriorityStrategy();
-        queueA = new PriorityQueue<>(getComparator(priorityStrategy, A));
         queueA.add(source);
-        pathMapA = new HashMap<>();
-        RelaxStrategy relaxStrategy = dijkstraFactory.getRelaxStrategy();
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();
@@ -224,7 +219,7 @@ public class SSSP {
             }
             visitedA.add(currentNode);
             for (Edge edge : adjList.get(currentNode)) {
-                relaxStrategy.relax(currentNode, edge, A);
+                relaxStrategyA.relax(currentNode, edge, A);
                 if (trace) {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
@@ -257,12 +252,12 @@ public class SSSP {
         return path;
     }
 
-    public static ShortestPathResult randomPath(Graph graphP, AlgorithmMode modeP) {
-        int n = graphP.getNodeAmount();
+    public static ShortestPathResult randomPath(AlgorithmMode modeP) {
+        int n = graph.getNodeAmount();
         Random random = new Random(seed);
         int sourceR = random.nextInt(n);
         int targetR = random.nextInt(n);
-        ShortestPathResult res = findShortestPath(graphP, sourceR, targetR, modeP);
+        ShortestPathResult res = findShortestPath(sourceR, targetR, modeP);
         if (traceResult) {
             System.out.println("Distance from " + source + " to " + target + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");
