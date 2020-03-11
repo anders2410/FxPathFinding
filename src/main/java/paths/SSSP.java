@@ -47,8 +47,7 @@ public class SSSP {
     private static Map<Integer, Double> estimatedDistB;
 
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
-        mode = modeP;
-        if (mode == BI_A_STAR_LANDMARKS || mode == A_STAR_LANDMARKS) {
+        if (modeP == BI_A_STAR_LANDMARKS || modeP == A_STAR_LANDMARKS) {
             generateLandmarks(graphP);
         }
         mode = modeP;

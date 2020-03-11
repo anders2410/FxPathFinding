@@ -8,6 +8,7 @@ import org.junit.Test;
 import pbfparsing.PBFParser;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,13 +22,17 @@ public class SSSPPBFTest {
 
     @Before
     public void setUp() throws FileNotFoundException {
-        PBFParser pbfParser = new PBFParser(fileName);
+        PBFParser pbfParser = new PBFParser(fileName, false);
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
 
         SSSP.setDistanceStrategy(distanceStrategy1);
         pbfParser.setDistanceStrategy(distanceStrategy2);
-        pbfParser.executePBFParser();
+        try {
+            pbfParser.executePBFParser();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         graph = pbfParser.getGraph();
     }
 
@@ -87,7 +92,7 @@ public class SSSPPBFTest {
             ShortestPathResult aStarRes = SSSP.randomPath(graph, AlgorithmMode.A_STAR);
             ShortestPathResult biDijkRes = SSSP.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
             ShortestPathResult biAStarRes = SSSP.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
-            ShortestPathResult landmarksRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_LANDMARKS);
+            ShortestPathResult landmarksRes = SSSP.randomPath(graph, AlgorithmMode.A_STAR_LANDMARKS);
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
