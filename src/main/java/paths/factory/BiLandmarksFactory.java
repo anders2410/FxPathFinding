@@ -1,6 +1,13 @@
-package paths;
+package paths.factory;
 
-import paths.factory.AlgorithmFactory;
+import paths.generators.HeuristicGenerator;
+import paths.generators.PriorityGenerator;
+import paths.generators.RelaxGenerator;
+import paths.generators.TerminationGenerator;
+import paths.strategy.HeuristicFunction;
+import paths.strategy.PriorityStrategy;
+import paths.strategy.RelaxStrategy;
+import paths.strategy.TerminationStrategy;
 
 public class BiLandmarksFactory implements AlgorithmFactory {
     @Override

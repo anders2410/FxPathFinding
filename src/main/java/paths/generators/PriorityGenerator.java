@@ -1,4 +1,7 @@
-package paths;
+package paths.generators;
+
+import paths.strategy.HeuristicFunction;
+import paths.strategy.PriorityStrategy;
 
 import java.util.List;
 

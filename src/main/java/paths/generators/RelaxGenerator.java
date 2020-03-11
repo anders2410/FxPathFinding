@@ -1,6 +1,8 @@
-package paths;
+package paths.generators;
 
 import model.Edge;
+import paths.ABDir;
+import paths.strategy.RelaxStrategy;
 
 import static paths.ABDir.A;
 import static paths.ABDir.B;

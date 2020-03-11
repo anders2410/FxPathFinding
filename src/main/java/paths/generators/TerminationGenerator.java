@@ -1,4 +1,8 @@
-package paths;
+package paths.generators;
+import paths.strategy.HeuristicFunction;
+import paths.SSSP;
+import paths.strategy.TerminationStrategy;
+
 import static paths.ABDir.*;
 
 public class TerminationGenerator {

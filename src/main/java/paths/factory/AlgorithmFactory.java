@@ -1,8 +1,9 @@
 package paths.factory;
 
-import paths.*;
-
-import java.util.function.Function;
+import paths.strategy.HeuristicFunction;
+import paths.strategy.PriorityStrategy;
+import paths.strategy.RelaxStrategy;
+import paths.strategy.TerminationStrategy;
 
 public interface AlgorithmFactory {
     boolean isBiDirectional();

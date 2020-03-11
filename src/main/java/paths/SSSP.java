@@ -2,6 +2,10 @@ package paths;
 
 import model.*;
 import paths.factory.*;
+import paths.strategy.HeuristicFunction;
+import paths.strategy.PriorityStrategy;
+import paths.strategy.RelaxStrategy;
+import paths.strategy.TerminationStrategy;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -126,7 +130,7 @@ public class SSSP {
         }
 
         ShortestPathResult result;
-        if (mode == AlgorithmMode.BI_DIJKSTRA || mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
+        if (mode == BI_DIJKSTRA || mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
             result = biDirectional();
         } else {
             result = oneDirectional();
@@ -190,7 +194,7 @@ public class SSSP {
         // A-direction
         nodeDistA = initNodeDist(source, adjList.size());
         estimatedDistA = null;
-        if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
+        if (mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
@@ -205,7 +209,7 @@ public class SSSP {
         // B-direction
         nodeDistB = initNodeDist(target, adjList.size());
         estimatedDistB = null;
-        if (mode == AlgorithmMode.BI_A_STAR_SYMMETRIC || mode == AlgorithmMode.BI_A_STAR_CONSISTENT || mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
+        if (mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
             estimatedDistB = new HashMap<>();
             estimatedDistB.put(target, 0.0);
         }

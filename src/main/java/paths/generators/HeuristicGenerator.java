@@ -1,10 +1,10 @@
-package paths;
+package paths.generators;
 
 import model.Node;
-import model.Util;
+import paths.strategy.HeuristicFunction;
+import paths.SSSP;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class HeuristicGenerator {
 
