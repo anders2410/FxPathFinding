@@ -5,7 +5,7 @@ import model.Graph;
 import model.Util;
 import org.junit.Before;
 import org.junit.Test;
-import paths.Dijkstra;
+import paths.SSSP;
 import xml.XMLFilter;
 import xml.XMLGraphExtractor;
 
@@ -30,8 +30,8 @@ public class UITest {
         SimpleUI simpleUI = new SimpleUI(graph);
         simpleUI.generateUI();
         simpleUI.setVisible(true);
-        Dijkstra.trace = false;
-        Dijkstra.traceResult = true;
+        SSSP.trace = false;
+        SSSP.traceResult = true;
         while (true) {}
     }
 }

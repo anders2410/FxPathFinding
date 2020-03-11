@@ -1,8 +1,5 @@
 package model;
 
-import paths.AlgorithmMode;
-import paths.Dijkstra;
-
 import java.io.Serializable;
 import java.util.*;
 
@@ -10,19 +7,11 @@ public class Graph implements Serializable {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
 
-    public void setAdjList(List<List<Edge>> adjList) {
-        this.adjList = adjList;
-    }
-
     private Set<Integer> landmarks;
     private int nodeSize;
 
     public Graph(int nodeSize) {
         init(nodeSize);
-    }
-
-    public Set<Integer> getLandmarks() {
-        return landmarks;
     }
 
     public void init(int size) {
@@ -56,14 +45,15 @@ public class Graph implements Serializable {
         return hop;
     }
 
-    public Set<Integer> extractLandmarksFarthest(int goalamount) {
+    public Set<Integer> extractLandmarksFarthest(int goalAmount) {
         // Current implementation is 'FarthestB' (B - breadth)
-        // Simple but not necessarily best. MaxCover yields better results - TODO MaxCover for landmark selection
-        int[][] resArr = new int[goalamount][nodeSize];
+        // Simple but not necessarily best. MaxCover yields better results.
+        // TODO: MaxCover for landmark selection
+        int[][] resArr = new int[goalAmount][nodeSize];
         if (landmarks.isEmpty()) {
-            Random randomiser = new Random();
-            int startingVertice = randomiser.nextInt(nodeList.size());
-            int[] arr = BFSMaxDistance(startingVertice);
+            Random random = new Random();
+            int startNode = random.nextInt(nodeList.size());
+            int[] arr = BFSMaxDistance(startNode);
             int max = 0;
             for (int i = 0; i < arr.length; i++) {
                 max = arr[i] > arr[max] ? i : max;
@@ -71,26 +61,21 @@ public class Graph implements Serializable {
             resArr[0] = arr;
             landmarks.add(max);
         }
-        while (landmarks.size() < goalamount) {
-            int highesteMinimal = 0;
+
+        while (landmarks.size() < goalAmount) {
+            int highestMinimal = 0;
             int furthestCandidate = 0;
             for (Node n : nodeList) {
                 if (landmarks.contains(n.index)) continue;
-/*
-                int candidateDistance = 0;
-*/
                 int lowestCandidateDistance = Integer.MAX_VALUE;
                 for (int i = 0; i < landmarks.size(); i++) {
                     if (lowestCandidateDistance > resArr[i][n.index]) {
                         lowestCandidateDistance = resArr[i][n.index];
                     }
-/*
-                    candidateDistance += resArr[i][n.index];
-*/
                 }
-                if (lowestCandidateDistance > highesteMinimal) {
+                if (lowestCandidateDistance > highestMinimal) {
                     furthestCandidate = n.index;
-                    highesteMinimal = lowestCandidateDistance;
+                    highestMinimal = lowestCandidateDistance;
                 }
             }
             resArr[landmarks.size()] = BFSMaxDistance(furthestCandidate);
@@ -119,9 +104,9 @@ public class Graph implements Serializable {
             for (Edge e : restoredList.get(i)) {
                 if (e.visited) {
                     for (int j = 0; j < mergeList.get(i).size(); j++) {
-                        Edge reciever = mergeList.get(i).get(j);
-                        if (e.to == reciever.to) {
-                            if (reciever.inPath) {
+                        Edge receiver = mergeList.get(i).get(j);
+                        if (e.to == receiver.to) {
+                            if (receiver.inPath) {
                                 e.inPath = true;
                             }
                             e.visitedReverse = true;
@@ -176,7 +161,6 @@ public class Graph implements Serializable {
         nodeSize++;
     }
 
-
     public int getNodeAmount() {
         return nodeSize;
     }
@@ -206,5 +190,13 @@ public class Graph implements Serializable {
         for (List<Edge> edges : adjList) {
             edges.removeIf(edge -> edge.to == index);
         }
+    }
+
+    public void setAdjList(List<List<Edge>> adjList) {
+        this.adjList = adjList;
+    }
+
+    public Set<Integer> getLandmarks() {
+        return landmarks;
     }
 }

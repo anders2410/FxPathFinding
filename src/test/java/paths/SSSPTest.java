@@ -8,7 +8,7 @@ import xml.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class DijkstraTest {
+public class SSSPTest {
 
     Graph graph;
     String fileName = "jelling";
@@ -25,18 +25,18 @@ public class DijkstraTest {
 
     @Test
     public void testDijkstra() {
-        Dijkstra.trace = true;
-        double dist = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA).d;
-        Dijkstra.trace = false;
+        SSSP.trace = true;
+        double dist = SSSP.randomPath(graph, AlgorithmMode.DIJKSTRA).d;
+        SSSP.trace = false;
     }
 
     @Test
     public void compareDijkstraAStar() {
-        Dijkstra.traceResult = true;
-        ShortestPathResult dijk_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
-        ShortestPathResult astar_res = Dijkstra.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR);
+        SSSP.traceResult = true;
+        ShortestPathResult dijk_res = SSSP.sssp(graph, 2590, 1897, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult astar_res = SSSP.sssp(graph, 2590, 1897, AlgorithmMode.A_STAR);
         assertTrue(dijk_res.visitedNodes > astar_res.visitedNodes);
         assertEquals(dijk_res.d, astar_res.d, 0);
-        Dijkstra.traceResult = false;
+        SSSP.traceResult = false;
     }
 }
