@@ -24,9 +24,6 @@ public class SSSP {
 
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
-    private static PriorityStrategy priorityStrategy;
-    private static RelaxStrategy relaxStrategy;
-    private static Comparator<Integer> comparator;
 
     private static Graph graph;
     private static int source, target;
@@ -35,7 +32,8 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
 
-    private static AlgorithmFactory factory;
+    private static RelaxStrategy relaxStrategyA;
+    private static RelaxStrategy relaxStrategyB;
 
     private static List<Double> nodeDistA;
     private static List<Double> nodeDistB;
@@ -51,60 +49,12 @@ public class SSSP {
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
         if (mode == BI_A_STAR_LANDMARKS || mode == A_STAR_LANDMARKS) {
-            if (landmarkArray == null && !graphP.getLandmarks().isEmpty()) {
-                landmarkArray = new double[32][graphP.getNodeAmount()];
-                int index = 0;
-                List<List<Edge>> originalList = graphP.getAdjList();
-                for (Integer landmarkIndex : graphP.getLandmarks()) {
-                    List<Double> forwardDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
-                    double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                    graphP.setAdjList(graphP.reverseAdjacencyList(graphP.getAdjList()));
-                    List<Double> backDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
-                    double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                    graphP.setAdjList(originalList);
-                    landmarkArray[index] = arrForward;
-                    landmarkArray[index + 1] = arrBackward;
-                    index++;
-                    index++;
-                }
-                graphP.resetPathTrace();
-            }
+            generateLandmarks(graphP);
         }
         mode = modeP;
         graph = graphP;
         source = sourceP;
         target = targetP;
-    }
-
-    public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
-        graph = graphP;
-        AlgorithmFactory dijkstraFactory = new DijkstraFactory();
-        source = sourceP;
-        List<List<Edge>> adjList = graph.getAdjList();
-        nodeDistA = initNodeDist(source, adjList.size());
-        PriorityStrategy priorityStrategy = dijkstraFactory.getPriorityStrategy();
-        Comparator<Integer> comparator = getComparator(priorityStrategy, A);
-        queueA = new PriorityQueue<>(comparator);
-        queueA.add(source);
-        Set<Integer> seenNodes = new LinkedHashSet<>();
-        pathMapA = new HashMap<>();
-        RelaxStrategy relaxStrategy = dijkstraFactory.getRelaxStrategy();
-
-        while (!queueA.isEmpty()) {
-            Integer currentNode = queueA.poll();
-            if (seenNodes.contains(currentNode)) {
-                continue;
-            }
-            seenNodes.add(currentNode);
-            for (Edge edge : adjList.get(currentNode)) {
-                relaxStrategy.relax(currentNode, edge, A);
-                if (trace) {
-                    System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
-                }
-            }
-        }
-        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, seenNodes.size(), nodeDistA);
     }
 
     private static Map<AlgorithmMode, AlgorithmFactory> factoryMap = new HashMap<>();
@@ -119,7 +69,7 @@ public class SSSP {
     }
 
     public static ShortestPathResult findShortestPath(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
-        factory = factoryMap.get(modeP);
+        AlgorithmFactory factory = factoryMap.get(modeP);
         applyFactory(factory);
         initializeGlobalFields(graphP, modeP, sourceP, targetP);
         if (source == target) {
@@ -138,9 +88,12 @@ public class SSSP {
     private static void applyFactory(AlgorithmFactory factory) {
         heuristicFunction = factory.getHeuristicFunction();
         terminationStrategy = factory.getTerminationStrategy();
-        priorityStrategy = factory.getPriorityStrategy();
-        relaxStrategy = factory.getRelaxStrategy();
-        comparator = getComparator(priorityStrategy, A);
+        relaxStrategyA = factory.getRelaxStrategy();
+        relaxStrategyB = factory.getRelaxStrategy();
+        PriorityStrategy priorityStrategyA = factory.getPriorityStrategy();
+        PriorityStrategy priorityStrategyB = factory.getPriorityStrategy();
+        queueA = new PriorityQueue<>(getComparator(priorityStrategyA, A));
+        queueB = new PriorityQueue<>(getComparator(priorityStrategyB, B));
     }
 
     private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
@@ -154,7 +107,6 @@ public class SSSP {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
         }
-        queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         Set<Integer> seenNodes = new LinkedHashSet<>();
         pathMapA = new HashMap<>();
@@ -169,7 +121,7 @@ public class SSSP {
                 break;
             }
             for (Edge edge : adjList.get(currentNode)) {
-                relaxStrategy.relax(currentNode, edge, A);
+                relaxStrategyA.relax(currentNode, edge, A);
                 if (trace) {
                     System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
                 }
@@ -197,7 +149,6 @@ public class SSSP {
         }
 
         // Queue to hold the paths from Node: source.
-        queueA = new PriorityQueue<>(comparator);
         queueA.add(source);
         // A set of visited nodes starting from Node a.
         visitedA = new HashSet<>();
@@ -210,16 +161,12 @@ public class SSSP {
             estimatedDistB = new HashMap<>();
             estimatedDistB.put(target, 0.0);
         }
-        PriorityStrategy priorityStrategyB = priorityStrategy;
-        Comparator<Integer> comparatorB = getComparator(priorityStrategyB, B);
 
         // Queue to hold the paths from Node: to.
-        queueB = new PriorityQueue<>(comparatorB);
         queueB.add(target);
         // A set of visited nodes starting from Node b.
         visitedB = new HashSet<>();
         pathMapB = new HashMap<>();
-        RelaxStrategy relaxStrategyB = relaxStrategy;
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
@@ -235,7 +182,7 @@ public class SSSP {
                     visitedA.add(nextA);
                     for (Edge edge : adjList.get(nextA)) {
                         if (!visitedB.contains(edge.to)) {
-                            relaxStrategy.relax(nextA, edge, A);
+                            relaxStrategyA.relax(nextA, edge, A);
                             if (nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to) < goalDistance) {
                                 middlePoint = edge.to;
                                 goalDistance = nodeDistA.get(nextA) + edge.d + nodeDistB.get(edge.to);
@@ -277,6 +224,57 @@ public class SSSP {
         shortestPath.addAll(shortestPathB);
         double distance = goalDistance;
         return new ShortestPathResult(distance, shortestPath, visitedA.size());
+    }
+
+    private static void generateLandmarks(Graph graphP) {
+        if (landmarkArray == null && !graphP.getLandmarks().isEmpty()) {
+            landmarkArray = new double[32][graphP.getNodeAmount()];
+            int index = 0;
+            List<List<Edge>> originalList = graphP.getAdjList();
+            for (Integer landmarkIndex : graphP.getLandmarks()) {
+                List<Double> forwardDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
+                double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
+                graphP.setAdjList(graphP.reverseAdjacencyList(graphP.getAdjList()));
+                List<Double> backDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
+                double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
+                graphP.setAdjList(originalList);
+                landmarkArray[index] = arrForward;
+                landmarkArray[index + 1] = arrBackward;
+                index++;
+                index++;
+            }
+            graphP.resetPathTrace();
+        }
+    }
+
+    public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
+        graph = graphP;
+        AlgorithmFactory dijkstraFactory = new DijkstraFactory();
+        source = sourceP;
+        List<List<Edge>> adjList = graph.getAdjList();
+        nodeDistA = initNodeDist(source, adjList.size());
+        PriorityStrategy priorityStrategy = dijkstraFactory.getPriorityStrategy();
+        queueA = new PriorityQueue<>(getComparator(priorityStrategy, A));
+        queueA.add(source);
+        Set<Integer> seenNodes = new LinkedHashSet<>();
+        pathMapA = new HashMap<>();
+        RelaxStrategy relaxStrategy = dijkstraFactory.getRelaxStrategy();
+
+        while (!queueA.isEmpty()) {
+            Integer currentNode = queueA.poll();
+            if (seenNodes.contains(currentNode)) {
+                continue;
+            }
+            seenNodes.add(currentNode);
+            for (Edge edge : adjList.get(currentNode)) {
+                relaxStrategy.relax(currentNode, edge, A);
+                if (trace) {
+                    System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
+                }
+            }
+        }
+        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
+        return new ShortestPathResult(0, shortestPath, seenNodes.size(), nodeDistA);
     }
 
     private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
