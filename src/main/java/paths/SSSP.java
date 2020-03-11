@@ -112,6 +112,7 @@ public class SSSP {
         queueA.add(source);
 
         while (!queueA.isEmpty()) {
+            // TODO: Try to integrate it with the takeStep method
             Integer currentNode = queueA.poll();
             if (visitedA.contains(currentNode)) {
                 continue;
@@ -152,7 +153,6 @@ public class SSSP {
 
     private static ShortestPathResult biDirectional() {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
-        // TODO: Try to integrate it with sssp Dijkstra implementation.
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
 
