@@ -17,6 +17,7 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
 
     private static void generateLandmarks() {
         double[][] landmarkArray = getLandmarkArray();
+        int target = getTarget(), source = getSource();
         Graph graph = getGraph();
         if (landmarkArray == null && !graph.getLandmarks().isEmpty()) {
             landmarkArray = new double[32][graph.getNodeAmount()];

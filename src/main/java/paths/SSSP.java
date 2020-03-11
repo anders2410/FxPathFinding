@@ -24,10 +24,10 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
 
+    private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
-    private static PreprocessStrategy preprocessStrategy;
 
     private static RelaxStrategy relaxStrategyA;
     private static RelaxStrategy relaxStrategyB;
@@ -37,30 +37,34 @@ public class SSSP {
 
     private static List<Double> nodeDistA;
     private static List<Double> nodeDistB;
-    private static Set<Integer> visitedA;
-    private static Set<Integer> visitedB;
+    private static Set<Integer> visitedA;                   // A set of visited nodes starting from Node: source
+    private static Set<Integer> visitedB;                   // A set of visited nodes starting from Node: target
     private static Map<Integer, Integer> pathMapA;
     private static Map<Integer, Integer> pathMapB;
-    private static PriorityQueue<Integer> queueA;
-    private static PriorityQueue<Integer> queueB;
+    private static PriorityQueue<Integer> queueA;           // Queue to hold the paths from Node: source
+    private static PriorityQueue<Integer> queueB;           // Queue to hold the paths from Node: target
     private static Map<Integer, Double> estimatedDistA;
     private static Map<Integer, Double> estimatedDistB;
 
     // Initialization
 
-    private static void initFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
+    private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
-        graph = graphP;
         source = sourceP;
         target = targetP;
-        initDataStructures();
     }
 
     private static void initDataStructures() {
         nodeDistA = initNodeDist(source, graph.getNodeAmount());
         nodeDistB = initNodeDist(target, graph.getNodeAmount());
+        visitedA = new HashSet<>();
+        visitedB = new HashSet<>();
+        pathMapA = new HashMap<>();
+        pathMapB = new HashMap<>();
         queueA = new PriorityQueue<>(getComparator(priorityStrategyA, A));
         queueB = new PriorityQueue<>(getComparator(priorityStrategyB, B));
+        estimatedDistA = new HashMap<>();
+        estimatedDistB = new HashMap<>();
     }
 
     private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
@@ -79,9 +83,10 @@ public class SSSP {
     }
 
     private static void applyFactory(AlgorithmFactory factory) {
+        factory.getPreprocessStrategy().process();
+        biDirectional = factory.isBiDirectional();
         heuristicFunction = factory.getHeuristicFunction();
         terminationStrategy = factory.getTerminationStrategy();
-        preprocessStrategy = factory.getPreprocessStrategy();
         relaxStrategyA = factory.getRelaxStrategy();
         relaxStrategyB = factory.getRelaxStrategy();
         priorityStrategyA = factory.getPriorityStrategy();
@@ -91,41 +96,28 @@ public class SSSP {
     // Path finding
 
     public static ShortestPathResult findShortestPath(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
-        AlgorithmFactory factory = factoryMap.get(modeP);
-        applyFactory(factory);
-        initFields(graphP, modeP, sourceP, targetP);
-        factory.getPreprocessStrategy().process();
-
-        initFields(graphP, modeP, sourceP, targetP);
-        if (source == target) {
-            return new ShortestPathResult(0, singletonList(source), 0);
+        if (sourceP == targetP) {
+            return new ShortestPathResult(0, singletonList(sourceP), 0);
         }
+        graph = graphP;
+        applyFactory(factoryMap.get(modeP));
+        initFields(modeP, sourceP, targetP);
+        initDataStructures();
 
-        ShortestPathResult result;
-        if (mode == BI_DIJKSTRA || mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
-            result = biDirectional();
-        } else {
-            result = oneDirectional();
-        }
-        return result;
+        return biDirectional ? biDirectional() : oneDirectional();
     }
 
     private static ShortestPathResult oneDirectional() {
         List<List<Edge>> adjList = graph.getAdjList();
-        if (mode == A_STAR || mode == A_STAR_LANDMARKS) {
-            estimatedDistA = new HashMap<>();
-            estimatedDistA.put(source, 0.0);
-        }
+        estimatedDistA.put(source, 0.0);
         queueA.add(source);
-        Set<Integer> seenNodes = new LinkedHashSet<>();
-        pathMapA = new HashMap<>();
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();
-            if (seenNodes.contains(currentNode)) {
+            if (visitedA.contains(currentNode)) {
                 continue;
             }
-            seenNodes.add(currentNode);
+            visitedA.add(currentNode);
             if (currentNode == target) {
                 break;
             }
@@ -139,41 +131,22 @@ public class SSSP {
         }
 
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(nodeDistA.get(target), shortestPath, seenNodes.size());
+        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size());
     }
 
     private static ShortestPathResult biDirectional() {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         // TODO: Try to integrate it with sssp Dijkstra implementation.
-        // TODO: Implement Bi-ASTAR using consistent approach. Symmetric approach visits a lot of stuff.
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
 
         // A-direction
-        estimatedDistA = null;
-        if (mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
-            estimatedDistA = new HashMap<>();
-            estimatedDistA.put(source, 0.0);
-        }
-
-        // Queue to hold the paths from Node: source.
+        estimatedDistA.put(source, 0.0);
         queueA.add(source);
-        // A set of visited nodes starting from Node a.
-        visitedA = new HashSet<>();
-        pathMapA = new HashMap<>();
 
         // B-direction
-        estimatedDistB = null;
-        if (mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
-            estimatedDistB = new HashMap<>();
-            estimatedDistB.put(target, 0.0);
-        }
-
-        // Queue to hold the paths from Node: to.
+        estimatedDistB.put(target, 0.0);
         queueB.add(target);
-        // A set of visited nodes starting from Node b.
-        visitedB = new HashSet<>();
-        pathMapB = new HashMap<>();
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
@@ -234,22 +207,22 @@ public class SSSP {
     }
 
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
-        initFields(graphP, DIJKSTRA, sourceP, 0);
         AlgorithmFactory dijkstraFactory = new DijkstraFactory();
+        initFields(DIJKSTRA, sourceP, 0);
+        initDataStructures();
         List<List<Edge>> adjList = graph.getAdjList();
         PriorityStrategy priorityStrategy = dijkstraFactory.getPriorityStrategy();
         queueA = new PriorityQueue<>(getComparator(priorityStrategy, A));
         queueA.add(source);
-        Set<Integer> seenNodes = new LinkedHashSet<>();
         pathMapA = new HashMap<>();
         RelaxStrategy relaxStrategy = dijkstraFactory.getRelaxStrategy();
 
         while (!queueA.isEmpty()) {
             Integer currentNode = queueA.poll();
-            if (seenNodes.contains(currentNode)) {
+            if (visitedA.contains(currentNode)) {
                 continue;
             }
-            seenNodes.add(currentNode);
+            visitedA.add(currentNode);
             for (Edge edge : adjList.get(currentNode)) {
                 relaxStrategy.relax(currentNode, edge, A);
                 if (trace) {
@@ -258,7 +231,7 @@ public class SSSP {
             }
         }
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, seenNodes.size(), nodeDistA);
+        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA);
     }
 
     private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
@@ -289,9 +262,7 @@ public class SSSP {
         Random random = new Random(seed);
         int sourceR = random.nextInt(n);
         int targetR = random.nextInt(n);
-        initFields(graphP, modeP, sourceR, targetR);
-        ShortestPathResult res;
-        res = findShortestPath(graph, source, target, mode);
+        ShortestPathResult res = findShortestPath(graphP, sourceR, targetR, modeP);
         if (traceResult) {
             System.out.println("Distance from " + source + " to " + target + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");
@@ -363,6 +334,10 @@ public class SSSP {
 
     public static Graph getGraph() {
         return graph;
+    }
+
+    public static void setGraph(Graph graph) {
+        SSSP.graph = graph;
     }
 
     public static double[][] getLandmarkArray() {

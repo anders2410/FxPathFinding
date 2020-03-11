@@ -112,6 +112,7 @@ public class FXMLController implements Initializable {
         zoomFactor = 1;
         setRatios();
         redrawGraph();
+        SSSP.setGraph(graph);
     }
 
     private void setGraphBounds() {
