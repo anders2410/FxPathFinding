@@ -192,15 +192,7 @@ public class SSSP {
         queueA.add(source);
 
         while (!queueA.isEmpty()) {
-            Integer currentNode = queueA.poll();
-            if (visitedA.contains(currentNode)) {
-                continue;
-            }
-            visitedA.add(currentNode);
-            for (Edge edge : adjList.get(currentNode)) {
-                relaxStrategyA.relax(currentNode, edge, A);
-                traceRelax(currentNode, edge);
-            }
+            takeStep(adjList, A, false);
         }
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA);
