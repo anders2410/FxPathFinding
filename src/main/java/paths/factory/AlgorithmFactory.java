@@ -1,9 +1,6 @@
 package paths.factory;
 
-import paths.strategy.HeuristicFunction;
-import paths.strategy.PriorityStrategy;
-import paths.strategy.RelaxStrategy;
-import paths.strategy.TerminationStrategy;
+import paths.strategy.*;
 
 public interface AlgorithmFactory {
     boolean isBiDirectional();
@@ -15,4 +12,6 @@ public interface AlgorithmFactory {
     RelaxStrategy getRelaxStrategy();
 
     TerminationStrategy getTerminationStrategy();
+
+    PreprocessStrategy getPreprocessStrategy();
 }

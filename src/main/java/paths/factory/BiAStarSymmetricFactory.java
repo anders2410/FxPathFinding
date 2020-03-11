@@ -4,10 +4,7 @@ import paths.generator.HeuristicGenerator;
 import paths.generator.PriorityGenerator;
 import paths.generator.RelaxGenerator;
 import paths.generator.TerminationGenerator;
-import paths.strategy.HeuristicFunction;
-import paths.strategy.PriorityStrategy;
-import paths.strategy.RelaxStrategy;
-import paths.strategy.TerminationStrategy;
+import paths.strategy.*;
 
 public class BiAStarSymmetricFactory implements AlgorithmFactory {
     @Override
@@ -33,5 +30,10 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
     @Override
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getSymmetricStrategy(getHeuristicFunction());
+    }
+
+    @Override
+    public PreprocessStrategy getPreprocessStrategy() {
+        return () -> {};
     }
 }

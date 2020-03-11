@@ -2,10 +2,7 @@ package paths;
 
 import model.*;
 import paths.factory.*;
-import paths.strategy.HeuristicFunction;
-import paths.strategy.PriorityStrategy;
-import paths.strategy.RelaxStrategy;
-import paths.strategy.TerminationStrategy;
+import paths.strategy.*;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -20,11 +17,6 @@ public class SSSP {
     public static boolean traceResult = false;
     public static int seed = 0;
 
-    private static BiFunction<Node, Node, Double> distanceStrategy;
-
-    private static HeuristicFunction heuristicFunction;
-    private static TerminationStrategy terminationStrategy;
-
     private static Graph graph;
     private static int source, target;
     private static AlgorithmMode mode;
@@ -32,8 +24,16 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
 
+    private static BiFunction<Node, Node, Double> distanceStrategy;
+    private static HeuristicFunction heuristicFunction;
+    private static TerminationStrategy terminationStrategy;
+    private static PreprocessStrategy preprocessStrategy;
+
     private static RelaxStrategy relaxStrategyA;
     private static RelaxStrategy relaxStrategyB;
+
+    private static PriorityStrategy priorityStrategyA;
+    private static PriorityStrategy priorityStrategyB;
 
     private static List<Double> nodeDistA;
     private static List<Double> nodeDistB;
@@ -46,14 +46,25 @@ public class SSSP {
     private static Map<Integer, Double> estimatedDistA;
     private static Map<Integer, Double> estimatedDistB;
 
-    private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
-        if (modeP == BI_A_STAR_LANDMARKS || modeP == A_STAR_LANDMARKS) {
-            generateLandmarks(graphP);
-        }
+    // Initialization
+
+    private static void initFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
         graph = graphP;
         source = sourceP;
         target = targetP;
+        initDataStructures();
+    }
+
+    private static void initDataStructures() {
+        nodeDistA = initNodeDist(source, graph.getNodeAmount());
+        nodeDistB = initNodeDist(target, graph.getNodeAmount());
+        queueA = new PriorityQueue<>(getComparator(priorityStrategyA, A));
+        queueB = new PriorityQueue<>(getComparator(priorityStrategyB, B));
+    }
+
+    private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
+        return Comparator.comparingDouble((i) -> priorityStrategy.apply(i, dir));
     }
 
     private static Map<AlgorithmMode, AlgorithmFactory> factoryMap = new HashMap<>();
@@ -67,10 +78,25 @@ public class SSSP {
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
     }
 
+    private static void applyFactory(AlgorithmFactory factory) {
+        heuristicFunction = factory.getHeuristicFunction();
+        terminationStrategy = factory.getTerminationStrategy();
+        preprocessStrategy = factory.getPreprocessStrategy();
+        relaxStrategyA = factory.getRelaxStrategy();
+        relaxStrategyB = factory.getRelaxStrategy();
+        priorityStrategyA = factory.getPriorityStrategy();
+        priorityStrategyB = factory.getPriorityStrategy();
+    }
+
+    // Path finding
+
     public static ShortestPathResult findShortestPath(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
         AlgorithmFactory factory = factoryMap.get(modeP);
         applyFactory(factory);
-        initializeGlobalFields(graphP, modeP, sourceP, targetP);
+        initFields(graphP, modeP, sourceP, targetP);
+        factory.getPreprocessStrategy().process();
+
+        initFields(graphP, modeP, sourceP, targetP);
         if (source == target) {
             return new ShortestPathResult(0, singletonList(source), 0);
         }
@@ -84,24 +110,8 @@ public class SSSP {
         return result;
     }
 
-    private static void applyFactory(AlgorithmFactory factory) {
-        heuristicFunction = factory.getHeuristicFunction();
-        terminationStrategy = factory.getTerminationStrategy();
-        relaxStrategyA = factory.getRelaxStrategy();
-        relaxStrategyB = factory.getRelaxStrategy();
-        PriorityStrategy priorityStrategyA = factory.getPriorityStrategy();
-        PriorityStrategy priorityStrategyB = factory.getPriorityStrategy();
-        queueA = new PriorityQueue<>(getComparator(priorityStrategyA, A));
-        queueB = new PriorityQueue<>(getComparator(priorityStrategyB, B));
-    }
-
-    private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
-        return Comparator.comparingDouble((i) -> priorityStrategy.apply(i, dir));
-    }
-
     private static ShortestPathResult oneDirectional() {
         List<List<Edge>> adjList = graph.getAdjList();
-        nodeDistA = initNodeDist(source, adjList.size());
         if (mode == A_STAR || mode == A_STAR_LANDMARKS) {
             estimatedDistA = new HashMap<>();
             estimatedDistA.put(source, 0.0);
@@ -140,7 +150,6 @@ public class SSSP {
         List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
 
         // A-direction
-        nodeDistA = initNodeDist(source, adjList.size());
         estimatedDistA = null;
         if (mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
             estimatedDistA = new HashMap<>();
@@ -154,7 +163,6 @@ public class SSSP {
         pathMapA = new HashMap<>();
 
         // B-direction
-        nodeDistB = initNodeDist(target, adjList.size());
         estimatedDistB = null;
         if (mode == BI_A_STAR_SYMMETRIC || mode == BI_A_STAR_CONSISTENT || mode == BI_A_STAR_LANDMARKS) {
             estimatedDistB = new HashMap<>();
@@ -225,33 +233,31 @@ public class SSSP {
         return new ShortestPathResult(distance, shortestPath, visitedA.size());
     }
 
-    private static void generateLandmarks(Graph graphP) {
-        if (landmarkArray == null && !graphP.getLandmarks().isEmpty()) {
-            landmarkArray = new double[32][graphP.getNodeAmount()];
+    private static void generateLandmarks() {
+        if (landmarkArray == null && !graph.getLandmarks().isEmpty()) {
+            landmarkArray = new double[32][graph.getNodeAmount()];
             int index = 0;
-            List<List<Edge>> originalList = graphP.getAdjList();
-            for (Integer landmarkIndex : graphP.getLandmarks()) {
-                List<Double> forwardDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
+            List<List<Edge>> originalList = graph.getAdjList();
+            for (Integer landmarkIndex : graph.getLandmarks()) {
+                List<Double> forwardDistance = singleToAllPath(graph, landmarkIndex).nodeDistance;
                 double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                graphP.setAdjList(graphP.reverseAdjacencyList(graphP.getAdjList()));
-                List<Double> backDistance = singleToAllPath(graphP, landmarkIndex).nodeDistance;
+                graph.setAdjList(graph.reverseAdjacencyList(graph.getAdjList()));
+                List<Double> backDistance = singleToAllPath(graph, landmarkIndex).nodeDistance;
                 double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                graphP.setAdjList(originalList);
+                graph.setAdjList(originalList);
                 landmarkArray[index] = arrForward;
                 landmarkArray[index + 1] = arrBackward;
                 index++;
                 index++;
             }
-            graphP.resetPathTrace();
+            graph.resetPathTrace();
         }
     }
 
     public static ShortestPathResult singleToAllPath(Graph graphP, int sourceP) {
-        graph = graphP;
+        initFields(graphP, DIJKSTRA, sourceP, 0);
         AlgorithmFactory dijkstraFactory = new DijkstraFactory();
-        source = sourceP;
         List<List<Edge>> adjList = graph.getAdjList();
-        nodeDistA = initNodeDist(source, adjList.size());
         PriorityStrategy priorityStrategy = dijkstraFactory.getPriorityStrategy();
         queueA = new PriorityQueue<>(getComparator(priorityStrategy, A));
         queueA.add(source);
@@ -304,7 +310,7 @@ public class SSSP {
         Random random = new Random(seed);
         int sourceR = random.nextInt(n);
         int targetR = random.nextInt(n);
-        initializeGlobalFields(graphP, modeP, sourceR, targetR);
+        initFields(graphP, modeP, sourceR, targetR);
         ShortestPathResult res;
         res = findShortestPath(graph, source, target, mode);
         if (traceResult) {
@@ -382,6 +388,10 @@ public class SSSP {
 
     public static double[][] getLandmarkArray() {
         return landmarkArray;
+    }
+
+    public static void setLandmarkArray(double[][] pLandmarkArray) {
+        landmarkArray = pLandmarkArray;
     }
 
     public static Set<Integer> getVisited(ABDir dir) {
