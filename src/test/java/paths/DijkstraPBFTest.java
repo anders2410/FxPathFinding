@@ -34,7 +34,7 @@ public class DijkstraPBFTest {
     @Test
     public void testSingleSourceAll() {
         Dijkstra.seed = 1;
-        ShortestPathResult res = Dijkstra.singleToAllPath(graph,300);
+        ShortestPathResult res = Dijkstra.singleToAllPath(graph, 300);
         System.out.println("Finito");
     }
 
@@ -79,14 +79,15 @@ public class DijkstraPBFTest {
 
     @Test
     public void testAlgorithms() {
-        int[][] matrix = new int[4][4];
-        for (int i = 0; i < 400; i++) {
+        int[][] matrix = new int[4][5];
+        graph.extractLandmarksFarthest(16);
+        for (int i = 0; i < 900; i++) {
             Dijkstra.seed = i;
             ShortestPathResult dijkRes = Dijkstra.randomPath(graph, AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR);
             ShortestPathResult biDijkRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_DIJKSTRA);
-            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR_SYMMETRIC);
-
+            ShortestPathResult biAStarRes = Dijkstra.randomPath(graph, AlgorithmMode.BI_A_STAR_CONSISTENT);
+            ShortestPathResult landmarksRes = Dijkstra.randomPath(graph, AlgorithmMode.A_STAR_LANDMARKS);
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
@@ -98,32 +99,20 @@ public class DijkstraPBFTest {
 
             double distBiAstar = biAStarRes.d;
             List<Integer> pathBiAstar = biAStarRes.path;
+
+            double distLandmarks = landmarksRes.d;
+            List<Integer> pathLandmarks = landmarksRes.path;
             if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
-                System.out.println("--------Dijk vs Astar -----------");
-                System.out.println(distAstar);
-                System.out.println(distDijk);
-                System.out.println(pathAstar);
-                System.out.println(pathDijk);
                 matrix[0][1]++;
             }
             if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
-                System.out.println("--------BiDijk vs Dijk -----------");
-                System.out.println(distBiDijk);
-                System.out.println(distDijk);
-                System.out.println(pathDijk);
-                System.out.println(pathBiDijk);
                 matrix[0][2]++;
             }
             if (Math.abs(distDijk - distBiAstar) > 0.00000000001 || !pathDijk.equals(pathBiAstar)) {
-                System.out.println(i);
                 matrix[0][3]++;
             }
             if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
-                System.out.println("--------BiDijk vs Astar -----------");
-                System.out.println(distAstar);
-                System.out.println(distBiDijk);
-                System.out.println(pathAstar);
-                System.out.println(pathBiDijk);
+
                 matrix[1][2]++;
             }
             if (Math.abs(distAstar - distBiAstar) > 0.00000000001 || !pathAstar.equals(pathBiAstar)) {
@@ -132,8 +121,11 @@ public class DijkstraPBFTest {
             if (Math.abs(distBiDijk - distBiAstar) > 0.00000000001 || !pathBiDijk.equals(pathBiAstar)) {
                 matrix[2][3]++;
             }
+            if (Math.abs(distDijk - distLandmarks) > 0.00000000001 || !pathLandmarks.equals(pathDijk)) {
+                matrix[0][4]++;
+            }
         }
-        int[][] zeroMatrix = new int[4][4];
+        int[][] zeroMatrix = new int[4][5];
         System.out.println(Arrays.deepToString(matrix));
         assertArrayEquals(zeroMatrix, matrix);
     }

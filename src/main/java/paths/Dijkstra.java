@@ -29,9 +29,39 @@ public class Dijkstra {
     private static BiTerminationStrategy chooseTerminationStrategy(int to, Set<Integer> visitedForward, Set<Integer> visitedBackward) {
         switch (mode) {
             default:
-            case A_STAR_LANDMARKS_BI:
             case BI_A_STAR_CONSISTENT:
+                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
+                    Integer topA = forwardQueue.peek();
+                    Integer topB = backwardQueue.peek();
+                    if (topA != null && topB != null) {
+                        double topVal = forwardNodeDist.get(topA) + ((heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(source))) / 2);
+                        double reverseTopVal = backwardNodeDist.get(topB) - ((heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source))) / 2);
+
+                        boolean breakcheck = topVal + reverseTopVal > goal - ((heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source))) / 2);
+                        if (breakcheck) {
+                            System.out.println(forwardEstimatedNodeDist.get(topA));
+                            System.out.println(forwardNodeDist.get(topA));
+                            System.out.println(topVal);
+                            System.out.println(backwardEstimatedNodeDist.get(topB));
+                            System.out.println(backwardNodeDist.get(topB));
+                            System.out.println(reverseTopVal);
+                            System.out.println(goal);
+                            return true;
+                        }
+
+                    }
+                    return false;
+                };
             case BI_DIJKSTRA:
+                return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
+                    Integer topA = forwardQueue.peek();
+                    Integer topB = backwardQueue.peek();
+                    if (topA != null && topB != null) {
+                        return forwardNodeDist.get(topA) + backwardNodeDist.get(topB) > goal;
+                    }
+                    return false;
+                };
+            case A_STAR_LANDMARKS_BI:
                 return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
                     Integer topA = forwardQueue.peek();
                     Integer topB = backwardQueue.peek();
@@ -40,6 +70,14 @@ public class Dijkstra {
                     }
                     return false;
                 };
+                /*return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
+                    Integer topA = forwardQueue.peek();
+                    Integer topB = backwardQueue.peek();
+                    if (topA != null && topB != null) {
+                        return forwardNodeDist.get(topA) + backwardNodeDist.get(topB) > goal;
+                    }
+                    return false;
+                };*/
                 /*return (forwardNodeDist, forwardEstimatedNodeDist, forwardQueue, backwardNodeDist, backwardEstimatedNodeDist, backwardQueue, goal) -> {
                     Integer topA = forwardQueue.peek();
                     Integer topB = backwardQueue.peek();
@@ -59,9 +97,9 @@ public class Dijkstra {
                     Integer topA = forwardQueue.peek();
                     Integer topB = backwardQueue.peek();
                     if (topA != null && topB != null) {
-                        double keyValueForward = forwardNodeDist.get(topA) + heuristicFunction.applyHeuristic(nodeList.get(topA), nodeList.get(target));
-                        double keyValueBackwards = backwardNodeDist.get(topB) + heuristicFunction.applyHeuristic(nodeList.get(topB), nodeList.get(source));
-                        return keyValueBackwards >= goal || keyValueForward >= goal;
+                        double keyValueForward = forwardEstimatedNodeDist.get(topA);
+                        double keyValueBackwards = backwardEstimatedNodeDist.get(topB);
+                        return keyValueBackwards + keyValueForward >= goal + heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source));
                     }
                     return false;
                 };
@@ -82,24 +120,32 @@ public class Dijkstra {
                     Node targetNode = nodeList.get(target);
                     return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, targetNode);
                 };
-            case A_STAR_LANDMARKS_BI:
             case BI_A_STAR_CONSISTENT:
+        /*        return (i) -> {
+                    Node curNode = nodeList.get(i);
+                    if (forwardDirection) {
+                        return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(target));
+                    } else {
+                        return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(source));
+                    }
+                };*/
+            case A_STAR_LANDMARKS_BI:
                 return (i) -> {
                     Node curNode = nodeList.get(i);
-                    double potentialfunctionForward = ((heuristicFunction.applyHeuristic(curNode, nodeList.get(target)) - heuristicFunction.applyHeuristic(curNode, nodeList.get(source))) / 2);
+                    double pForwardNode = ((heuristicFunction.applyHeuristic(curNode, nodeList.get(target)) - heuristicFunction.applyHeuristic(curNode, nodeList.get(source))) / 2);
                     if (forwardDirection) {
-                        return nodeDist.get(i) + potentialfunctionForward;
+                        return nodeDist.get(i) + pForwardNode;
                     } else {
-                        return nodeDist.get(i) + (-potentialfunctionForward);
+                        return nodeDist.get(i) - pForwardNode;
                     }
                 };
             case BI_A_STAR_SYMMETRIC:
                 return (i) -> {
                     Node curNode = nodeList.get(i);
                     if (forwardDirection) {
-                        return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(target));
+                        return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(target)) - heuristicFunction.applyHeuristic(nodeList.get(source), nodeList.get(target));
                     } else {
-                        return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(source));
+                        return nodeDist.get(i) + heuristicFunction.applyHeuristic(curNode, nodeList.get(source)) - heuristicFunction.applyHeuristic(nodeList.get(target), nodeList.get(source));
                     }
                 };
         }
@@ -111,12 +157,14 @@ public class Dijkstra {
             case A_STAR_LANDMARKS:
                 return (startnode, target) -> {
                     double maxLandmarkValue = 0;
+                    int landMarkChoice = 0;
                     //32 because |landmarks| = 16. *2 for 2 ways.
                     for (int i = 0; i < 32; i++) {
-                        double landmarkvalueforward = landmarkArr[i][target.index] - landmarkArr[i][startnode.index];
-                        double landmarkvaluebackward = landmarkArr[i + 1][startnode.index] - landmarkArr[i + 1][target.index];
-                        if (Math.max(landmarkvaluebackward, landmarkvalueforward) > maxLandmarkValue) {
-                            maxLandmarkValue = Math.max(landmarkvaluebackward, landmarkvalueforward);
+                        double landmarkValuePlus = landmarkArr[i + 1][startnode.index] - landmarkArr[i + 1][target.index];
+                        double landmarkValueMinus = landmarkArr[i][target.index] - landmarkArr[i][startnode.index];
+                        if (Math.max(landmarkValueMinus, landmarkValuePlus) > maxLandmarkValue) {
+                            maxLandmarkValue = Math.max(landmarkValueMinus, landmarkValuePlus);
+                            landMarkChoice = i;
                         }
                         i++;
                     }
@@ -131,12 +179,20 @@ public class Dijkstra {
     private static RelaxStrategy chooseRelaxStrategy(List<Double> nodeDist, Map<Integer, Double> estimatedDist, Map<Integer, Integer> pathMap, AbstractQueue<Integer> pq) {
         switch (mode) {
             case A_STAR:
+            case A_STAR_LANDMARKS:
                 return (from, edge, directionForward) -> {
                     edge.visited = true;
                     double newDist = nodeDist.get(from) + edge.d;
                     double heuristicFrom = heuristicFunction.applyHeuristic(nodeList.get(from), nodeList.get(target));
                     double heuristicNeighbour = heuristicFunction.applyHeuristic(nodeList.get(edge.to), nodeList.get(target));
                     double weirdWeight = estimatedDist.get(from) + edge.d - heuristicFrom + heuristicNeighbour;
+                    if (edge.d - heuristicFrom + heuristicNeighbour < 0) {
+                        System.out.println(edge.d);
+                        System.out.println(heuristicFrom);
+                        System.out.println(heuristicNeighbour);
+                        System.out.println(edge.d - heuristicFrom + heuristicNeighbour);
+                    }
+                    assert edge.d - heuristicFrom + heuristicNeighbour >= 0;
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
             case BI_A_STAR_SYMMETRIC:
@@ -170,14 +226,15 @@ public class Dijkstra {
                     double hFunctionBackwardToNode = heuristicFunction.applyHeuristic(edgeEndNode, backwardTargetNode);
                     double potentialForwardFromNode = (hFunctionForwardFromNode - hFunctionBackwardFromNode) / 2;
                     double potentialForwardToNode = (hFunctionForwardToNode - hFunctionBackwardToNode) / 2;
+                    double weirdWeight;
                     if (directionForward) {
                         potentialFunc = (potentialForwardToNode - potentialForwardFromNode);
-
+                        weirdWeight = newEst - potentialForwardFromNode + potentialForwardToNode;
                     } else {
-                        potentialFunc = -(potentialForwardToNode - potentialForwardToNode);
+                        potentialFunc = (-potentialForwardToNode - (-potentialForwardToNode));
+                        weirdWeight = newEst - (-potentialForwardFromNode) + (-potentialForwardToNode);
                     }
                     assert edge.d + potentialFunc >= 0;
-                    double weirdWeight = newEst + potentialFunc;
                     updateNode(nodeDist, estimatedDist, pathMap, pq, from, edge, newDist, weirdWeight);
                 };
             default:
@@ -449,9 +506,8 @@ public class Dijkstra {
         Random random = new Random(seed);
         int sourceR = random.nextInt(n);
         int targetR = random.nextInt(n);
-        initializeGlobalFields(graphP, modeP, sourceR, targetR);
         ShortestPathResult res;
-        res = sssp(graph, source, target, mode);
+        res = sssp(graphP, sourceR, targetR, modeP);
         if (traceResult) {
             System.out.println("Distance from " + source + " to " + target + " is " + res.d);
             System.out.println("Graph has " + n + " nodes.");

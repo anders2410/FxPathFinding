@@ -75,6 +75,8 @@ public class FXMLController implements Initializable {
     private Button biAStarButton;
     @FXML
     private Button landmarkButton;
+    @FXML
+    private Button biLandmarkButton;
 
     private Stage stage;
     private Graph graph;
@@ -103,7 +105,7 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("denmark-latest.osm.pbf");
+        setUpNewGraph("malta-latest.osm.pbf");
         Dijkstra.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }
@@ -615,6 +617,8 @@ public class FXMLController implements Initializable {
         aStarButton.pseudoClassStateChanged(pseudoClass, false);
         biAStarButton.pseudoClassStateChanged(pseudoClass, false);
         landmarkButton.pseudoClassStateChanged(pseudoClass, false);
+        biLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
+
         algoButton.pseudoClassStateChanged(pseudoClass, true);
     }
 
@@ -630,6 +634,19 @@ public class FXMLController implements Initializable {
         }
         setAlgorithmLabels();
         selectButton(landmarkButton);
+    }
+
+    public void handleBiLandmarksEvent() {
+        // TODO: Add algorithm for landmarks
+        Set<Integer> marks = graph.extractLandmarksFarthest(16);
+        algorithmMode = A_STAR_LANDMARKS_BI;
+        runAlgorithm();
+        for (Integer index : marks) {
+            Node n = graph.getNodeList().get(index);
+            drawLandMark(n);
+        }
+        setAlgorithmLabels();
+        selectButton(biLandmarkButton);
     }
 
     private void drawLandMark(Node n) {

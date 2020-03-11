@@ -31,7 +31,10 @@
                     text="BiA*"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="landmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleLandmarksEvent" text="LAND"/>
+            <Button fx:id="landmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleLandmarksEvent" text="ALT"/>
+            <Separator styleClass="nav_separator"/>
+
+            <Button fx:id="biLandmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiLandmarksEvent" text="BiALT"/>
             <Separator styleClass="nav_separator"/>
 
             <Button styleClass="nav_button" alignment="CENTER" onAction="#handleSetParameterEvent" text="SET" />
