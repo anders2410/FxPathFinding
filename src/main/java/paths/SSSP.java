@@ -8,8 +8,7 @@ import java.util.function.BiFunction;
 
 import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
-import static paths.ABDir.A;
-import static paths.ABDir.B;
+import static paths.ABDir.*;
 
 public class SSSP {
 
@@ -48,7 +47,7 @@ public class SSSP {
 
     private static void initializeGlobalFields(Graph graphP, AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
-        if (mode == AlgorithmMode.BI_A_STAR_LANDMARKS) {
+        if (mode == BI_A_STAR_LANDMARKS || mode == A_STAR_LANDMARKS) {
             if (landmarkArray == null && !graphP.getLandmarks().isEmpty()) {
                 landmarkArray = new double[32][graphP.getNodeAmount()];
                 int index = 0;
@@ -113,7 +112,8 @@ public class SSSP {
         factoryMap.put(A_STAR, new AStarFactory());
         factoryMap.put(BI_A_STAR_CONSISTENT, new BiAStarConsistentFactory());
         factoryMap.put(BI_A_STAR_SYMMETRIC, new BiAStarSymmetricFactory());
-        factoryMap.put(BI_A_STAR_LANDMARKS, new LandmarksFactory());
+        factoryMap.put(A_STAR_LANDMARKS, new LandmarksFactory());
+        factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
     }
 
     public static ShortestPathResult sssp(Graph graphP, int sourceP, int targetP, AlgorithmMode modeP) {
@@ -317,7 +317,7 @@ public class SSSP {
     private static void trace(AbstractQueue<Integer> nodeQueue) {
         PriorityQueue<Integer> copy = new PriorityQueue<>(nodeQueue);
         if (trace) {
-            System.out.print("Nodequeue: ");
+            System.out.print("NodeQueue: ");
             for (int i = 0; i < copy.size() - 1; i++) {
                 Integer object = copy.poll();
                 System.out.print(object + " ");

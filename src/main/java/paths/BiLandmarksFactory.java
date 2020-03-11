@@ -1,18 +1,16 @@
-package paths.factory;
+package paths;
 
-import paths.*;
+import paths.factory.AlgorithmFactory;
 
-import java.util.function.Function;
-
-public class LandmarksFactory implements AlgorithmFactory {
+public class BiLandmarksFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
-        return false;
+        return true;
     }
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getAStar();
+        return PriorityGenerator.getBiAStar();
     }
 
     @Override

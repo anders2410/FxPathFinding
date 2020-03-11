@@ -639,18 +639,6 @@ public class FXMLController implements Initializable {
         selectButton(biAStarButton);
     }
 
-    private void selectButton(Button algoButton) {
-        PseudoClass pseudoClass = PseudoClass.getPseudoClass("selected");
-        dijkstraButton.pseudoClassStateChanged(pseudoClass, false);
-        biDijkstraButton.pseudoClassStateChanged(pseudoClass, false);
-        aStarButton.pseudoClassStateChanged(pseudoClass, false);
-        biAStarButton.pseudoClassStateChanged(pseudoClass, false);
-        landmarkButton.pseudoClassStateChanged(pseudoClass, false);
-        biLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
-
-        algoButton.pseudoClassStateChanged(pseudoClass, true);
-    }
-
     public void handleLandmarksEvent() {
         // TODO: Add algorithm for landmarks
         Set<Integer> marks = graph.extractLandmarksFarthest(16);
@@ -669,6 +657,7 @@ public class FXMLController implements Initializable {
         // TODO: Add algorithm for landmarks
         Set<Integer> marks = graph.extractLandmarksFarthest(16);
         algorithmMode = BI_A_STAR_LANDMARKS;
+
         runAlgorithm();
         for (Integer index : marks) {
             Node n = graph.getNodeList().get(index);
@@ -676,6 +665,18 @@ public class FXMLController implements Initializable {
         }
         setAlgorithmLabels();
         selectButton(biLandmarkButton);
+    }
+
+    private void selectButton(Button algoButton) {
+        PseudoClass pseudoClass = PseudoClass.getPseudoClass("selected");
+        dijkstraButton.pseudoClassStateChanged(pseudoClass, false);
+        biDijkstraButton.pseudoClassStateChanged(pseudoClass, false);
+        aStarButton.pseudoClassStateChanged(pseudoClass, false);
+        biAStarButton.pseudoClassStateChanged(pseudoClass, false);
+        landmarkButton.pseudoClassStateChanged(pseudoClass, false);
+        biLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
+
+        algoButton.pseudoClassStateChanged(pseudoClass, true);
     }
 
     private void drawLandMark(Node n) {
