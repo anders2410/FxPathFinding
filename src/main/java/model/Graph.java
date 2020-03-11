@@ -3,9 +3,10 @@ package model;
 import paths.AlgorithmMode;
 import paths.Dijkstra;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Graph {
+public class Graph implements Serializable {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
 

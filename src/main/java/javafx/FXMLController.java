@@ -29,8 +29,7 @@ import pbfparsing.PBFParser;
 import xml.XMLFilter;
 import xml.XMLGraphExtractor;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -47,34 +46,20 @@ import static paths.Dijkstra.*;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML
-    private Canvas canvas;
-    @FXML
-    private Label algorithm_label;
-    @FXML
-    private Label distance_label;
-    @FXML
-    private Label nodes_visited_label;
-    @FXML
-    private Label nodes_label;
-    @FXML
-    private Label edges_label;
-    @FXML
-    private Label source_label;
-    @FXML
-    private Label target_label;
-    @FXML
-    private Label seed_label;
-    @FXML
-    private Button dijkstraButton;
-    @FXML
-    private Button biDijkstraButton;
-    @FXML
-    private Button aStarButton;
-    @FXML
-    private Button biAStarButton;
-    @FXML
-    private Button landmarkButton;
+    @FXML private Canvas canvas;
+    @FXML private Label algorithm_label;
+    @FXML private Label distance_label;
+    @FXML private Label nodes_visited_label;
+    @FXML private Label nodes_label;
+    @FXML private Label edges_label;
+    @FXML private Label source_label;
+    @FXML private Label target_label;
+    @FXML private Label seed_label;
+    @FXML private Button dijkstraButton;
+    @FXML private Button biDijkstraButton;
+    @FXML private Button aStarButton;
+    @FXML private Button biAStarButton;
+    @FXML private Button landmarkButton;
 
     private Stage stage;
     private Graph graph;
@@ -103,7 +88,13 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setUpNewGraph("denmark-latest.osm.pbf");
+
+        try {
+            setUpNewGraph("malta-latest.osm.pbf");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         Dijkstra.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }
@@ -112,7 +103,7 @@ public class FXMLController implements Initializable {
         scene.setOnKeyPressed(onKeyPressed());
     }
 
-    private void setUpNewGraph(String fileName) {
+    private void setUpNewGraph(String fileName) throws IOException {
         loadGraph(fileName);
         setGraphBounds();
         zoomFactor = 1;
@@ -142,13 +133,24 @@ public class FXMLController implements Initializable {
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
-    private void loadGraph(String fileName) {
+    private void loadGraph(String fileName) throws IOException {
         String fileType = fileName.substring(fileName.length() - 3);
+
         if (fileType.equals("osm")) {
             loadOSM(fileName.substring(0, fileName.length() - 4));
         }
+
         if (fileType.equals("pbf")) {
-            loadPBF(fileName);
+            String name = fileName.substring(0, fileName.indexOf('.'));
+            File nodeFile = new File(name + "-node-list.tmp");
+            File adjFile = new File(name + "-adj-list.tmp");
+            if (nodeFile.exists() && adjFile.exists()) {
+                loadTMP(name);
+                System.out.println("No pre-processing has been made\n");
+            } else {
+                loadPBF(fileName);
+                System.out.println("No files were found. Pre-processing has completed");
+            }
         }
         if (gc != null) {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
@@ -167,13 +169,41 @@ public class FXMLController implements Initializable {
 
     private void loadPBF(String fileName) {
         try {
-            PBFParser pbfParser = new PBFParser(fileName);
+            PBFParser pbfParser = new PBFParser(fileName, true);
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @SuppressWarnings (value="unchecked")
+    private void loadTMP(String name) throws IOException {
+        FileInputStream nodeInput = new FileInputStream(name + "-node-list.tmp");
+        FileInputStream edgeInput = new FileInputStream(name + "-adj-list.tmp");
+
+        ObjectInputStream nodeStream = new ObjectInputStream(nodeInput);
+        ObjectInputStream edgeStream = new ObjectInputStream(edgeInput);
+
+        List<Node> nodeList = null;
+        List<List<Edge>> adjList = null;
+
+        try {
+            nodeList = (List<Node>) nodeStream.readObject();
+            adjList = (List<List<Edge>>) edgeStream.readObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        nodeStream.close();
+        edgeStream.close();
+
+        assert nodeList != null;
+        graph = new Graph(nodeList.size());
+
+        graph.setNodeList(nodeList);
+        graph.setAdjList(adjList);
     }
 
     public void runAlgorithm() {
@@ -181,23 +211,28 @@ public class FXMLController implements Initializable {
             return;
         }
         graph.resetPathTrace();
+
         Deque<Node> selectedNodesCopy = new ArrayDeque<>(selectedNodes);
         selectedNodesCopy.pollFirst();
         Node lastNode = selectedNodes.pollLast();
         assert selectedNodes.size() == selectedNodesCopy.size();
+
         List<ShortestPathResult> results = new ArrayList<>();
         for (Node fromNode : selectedNodes) {
             Node toNode = selectedNodesCopy.pollFirst();
             assert toNode != null;
             results.add(Dijkstra.sssp(graph, fromNode.index, toNode.index, algorithmMode));
         }
+
         selectedNodes.addLast(lastNode);
         redrawGraph();
+
         Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
             List<Integer> combinedPath = new ArrayList<>(res1.path);
             combinedPath.addAll(res2.path.subList(1, res2.path.size()));
             return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes);
         });
+
         if (optCombinedRes.isPresent()) {
             ShortestPathResult combinedRes = optCombinedRes.get();
             setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodes);
@@ -663,7 +698,11 @@ public class FXMLController implements Initializable {
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")
         );
         File selectedFile = fileChooser.showOpenDialog(stage);
-        setUpNewGraph(selectedFile.getAbsolutePath());
+        try {
+            setUpNewGraph(selectedFile.getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // UTILITIES

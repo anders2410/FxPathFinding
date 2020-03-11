@@ -1,6 +1,8 @@
 package model;
 
-public class Node {
+import java.io.Serializable;
+
+public class Node implements Serializable {
     public int index;
     public double longitude;
     public double latitude;
@@ -11,8 +13,14 @@ public class Node {
         this.longitude = longitude;
     }
 
+
+
     @Override
     public String toString() {
-        return "Node(" + index + ", " + longitude + ", " + latitude + ")";
+        return "Node{" +
+                "index='" + index +
+                ", latitude='" + latitude +
+                ", longitude=" + longitude +
+                "}\n";
     }
 }
