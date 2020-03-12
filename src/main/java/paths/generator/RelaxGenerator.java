@@ -55,14 +55,20 @@ public class RelaxGenerator {
         return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
-            double newEst = getEstimatedDist(dir).get(from) + edge.d;
+            double newEst = getEstimatedDist(dir).getOrDefault(from, Double.MAX_VALUE) + edge.d;
             double pForwardFrom = (getHeuristicFunction().apply(from, getTarget()) - getHeuristicFunction().apply(from, getSource())) / 2;
             double pForwardTo = (getHeuristicFunction().apply(edge.to, getTarget()) - getHeuristicFunction().apply(edge.to, getSource())) / 2;
-            double pFunc = pForwardTo - pForwardFrom;
+            double pBackwardFrom = (getHeuristicFunction().apply(from, getSource()) - getHeuristicFunction().apply(from, getTarget())) / 2;
+            double pBackwardTo = (getHeuristicFunction().apply(edge.to, getSource()) - getHeuristicFunction().apply(edge.to, getTarget())) / 2;
+            assert edge.d - pForwardFrom + pForwardTo == edge.d - -pForwardTo + -pForwardFrom;
+            double pFunc = -pForwardFrom + pForwardTo;
             if (dir == B) {
-                pFunc = -pFunc;
+                pFunc = -pBackwardFrom + pBackwardTo;
             }
+            assert pForwardFrom + pBackwardFrom == pForwardTo + pBackwardTo;
+
             // double potentialFuncStart = -distanceStrategy.apply(nodeList.get(from), nodeList.get(source)) + distanceStrategy.apply(nodeList.get(edge.to), nodeList.get(source));
+            assert pFunc + edge.d >= 0;
             double estimatedWeight = newEst + pFunc;
             updateNode(dir, from, edge, newDist, estimatedWeight);
         };

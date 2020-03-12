@@ -21,11 +21,10 @@ public class PriorityGenerator {
         return (i, dir) -> {
             List<Double> nodeDist = getNodeDist(dir);
             HeuristicFunction heuristicFunction = getHeuristicFunction();
-            double pFunctionForward = (heuristicFunction.apply(i, getTarget()) - heuristicFunction.apply(i, getSource())) / 2;
             if (dir == A) {
-                return nodeDist.get(i) + pFunctionForward;
+                return nodeDist.get(i) + ((heuristicFunction.apply(i, getTarget()) - heuristicFunction.apply(i, getSource())) / 2);
             } else {
-                return nodeDist.get(i) - pFunctionForward;
+                return nodeDist.get(i) + ((heuristicFunction.apply(i, getSource()) - heuristicFunction.apply(i, getTarget())) / 2);
             }
         };
     }

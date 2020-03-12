@@ -16,7 +16,7 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return HeuristicGenerator.getLandmarks();
+        return HeuristicGenerator.landmarksTriangulate();
     }
 
     @Override

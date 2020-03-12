@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class SSSPPBFTest {
     Graph graph;
@@ -34,7 +35,15 @@ public class SSSPPBFTest {
             e.printStackTrace();
         }
         graph = pbfParser.getGraph();
+        graph.extractLandmarksFarthest(16);
         SSSP.setGraph(graph);
+    }
+
+    @Test
+    public void testLandMarksConsistency() {
+        ShortestPathResult res = SSSP.findShortestPath(0, 30, AlgorithmMode.BI_A_STAR_LANDMARKS);
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+        }
     }
 
     @Test
@@ -47,8 +56,9 @@ public class SSSPPBFTest {
     @Test
     public void testDifferenceInPath() {
         SSSP.seed = 1;
-        ShortestPathResult resD = SSSP.findShortestPath(6318, 7717, AlgorithmMode.BI_DIJKSTRA);
-        ShortestPathResult resA = SSSP.randomPath(AlgorithmMode.BI_A_STAR_SYMMETRIC);
+        ShortestPathResult resD = SSSP.findShortestPath(9109, 1756, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult resA = SSSP.findShortestPath(9109, 1756, AlgorithmMode.BI_DIJKSTRA);
+
         List<Double> cum_distancesD = new ArrayList<>();
         List<Double> cum_distancesA = new ArrayList<>();
 
@@ -85,7 +95,7 @@ public class SSSPPBFTest {
 
     @Test
     public void testAlgorithms() {
-        int[][] matrix = new int[4][4];
+        int[][] matrix = new int[4][5];
         graph.extractLandmarksFarthest(16);
         for (int i = 0; i < 400; i++) {
             SSSP.seed = i;

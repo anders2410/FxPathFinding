@@ -15,7 +15,7 @@ public class HeuristicGenerator {
         };
     }
 
-    public static HeuristicFunction getLandmarks() {
+    public static HeuristicFunction landmarksTriangulate() {
         return (from, to) -> {
             double maxValue = 0;
             //32 because |landmarks| = 16. *2 for 2 ways.
@@ -23,8 +23,9 @@ public class HeuristicGenerator {
             for (int i = 0; i < 32; i++) {
                 double valueForward = landmarkArray[i][to] - landmarkArray[i][from];
                 double valueBackward = landmarkArray[i + 1][from] - landmarkArray[i + 1][to];
-                if (Math.max(valueBackward, valueForward) > maxValue) {
-                    maxValue = Math.max(valueBackward, valueForward);
+                double maxDirectionValue = Math.max(valueBackward, valueForward);
+                if (maxDirectionValue > maxValue) {
+                    maxValue = maxDirectionValue;
                 }
                 i++;
             }

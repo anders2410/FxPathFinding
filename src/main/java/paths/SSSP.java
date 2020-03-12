@@ -103,7 +103,6 @@ public class SSSP {
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
         initDataStructures();
-
         return biDirectional ? biDirectional() : oneDirectional();
     }
 
@@ -129,15 +128,14 @@ public class SSSP {
         }
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            if (getVisited(revDir).contains(edge.to)) {
-                return;
+            if (!getVisited(revDir).contains(edge.to)) {
+                getRelaxStrategy(dir).relax(currentNode, edge, dir);
+                if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
+                    middlePoint = edge.to;
+                    goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
+                }
+                traceRelax(currentNode, edge);
             }
-            getRelaxStrategy(dir).relax(currentNode, edge, dir);
-            if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
-                middlePoint = edge.to;
-                goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
-            }
-            traceRelax(currentNode, edge);
         }
     }
 
@@ -158,7 +156,9 @@ public class SSSP {
         middlePoint = -1;
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!queueA.isEmpty() && !queueB.isEmpty()) {
-            if (terminationStrategy.checkTermination(goalDistance)) break;
+            if (terminationStrategy.checkTermination(goalDistance)) {
+                break;
+            }
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
                 takeStep(adjList, A, true);
             } else {
