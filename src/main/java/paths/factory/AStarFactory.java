@@ -24,7 +24,7 @@ public class AStarFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getAStar();
+        return RelaxGenerator.getDijkstra();
     }
 
     @Override

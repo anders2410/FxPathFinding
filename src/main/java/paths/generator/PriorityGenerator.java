@@ -24,7 +24,7 @@ public class PriorityGenerator {
             if (dir == A) {
                 return nodeDist.get(i) + ((heuristicFunction.apply(i, getTarget()) - heuristicFunction.apply(i, getSource())) / 2);
             } else {
-                return nodeDist.get(i) + ((heuristicFunction.apply(i, getSource()) - heuristicFunction.apply(i, getTarget())) / 2);
+                return nodeDist.get(i) - ((heuristicFunction.apply(i, getTarget()) - heuristicFunction.apply(i, getSource())) / 2);
             }
         };
     }

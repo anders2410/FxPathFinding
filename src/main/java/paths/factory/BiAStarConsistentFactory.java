@@ -24,7 +24,7 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getConsistent();
+        return RelaxGenerator.getDijkstra();
     }
 
     @Override

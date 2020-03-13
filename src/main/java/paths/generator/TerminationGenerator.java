@@ -14,6 +14,18 @@ import static paths.generator.PriorityGenerator.getBiAStar;
 
 public class TerminationGenerator {
 
+
+    public static TerminationStrategy getStrongStoppingStrategy() {
+        return (goalDist) -> {
+            Integer topA = getQueue(A).peek();
+            Integer topB = getQueue(B).peek();
+            if (topA != null && topB != null) {
+                return getPriorityFunction().apply(topA, A) + getPriorityFunction().apply(topB, B) > goalDist + ((getHeuristicFunction().apply(getTarget(), getSource()) - getHeuristicFunction().apply(getTarget(), getTarget())) / 2);
+            }
+            return false;
+        };
+    }
+
     public static TerminationStrategy getConsistentStrategy() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();

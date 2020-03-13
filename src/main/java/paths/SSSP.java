@@ -294,6 +294,10 @@ public class SSSP {
         return heuristicFunction;
     }
 
+    public static PriorityStrategy getPriorityFunction() {
+        return priorityStrategyA;
+    }
+
     public static int getSource() {
         return source;
     }

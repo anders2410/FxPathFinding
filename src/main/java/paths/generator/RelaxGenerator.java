@@ -24,6 +24,23 @@ public class RelaxGenerator {
         };
     }
 
+    public static RelaxStrategy getAStarNew() {
+        return (from, edge, dir) -> {
+            edge.visited = true;
+            double newDist = getNodeDist(dir).get(from) + edge.d;
+            double heuristicFrom = getHeuristicFunction().apply(from, getTarget());
+            double heuristicNeighbour = getHeuristicFunction().apply(edge.to, getTarget());
+            double weirdWeight = getNodeDist(dir).get(from) + edge.d - heuristicFrom + heuristicNeighbour;
+            if (weirdWeight < getNodeDist(dir).get(edge.to)) {
+                getQueue(dir).remove(edge.to);
+                getEstimatedDist(dir).put(edge.to, weirdWeight);
+                getNodeDist(dir).set(edge.to, newDist);
+                getPathMap(dir).put(edge.to, from);
+                getQueue(dir).add(edge.to);
+            }
+        };
+    }
+
     public static RelaxStrategy getAStar() {
         return (from, edge, dir) -> {
             edge.visited = true;
