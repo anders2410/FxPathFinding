@@ -11,7 +11,7 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getBiAStar();
+        return PriorityGenerator.getNonConHeuristic();
     }
 
     @Override
@@ -26,7 +26,7 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return TerminationGenerator.getSearchMeetTermination();
     }
 
     @Override

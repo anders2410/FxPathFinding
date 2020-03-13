@@ -68,7 +68,7 @@ public class SSSP {
     }
 
     private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
-        return Comparator.comparingDouble((i) -> priorityStrategy.apply(i, dir));
+        return Comparator.comparingDouble(i -> priorityStrategy.apply(i, dir));
     }
 
     private static Map<AlgorithmMode, AlgorithmFactory> factoryMap = new HashMap<>();
@@ -112,7 +112,7 @@ public class SSSP {
         queueA.add(source);
 
         while (!queueA.isEmpty()) {
-            if (queueA.peek() == target) break;
+            if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
             takeStep(adjList, A, false);
         }
 
@@ -123,18 +123,18 @@ public class SSSP {
     private static void takeStep(List<List<Edge>> adjList, ABDir dir, boolean biDirectional) {
         ABDir revDir = dir == A ? B : A;
         Integer currentNode = getQueue(dir).poll();
-        if (currentNode == null || getVisited(dir).contains(currentNode)) {
+        if (currentNode == null) {
             return;
         }
+
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             if (!getVisited(revDir).contains(edge.to)) {
                 getRelaxStrategy(dir).relax(currentNode, edge, dir);
                 if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
-                    middlePoint = edge.to;
                     goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
+                    middlePoint = edge.to;
                 }
-                traceRelax(currentNode, edge);
             }
         }
     }
@@ -234,13 +234,13 @@ public class SSSP {
         return res;
     }
 
-    private static void trace(AbstractQueue<Integer> nodeQueue) {
+    public static void trace(AbstractQueue<Integer> nodeQueue, ABDir dir) {
         PriorityQueue<Integer> copy = new PriorityQueue<>(nodeQueue);
-        if (trace) {
+        if (trace && mode == BI_A_STAR_LANDMARKS) {
             System.out.print("NodeQueue: ");
-            for (int i = 0; i < copy.size() - 1; i++) {
+            while (copy.size() != 0) {
                 Integer object = copy.poll();
-                System.out.print(object + " ");
+                System.out.print("(" + object + ": " + getPriorityFunction().apply(object, dir) + ")");
             }
             System.out.println();
         }

@@ -20,6 +20,7 @@ public class RelaxGenerator {
                 getNodeDist(dir).set(edge.to, newDist);
                 getPathMap(dir).put(edge.to, from);
                 getQueue(dir).add(edge.to);
+                trace(getQueue(dir), dir);
             }
         };
     }

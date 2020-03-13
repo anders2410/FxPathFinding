@@ -29,7 +29,7 @@ public class AStarFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return TerminationGenerator.getSearchMeetTermination();
     }
 
     @Override

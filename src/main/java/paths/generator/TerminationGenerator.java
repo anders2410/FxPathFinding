@@ -10,23 +10,47 @@ import java.util.Set;
 
 import static paths.ABDir.*;
 import static paths.SSSP.*;
-import static paths.generator.PriorityGenerator.getBiAStar;
 
 public class TerminationGenerator {
 
 
-    public static TerminationStrategy getStrongStoppingStrategy() {
+    public static TerminationStrategy getEmptyStoppingStrategy() {
+        return (goalDist) -> false;
+    }
+
+    public static TerminationStrategy strongConHeuristicTermination() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
             if (topA != null && topB != null) {
-                return getPriorityFunction().apply(topA, A) + getPriorityFunction().apply(topB, B) > goalDist + ((getHeuristicFunction().apply(getTarget(), getSource()) - getHeuristicFunction().apply(getTarget(), getTarget())) / 2);
+                double forwardKeyVal = getPriorityFunction().apply(topA, A);
+                double backwardKeyVal = getPriorityFunction().apply(topB, B);
+                double pForwardSource = getHeuristicFunction().apply(getSource(), getTarget());
+                if (forwardKeyVal + backwardKeyVal >= goalDist) {
+                    return forwardKeyVal + backwardKeyVal >= goalDist;
+                }
             }
             return false;
         };
     }
 
-    public static TerminationStrategy getConsistentStrategy() {
+    public static TerminationStrategy strongNonConHeuristicTermination() {
+        return (goalDist) -> {
+            Integer topA = getQueue(A).peek();
+            Integer topB = getQueue(B).peek();
+            if (topA != null && topB != null) {
+                double forwardKeyVal = getPriorityFunction().apply(topA, A);
+                double backwardKeyVal = getPriorityFunction().apply(topB, B);
+                double pForwardSource = ((getHeuristicFunction().apply(getSource(), getTarget()) - getHeuristicFunction().apply(getSource(), getSource())) / 2) + getHeuristicFunction().apply(getSource(), getTarget()) / 2;
+                if (forwardKeyVal + backwardKeyVal >= goalDist + pForwardSource) {
+                    return forwardKeyVal + backwardKeyVal >= goalDist + pForwardSource;
+                }
+            }
+            return false;
+        };
+    }
+
+    public static TerminationStrategy getSearchMeetTermination() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
@@ -37,39 +61,26 @@ public class TerminationGenerator {
         };
     }
 
-    public static TerminationStrategy getAdvancedSymmetricStrategy() {
+    public static TerminationStrategy getKeyOverGoalStrategy() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
             if (topA != null && topB != null) {
-                double keyValueForward = getNodeDist(A).get(topA);
-                double keyValueBackwards = getNodeDist(B).get(topB);
+                double keyValueForward = getPriorityFunction().apply(topA, A);
+                double keyValueBackwards = getPriorityFunction().apply(topB, B);
                 return keyValueBackwards + keyValueForward >= goalDist;
             }
             return false;
         };
     }
 
-    public static TerminationStrategy getSymmetricAStrategy(HeuristicFunction heuristicFunction) {
+    public static TerminationStrategy getSymmetricStrategy() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
             if (topA != null && topB != null) {
-                double keyValueForward = getBiAStar().apply(topA, A);
-                double keyValueBackwards = getBiAStar().apply(topB, B);
-                return keyValueBackwards + keyValueForward >= goalDist + heuristicFunction.apply(getTarget(), getSource()) - heuristicFunction.apply(getTarget(), getTarget()) / 2;
-            }
-            return false;
-        };
-    }
-
-    public static TerminationStrategy getSymmetricStrategy(HeuristicFunction heuristicFunction) {
-        return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
-            if (topA != null && topB != null) {
-                double keyValueForward = getNodeDist(A).get(topA) + heuristicFunction.apply(topA, SSSP.getTarget());
-                double keyValueBackwards = getNodeDist(B).get(topB) + heuristicFunction.apply(topB, SSSP.getSource());
+                double keyValueForward = getPriorityFunction().apply(topA, A);
+                double keyValueBackwards = getPriorityFunction().apply(topB, B);
                 return keyValueBackwards >= goalDist || keyValueForward >= goalDist;
             }
             return false;

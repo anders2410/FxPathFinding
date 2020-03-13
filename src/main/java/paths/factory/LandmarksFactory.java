@@ -26,7 +26,7 @@ public class LandmarksFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return (i) -> false;
     }
 
     @Override

@@ -31,5 +31,7 @@ public class HeuristicGenerator {
             }
             return maxValue;
         };
-    };
+    }
+
+    ;
 }

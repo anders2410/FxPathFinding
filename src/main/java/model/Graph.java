@@ -52,6 +52,7 @@ public class Graph implements Serializable {
         int[][] resArr = new int[goalAmount][nodeSize];
         if (landmarks.isEmpty()) {
             Random random = new Random();
+            random.setSeed(666974757);
             int startNode = random.nextInt(nodeList.size());
             int[] arr = BFSMaxDistance(startNode);
             int max = 0;

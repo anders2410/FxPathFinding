@@ -19,9 +19,11 @@ public class Util {
     static {
         algorithmNames.put(DIJKSTRA, "Dijkstra");
         algorithmNames.put(BI_DIJKSTRA, "Bidirectional Dijkstra");
-        algorithmNames.put(A_STAR, "A*");
-        algorithmNames.put(BI_A_STAR_SYMMETRIC, "Bidirectional A*");
-        algorithmNames.put(BI_A_STAR_CONSISTENT, "Bidirectional A*");
+        algorithmNames.put(A_STAR, "A* Spherical Distance");
+        algorithmNames.put(A_STAR_LANDMARKS, "A* Landmarks");
+        algorithmNames.put(BI_A_STAR_LANDMARKS, "Bidirectional A* Landmarks Consistent");
+        algorithmNames.put(BI_A_STAR_SYMMETRIC, "Bidirectional A* Symmetric");
+        algorithmNames.put(BI_A_STAR_CONSISTENT, "Bidirectional A* Consistent");
 
     }
 
