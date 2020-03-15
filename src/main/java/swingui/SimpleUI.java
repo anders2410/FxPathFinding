@@ -17,6 +17,7 @@ public class SimpleUI extends JFrame {
 
     public SimpleUI(Graph graph) {
         this.graph = graph;
+        SSSP.setGraph(graph);
     }
 
     private JTextField xoffsetInfo, yoffsetInfo;
@@ -81,14 +82,14 @@ public class SimpleUI extends JFrame {
 
         JButton dPath = new JButton("d path");
         dPath.addActionListener(e -> {
-            SSSP.randomPath(graph, AlgorithmMode.DIJKSTRA);
+            SSSP.randomPath(AlgorithmMode.DIJKSTRA);
             repaint();
         });
         panel.add(dPath);
 
         JButton aPath = new JButton("a path");
         aPath.addActionListener(e -> {
-            SSSP.randomPath(graph, AlgorithmMode.A_STAR);
+            SSSP.randomPath(AlgorithmMode.A_STAR);
             repaint();
         });
         panel.add(aPath);

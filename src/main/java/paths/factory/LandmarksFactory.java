@@ -1,8 +1,7 @@
 package paths.factory;
 
-import paths.*;
-
-import java.util.function.Function;
+import paths.generator.*;
+import paths.strategy.*;
 
 public class LandmarksFactory implements AlgorithmFactory {
     @Override
@@ -17,16 +16,21 @@ public class LandmarksFactory implements AlgorithmFactory {
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return HeuristicGenerator.getLandmarks();
+        return HeuristicGenerator.landmarksTriangulate();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getAStar();
+        return RelaxGenerator.getDijkstra();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return (i) -> false;
+    }
+
+    @Override
+    public PreprocessStrategy getPreprocessStrategy() {
+        return new LandmarksPreStrategy();
     }
 }

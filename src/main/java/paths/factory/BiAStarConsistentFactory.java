@@ -1,8 +1,10 @@
 package paths.factory;
 
-import paths.*;
-
-import java.util.function.Function;
+import paths.generator.HeuristicGenerator;
+import paths.generator.PriorityGenerator;
+import paths.generator.RelaxGenerator;
+import paths.generator.TerminationGenerator;
+import paths.strategy.*;
 
 public class BiAStarConsistentFactory implements AlgorithmFactory {
     @Override
@@ -12,7 +14,7 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getBiAStar();
+        return PriorityGenerator.getNonConHeuristic();
     }
 
     @Override
@@ -22,11 +24,17 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getConsistent();
+        return RelaxGenerator.getDijkstra();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return TerminationGenerator.strongNonConHeuristicTermination();
+    }
+
+    @Override
+    public PreprocessStrategy getPreprocessStrategy() {
+        return () -> {
+        };
     }
 }

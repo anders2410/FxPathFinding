@@ -48,21 +48,38 @@ import static paths.SSSP.*;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML private Canvas canvas;
-    @FXML private Label algorithm_label;
-    @FXML private Label distance_label;
-    @FXML private Label nodes_visited_label;
-    @FXML private Label nodes_label;
-    @FXML private Label edges_label;
-    @FXML private Label source_label;
-    @FXML private Label target_label;
-    @FXML private Label seed_label;
-    @FXML private Button dijkstraButton;
-    @FXML private Button biDijkstraButton;
-    @FXML private Button aStarButton;
-    @FXML private Button biAStarButton;
-    @FXML private Button landmarkButton;
-    @FXML private Button biLandmarkButton;
+    @FXML
+    private Canvas canvas;
+    @FXML
+    private Label algorithm_label;
+    @FXML
+    private Label distance_label;
+    @FXML
+    private Label nodes_visited_label;
+    @FXML
+    private Label nodes_label;
+    @FXML
+    private Label edges_label;
+    @FXML
+    private Label source_label;
+    @FXML
+    private Label target_label;
+    @FXML
+    private Label seed_label;
+    @FXML
+    private Button dijkstraButton;
+    @FXML
+    private Button biDijkstraButton;
+    @FXML
+    private Button aStarButton;
+    @FXML
+    private Button biAStarConButton;
+    @FXML
+    private Button biAStarSymButton;
+    @FXML
+    private Button landmarkButton;
+    @FXML
+    private Button biLandmarkButton;
 
     private Stage stage;
     private Graph graph;
@@ -93,7 +110,7 @@ public class FXMLController implements Initializable {
         gc.setLineWidth(1.0);
 
         try {
-            setUpNewGraph("malta-latest.osm.pbf");
+            setUpNewGraph("peru-latest.osm.pbf");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,6 +129,7 @@ public class FXMLController implements Initializable {
         zoomFactor = 1;
         setRatios();
         redrawGraph();
+        SSSP.setGraph(graph);
     }
 
     private void setGraphBounds() {
@@ -179,7 +197,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    @SuppressWarnings (value="unchecked")
+    @SuppressWarnings(value = "unchecked")
     private void loadTMP(String name) throws IOException {
         FileInputStream nodeInput = new FileInputStream(name + "-node-list.tmp");
         FileInputStream edgeInput = new FileInputStream(name + "-adj-list.tmp");
@@ -220,7 +238,7 @@ public class FXMLController implements Initializable {
         for (Node fromNode : selectedNodes) {
             Node toNode = selectedNodesCopy.pollFirst();
             assert toNode != null;
-            results.add(SSSP.sssp(graph, fromNode.index, toNode.index, algorithmMode));
+            results.add(SSSP.findShortestPath(fromNode.index, toNode.index, algorithmMode));
         }
         selectedNodes.addLast(lastNode);
         redrawGraph();
@@ -330,8 +348,7 @@ public class FXMLController implements Initializable {
 
     private Color shiftColorByRound(Color color, int roundVisit, int totalrounds) {
         double scaleFactor = Math.max(((double) roundVisit / (double) totalrounds), 0.3);
-        Color newcolor = Color.hsb(color.getHue(), color.getSaturation(), color.getBrightness() * scaleFactor, color.getOpacity());
-        return newcolor;
+        return Color.hsb(color.getHue(), color.getSaturation(), color.getBrightness() * scaleFactor, color.getOpacity());
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
@@ -632,11 +649,18 @@ public class FXMLController implements Initializable {
         selectButton(aStarButton);
     }
 
-    public void handleBiAStarEvent() {
+    public void handleBiAStarConEvent() {
         algorithmMode = BI_A_STAR_CONSISTENT;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(biAStarButton);
+        selectButton(biAStarConButton);
+    }
+
+    public void handleBiAStarSymEvent() {
+        algorithmMode = BI_A_STAR_SYMMETRIC;
+        runAlgorithm();
+        setAlgorithmLabels();
+        selectButton(biAStarSymButton);
     }
 
     public void handleLandmarksEvent() {
@@ -672,7 +696,8 @@ public class FXMLController implements Initializable {
         dijkstraButton.pseudoClassStateChanged(pseudoClass, false);
         biDijkstraButton.pseudoClassStateChanged(pseudoClass, false);
         aStarButton.pseudoClassStateChanged(pseudoClass, false);
-        biAStarButton.pseudoClassStateChanged(pseudoClass, false);
+        biAStarConButton.pseudoClassStateChanged(pseudoClass, false);
+        biAStarSymButton.pseudoClassStateChanged(pseudoClass, false);
         landmarkButton.pseudoClassStateChanged(pseudoClass, false);
         biLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
 

@@ -1,8 +1,10 @@
 package paths.factory;
 
-import paths.*;
-
-import java.util.function.Function;
+import paths.generator.HeuristicGenerator;
+import paths.generator.PriorityGenerator;
+import paths.generator.RelaxGenerator;
+import paths.generator.TerminationGenerator;
+import paths.strategy.*;
 
 public class AStarFactory implements AlgorithmFactory {
     @Override
@@ -22,11 +24,16 @@ public class AStarFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getAStar();
+        return RelaxGenerator.getDijkstra();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return TerminationGenerator.getSearchMeetTermination();
+    }
+
+    @Override
+    public PreprocessStrategy getPreprocessStrategy() {
+        return () -> {};
     }
 }

@@ -1,4 +1,4 @@
-package paths;
+package paths.strategy;
 
 import model.Edge;
 import model.Node;

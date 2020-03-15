@@ -1,6 +1,7 @@
-package paths;
+package paths.factory;
 
-import paths.factory.AlgorithmFactory;
+import paths.generator.*;
+import paths.strategy.*;
 
 public class BiLandmarksFactory implements AlgorithmFactory {
     @Override
@@ -10,21 +11,26 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getBiAStar();
+        return PriorityGenerator.getNonConHeuristic();
     }
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return HeuristicGenerator.getLandmarks();
+        return HeuristicGenerator.landmarksTriangulate();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getConsistent();
+        return RelaxGenerator.getDijkstra();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return TerminationGenerator.getSearchMeetTermination();
+    }
+
+    @Override
+    public PreprocessStrategy getPreprocessStrategy() {
+        return new LandmarksPreStrategy();
     }
 }

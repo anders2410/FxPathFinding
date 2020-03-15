@@ -22,11 +22,8 @@ public class Util {
         algorithmNames.put(A_STAR, "A*");
         algorithmNames.put(BI_A_STAR_SYMMETRIC, "Bidirectional A*");
         algorithmNames.put(BI_A_STAR_CONSISTENT, "Bidirectional A*");
-
-    }
-
-    public static double degreesToRadians(double degrees) {
-        return degrees * Math.PI / 180;
+        algorithmNames.put(A_STAR_LANDMARKS, "Landmarks A*");
+        algorithmNames.put(BI_A_STAR_LANDMARKS, "Bi Landmarks A*");
     }
 
     public static double flatEarthDistance(Node node1, Node node2) {

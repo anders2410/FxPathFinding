@@ -1,8 +1,6 @@
 package paths.factory;
 
-import paths.*;
-
-import java.util.function.Function;
+import paths.strategy.*;
 
 public interface AlgorithmFactory {
     boolean isBiDirectional();
@@ -14,4 +12,6 @@ public interface AlgorithmFactory {
     RelaxStrategy getRelaxStrategy();
 
     TerminationStrategy getTerminationStrategy();
+
+    PreprocessStrategy getPreprocessStrategy();
 }

@@ -1,8 +1,10 @@
 package paths.factory;
 
-import paths.*;
-
-import java.util.function.Function;
+import paths.generator.HeuristicGenerator;
+import paths.generator.PriorityGenerator;
+import paths.generator.RelaxGenerator;
+import paths.generator.TerminationGenerator;
+import paths.strategy.*;
 
 public class BiDijkstraFactory implements AlgorithmFactory {
     @Override
@@ -27,6 +29,12 @@ public class BiDijkstraFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return TerminationGenerator.getSearchMeetTermination();
+    }
+
+    @Override
+    public PreprocessStrategy getPreprocessStrategy() {
+        return () -> {
+        };
     }
 }
