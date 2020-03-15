@@ -14,7 +14,7 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getBiAStar();
+        return PriorityGenerator.getNonConHeuristic();
     }
 
     @Override
@@ -29,11 +29,12 @@ public class BiAStarConsistentFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getConsistentStrategy();
+        return TerminationGenerator.strongNonConHeuristicTermination();
     }
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return () -> {};
+        return () -> {
+        };
     }
 }

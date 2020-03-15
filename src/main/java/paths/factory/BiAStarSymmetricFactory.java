@@ -14,7 +14,7 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getBiAStarSymmetric();
+        return PriorityGenerator.getConHeuristic();
     }
 
     @Override
@@ -24,16 +24,17 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getSymmetric();
+        return RelaxGenerator.getDijkstra();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSymmetricStrategy(getHeuristicFunction());
+        return TerminationGenerator.getSymmetricStrategy();
     }
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return () -> {};
+        return () -> {
+        };
     }
 }

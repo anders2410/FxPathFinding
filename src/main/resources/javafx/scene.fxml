@@ -27,8 +27,12 @@
             <Button fx:id="aStarButton" styleClass="nav_button" alignment="CENTER" onAction="#handleAStarEvent" text="A*"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="biAStarButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiAStarEvent"
-                    text="BiA*"/>
+            <Button fx:id="biAStarConButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiAStarConEvent"
+                    text="BiA*Con"/>
+            <Separator styleClass="nav_separator"/>
+
+            <Button fx:id="biAStarSymButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiAStarSymEvent"
+                    text="BiA*Sym"/>
             <Separator styleClass="nav_separator"/>
 
             <Button fx:id="landmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleLandmarksEvent" text="ALT"/>

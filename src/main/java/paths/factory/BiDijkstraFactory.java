@@ -29,11 +29,12 @@ public class BiDijkstraFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getAdvancedSymmetricStrategy();
+        return TerminationGenerator.getSearchMeetTermination();
     }
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return () -> {};
+        return () -> {
+        };
     }
 }
