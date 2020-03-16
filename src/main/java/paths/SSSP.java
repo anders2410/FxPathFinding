@@ -83,7 +83,7 @@ public class SSSP {
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
     }
 
-    private static void applyFactory(AlgorithmFactory factory) {
+    public static void applyFactory(AlgorithmFactory factory) {
         factory.getPreprocessStrategy().process();
         biDirectional = factory.isBiDirectional();
         heuristicFunction = factory.getHeuristicFunction();
@@ -155,10 +155,7 @@ public class SSSP {
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
-        while (!queueA.isEmpty() && !queueB.isEmpty()) {
-            if (terminationStrategy.checkTermination(goalDistance)) {
-                break;
-            }
+        while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() && !queueB.isEmpty())) {
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
                 takeStep(adjList, A, true);
             } else {
@@ -185,7 +182,7 @@ public class SSSP {
             takeStep(adjList, A, false);
         }
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA);
+        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA);
     }
 
     private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
