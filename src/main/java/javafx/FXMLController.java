@@ -110,7 +110,7 @@ public class FXMLController implements Initializable {
         gc.setLineWidth(1.0);
 
         try {
-            setUpNewGraph("peru-latest.osm.pbf");
+            setUpNewGraph("malta-latest.osm.pbf");
         } catch (IOException e) {
             e.printStackTrace();
         }
