@@ -148,9 +148,8 @@ public class Graph implements Serializable {
         // Simple but not necessarily best. MaxCover yields better results.
         // TODO: MaxCover for landmark selection
         if (landmarks.isEmpty()) {
-            Random random = new Random();
-            random.setSeed(666974757);
-            int startNode = random.nextInt(nodeList.size());
+
+            int startNode = getFurthestCandidateLandmark();
             int[] arr = BFSMaxDistance(startNode);
             int max = 0;
             for (int i = 0; i < arr.length; i++) {
