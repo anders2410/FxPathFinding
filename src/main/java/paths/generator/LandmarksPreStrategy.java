@@ -19,7 +19,7 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
         double[][] landmarkArray = getLandmarkArray();
         int target = getTarget(), source = getSource();
         Graph graph = getGraph();
-        if ((landmarkArray == null || landmarkArray.length < graph.getLandmarks().size()) && !graph.getLandmarks().isEmpty()) {
+        if ((landmarkArray == null || !graph.getLandmarks().isEmpty() && landmarkArray.length / 2 < graph.getLandmarks().size())) {
             landmarkArray = new double[graph.getLandmarks().size() * 2][graph.getNodeAmount()];
             int index = 0;
             List<List<Edge>> originalList = graph.getAdjList();

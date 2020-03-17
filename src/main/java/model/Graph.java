@@ -71,8 +71,7 @@ public class Graph implements Serializable {
 
     private void avoidGetLeaf() {
         // TODO: 16-03-2020 Avoid trapping in one-way streets, possibly by maxCover or just hack our way out of it
-        Random random = new Random();
-        int rootNode = random.nextInt(nodeList.size());
+        int rootNode = getFurthestCandidateLandmark();
         ShortestPathResult SPT = SSSP.singleToAllPath(rootNode);
         double[] weightedNodes = new double[nodeSize];
         SSSP.applyFactory(new LandmarksFactory());
@@ -148,8 +147,9 @@ public class Graph implements Serializable {
         // Simple but not necessarily best. MaxCover yields better results.
         // TODO: MaxCover for landmark selection
         if (landmarks.isEmpty()) {
-
-            int startNode = getFurthestCandidateLandmark();
+            Random random = new Random();
+            random.setSeed(666974757);
+            int startNode = random.nextInt(nodeList.size());
             int[] arr = BFSMaxDistance(startNode);
             int max = 0;
             for (int i = 0; i < arr.length; i++) {
