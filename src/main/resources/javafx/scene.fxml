@@ -16,41 +16,38 @@
         <VBox layoutY="15.0" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0"
               AnchorPane.topAnchor="0">
 
-            <Button fx:id="dijkstraButton" styleClass="nav_button" alignment="CENTER" onAction="#handleDijkstraEvent"
-                    text="DIJK"/>
+            <MenuButton alignment="CENTER" text="DIJK">
+                <items>
+                    <MenuItem onAction="#handleDijkstraEvent" text="Dijkstra"/>
+                    <MenuItem onAction="#handleBiDijkstraEvent" text="Bi-Dijkstra"/>
+                </items>
+            </MenuButton>
+
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="biDijkstraButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiDijkstraEvent"
-                    text="BiD"/>
+            <MenuButton alignment="CENTER" text="A*">
+                <items>
+                    <MenuItem onAction="#handleAStarEvent" text="A*"/>
+                    <MenuItem onAction="#handleBiAStarConEvent" text="BiA*Con"/>
+                    <MenuItem onAction="#handleBiAStarSymEvent" text="BiA*Sym"/>
+                    <MenuItem onAction="#handleLandmarksEvent" text="ALT"/>
+                    <MenuItem onAction="#handleBiLandmarksEvent" text="BiALT"/>
+                </items>
+            </MenuButton>
+
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="aStarButton" styleClass="nav_button" alignment="CENTER" onAction="#handleAStarEvent" text="A*"/>
+            <Button alignment="CENTER" onAction="#handleSetParameterEvent" styleClass="nav_button" text="SET"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="biAStarConButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiAStarConEvent"
-                    text="BiA*Con"/>
+            <Button alignment="CENTER" onAction="#handleSeedEvent" styleClass="nav_button" text="SEED"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="biAStarSymButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiAStarSymEvent"
-                    text="BiA*Sym"/>
+            <Button alignment="CENTER" onAction="#handleChooseFileEvent" styleClass="nav_button" text="FILE"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="landmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleLandmarksEvent" text="ALT"/>
-            <Separator styleClass="nav_separator"/>
-
-            <Button fx:id="biLandmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleBiLandmarksEvent" text="BiALT"/>
-            <Separator styleClass="nav_separator"/>
-
-            <Button styleClass="nav_button" alignment="CENTER" onAction="#handleSetParameterEvent" text="SET" />
-            <Separator styleClass="nav_separator"/>
-
-            <Button styleClass="nav_button" alignment="CENTER" onAction="#handleSeedEvent" text="SEED"/>
-            <Separator styleClass="nav_separator"/>
-
-            <Button styleClass="nav_button" alignment="CENTER" onAction="#handleChooseFileEvent" text="FILE" />
-            <Separator styleClass="nav_separator"/>
-
-            <Button fx:id="addLandmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleAddLandmarkEvent" text="+LMARK"/>
+            <Button fx:id="addLandmarkButton" alignment="CENTER" onAction="#handleAddLandmarkEvent"
+                    styleClass="nav_button" text="+LMARK"/>
             <Separator styleClass="nav_separator"/>
         </VBox>
     </AnchorPane>
@@ -77,26 +74,26 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             </rowConstraints>
 
-            <Button id="nav_up" styleClass="map_nav_buttons" onAction="#handleNavUpEvent" GridPane.columnIndex="1"/>
-            <Button id="nav_left" styleClass="map_nav_buttons" onAction="#handleNavLeftEvent" GridPane.rowIndex="1"/>
-            <Button id="nav_right" styleClass="map_nav_buttons"
-                    onAction="#handleNavRightEvent" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-            <Button id="nav_down" styleClass="map_nav_buttons"
-                    onAction="#handleNavDownEvent" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            <Button id="nav_up" onAction="#handleNavUpEvent" styleClass="map_nav_buttons" GridPane.columnIndex="1"/>
+            <Button id="nav_left" onAction="#handleNavLeftEvent" styleClass="map_nav_buttons" GridPane.rowIndex="1"/>
+            <Button id="nav_right" onAction="#handleNavRightEvent" styleClass="map_nav_buttons" GridPane.columnIndex="2"
+                    GridPane.rowIndex="1"/>
+            <Button id="nav_down" onAction="#handleNavDownEvent" styleClass="map_nav_buttons" GridPane.columnIndex="1"
+                    GridPane.rowIndex="2"/>
         </GridPane>
         <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="70.0"
               AnchorPane.bottomAnchor="43.0" AnchorPane.rightAnchor="20.0">
 
-            <Button id="zoom_in" styleClass="map_zoom_button" onAction="#handleZoomInEvent"/>
-            <Button id="zoom_out" styleClass="map_zoom_button" onAction="#handleZoomOutEvent">
+            <Button id="zoom_in" onAction="#handleZoomInEvent" styleClass="map_zoom_button"/>
+            <Button id="zoom_out" onAction="#handleZoomOutEvent" styleClass="map_zoom_button">
                 <HBox.margin>
                     <Insets left="5.0"/>
                 </HBox.margin>
             </Button>
 
         </HBox>
-        <VBox id="info_box" alignment="TOP_RIGHT" minHeight="20.0" prefWidth="200.0"
-              AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
+        <VBox id="info_box" alignment="TOP_RIGHT" minHeight="20.0" prefWidth="200.0" AnchorPane.rightAnchor="15.0"
+              AnchorPane.topAnchor="15.0">
             <Label fx:id="algorithm_label" styleClass="info_label" text="Algorithm: "/>
             <Label fx:id="distance_label" styleClass="info_label" text="Total Distance: "/>
             <Label fx:id="nodes_visited_label" styleClass="info_label" text="Nodes Visited: "/>

@@ -67,6 +67,34 @@
     -fx-pref-width: 55.0;
 }
 
+.menu-button {
+    -fx-background-color: #1a2639;
+    -fx-font-weight: bold;
+    -fx-background-radius: 0;
+    -fx-pref-height: 55.0;
+    -fx-pref-width: 55.0;
+}
+
+.menu-button .label {
+    -fx-text-fill: white;
+}
+
+.menu-item .label {
+    -fx-text-fill: black;
+}
+
+.menu-button:hover, .menu-item:hover, .menu-item:focused {
+    -fx-background-color: #c24d2c;
+}
+
+.menu-button > .arrow-button {
+    -fx-padding: 0;
+}
+
+.menu-button > .arrow-button > .arrow {
+    -fx-padding: 0;
+}
+
 .nav_button:hover {
     -fx-background-color: #c24d2c;
 }
