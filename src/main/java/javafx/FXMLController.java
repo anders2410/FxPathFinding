@@ -3,7 +3,6 @@ package javafx;
 // TODO: toggle graphical info about landmarks
 
 import javafx.application.Platform;
-import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -519,7 +518,7 @@ public class FXMLController implements Initializable {
                     handleNavRightEvent();
                     break;
                 case SHIFT:
-                    onMiddleClick();
+                    toggleAirDistance();
                     break;
             }
         };
@@ -560,7 +559,7 @@ public class FXMLController implements Initializable {
                     onLeftClick(event);
                     break;
                 case MIDDLE:
-                    onMiddleClick();
+                    toggleAirDistance();
                     break;
                 case SECONDARY:
                     onRightClick();
@@ -569,7 +568,7 @@ public class FXMLController implements Initializable {
         };
     }
 
-    public boolean includePathFromClickToPoint = false;
+    public boolean includeAirDistance = false;
 
     private void onLeftClick(MouseEvent event) {
         if (dragCounter > dragLimit) {
@@ -577,7 +576,7 @@ public class FXMLController implements Initializable {
         }
         PixelPoint mousePos = new PixelPoint(event.getX(), event.getY());
         Node node = selectClosestNode(mousePos);
-        if (includePathFromClickToPoint) {
+        if (includeAirDistance) {
             Node mouseNode = toNode(mousePos);
             double dist = distanceStrategy.apply(mouseNode, node);
             graph.addNode(mouseNode);
@@ -599,8 +598,8 @@ public class FXMLController implements Initializable {
         }
     }
 
-    private void onMiddleClick() {
-        includePathFromClickToPoint = !includePathFromClickToPoint;
+    private void toggleAirDistance() {
+        includeAirDistance = !includeAirDistance;
     }
 
     private void onRightClick() {
@@ -658,8 +657,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLandmarksEvent() {
-        // TODO: Add algorithm for landmarks
-        graph.landmarksAvoid(null, 16);
+        graph.landmarksAvoid(16);
         drawAllLandmarks();
         algorithmMode = A_STAR_LANDMARKS;
         runAlgorithm();
@@ -667,8 +665,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleBiLandmarksEvent() {
-        // TODO: Add algorithm for landmarks
-        graph.landmarksAvoid(null, 16);
+        graph.landmarksAvoid( 16);
         drawAllLandmarks();
         algorithmMode = BI_A_STAR_LANDMARKS;
         runAlgorithm();
@@ -695,7 +692,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleAddLandmarkEvent() {
-        graph.landmarksAvoid(graph.getLandmarks(), graph.getLandmarks().size() + 1);
+        graph.landmarksAvoid(graph.getLandmarks().size() + 1);
         for (Integer index : graph.getLandmarks()) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);
