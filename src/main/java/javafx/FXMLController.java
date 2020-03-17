@@ -518,6 +518,9 @@ public class FXMLController implements Initializable {
                 case RIGHT:
                     handleNavRightEvent();
                     break;
+                case SHIFT:
+                    onMiddleClick();
+                    break;
             }
         };
     }
@@ -585,8 +588,8 @@ public class FXMLController implements Initializable {
             back.mouseEdge = true;
             graph.addEdge(node, back);
             node = mouseNode;
+            mouseNodes++;
         }
-        mouseNodes++;
         selectedNodes.addLast(node);
         if (selectedNodes.size() > 1) {
             runAlgorithm();
