@@ -20,7 +20,7 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
         int target = getTarget(), source = getSource();
         Graph graph = getGraph();
         if (landmarkArray == null && !graph.getLandmarks().isEmpty()) {
-            landmarkArray = new double[32][graph.getNodeAmount()];
+            landmarkArray = new double[graph.getLandmarks().size()*2][graph.getNodeAmount()];
             int index = 0;
             List<List<Edge>> originalList = graph.getAdjList();
             for (Integer landmarkIndex : graph.getLandmarks()) {

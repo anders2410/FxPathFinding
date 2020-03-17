@@ -80,6 +80,8 @@ public class FXMLController implements Initializable {
     private Button landmarkButton;
     @FXML
     private Button biLandmarkButton;
+    @FXML
+    private Button addLandmarkButton;
 
     private Stage stage;
     private Graph graph;
@@ -270,6 +272,14 @@ public class FXMLController implements Initializable {
         clearCanvas();
         drawAllEdges();
         drawSelectedNodes();
+        drawAllLandmarks();
+    }
+
+    private void drawAllLandmarks() {
+        for (Integer index : graph.getLandmarks()) {
+            Node n = graph.getNodeList().get(index);
+            drawLandMark(n);
+        }
     }
 
     private void drawSelectedNodes() {
@@ -665,28 +675,20 @@ public class FXMLController implements Initializable {
 
     public void handleLandmarksEvent() {
         // TODO: Add algorithm for landmarks
-        Set<Integer> marks = graph.extractLandmarksFarthest(16);
+        graph.extractLandmarksFarthest(16);
+        drawAllLandmarks();
         algorithmMode = A_STAR_LANDMARKS;
-
         runAlgorithm();
-        for (Integer index : marks) {
-            Node n = graph.getNodeList().get(index);
-            drawLandMark(n);
-        }
         setAlgorithmLabels();
         selectButton(landmarkButton);
     }
 
     public void handleBiLandmarksEvent() {
         // TODO: Add algorithm for landmarks
-        Set<Integer> marks = graph.extractLandmarksFarthest(16);
+        graph.extractLandmarksFarthest(16);
+        drawAllLandmarks();
         algorithmMode = BI_A_STAR_LANDMARKS;
-
         runAlgorithm();
-        for (Integer index : marks) {
-            Node n = graph.getNodeList().get(index);
-            drawLandMark(n);
-        }
         setAlgorithmLabels();
         selectButton(biLandmarkButton);
     }
@@ -700,6 +702,7 @@ public class FXMLController implements Initializable {
         biAStarSymButton.pseudoClassStateChanged(pseudoClass, false);
         landmarkButton.pseudoClassStateChanged(pseudoClass, false);
         biLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
+        addLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
 
         algoButton.pseudoClassStateChanged(pseudoClass, true);
     }
@@ -713,6 +716,14 @@ public class FXMLController implements Initializable {
         gc.fillOval(p.x - shift, p.y - shift, radius, radius);
         gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
 
+    }
+
+    public void handleAddLandmarkEvent() {
+        graph.landmarksAvoid(graph.getLandmarks(), graph.getLandmarks().size() + 1);
+        for (Integer index : graph.getLandmarks()) {
+            Node n = graph.getNodeList().get(index);
+            drawLandMark(n);
+        }
     }
 
     public void handleSeedEvent() {

@@ -49,6 +49,9 @@
 
             <Button styleClass="nav_button" alignment="CENTER" onAction="#handleChooseFileEvent" text="FILE" />
             <Separator styleClass="nav_separator"/>
+
+            <Button fx:id="addLandmarkButton" styleClass="nav_button" alignment="CENTER" onAction="#handleAddLandmarkEvent" text="+LMARK"/>
+            <Separator styleClass="nav_separator"/>
         </VBox>
     </AnchorPane>
 

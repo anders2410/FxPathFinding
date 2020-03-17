@@ -1,13 +1,20 @@
 package model;
 
+import paths.SSSP;
+import paths.ShortestPathResult;
+import paths.factory.LandmarksFactory;
+import paths.strategy.HeuristicFunction;
+
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Graph implements Serializable {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
 
     private Set<Integer> landmarks;
+    private Map<Integer, int[]> landmarksDistancesBFS;
     private int nodeSize;
 
     public Graph(int nodeSize) {
@@ -18,7 +25,8 @@ public class Graph implements Serializable {
         this.nodeSize = size;
         nodeList = new ArrayList<>();
         adjList = new ArrayList<>();
-        landmarks = new HashSet<>();
+        landmarks = new LinkedHashSet<>();
+        landmarksDistancesBFS = new HashMap<>();
         for (int i = 0; i < size; i++) {
             adjList.add(emptyAdjList());
         }
@@ -41,15 +49,101 @@ public class Graph implements Serializable {
                 }
             }
         }
-
         return hop;
     }
 
-    public Set<Integer> extractLandmarksFarthest(int goalAmount) {
+    public void landmarksAvoid(Set<Integer> lMarks, int goalAmount) {
+        if (lMarks == null || lMarks.isEmpty()) {
+            Random random = new Random();
+            random.setSeed(664757);
+            int randomInitialLandmark = random.nextInt(nodeList.size());
+            landmarks.add(randomInitialLandmark);
+            avoidGetLeaf();
+            landmarks.remove(randomInitialLandmark);
+        }
+
+        while (landmarks.size() < goalAmount) {
+            avoidGetLeaf();
+        }
+    }
+
+    private void avoidGetLeaf() {
+        // TODO: 16-03-2020 Avoid trapping in one-way streets, possibly by maxCover or just hack our way out of it
+        int rootNode = getFurthestCandidateLandmark();
+        ShortestPathResult SPT = SSSP.singleToAllPath(rootNode);
+        double[] weightedNodes = new double[nodeSize];
+        SSSP.applyFactory(new LandmarksFactory());
+        HeuristicFunction S = SSSP.getHeuristicFunction();
+        for (int i = 0; i < SPT.nodeDistance.size(); i++) {
+            double heuristicVal = S.apply(rootNode, i);
+            double val = heuristicVal - SPT.nodeDistance.get(i);
+            weightedNodes[i] = val;
+        }
+        Map<Integer, List<Integer>> pathInversed = SPT.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
+        double maxWeight = -1.0;
+        int bestCandidate = 0;
+        double[] sizeNodes = new double[nodeSize];
+        for (int i = 0; i < nodeSize; i++) {
+            if (i == rootNode) {
+                continue;
+            }
+            double weighSumNode = findSumInTree(i, pathInversed, weightedNodes);
+            sizeNodes[i] = weighSumNode;
+            if (maxWeight <= weighSumNode) {
+                bestCandidate = i;
+                maxWeight = weighSumNode;
+            }
+        }
+        int leaf = findLeaf(bestCandidate, pathInversed, sizeNodes);
+        landmarks.add(leaf);
+    }
+
+    private Integer getLatestLandMark() {
+        if (landmarks.isEmpty()) {
+            return null;
+        }
+        Iterator<Integer> iterator = landmarks.iterator();
+        int lastElem = -1;
+        while (iterator.hasNext()) {
+            lastElem = iterator.next();
+        }
+        return lastElem;
+    }
+
+    private int findLeaf(int bestCandidate, Map<Integer, List<Integer>> pathInversed, double[] sizedNodes) {
+        if (pathInversed.get(bestCandidate) == null) {
+            return bestCandidate;
+        }
+        double maxSizeSoFar = -Double.MAX_VALUE;
+        for (Integer i : pathInversed.get(bestCandidate)) {
+            if (sizedNodes[i] > maxSizeSoFar) {
+                maxSizeSoFar = sizedNodes[i];
+                bestCandidate = i;
+            }
+        }
+        return findLeaf(bestCandidate, pathInversed, sizedNodes);
+    }
+
+    private double findSumInTree(int treeRoot, Map<Integer, List<Integer>> pathInversed, double[] weightedNodes) {
+        if (landmarks.contains(treeRoot)) {
+            return -1.0;
+        }
+        if (pathInversed.get(treeRoot) == null) {
+            return 0;
+        }
+        double sum = weightedNodes[treeRoot];
+        for (Integer i : pathInversed.get(treeRoot)) {
+            double subTreeSum = findSumInTree(i, pathInversed, weightedNodes);
+            if (subTreeSum == -1.0) return -1.0;
+            sum += subTreeSum;
+        }
+        return sum;
+    }
+
+    public void extractLandmarksFarthest(int goalAmount) {
         // Current implementation is 'FarthestB' (B - breadth)
         // Simple but not necessarily best. MaxCover yields better results.
         // TODO: MaxCover for landmark selection
-        int[][] resArr = new int[goalAmount][nodeSize];
         if (landmarks.isEmpty()) {
             Random random = new Random();
             random.setSeed(666974757);
@@ -59,30 +153,35 @@ public class Graph implements Serializable {
             for (int i = 0; i < arr.length; i++) {
                 max = arr[i] > arr[max] ? i : max;
             }
-            resArr[0] = arr;
+            landmarksDistancesBFS.put(startNode, arr);
             landmarks.add(max);
         }
 
         while (landmarks.size() < goalAmount) {
-            int highestMinimal = 0;
-            int furthestCandidate = 0;
-            for (Node n : nodeList) {
-                if (landmarks.contains(n.index)) continue;
-                int lowestCandidateDistance = Integer.MAX_VALUE;
-                for (int i = 0; i < landmarks.size(); i++) {
-                    if (lowestCandidateDistance > resArr[i][n.index]) {
-                        lowestCandidateDistance = resArr[i][n.index];
-                    }
-                }
-                if (lowestCandidateDistance > highestMinimal) {
-                    furthestCandidate = n.index;
-                    highestMinimal = lowestCandidateDistance;
-                }
-            }
-            resArr[landmarks.size()] = BFSMaxDistance(furthestCandidate);
+            int furthestCandidate = getFurthestCandidateLandmark();
+            landmarksDistancesBFS.put(furthestCandidate, BFSMaxDistance(furthestCandidate));
             landmarks.add(furthestCandidate);
         }
-        return landmarks;
+    }
+
+    private int getFurthestCandidateLandmark() {
+        int highestMinimal = 0;
+        int furthestCandidate = 0;
+        for (Node n : nodeList) {
+            if (landmarks.contains(n.index)) continue;
+            int lowestCandidateDistance = Integer.MAX_VALUE;
+            for (Integer i : landmarksDistancesBFS.keySet()) {
+                int stepDistance = landmarksDistancesBFS.get(i)[n.index];
+                if (lowestCandidateDistance > stepDistance) {
+                    lowestCandidateDistance = stepDistance;
+                }
+            }
+            if (lowestCandidateDistance > highestMinimal) {
+                furthestCandidate = n.index;
+                highestMinimal = lowestCandidateDistance;
+            }
+        }
+        return furthestCandidate;
     }
 
     private List<Edge> emptyAdjList() {
