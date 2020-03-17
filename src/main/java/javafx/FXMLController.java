@@ -67,20 +67,6 @@ public class FXMLController implements Initializable {
     @FXML
     private Label seed_label;
     @FXML
-    private Button dijkstraButton;
-    @FXML
-    private Button biDijkstraButton;
-    @FXML
-    private Button aStarButton;
-    @FXML
-    private Button biAStarConButton;
-    @FXML
-    private Button biAStarSymButton;
-    @FXML
-    private Button landmarkButton;
-    @FXML
-    private Button biLandmarkButton;
-    @FXML
     private Button addLandmarkButton;
 
     private Stage stage;
@@ -642,35 +628,30 @@ public class FXMLController implements Initializable {
         algorithmMode = DIJKSTRA;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(dijkstraButton);
     }
 
     public void handleBiDijkstraEvent() {
         algorithmMode = BI_DIJKSTRA;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(biDijkstraButton);
     }
 
     public void handleAStarEvent() {
         algorithmMode = A_STAR;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(aStarButton);
     }
 
     public void handleBiAStarConEvent() {
         algorithmMode = BI_A_STAR_CONSISTENT;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(biAStarConButton);
     }
 
     public void handleBiAStarSymEvent() {
         algorithmMode = BI_A_STAR_SYMMETRIC;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(biAStarSymButton);
     }
 
     public void handleLandmarksEvent() {
@@ -680,7 +661,6 @@ public class FXMLController implements Initializable {
         algorithmMode = A_STAR_LANDMARKS;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(landmarkButton);
     }
 
     public void handleBiLandmarksEvent() {
@@ -690,22 +670,15 @@ public class FXMLController implements Initializable {
         algorithmMode = BI_A_STAR_LANDMARKS;
         runAlgorithm();
         setAlgorithmLabels();
-        selectButton(biLandmarkButton);
     }
 
-    private void selectButton(Button algoButton) {
+    /*private void selectButton(Button algoButton) {
         PseudoClass pseudoClass = PseudoClass.getPseudoClass("selected");
-        dijkstraButton.pseudoClassStateChanged(pseudoClass, false);
-        biDijkstraButton.pseudoClassStateChanged(pseudoClass, false);
-        aStarButton.pseudoClassStateChanged(pseudoClass, false);
-        biAStarConButton.pseudoClassStateChanged(pseudoClass, false);
-        biAStarSymButton.pseudoClassStateChanged(pseudoClass, false);
-        landmarkButton.pseudoClassStateChanged(pseudoClass, false);
-        biLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
+
         addLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
 
         algoButton.pseudoClassStateChanged(pseudoClass, true);
-    }
+    }*/
 
     private void drawLandMark(Node n) {
         PixelPoint p = toScreenPos(n);
@@ -804,13 +777,11 @@ public class FXMLController implements Initializable {
         NumericTextField seed = new NumericTextField();
         seed.setPromptText("Seed");
 
-        from.textProperty().addListener((observable, oldValue, newValue) -> {
-            okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size());
-        });
+        from.textProperty().addListener((observable, oldValue, newValue) ->
+                okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size()));
 
-        to.textProperty().addListener((observable, oldValue, newValue) -> {
-            okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size());
-        });
+        to.textProperty().addListener((observable, oldValue, newValue) ->
+                okButton.setDisable(Integer.parseInt(newValue) > graph.getNodeList().size()));
 
         gridPane.add(new Label("From:"), 0, 0);
         gridPane.add(from, 1, 0);
@@ -824,7 +795,7 @@ public class FXMLController implements Initializable {
         // Request focus on the username field by default.
         Platform.runLater(from::requestFocus);
 
-        // Convert the result to a username-password-pair when the login button is clicked.
+        // Convert the result to wanted information.
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == acceptButton) {
                 onRightClick();
