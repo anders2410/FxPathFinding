@@ -53,8 +53,36 @@ public class Graph implements Serializable {
         return hop;
     }
 
-    public void landmarksAvoid(Set<Integer> lMarks, int goalAmount) {
-        if (lMarks == null || lMarks.isEmpty()) {
+    public void maxCoverLandmarks(int goalAmount) {
+        landmarksAvoid(goalAmount);
+        Set<Integer> candidateSet = new HashSet<>(landmarks);
+        int avoidCall = 1;
+        while (candidateSet.size() != 4 * goalAmount || avoidCall != goalAmount * 5) {
+            removeRandomCandidateAndGraphMarks(candidateSet);
+            landmarksAvoid(goalAmount);
+            candidateSet.addAll(landmarks);
+        }
+
+    }
+
+    private int calculateCoverCost(Set<Integer> potentialLandmarks) {
+        return 0;
+    }
+
+    private void removeRandomCandidateAndGraphMarks(Set<Integer> candidateSet) {
+        Iterator<Integer> iterator = landmarks.iterator();
+        while (iterator.hasNext()) {
+            int temp = (Math.random() <= 0.5) ? 1 : 2;
+            if (temp == 1) {
+                int lmark = iterator.next();
+                candidateSet.remove(lmark);
+                iterator.remove();
+            }
+        }
+    }
+
+    public void landmarksAvoid(int goalAmount) {
+        if (landmarks == null || landmarks.isEmpty()) {
             Random random = new Random();
             random.setSeed(664757);
             int randomInitialLandmark = random.nextInt(nodeList.size());
