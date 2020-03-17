@@ -58,6 +58,7 @@ public class Graph implements Serializable {
             random.setSeed(664757);
             int randomInitialLandmark = random.nextInt(nodeList.size());
             landmarks.add(randomInitialLandmark);
+            landmarksDistancesBFS.put(randomInitialLandmark, BFSMaxDistance(randomInitialLandmark));
             avoidGetLeaf();
             landmarks.remove(randomInitialLandmark);
         }
