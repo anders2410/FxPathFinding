@@ -34,6 +34,7 @@ public class Graph implements Serializable {
 
     public int[] BFSMaxDistance(int startNode) {
         int[] hop = new int[nodeSize];
+        Arrays.fill(hop, Integer.MAX_VALUE);
         boolean[] seen = new boolean[nodeSize];
         Queue<Integer> queue = new ArrayDeque<>(nodeSize);
         queue.add(startNode);
@@ -70,14 +71,15 @@ public class Graph implements Serializable {
 
     private void avoidGetLeaf() {
         // TODO: 16-03-2020 Avoid trapping in one-way streets, possibly by maxCover or just hack our way out of it
-        int rootNode = getFurthestCandidateLandmark();
+        Random random = new Random();
+        int rootNode = random.nextInt(nodeList.size());
         ShortestPathResult SPT = SSSP.singleToAllPath(rootNode);
         double[] weightedNodes = new double[nodeSize];
         SSSP.applyFactory(new LandmarksFactory());
         HeuristicFunction S = SSSP.getHeuristicFunction();
         for (int i = 0; i < SPT.nodeDistance.size(); i++) {
             double heuristicVal = S.apply(rootNode, i);
-            double val = heuristicVal - SPT.nodeDistance.get(i);
+            double val = SPT.nodeDistance.get(i) - heuristicVal;
             weightedNodes[i] = val;
         }
         Map<Integer, List<Integer>> pathInversed = SPT.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
@@ -177,7 +179,7 @@ public class Graph implements Serializable {
                     lowestCandidateDistance = stepDistance;
                 }
             }
-            if (lowestCandidateDistance > highestMinimal) {
+            if (lowestCandidateDistance > highestMinimal && lowestCandidateDistance != Integer.MAX_VALUE) {
                 furthestCandidate = n.index;
                 highestMinimal = lowestCandidateDistance;
             }
