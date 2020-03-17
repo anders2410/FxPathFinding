@@ -195,13 +195,13 @@ public class SSSP {
         return shortestPathA;
     }
 
-    private static List<Integer> extractPath(Map<Integer, Integer> backPointers, List<List<Edge>> adjList, int from, int to) {
+    private static List<Integer> extractPath(Map<Integer, Integer> pathMap, List<List<Edge>> adjList, int from, int to) {
         Integer curNode = to;
         int prevNode = to;
-        List<Integer> path = new ArrayList<>(backPointers.size());
+        List<Integer> path = new ArrayList<>(pathMap.size());
         path.add(to);
         while (curNode != from) {
-            curNode = backPointers.get(curNode);
+            curNode = pathMap.get(curNode);
             if (curNode == null) {
                 return new ArrayList<>(0);
             }
