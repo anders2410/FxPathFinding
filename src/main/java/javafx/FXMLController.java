@@ -659,7 +659,7 @@ public class FXMLController implements Initializable {
 
     public void handleLandmarksEvent() {
         // TODO: Add algorithm for landmarks
-        graph.landmarksAvoid(null, 16);
+        graph.landmarksAvoid(16);
         drawAllLandmarks();
         algorithmMode = A_STAR_LANDMARKS;
         runAlgorithm();
@@ -668,7 +668,7 @@ public class FXMLController implements Initializable {
 
     public void handleBiLandmarksEvent() {
         // TODO: Add algorithm for landmarks
-        graph.landmarksAvoid(null, 16);
+        graph.landmarksAvoid(16);
         drawAllLandmarks();
         algorithmMode = BI_A_STAR_LANDMARKS;
         runAlgorithm();
@@ -695,7 +695,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleAddLandmarkEvent() {
-        graph.landmarksAvoid(graph.getLandmarks(), graph.getLandmarks().size() + 1);
+        graph.landmarksAvoid(16);
         for (Integer index : graph.getLandmarks()) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);

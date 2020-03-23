@@ -77,7 +77,7 @@ public class SSSP {
         factoryMap.put(DIJKSTRA, new DijkstraFactory());
         factoryMap.put(BI_DIJKSTRA, new BiDijkstraFactory());
         factoryMap.put(A_STAR, new AStarFactory());
-        factoryMap.put(BI_A_STAR_CONSISTENT, new BiAStarConsistentFactory());
+        factoryMap.put(BI_A_STAR_CONSISTENT, new BiAStarMakeConsistentFactory());
         factoryMap.put(BI_A_STAR_SYMMETRIC, new BiAStarSymmetricFactory());
         factoryMap.put(A_STAR_LANDMARKS, new LandmarksFactory());
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());

@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static paths.SSSP.singleToAllPath;
+
 public class Graph implements Serializable {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
@@ -54,28 +56,90 @@ public class Graph implements Serializable {
     }
 
     public void maxCoverLandmarks(int goalAmount) {
+        if (landmarks.size() == goalAmount) {
+            return;
+        }
         landmarksAvoid(goalAmount);
         Set<Integer> candidateSet = new HashSet<>(landmarks);
         int avoidCall = 1;
-        while (candidateSet.size() != 4 * goalAmount || avoidCall != goalAmount * 5) {
-            removeRandomCandidateAndGraphMarks(candidateSet);
+        while (candidateSet.size() < 4 * goalAmount && avoidCall < goalAmount * 5) {
+            removeRandomCandidateAndGraphMarks(landmarks);
             landmarksAvoid(goalAmount);
+            avoidCall++;
             candidateSet.addAll(landmarks);
         }
-
+        for (int i = 0; i < Math.log(goalAmount + 1); i++) {
+            List<Integer> candidateSubSetList = new ArrayList<>(candidateSet);
+            while (candidateSubSetList.size() > goalAmount) {
+                Collections.shuffle(candidateSubSetList);
+                candidateSubSetList.remove(0);
+            }
+            Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
+            boolean improveFound = true;
+            while (improveFound) {
+                improveFound = false;
+                int currentProfit = calculateCoverCost(landmarks);
+                int bestSwapCandidateIn = -1;
+                int bestSwapCandidateOut = -1;
+                for (Integer outCandidate : landmarks) {
+                    for (Integer swapCandidate : candidateSubSet) {
+                        Set<Integer> copySet = new HashSet<>(landmarks);
+                        copySet.remove(outCandidate);
+                        copySet.add(swapCandidate);
+                        int newValue = calculateCoverCost(copySet);
+                        if (newValue > currentProfit) {
+                            bestSwapCandidateOut = outCandidate;
+                            bestSwapCandidateIn = swapCandidate;
+                            currentProfit = newValue;
+                            improveFound = true;
+                        }
+                    }
+                }
+                if (bestSwapCandidateIn != -1) {
+                    landmarks.remove(bestSwapCandidateOut);
+                    landmarks.add(bestSwapCandidateIn);
+                    candidateSubSet.remove(bestSwapCandidateIn);
+                    candidateSubSet.add(bestSwapCandidateOut);
+                }
+            }
+        }
     }
 
     private int calculateCoverCost(Set<Integer> potentialLandmarks) {
-        return 0;
+        int covers = 0;
+        Map<Integer, double[]> distanceMap = new HashMap<>();
+        List<List<Edge>> originalList = getAdjList();
+        for (Integer lMarkIndex : potentialLandmarks) {
+            List<Double> forwardDistance = singleToAllPath(lMarkIndex).nodeDistance;
+            double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
+            distanceMap.put(lMarkIndex, arrForward);
+        }
+        for (int i = 0; i < nodeSize; i++) {
+            for (Edge e : originalList.get(i)) {
+                for (Integer lMarkIndex : potentialLandmarks) {
+                    double[] distances = distanceMap.get(lMarkIndex);
+                    if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
+                        continue;
+                    }
+                    if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
+                        covers++;
+/*
+                        System.out.println("Edge from: " + i + " to: " + lMarkIndex + " is covered");
+*/
+                        break;
+                    }
+                }
+            }
+        }
+        return covers;
     }
 
     private void removeRandomCandidateAndGraphMarks(Set<Integer> candidateSet) {
-        Iterator<Integer> iterator = landmarks.iterator();
+        Iterator<Integer> iterator = candidateSet.iterator();
         while (iterator.hasNext()) {
             int temp = (Math.random() <= 0.5) ? 1 : 2;
+            iterator.next();
             if (temp == 1) {
-                int lmark = iterator.next();
-                candidateSet.remove(lmark);
                 iterator.remove();
             }
         }
@@ -99,7 +163,7 @@ public class Graph implements Serializable {
 
     private void avoidGetLeaf() {
         // TODO: 16-03-2020 Avoid trapping in one-way streets, possibly by maxCover or just hack our way out of it
-        int rootNode = getFurthestCandidateLandmark();
+        int rootNode = new Random().nextInt(nodeList.size());
         ShortestPathResult SPT = SSSP.singleToAllPath(rootNode);
         double[] weightedNodes = new double[nodeSize];
         SSSP.applyFactory(new LandmarksFactory());

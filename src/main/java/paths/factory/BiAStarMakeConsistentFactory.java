@@ -6,7 +6,7 @@ import paths.generator.RelaxGenerator;
 import paths.generator.TerminationGenerator;
 import paths.strategy.*;
 
-public class BiAStarConsistentFactory implements AlgorithmFactory {
+public class BiAStarMakeConsistentFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
         return true;
