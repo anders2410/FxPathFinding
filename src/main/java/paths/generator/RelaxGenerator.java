@@ -17,10 +17,11 @@ public class RelaxGenerator {
 
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
-                getQueue(dir).remove(edge.to);
-                getQueue(dir).add(edge.to);
+                getQueue(dir).updatePriority(edge.to);
                 getPathMap(dir).put(edge.to, from);
+/*
                 trace(getQueue(dir), dir);
+*/
             }
         };
     }
@@ -33,11 +34,10 @@ public class RelaxGenerator {
             double heuristicNeighbour = getHeuristicFunction().apply(edge.to, getTarget());
             double weirdWeight = getNodeDist(dir).get(from) + edge.d - heuristicFrom + heuristicNeighbour;
             if (weirdWeight < getNodeDist(dir).get(edge.to)) {
-                getQueue(dir).remove(edge.to);
-                getEstimatedDist(dir).put(edge.to, weirdWeight);
                 getNodeDist(dir).set(edge.to, newDist);
+                getEstimatedDist(dir).put(edge.to, weirdWeight);
                 getPathMap(dir).put(edge.to, from);
-                getQueue(dir).add(edge.to);
+                getQueue(dir).updatePriority(edge.to);
             }
         };
     }
@@ -94,11 +94,10 @@ public class RelaxGenerator {
 
     private static void updateNode(ABDir dir, int from, Edge edge, double newDist, double weirdWeight) {
         if (weirdWeight < getEstimatedDist(dir).getOrDefault(edge.to, Double.MAX_VALUE)) {
-            getQueue(dir).remove(edge.to);
             getEstimatedDist(dir).put(edge.to, weirdWeight);
             getNodeDist(dir).set(edge.to, newDist);
             getPathMap(dir).put(edge.to, from);
-            getQueue(dir).add(edge.to);
+            getQueue(dir).updatePriority(edge.to);
         }
     }
 }

@@ -110,7 +110,6 @@ public class SSSPPBFTest {
         int[] matrix = new int[7];
         graph.extractLandmarksFarthest(16);
         for (int i = 0; i < 4000; i++) {
-            System.out.println(i);
             SSSP.seed = i;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
 /*
@@ -118,17 +117,21 @@ public class SSSPPBFTest {
 */
             ShortestPathResult biDijkRes = SSSP.randomPath(AlgorithmMode.BI_DIJKSTRA);
             ShortestPathResult biAStarConRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_CONSISTENT);
+/*
             ShortestPathResult biAStarLandRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_LANDMARKS);
+*/
 /*
             ShortestPathResult biAStarSymRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_SYMMETRIC);
 */
+/*
             ShortestPathResult landmarksRes = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+*/
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
-            double distBiLand = biAStarLandRes.d;
-            List<Integer> pathBiLand = biAStarConRes.path;
+          /*  double distBiLand = biAStarLandRes.d;
+            List<Integer> pathBiLand = biAStarConRes.path;*/
 
             double distBiCon = biAStarConRes.d;
             List<Integer> pathBiCon = biAStarConRes.path;
@@ -142,8 +145,8 @@ public class SSSPPBFTest {
           /*  double distBiAstarSym = biAStarSymRes.d;
             List<Integer> pathBiAstarSym = biAStarSymRes.path;*/
 
-            double distLandmarks = landmarksRes.d;
-            List<Integer> pathLandmarks = landmarksRes.path;
+           /* double distLandmarks = landmarksRes.d;
+            List<Integer> pathLandmarks = landmarksRes.path;*/
             /*if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
                 matrix[1]++;
             }*/
@@ -153,15 +156,15 @@ public class SSSPPBFTest {
           /*  if (Math.abs(distDijk - distBiAstarSym) > 0.00000000001 || !pathDijk.equals(pathBiAstarSym)) {
                 matrix[3]++;
             }*/
-            if (Math.abs(distDijk - distLandmarks) > 0.00000000001 || !pathLandmarks.equals(pathDijk)) {
+            /*if (Math.abs(distDijk - distLandmarks) > 0.00000000001 || !pathLandmarks.equals(pathDijk)) {
                 matrix[4]++;
-            }
+            }*/
             if (Math.abs(distDijk - distBiCon) > 0.00000000001 || !pathBiCon.equals(pathDijk)) {
                 matrix[5]++;
             }
-            if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
+            /*if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
                 matrix[6]++;
-            }
+            }*/
             /*if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
                 matrix[1][2]++;
             }

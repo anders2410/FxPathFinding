@@ -1,9 +1,6 @@
 package paths.factory;
 
-import paths.generator.HeuristicGenerator;
-import paths.generator.PriorityGenerator;
-import paths.generator.RelaxGenerator;
-import paths.generator.TerminationGenerator;
+import paths.generator.*;
 import paths.strategy.*;
 
 public class DijkstraFactory implements AlgorithmFactory {
@@ -35,5 +32,10 @@ public class DijkstraFactory implements AlgorithmFactory {
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
         return () -> {};
+    }
+
+    @Override
+    public GetPQueueStrategy getPriorityQueue() {
+        return GetPQueueGenerator.getJavaQueue();
     }
 }

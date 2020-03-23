@@ -19,18 +19,4 @@ public class GetPQueueGenerator {
         return JavaMinPriorityQueue::new;
     }
 
-    public static RelaxStrategy getDijkstra() {
-        return (from, edge, dir) -> {
-            edge.visited = true;
-            double newDist = getNodeDist(dir).get(from) + edge.d;
-
-            if (newDist < getNodeDist(dir).get(edge.to)) {
-                getNodeDist(dir).set(edge.to, newDist);
-                getQueue(dir).remove(edge.to);
-                getQueue(dir).add(edge.to);
-                getPathMap(dir).put(edge.to, from);
-                trace(getQueue(dir), dir);
-            }
-        };
-    }
 }

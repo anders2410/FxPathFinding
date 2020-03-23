@@ -33,4 +33,9 @@ public class LandmarksFactory implements AlgorithmFactory {
     public PreprocessStrategy getPreprocessStrategy() {
         return new LandmarksPreStrategy();
     }
+
+    @Override
+    public GetPQueueStrategy getPriorityQueue() {
+        return GetPQueueGenerator.getJavaQueue();
+    }
 }

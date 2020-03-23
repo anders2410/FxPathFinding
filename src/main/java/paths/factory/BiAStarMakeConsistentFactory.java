@@ -1,9 +1,6 @@
 package paths.factory;
 
-import paths.generator.HeuristicGenerator;
-import paths.generator.PriorityGenerator;
-import paths.generator.RelaxGenerator;
-import paths.generator.TerminationGenerator;
+import paths.generator.*;
 import paths.strategy.*;
 
 public class BiAStarMakeConsistentFactory implements AlgorithmFactory {
@@ -36,5 +33,10 @@ public class BiAStarMakeConsistentFactory implements AlgorithmFactory {
     public PreprocessStrategy getPreprocessStrategy() {
         return () -> {
         };
+    }
+
+    @Override
+    public GetPQueueStrategy getPriorityQueue() {
+        return GetPQueueGenerator.getJavaQueue();
     }
 }

@@ -1,5 +1,6 @@
 package paths;
 
+import datastructures.MinPriorityQueue;
 import model.*;
 import paths.factory.*;
 import paths.strategy.*;
@@ -41,8 +42,8 @@ public class SSSP {
     private static Set<Integer> visitedB;                   // A set of visited nodes starting from Node: target
     private static Map<Integer, Integer> pathMapA;
     private static Map<Integer, Integer> pathMapB;
-    private static PriorityQueue<Integer> queueA;           // Queue to hold the paths from Node: source
-    private static PriorityQueue<Integer> queueB;           // Queue to hold the paths from Node: target
+    private static MinPriorityQueue queueA;           // Queue to hold the paths from Node: source
+    private static MinPriorityQueue queueB;           // Queue to hold the paths from Node: target
     private static Map<Integer, Double> estimatedDistA;
     private static Map<Integer, Double> estimatedDistB;
     private static GetPQueueStrategy priorityQueueGetter;
@@ -62,8 +63,8 @@ public class SSSP {
         visitedB = new HashSet<>();
         pathMapA = new HashMap<>();
         pathMapB = new HashMap<>();
-        queueA = new PriorityQueue<>(getComparator(priorityStrategyA, A));
-        queueB = new PriorityQueue<>(getComparator(priorityStrategyB, B));
+        queueA = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyA, A));
+        queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B));
         estimatedDistA = new HashMap<>();
         estimatedDistB = new HashMap<>();
     }
@@ -111,7 +112,7 @@ public class SSSP {
     private static ShortestPathResult oneDirectional() {
         List<List<Edge>> adjList = graph.getAdjList();
         estimatedDistA.put(source, 0.0);
-        queueA.add(source);
+        queueA.insert(source);
 
         while (!queueA.isEmpty()) {
             if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
@@ -148,11 +149,11 @@ public class SSSP {
 
         // A-direction
         estimatedDistA.put(source, 0.0);
-        queueA.add(source);
+        queueA.insert(source);
 
         // B-direction
         estimatedDistB.put(target, 0.0);
-        queueB.add(target);
+        queueB.insert(target);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
@@ -178,7 +179,7 @@ public class SSSP {
         initFields(DIJKSTRA, sourceP, 0);
         initDataStructures();
         List<List<Edge>> adjList = graph.getAdjList();
-        queueA.add(source);
+        queueA.insert(source);
 
         while (!queueA.isEmpty()) {
             takeStep(adjList, A, false);
@@ -233,8 +234,8 @@ public class SSSP {
         return res;
     }
 
-    public static void trace(AbstractQueue<Integer> nodeQueue, ABDir dir) {
-        PriorityQueue<Integer> copy = new PriorityQueue<>(nodeQueue);
+    /*public static void trace(MinPriorityQueue nodeQueue, ABDir dir) {
+        MinPriorityQueue<Integer> copy = new PriorityQueue<Integer>(nodeQueue);
         if (trace && mode == BI_A_STAR_LANDMARKS) {
             System.out.print("NodeQueue: ");
             while (copy.size() != 0) {
@@ -243,7 +244,7 @@ public class SSSP {
             }
             System.out.println();
         }
-    }
+    }*/
 
     /**
      * @param from from
@@ -337,7 +338,7 @@ public class SSSP {
         return dir == A ? pathMapA : pathMapB;
     }
 
-    public static PriorityQueue<Integer> getQueue(ABDir dir) {
+    public static MinPriorityQueue getQueue(ABDir dir) {
         return dir == A ? queueA : queueB;
     }
 
