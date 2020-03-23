@@ -16,10 +16,10 @@ public class RelaxGenerator {
             double newDist = getNodeDist(dir).get(from) + edge.d;
 
             if (newDist < getNodeDist(dir).get(edge.to)) {
-                getQueue(dir).remove(edge.to);
                 getNodeDist(dir).set(edge.to, newDist);
-                getPathMap(dir).put(edge.to, from);
+                getQueue(dir).remove(edge.to);
                 getQueue(dir).add(edge.to);
+                getPathMap(dir).put(edge.to, from);
                 trace(getQueue(dir), dir);
             }
         };

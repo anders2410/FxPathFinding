@@ -14,4 +14,6 @@ public interface AlgorithmFactory {
     TerminationStrategy getTerminationStrategy();
 
     PreprocessStrategy getPreprocessStrategy();
+
+    GetPQueueStrategy getPriorityQueue();
 }

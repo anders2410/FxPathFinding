@@ -45,6 +45,7 @@ public class SSSP {
     private static PriorityQueue<Integer> queueB;           // Queue to hold the paths from Node: target
     private static Map<Integer, Double> estimatedDistA;
     private static Map<Integer, Double> estimatedDistB;
+    private static GetPQueueStrategy priorityQueueGetter;
 
     // Initialization
 
@@ -92,6 +93,7 @@ public class SSSP {
         relaxStrategyB = factory.getRelaxStrategy();
         priorityStrategyA = factory.getPriorityStrategy();
         priorityStrategyB = factory.getPriorityStrategy();
+        priorityQueueGetter = factory.getPriorityQueue();
     }
 
     // Path finding
