@@ -68,6 +68,12 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
 
     @Override
     public void remove(Integer toDelete) {
+        for (int i = 0; i < size; i++) {
+            if (binHeap[i] == toDelete) {
+                delete(i);
+                break;
+            }
+        }
 
     }
 
@@ -81,7 +87,10 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
 
     @Override
     public void updatePriority(Integer toUpdate) {
-
+        if (find(toUpdate)) {
+            remove(toUpdate);
+        }
+        insert(toUpdate);
     }
 
     private int parent(int child) {
@@ -121,11 +130,10 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
         //Smallest in the sense of index
         int smallestChild = child(parent, 1);
         int secondSmallestChild = child(parent, 2);
-        while (secondSmallestChild < size) {
-            if (0 > comparator.compare(binHeap[secondSmallestChild], binHeap[smallestChild])) {
-                smallestChild = secondSmallestChild;
-            }
+        if (0 > comparator.compare(binHeap[secondSmallestChild], binHeap[smallestChild])) {
+            smallestChild = secondSmallestChild;
         }
+
         return smallestChild;
     }
 

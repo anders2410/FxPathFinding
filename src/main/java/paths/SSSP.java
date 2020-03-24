@@ -5,6 +5,7 @@ import model.*;
 import paths.factory.*;
 import paths.strategy.*;
 
+import java.sql.Time;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -110,6 +111,8 @@ public class SSSP {
     }
 
     private static ShortestPathResult oneDirectional() {
+        long startTime = System.currentTimeMillis();
+
         List<List<Edge>> adjList = graph.getAdjList();
         estimatedDistA.put(source, 0.0);
         queueA.insert(source);
@@ -118,6 +121,8 @@ public class SSSP {
             if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
             takeStep(adjList, A, false);
         }
+        long endTime = System.currentTimeMillis();
+        System.out.println("That took " + (endTime - startTime) + " milliseconds");
 
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size());
@@ -150,7 +155,6 @@ public class SSSP {
         // A-direction
         estimatedDistA.put(source, 0.0);
         queueA.insert(source);
-
         // B-direction
         estimatedDistB.put(target, 0.0);
         queueB.insert(target);

@@ -14,11 +14,9 @@ import pbfparsing.PBFParser;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.ToIntFunction;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -30,7 +28,8 @@ public class BinHeapTest {
         System.out.println("Binary Heap Test\n\n");
         System.out.println("Enter size of Binary heap");
         /** Make object of BinaryHeap **/
-        BinaryHeapPriorityQueue bh = new BinaryHeapPriorityQueue(new PriorityQueue<Integer>().comparator(), scan.nextInt());
+        Comparator<Integer> objectComparator = Comparator.comparingInt(i -> i);
+        BinaryHeapPriorityQueue bh = new BinaryHeapPriorityQueue(objectComparator, scan.nextInt());
 
         char ch;
         /**  Perform Binary Heap operations  **/
@@ -45,12 +44,8 @@ public class BinHeapTest {
             int choice = scan.nextInt();
             switch (choice) {
                 case 1:
-                    try {
-                        System.out.println("Enter integer element to insert");
-                        bh.insert(scan.nextInt());
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
+                    System.out.println("Enter integer element to insert");
+                    bh.insert(scan.nextInt());
                     break;
                 case 2:
                     try {
