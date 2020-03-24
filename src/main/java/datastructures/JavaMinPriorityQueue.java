@@ -1,11 +1,13 @@
 package datastructures;
 
+import model.Graph;
+
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class JavaMinPriorityQueue extends PriorityQueue<Integer> implements MinPriorityQueue {
 
-    public JavaMinPriorityQueue(Comparator<? super Integer> comparator) {
+    public JavaMinPriorityQueue(Comparator<? super Integer> comparator, int graph) {
         super(comparator);
     }
 
@@ -20,7 +22,7 @@ public class JavaMinPriorityQueue extends PriorityQueue<Integer> implements MinP
     }
 
     @Override
-    public void delete(Integer toDelete) {
+    public void remove(Integer toDelete) {
         super.remove(toDelete);
     }
 

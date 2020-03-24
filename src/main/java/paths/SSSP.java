@@ -63,8 +63,8 @@ public class SSSP {
         visitedB = new HashSet<>();
         pathMapA = new HashMap<>();
         pathMapB = new HashMap<>();
-        queueA = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyA, A));
-        queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B));
+        queueA = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyA, A), graph.getNodeAmount());
+        queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B), graph.getNodeAmount());
         estimatedDistA = new HashMap<>();
         estimatedDistB = new HashMap<>();
     }

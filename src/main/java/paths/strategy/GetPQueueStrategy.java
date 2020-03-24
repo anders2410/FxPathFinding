@@ -5,5 +5,5 @@ import datastructures.MinPriorityQueue;
 import java.util.Comparator;
 
 public interface GetPQueueStrategy {
-    public MinPriorityQueue initialiseNewQueue(Comparator<? super Integer> comparator);
+    public MinPriorityQueue initialiseNewQueue(Comparator<? super Integer> comparator, int graph);
 }
