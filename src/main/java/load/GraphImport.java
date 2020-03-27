@@ -18,6 +18,9 @@ import java.util.function.BiFunction;
 
 public class GraphImport {
 
+    public static String mapsDir = "maps\\";
+    public static String tempDir = mapsDir + "temp\\";
+
     private Graph graph;
     private BiFunction<Node, Node, Double> distanceStrategy;
 
@@ -31,7 +34,7 @@ public class GraphImport {
             loadOSM(fileName.substring(0, fileName.length() - 4));
         }
         if (fileType.equals("pbf")) {
-            String name = fileName.substring(0, fileName.indexOf('.'));
+            String name = tempDir + fileName.substring(0, fileName.indexOf('.'));
             File nodeFile = new File(name + "-node-list.tmp");
             File adjFile = new File(name + "-adj-list.tmp");
             if (nodeFile.exists() && adjFile.exists()) {
@@ -99,7 +102,7 @@ public class GraphImport {
 
     public static File selectMapFile(Stage stage) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") + "\\" + mapsDir));
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("PBF Files", "*.pbf"),
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")

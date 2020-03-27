@@ -9,6 +9,9 @@ import javax.xml.parsers.*;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+import static load.GraphImport.mapsDir;
+import static load.GraphImport.tempDir;
+
 public class XMLFilter extends DefaultHandler {
     private final String inFileType = ".osm";
     private final String outFileType = ".xml";
@@ -35,8 +38,8 @@ public class XMLFilter extends DefaultHandler {
 
     public void executeFilter() {
         try {
-            fwriter = new FileWriter(fileName + outFileType);
-            File inputFile = new File(fileName + inFileType);
+            fwriter = new FileWriter(tempDir + fileName + outFileType);
+            File inputFile = new File( mapsDir+ fileName + inFileType);
 
             DefaultHandler handler = this;
             SAXParserFactory factory = SAXParserFactory.newInstance();

@@ -646,7 +646,7 @@ public class FXMLController implements Initializable {
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
         File selectedFile = GraphImport.selectMapFile(stage);
-        setUpNewGraph(selectedFile.getAbsolutePath());
+        setUpNewGraph(selectedFile.getName());
     }
 
     // UTILITIES

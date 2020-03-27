@@ -12,6 +12,9 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static load.GraphImport.mapsDir;
+import static load.GraphImport.tempDir;
+
 public class XMLGraphExtractor extends DefaultHandler {
 
     private final String inFileType = ".xml";
@@ -36,7 +39,7 @@ public class XMLGraphExtractor extends DefaultHandler {
 
     public void executeExtractor() {
         try {
-            File inputFile = new File(fileName + inFileType);
+            File inputFile = new File(tempDir + fileName + inFileType);
             DefaultHandler handler = this;
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
