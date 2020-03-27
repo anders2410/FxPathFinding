@@ -649,8 +649,6 @@ public class FXMLController implements Initializable {
         setUpNewGraph(selectedFile.getAbsolutePath());
     }
 
-
-
     // UTILITIES
     private void clearCanvas() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
