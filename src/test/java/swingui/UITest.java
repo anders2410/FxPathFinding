@@ -20,9 +20,9 @@ public class UITest {
         xmlFilter.executeFilter();
         XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         xmlGraphExtractor.setParseCordStrategy(Util::cordToInt);
+        xmlGraphExtractor.setDistanceStrategy(Util::flatEarthDistance);
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
-        // System.out.println(graph.getAdjList());
     }
 
     @Test
