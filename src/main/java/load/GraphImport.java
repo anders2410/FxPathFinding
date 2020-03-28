@@ -5,9 +5,10 @@ import javafx.stage.Stage;
 import model.Edge;
 import model.Graph;
 import model.Node;
-import pbfparsing.PBFParser;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
+import load.pbfparsing.PBFParser;
+import load.xml.XMLFilter;
+import load.xml.XMLGraphExtractor;
+import model.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,6 +60,16 @@ public class GraphImport {
         xmlGraphExtractor.setDistanceStrategy(distanceStrategy);
         xmlGraphExtractor.executeExtractor();
         graph = xmlGraphExtractor.getGraph();
+    }
+
+    public Graph loadOSMOld(String fileName) {
+        XMLFilter xmlFilter = new XMLFilter(fileName);
+        xmlFilter.executeFilter();
+        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
+        xmlGraphExtractor.setParseCordStrategy(Util::cordToInt);
+        xmlGraphExtractor.setDistanceStrategy(distanceStrategy);
+        xmlGraphExtractor.executeExtractor();
+        return xmlGraphExtractor.getGraph();
     }
 
     private void loadPBF(String fileName) {

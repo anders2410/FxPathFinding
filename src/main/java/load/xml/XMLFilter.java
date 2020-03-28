@@ -1,4 +1,4 @@
-package xml;
+package load.xml;
 
 import java.io.*;
 import java.util.*;
@@ -14,7 +14,7 @@ import static load.GraphImport.tempDir;
 
 public class XMLFilter extends DefaultHandler {
     private final String inFileType = ".osm";
-    private final String outFileType = ".xml";
+    private final String outFileType = ".load.xml";
     private final String osmVersion = "0.6";
 
     private String fileName;
@@ -53,7 +53,7 @@ public class XMLFilter extends DefaultHandler {
     }
 
     public void startDocument() {
-        writeLine("<?xml version = \"1.0\" encoding = \"UTF-8\"?>");
+        writeLine("<?load.xml version = \"1.0\" encoding = \"UTF-8\"?>");
         writeLine("<osm version=\"" + osmVersion + "\">");
     }
 

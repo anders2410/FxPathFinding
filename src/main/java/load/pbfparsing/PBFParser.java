@@ -1,4 +1,4 @@
-package pbfparsing;
+package load.pbfparsing;
 
 import de.topobyte.osm4j.core.model.iface.EntityContainer;
 import de.topobyte.osm4j.core.model.iface.EntityType;
@@ -6,13 +6,12 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
-import load.GraphImport;
 import model.Graph;
 import model.Node;
-import pbfparsing.delegates.CollapsingStrategyFull;
-import pbfparsing.delegates.StandardFilteringStrategy;
-import pbfparsing.interfaces.CollapsingStrategy;
-import pbfparsing.interfaces.FilteringStrategy;
+import load.pbfparsing.delegates.CollapsingStrategyFull;
+import load.pbfparsing.delegates.StandardFilteringStrategy;
+import load.pbfparsing.interfaces.CollapsingStrategy;
+import load.pbfparsing.interfaces.FilteringStrategy;
 
 import java.io.*;
 import java.util.*;

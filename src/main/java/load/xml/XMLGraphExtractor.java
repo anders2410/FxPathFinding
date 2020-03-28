@@ -1,4 +1,4 @@
-package xml;
+package load.xml;
 
 import model.*;
 import org.xml.sax.Attributes;
@@ -12,12 +12,11 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static load.GraphImport.mapsDir;
 import static load.GraphImport.tempDir;
 
 public class XMLGraphExtractor extends DefaultHandler {
 
-    private final String inFileType = ".xml";
+    private final String inFileType = ".load.xml";
     private final ArrayList<Node> nodeList;
 
     private String fileName;
