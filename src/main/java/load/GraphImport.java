@@ -27,6 +27,12 @@ public class GraphImport {
 
     public GraphImport(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
+        generateFolders();
+    }
+
+    private void generateFolders() {
+        new File(mapsDir).mkdir();
+        new File(tempDir).mkdir();
     }
 
     public Graph loadGraph(String fileName) {
