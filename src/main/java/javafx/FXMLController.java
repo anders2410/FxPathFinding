@@ -67,7 +67,7 @@ public class FXMLController implements Initializable {
     @FXML
     private Label seed_label;
     @FXML
-    private Button addLandmarkButton;
+    private ProgressIndicator progress_indicator;
 
     private Stage stage;
     private Graph graph;
