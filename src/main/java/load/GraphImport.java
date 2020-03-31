@@ -120,9 +120,14 @@ public class GraphImport {
 
     @SuppressWarnings(value = "unchecked")
     public static void loadLandmarks(String name, Graph graph) throws IOException {
-        FileInputStream landmarksInput = new FileInputStream(name + "-landmarks.tmp");
-
-
+        String fileType = name.substring(name.length() - 3);
+        if (fileType.equals("osm")) {
+            name = (name.substring(0, name.length() - 4));
+        }
+        if (fileType.equals("pbf")) {
+            name = name.substring(0, name.indexOf('.'));
+        }
+        FileInputStream landmarksInput = new FileInputStream(tempDir + name + "-landmarks.tmp");
         ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
 
         Set<Integer> landmarksSet = null;

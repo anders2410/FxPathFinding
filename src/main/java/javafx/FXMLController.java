@@ -696,6 +696,7 @@ public class FXMLController implements Initializable {
     public void handleLoadLandmarks() {
         try {
             GraphImport.loadLandmarks(fileName, graph);
+            drawAllLandmarks();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -706,7 +707,7 @@ public class FXMLController implements Initializable {
             String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
             FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(graph.getNodeList());
+            oos.writeObject(graph.getLandmarks());
             oos.close();
         } catch (IOException e) {
             e.printStackTrace();

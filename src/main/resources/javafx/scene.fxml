@@ -43,7 +43,7 @@
                     <MenuItem onAction="#handleGenerateLandmarksRandom" text="GenRandom"/>
                     <MenuItem onAction="#handleClearLandmarks" text="Clear"/>
                     <MenuItem onAction="#handleLoadLandmarks" text="LoadMarks"/>
-                    <MenuItem onAction="#handleSaveLandmarks" text="LoadMarks"/>
+                    <MenuItem onAction="#handleSaveLandmarks" text="SaveMarks"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
