@@ -33,6 +33,7 @@ public class GraphImport {
         this.distanceStrategy = distanceStrategy;
         generateFolders();
         progress = 0;
+        bytesRead = 0;
     }
 
     private void generateFolders() {
