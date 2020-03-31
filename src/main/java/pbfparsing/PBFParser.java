@@ -9,6 +9,7 @@ import de.topobyte.osm4j.pbf.seq.PbfIterator;
 import model.Graph;
 import model.Node;
 import pbfparsing.delegates.CollapsingStrategyFull;
+import pbfparsing.delegates.CollapsingStrategyNone;
 import pbfparsing.delegates.StandardFilteringStrategy;
 import pbfparsing.interfaces.CollapsingStrategy;
 import pbfparsing.interfaces.FilteringStrategy;
