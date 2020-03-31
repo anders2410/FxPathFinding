@@ -23,15 +23,18 @@ public class GraphImport {
 
     public static String mapsDir = "maps\\";
     public static String tempDir = mapsDir + "temp\\";
+    private static long tempCombinedSize;
     private Graph graph;
     private BiFunction<Node, Node, Double> distanceStrategy;
-    public static int progress;
-    public static int bytesRead;
+
+    protected static int progress;
+    protected static int bytesRead;
 
     public GraphImport(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
         generateFolders();
         progress = 0;
+        bytesRead = 0;
     }
 
     private void generateFolders() {
@@ -99,9 +102,9 @@ public class GraphImport {
         String adjListFileName = name + "-adj-list.tmp";
         long nodeListSize = Files.size(Paths.get(nodeListFileName));
         long adjListSize = Files.size(Paths.get(adjListFileName));
-
-        CountingInputStream nodeCountInput = new CountingInputStream(Files.newInputStream(Paths.get(nodeListFileName)), nodeListSize + adjListSize);
-        CountingInputStream adjCountInput = new CountingInputStream(Files.newInputStream(Paths.get(adjListFileName)), nodeListSize + adjListSize);
+        tempCombinedSize = nodeListSize + adjListSize;
+        CountingInputStream nodeCountInput = new CountingInputStream(nodeListFileName);
+        CountingInputStream adjCountInput = new CountingInputStream(adjListFileName);
 
         ObjectInputStream nodeStream = new ObjectInputStream(nodeCountInput);
         ObjectInputStream edgeStream = new ObjectInputStream(adjCountInput);
@@ -115,10 +118,9 @@ public class GraphImport {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        System.out.println(progress);
-
         nodeStream.close();
         edgeStream.close();
+        System.out.println(getProgress());
 
         assert nodeList != null;
         graph = new Graph(nodeList.size());
@@ -146,7 +148,6 @@ public class GraphImport {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
         landmarksStream.close();
 
         assert landmarksSet != null;
@@ -162,24 +163,38 @@ public class GraphImport {
         );
         return fileChooser.showOpenDialog(stage);
     }
+
+    public static int getProgress() {
+        progress = (int) ((bytesRead / tempCombinedSize) * 100);
+        return progress;
+    }
 }
 
-class CountingInputStream extends InputStream implements AutoCloseable {
 
-    private final long finalSize;
-    private final InputStream stream;
+class CountingInputStream extends FileInputStream implements AutoCloseable {
+    public CountingInputStream(String filename) throws FileNotFoundException {
+        super(filename);
+    }
 
-    public CountingInputStream(InputStream stream, long finalSize) throws FileNotFoundException {
-        this.stream = stream;
-        this.finalSize = finalSize;
+    @Override
+    public int read(byte[] b) throws IOException {
+        int amountBytesRead = super.read(b);
+        GraphImport.bytesRead += amountBytesRead;
+        return amountBytesRead;
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        int amountBytesRead = super.read(b, off, len);
+        GraphImport.bytesRead += amountBytesRead;
+        return amountBytesRead;
     }
 
     @Override
     public int read() throws IOException {
-        int result = stream.read();
+        int result = super.read();
         if (result != -1) {
             GraphImport.bytesRead++;
-            GraphImport.progress = (int) ((GraphImport.bytesRead / finalSize) * 100);
         }
         return result;
     }
@@ -187,6 +202,5 @@ class CountingInputStream extends InputStream implements AutoCloseable {
     @Override
     public void close() throws IOException {
         super.close();
-        stream.close();
     }
 }
