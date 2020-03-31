@@ -690,6 +690,9 @@ public class FXMLController implements Initializable {
     public void handleLoadLandmarks() {
     }
 
+    public void handleSaveLandmarks() {
+    }
+
     // https://code.makery.ch/blog/javafx-dialogs-official/
     public void handleSetParameterEvent() {
         Dialog<List<String>> dialog = new Dialog<>();

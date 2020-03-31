@@ -403,4 +403,8 @@ public class Graph implements Serializable {
     public void clearLandmarks() {
         landmarks.clear();
     }
+
+    public void setLandmarks(Set<Integer> landmarksSet) {
+        landmarks = landmarksSet;
+    }
 }

@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 public class GraphImport {
@@ -115,6 +116,27 @@ public class GraphImport {
 
         graph.setNodeList(nodeList);
         graph.setAdjList(adjList);
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    public void loadLandmarks(String name, Graph graph) throws IOException {
+        FileInputStream landmarksInput = new FileInputStream(name + "-landmarks.tmp");
+
+
+        ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
+
+        Set<Integer> landmarksSet = null;
+
+        try {
+            landmarksSet = (Set<Integer>) landmarksStream.readObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        landmarksStream.close();
+
+        assert landmarksSet != null;
+        graph.setLandmarks(landmarksSet);
     }
 
     public static File selectMapFile(Stage stage) {
