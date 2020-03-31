@@ -2,8 +2,12 @@ package javafx;
 
 // TODO: toggle graphical info about landmarks
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,6 +22,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import load.GraphImport;
 import model.Edge;
 import model.Graph;
@@ -143,6 +148,7 @@ public class FXMLController implements Initializable {
      */
     private void loadNewGraph(String fileName) {
         this.fileName = fileName;
+        progress_indicator.setVisible(true);
         Task loadGraph = new Task() {
             @Override
             protected Object call() {
@@ -153,8 +159,22 @@ public class FXMLController implements Initializable {
         };
         loadGraph.setOnSucceeded(event -> {
             setUpGraph();
+            setIndicatorCompleted();
         });
         new Thread(loadGraph).start();
+    }
+
+    private void setIndicatorCompleted() {
+        progress_indicator.setMinHeight(40);
+        progress_indicator.setTranslateY(15);
+        progress_indicator.setProgress(100);
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1000), actionEvent -> {
+            progress_indicator.setProgress(-1);
+            progress_indicator.setMinHeight(0);
+            progress_indicator.setTranslateY(0);
+            progress_indicator.setVisible(false);
+        }));
+        timeline.playFromStart();
     }
 
     /**
