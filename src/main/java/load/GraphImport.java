@@ -120,8 +120,6 @@ public class GraphImport {
         }
         nodeStream.close();
         edgeStream.close();
-        System.out.println(getProgress());
-
         assert nodeList != null;
         graph = new Graph(nodeList.size());
 
