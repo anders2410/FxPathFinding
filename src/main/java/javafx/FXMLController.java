@@ -3,8 +3,8 @@ package javafx;
 // TODO: toggle graphical info about landmarks
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -36,6 +36,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 
+import static load.GraphImport.tempDir;
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -97,7 +98,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
         setWindowChangeListener();
-        setUpNewGraph("malta-latest.osm.pbf");
+        loadNewGraph("malta-latest.osm.pbf");
 
         SSSP.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
@@ -130,12 +131,31 @@ public class FXMLController implements Initializable {
         scene.setOnKeyPressed(onKeyPressed());
     }
 
-    private void setUpNewGraph(String fileName) {
-        loadGraph(fileName);
-        setGraphBounds();
+    private void loadNewGraph(String fileName) {
+        this.fileName = fileName;
+        Task loadGraph = new Task() {
+            @Override
+            protected Object call() {
+                GraphImport graphImport = new GraphImport(distanceStrategy);
+                graph = graphImport.loadGraph(fileName);
+                return true;
+            }
+        };
+        loadGraph.setOnSucceeded(event -> {
+            setUpGraph();
+        });
+        new Thread(loadGraph).start();
+    }
+
+    private void setUpGraph() {
+        if (gc != null) {
+            nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
+            edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
+        }
+        FXMLController.this.setGraphBounds();
         zoomFactor = 1;
-        setRatios();
-        redrawGraph();
+        FXMLController.this.setRatios();
+        FXMLController.this.redrawGraph();
         SSSP.setGraph(graph);
     }
 
@@ -159,16 +179,6 @@ public class FXMLController implements Initializable {
         }
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
-    }
-
-    private void loadGraph(String fileName) {
-        GraphImport graphImport = new GraphImport(distanceStrategy);
-        graph = graphImport.loadGraph(fileName);
-        this.fileName = fileName;
-        if (gc != null) {
-            nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
-            edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
-        }
     }
 
 
@@ -669,8 +679,7 @@ public class FXMLController implements Initializable {
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
         File selectedFile = GraphImport.selectMapFile(stage);
-        this.fileName = selectedFile.getName();
-        setUpNewGraph(selectedFile.getName());
+        loadNewGraph(selectedFile.getName());
     }
 
     // UTILITIES
