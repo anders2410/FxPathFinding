@@ -4,7 +4,6 @@ package javafx;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -36,7 +35,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 
-import static load.GraphImport.tempDir;
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -103,6 +101,9 @@ public class FXMLController implements Initializable {
         setSeedLabel();
     }
 
+    /**
+     * Should be run on GUI thread
+     */
     private void setWindowChangeListener() {
         canvas.sceneProperty().addListener((observableScene, oldScene, newScene) -> {
             if (oldScene == null && newScene != null) {
@@ -720,12 +721,17 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateLandmarksMaxCover() {
-        graph.maxCoverLandmarks(16);
+        graph.landmarksMaxCover(16);
         drawAllLandmarks();
     }
 
     public void handleGenerateLandmarksRandom() {
-        graph.randomLandmarks(16);
+        graph.landmarksRandom(16);
+        drawAllLandmarks();
+    }
+
+    public void handleGenerateLandmarksFarthest() {
+        graph.landmarksFarthest(16);
         drawAllLandmarks();
     }
 

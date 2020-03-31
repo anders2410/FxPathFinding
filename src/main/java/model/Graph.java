@@ -55,7 +55,7 @@ public class Graph implements Serializable {
         return hop;
     }
 
-    public void maxCoverLandmarks(int goalAmount) {
+    public void landmarksMaxCover(int goalAmount) {
         if (landmarks.size() == goalAmount) {
             return;
         }
@@ -234,7 +234,7 @@ public class Graph implements Serializable {
         return sum;
     }
 
-    public void extractLandmarksFarthest(int goalAmount) {
+    public void landmarksFarthest(int goalAmount) {
         // Current implementation is 'FarthestB' (B - breadth)
         // Simple but not necessarily best. MaxCover yields better results.
         // TODO: MaxCover for landmark selection
@@ -394,7 +394,7 @@ public class Graph implements Serializable {
         return landmarks;
     }
 
-    public void randomLandmarks(int i) {
+    public void landmarksRandom(int i) {
         while (landmarks.size() < i) {
             landmarks.add(new Random().nextInt(nodeSize));
         }

@@ -41,6 +41,8 @@
                     <MenuItem onAction="#handleGenerateLandmarksAvoid" text="GenAvoid"/>
                     <MenuItem onAction="#handleGenerateLandmarksMaxCover" text="GenMaxCover"/>
                     <MenuItem onAction="#handleGenerateLandmarksRandom" text="GenRandom"/>
+                    <MenuItem onAction="#handleGenerateLandmarksFarthest" text="GenFarthest"/>
+
                     <MenuItem onAction="#handleClearLandmarks" text="Clear"/>
                     <MenuItem onAction="#handleLoadLandmarks" text="LoadMarks"/>
                     <MenuItem onAction="#handleSaveLandmarks" text="SaveMarks"/>

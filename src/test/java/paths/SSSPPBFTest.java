@@ -37,7 +37,7 @@ public class SSSPPBFTest {
             e.printStackTrace();
         }
         graph = pbfParser.getGraph();
-        graph.extractLandmarksFarthest(16);
+        graph.landmarksFarthest(16);
         SSSP.setGraph(graph);
     }
 
@@ -106,7 +106,7 @@ public class SSSPPBFTest {
     @Test
     public void testAlgorithms() {
         int[] matrix = new int[7];
-        graph.extractLandmarksFarthest(16);
+        graph.landmarksFarthest(16);
         for (int i = 0; i < 4000; i++) {
             SSSP.seed = i;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
