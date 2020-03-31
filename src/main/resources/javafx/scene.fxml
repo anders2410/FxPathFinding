@@ -63,10 +63,10 @@
         </VBox>
     </AnchorPane>
 
-    <AnchorPane layoutX="60.0" minHeight="650" minWidth="950" AnchorPane.bottomAnchor="10.0"
+    <AnchorPane layoutX="60.0" minHeight="0" minWidth="0" AnchorPane.bottomAnchor="10.0"
                 AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
 
-        <StackPane id="canvasWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650" minWidth="950">
+        <StackPane id="canvasWindow" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0" minWidth="0">
             <Canvas fx:id="canvas" height="650.0" width="950.0"/>
         </StackPane>
 
@@ -108,7 +108,7 @@
             <ProgressIndicator id="progress_indicator" progress="0"/>
         </HBox>
 
-        <VBox id="info_box" alignment="TOP_RIGHT" minHeight="20.0" prefWidth="200.0" AnchorPane.rightAnchor="15.0"
+        <VBox id="info_box" alignment="TOP_RIGHT" minHeight="0.0" prefWidth="200.0" AnchorPane.rightAnchor="15.0"
               AnchorPane.topAnchor="15.0">
             <Label fx:id="algorithm_label" styleClass="info_label" text="Algorithm: "/>
             <Label fx:id="distance_label" styleClass="info_label" text="Total Distance: "/>
