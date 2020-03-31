@@ -3,7 +3,8 @@ package javafx;
 // TODO: toggle graphical info about landmarks
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -17,7 +18,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import load.GraphImport;
 import model.Edge;
@@ -36,7 +36,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 
-import static load.GraphImport.tempDir;
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -97,11 +96,34 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-
+        setWindowChangeListener();
         setUpNewGraph("malta-latest.osm.pbf");
 
         SSSP.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
+    }
+
+    private void setWindowChangeListener() {
+        canvas.sceneProperty().addListener((observableScene, oldScene, newScene) -> {
+            if (oldScene == null && newScene != null) {
+                newScene.windowProperty().addListener((observableWindow, oldWindow, newWindow) -> {
+                    if (oldWindow == null && newWindow != null) {
+                        newScene.heightProperty().addListener((observable, oldValue, newValue) -> {
+                            canvas.setHeight(newValue.doubleValue());
+                            setGraphBounds();
+                            setRatios();
+                            redrawGraph();
+                        });
+                        newScene.widthProperty().addListener((obs, oldVal, newVal) -> {
+                            canvas.setWidth(newVal.doubleValue());
+                            setGraphBounds();
+                            setRatios();
+                            redrawGraph();
+                        });
+                    }
+                });
+            }
+        });
     }
 
     public void setSceneListeners(Scene scene) {
