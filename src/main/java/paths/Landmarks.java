@@ -1,4 +1,267 @@
 package paths;
 
+import model.Edge;
+import model.Graph;
+import model.Node;
+import paths.factory.LandmarksFactory;
+import paths.strategy.HeuristicFunction;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static paths.SSSP.singleToAllPath;
+
 public class Landmarks {
+    private Set<Integer> landmarkSet;
+    private Map<Integer, int[]> landmarksDistancesBFS;
+    private Graph graph;
+
+    public Landmarks(Graph graph) {
+        this.graph = graph;
+        landmarkSet = new LinkedHashSet<>();
+        landmarksDistancesBFS = new HashMap<>();
+    }
+
+    public void landmarksMaxCover(int goalAmount) {
+        if (landmarkSet.size() == goalAmount) {
+            return;
+        }
+        landmarksAvoid(goalAmount);
+        Set<Integer> candidateSet = new HashSet<>(landmarkSet);
+        int avoidCall = 1;
+        while (candidateSet.size() < 4 * goalAmount && avoidCall < goalAmount * 5) {
+            removeRandomCandidateAndGraphMarks(landmarkSet);
+            landmarksAvoid(goalAmount);
+            avoidCall++;
+            candidateSet.addAll(landmarkSet);
+        }
+        for (int i = 0; i < Math.log(goalAmount + 1); i++) {
+            List<Integer> candidateSubSetList = new ArrayList<>(candidateSet);
+            while (candidateSubSetList.size() > goalAmount) {
+                Collections.shuffle(candidateSubSetList);
+                candidateSubSetList.remove(0);
+            }
+            Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
+            boolean improveFound = true;
+            while (improveFound) {
+                improveFound = false;
+                int currentProfit = calculateCoverCost(landmarkSet);
+                int bestSwapCandidateIn = -1;
+                int bestSwapCandidateOut = -1;
+                for (Integer outCandidate : landmarkSet) {
+                    for (Integer swapCandidate : candidateSubSet) {
+                        Set<Integer> copySet = new HashSet<>(landmarkSet);
+                        copySet.remove(outCandidate);
+                        copySet.add(swapCandidate);
+                        int newValue = calculateCoverCost(copySet);
+                        if (newValue > currentProfit) {
+                            bestSwapCandidateOut = outCandidate;
+                            bestSwapCandidateIn = swapCandidate;
+                            currentProfit = newValue;
+                            improveFound = true;
+                        }
+                    }
+                }
+                if (bestSwapCandidateIn != -1) {
+                    landmarkSet.remove(bestSwapCandidateOut);
+                    landmarkSet.add(bestSwapCandidateIn);
+                    candidateSubSet.remove(bestSwapCandidateIn);
+                    candidateSubSet.add(bestSwapCandidateOut);
+                }
+            }
+        }
+    }
+
+    private int calculateCoverCost(Set<Integer> potentialLandmarks) {
+        int covers = 0;
+        Map<Integer, double[]> distanceMap = new HashMap<>();
+        List<List<Edge>> originalList = graph.getAdjList();
+        for (Integer lMarkIndex : potentialLandmarks) {
+            List<Double> forwardDistance = singleToAllPath(lMarkIndex).nodeDistance;
+            double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
+            distanceMap.put(lMarkIndex, arrForward);
+        }
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            for (Edge e : originalList.get(i)) {
+                for (Integer lMarkIndex : potentialLandmarks) {
+                    double[] distances = distanceMap.get(lMarkIndex);
+                    if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
+                        continue;
+                    }
+                    if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
+                        covers++;
+/*
+                        System.out.println("Edge from: " + i + " to: " + lMarkIndex + " is covered");
+*/
+                        break;
+                    }
+                }
+            }
+        }
+        return covers;
+    }
+
+    private void removeRandomCandidateAndGraphMarks(Set<Integer> candidateSet) {
+        Iterator<Integer> iterator = candidateSet.iterator();
+        while (iterator.hasNext()) {
+            int temp = (Math.random() <= 0.5) ? 1 : 2;
+            iterator.next();
+            if (temp == 1) {
+                iterator.remove();
+            }
+        }
+    }
+
+    public void landmarksAvoid(int goalAmount) {
+        if (landmarkSet == null || landmarkSet.isEmpty()) {
+            Random random = new Random();
+            random.setSeed(664757);
+            int randomInitialLandmark = random.nextInt(graph.getNodeAmount());
+            landmarkSet.add(randomInitialLandmark);
+            landmarksDistancesBFS.put(randomInitialLandmark, new GraphUtil(graph).BFSMaxDistance(randomInitialLandmark));
+            avoidGetLeaf();
+            landmarkSet.remove(randomInitialLandmark);
+        }
+
+        while (landmarkSet.size() < goalAmount) {
+            avoidGetLeaf();
+        }
+    }
+
+    private void avoidGetLeaf() {
+        // TODO: 16-03-2020 Avoid trapping in one-way streets, possibly by maxCover or just hack our way out of it
+        int rootNode = new Random().nextInt(graph.getNodeAmount());
+        ShortestPathResult SPT = SSSP.singleToAllPath(rootNode);
+        double[] weightedNodes = new double[graph.getNodeAmount()];
+        SSSP.applyFactory(new LandmarksFactory());
+        HeuristicFunction S = SSSP.getHeuristicFunction();
+        for (int i = 0; i < SPT.nodeDistance.size(); i++) {
+            double heuristicVal = S.apply(rootNode, i);
+            double val = SPT.nodeDistance.get(i) - heuristicVal;
+            weightedNodes[i] = val;
+        }
+        Map<Integer, List<Integer>> pathInversed = SPT.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
+        double maxWeight = -1.0;
+        int bestCandidate = 0;
+        double[] sizeNodes = new double[graph.getNodeAmount()];
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            if (i == rootNode) {
+                continue;
+            }
+            double weighSumNode = findSumInTree(i, pathInversed, weightedNodes);
+            sizeNodes[i] = weighSumNode;
+            if (maxWeight <= weighSumNode) {
+                bestCandidate = i;
+                maxWeight = weighSumNode;
+            }
+        }
+        int leaf = findLeaf(bestCandidate, pathInversed, sizeNodes);
+        landmarkSet.add(leaf);
+    }
+
+    private Integer getLatestLandMark() {
+        if (landmarkSet.isEmpty()) {
+            return null;
+        }
+        Iterator<Integer> iterator = landmarkSet.iterator();
+        int lastElem = -1;
+        while (iterator.hasNext()) {
+            lastElem = iterator.next();
+        }
+        return lastElem;
+    }
+
+    private int findLeaf(int bestCandidate, Map<Integer, List<Integer>> pathInversed, double[] sizedNodes) {
+        if (pathInversed.get(bestCandidate) == null) {
+            return bestCandidate;
+        }
+        double maxSizeSoFar = -Double.MAX_VALUE;
+        for (Integer i : pathInversed.get(bestCandidate)) {
+            if (sizedNodes[i] > maxSizeSoFar) {
+                maxSizeSoFar = sizedNodes[i];
+                bestCandidate = i;
+            }
+        }
+        return findLeaf(bestCandidate, pathInversed, sizedNodes);
+    }
+
+    private double findSumInTree(int treeRoot, Map<Integer, List<Integer>> pathInversed, double[] weightedNodes) {
+        if (landmarkSet.contains(treeRoot)) {
+            return -1.0;
+        }
+        if (pathInversed.get(treeRoot) == null) {
+            return 0;
+        }
+        double sum = weightedNodes[treeRoot];
+        for (Integer i : pathInversed.get(treeRoot)) {
+            double subTreeSum = findSumInTree(i, pathInversed, weightedNodes);
+            if (subTreeSum == -1.0) return -1.0;
+            sum += subTreeSum;
+        }
+        return sum;
+    }
+
+    public void landmarksFarthest(int goalAmount) {
+        // Current implementation is 'FarthestB' (B - breadth)
+        // Simple but not necessarily best. MaxCover yields better results.
+        // TODO: MaxCover for landmark selection
+        GraphUtil gu = new GraphUtil(graph);
+
+        if (landmarkSet.isEmpty()) {
+            Random random = new Random();
+            random.setSeed(666974757);
+            int startNode = random.nextInt(graph.getNodeAmount());
+            int[] arr = gu.BFSMaxDistance(startNode);
+            int max = 0;
+            for (int i = 0; i < arr.length; i++) {
+                max = arr[i] > arr[max] ? i : max;
+            }
+            landmarksDistancesBFS.put(startNode, arr);
+            landmarkSet.add(max);
+        }
+
+        while (landmarkSet.size() < goalAmount) {
+            int furthestCandidate = getFurthestCandidateLandmark();
+            landmarksDistancesBFS.put(furthestCandidate, gu.BFSMaxDistance(furthestCandidate));
+            landmarkSet.add(furthestCandidate);
+        }
+    }
+
+    private int getFurthestCandidateLandmark() {
+        int highestMinimal = 0;
+        int furthestCandidate = 0;
+        for (Node n : graph.getNodeList()) {
+            if (landmarkSet.contains(n.index)) continue;
+            int lowestCandidateDistance = Integer.MAX_VALUE;
+            for (Integer i : landmarksDistancesBFS.keySet()) {
+                int stepDistance = landmarksDistancesBFS.get(i)[n.index];
+                if (lowestCandidateDistance > stepDistance) {
+                    lowestCandidateDistance = stepDistance;
+                }
+            }
+            if (lowestCandidateDistance > highestMinimal && lowestCandidateDistance != Integer.MAX_VALUE) {
+                furthestCandidate = n.index;
+                highestMinimal = lowestCandidateDistance;
+            }
+        }
+        return furthestCandidate;
+    }
+
+    public Set<Integer> getLandmarkSet() {
+        return landmarkSet;
+    }
+
+    public void landmarksRandom(int i) {
+        while (landmarkSet.size() < i) {
+            landmarkSet.add(new Random().nextInt(graph.getNodeAmount()));
+        }
+    }
+
+    public void clearLandmarks() {
+        landmarkSet.clear();
+    }
+
+    public void setLandmarkSet(Set<Integer> landmarksSet) {
+        landmarkSet = landmarksSet;
+    }
 }

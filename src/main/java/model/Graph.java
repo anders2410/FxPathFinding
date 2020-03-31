@@ -1,5 +1,6 @@
 package model;
 
+import paths.GraphUtil;
 import paths.SSSP;
 import paths.ShortestPathResult;
 import paths.factory.LandmarksFactory;
@@ -15,267 +16,19 @@ public class Graph implements Serializable {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
 
-    private Set<Integer> landmarks;
-    private Map<Integer, int[]> landmarksDistancesBFS;
-    private int nodeSize;
+    private int nodeAmount;
 
-    public Graph(int nodeSize) {
-        init(nodeSize);
+    public Graph(int nodeAmount) {
+        init(nodeAmount);
     }
 
     public void init(int size) {
-        this.nodeSize = size;
+        this.nodeAmount = size;
         nodeList = new ArrayList<>();
         adjList = new ArrayList<>();
-        landmarks = new LinkedHashSet<>();
-        landmarksDistancesBFS = new HashMap<>();
         for (int i = 0; i < size; i++) {
             adjList.add(emptyAdjList());
         }
-    }
-
-    public int[] BFSMaxDistance(int startNode) {
-        int[] hop = new int[nodeSize];
-        Arrays.fill(hop, Integer.MAX_VALUE);
-        boolean[] seen = new boolean[nodeSize];
-        Queue<Integer> queue = new ArrayDeque<>(nodeSize);
-        queue.add(startNode);
-        hop[startNode] = 0;
-        seen[startNode] = true;
-        while (!queue.isEmpty()) {
-            int top = queue.poll();
-            for (Edge e : adjList.get(top)) {
-                if (!seen[e.to]) {
-                    hop[e.to] = hop[top] + 1;
-                    queue.add(e.to);
-                    seen[e.to] = true;
-                }
-            }
-        }
-        return hop;
-    }
-
-    public void landmarksMaxCover(int goalAmount) {
-        if (landmarks.size() == goalAmount) {
-            return;
-        }
-        landmarksAvoid(goalAmount);
-        Set<Integer> candidateSet = new HashSet<>(landmarks);
-        int avoidCall = 1;
-        while (candidateSet.size() < 4 * goalAmount && avoidCall < goalAmount * 5) {
-            removeRandomCandidateAndGraphMarks(landmarks);
-            landmarksAvoid(goalAmount);
-            avoidCall++;
-            candidateSet.addAll(landmarks);
-        }
-        for (int i = 0; i < Math.log(goalAmount + 1); i++) {
-            List<Integer> candidateSubSetList = new ArrayList<>(candidateSet);
-            while (candidateSubSetList.size() > goalAmount) {
-                Collections.shuffle(candidateSubSetList);
-                candidateSubSetList.remove(0);
-            }
-            Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
-            boolean improveFound = true;
-            while (improveFound) {
-                improveFound = false;
-                int currentProfit = calculateCoverCost(landmarks);
-                int bestSwapCandidateIn = -1;
-                int bestSwapCandidateOut = -1;
-                for (Integer outCandidate : landmarks) {
-                    for (Integer swapCandidate : candidateSubSet) {
-                        Set<Integer> copySet = new HashSet<>(landmarks);
-                        copySet.remove(outCandidate);
-                        copySet.add(swapCandidate);
-                        int newValue = calculateCoverCost(copySet);
-                        if (newValue > currentProfit) {
-                            bestSwapCandidateOut = outCandidate;
-                            bestSwapCandidateIn = swapCandidate;
-                            currentProfit = newValue;
-                            improveFound = true;
-                        }
-                    }
-                }
-                if (bestSwapCandidateIn != -1) {
-                    landmarks.remove(bestSwapCandidateOut);
-                    landmarks.add(bestSwapCandidateIn);
-                    candidateSubSet.remove(bestSwapCandidateIn);
-                    candidateSubSet.add(bestSwapCandidateOut);
-                }
-            }
-        }
-    }
-
-    private int calculateCoverCost(Set<Integer> potentialLandmarks) {
-        int covers = 0;
-        Map<Integer, double[]> distanceMap = new HashMap<>();
-        List<List<Edge>> originalList = getAdjList();
-        for (Integer lMarkIndex : potentialLandmarks) {
-            List<Double> forwardDistance = singleToAllPath(lMarkIndex).nodeDistance;
-            double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
-            distanceMap.put(lMarkIndex, arrForward);
-        }
-        for (int i = 0; i < nodeSize; i++) {
-            for (Edge e : originalList.get(i)) {
-                for (Integer lMarkIndex : potentialLandmarks) {
-                    double[] distances = distanceMap.get(lMarkIndex);
-                    if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
-                        continue;
-                    }
-                    if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
-                        covers++;
-/*
-                        System.out.println("Edge from: " + i + " to: " + lMarkIndex + " is covered");
-*/
-                        break;
-                    }
-                }
-            }
-        }
-        return covers;
-    }
-
-    private void removeRandomCandidateAndGraphMarks(Set<Integer> candidateSet) {
-        Iterator<Integer> iterator = candidateSet.iterator();
-        while (iterator.hasNext()) {
-            int temp = (Math.random() <= 0.5) ? 1 : 2;
-            iterator.next();
-            if (temp == 1) {
-                iterator.remove();
-            }
-        }
-    }
-
-    public void landmarksAvoid(int goalAmount) {
-        if (landmarks == null || landmarks.isEmpty()) {
-            Random random = new Random();
-            random.setSeed(664757);
-            int randomInitialLandmark = random.nextInt(nodeList.size());
-            landmarks.add(randomInitialLandmark);
-            landmarksDistancesBFS.put(randomInitialLandmark, BFSMaxDistance(randomInitialLandmark));
-            avoidGetLeaf();
-            landmarks.remove(randomInitialLandmark);
-        }
-
-        while (landmarks.size() < goalAmount) {
-            avoidGetLeaf();
-        }
-    }
-
-    private void avoidGetLeaf() {
-        // TODO: 16-03-2020 Avoid trapping in one-way streets, possibly by maxCover or just hack our way out of it
-        int rootNode = new Random().nextInt(nodeList.size());
-        ShortestPathResult SPT = SSSP.singleToAllPath(rootNode);
-        double[] weightedNodes = new double[nodeSize];
-        SSSP.applyFactory(new LandmarksFactory());
-        HeuristicFunction S = SSSP.getHeuristicFunction();
-        for (int i = 0; i < SPT.nodeDistance.size(); i++) {
-            double heuristicVal = S.apply(rootNode, i);
-            double val = SPT.nodeDistance.get(i) - heuristicVal;
-            weightedNodes[i] = val;
-        }
-        Map<Integer, List<Integer>> pathInversed = SPT.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
-        double maxWeight = -1.0;
-        int bestCandidate = 0;
-        double[] sizeNodes = new double[nodeSize];
-        for (int i = 0; i < nodeSize; i++) {
-            if (i == rootNode) {
-                continue;
-            }
-            double weighSumNode = findSumInTree(i, pathInversed, weightedNodes);
-            sizeNodes[i] = weighSumNode;
-            if (maxWeight <= weighSumNode) {
-                bestCandidate = i;
-                maxWeight = weighSumNode;
-            }
-        }
-        int leaf = findLeaf(bestCandidate, pathInversed, sizeNodes);
-        landmarks.add(leaf);
-    }
-
-    private Integer getLatestLandMark() {
-        if (landmarks.isEmpty()) {
-            return null;
-        }
-        Iterator<Integer> iterator = landmarks.iterator();
-        int lastElem = -1;
-        while (iterator.hasNext()) {
-            lastElem = iterator.next();
-        }
-        return lastElem;
-    }
-
-    private int findLeaf(int bestCandidate, Map<Integer, List<Integer>> pathInversed, double[] sizedNodes) {
-        if (pathInversed.get(bestCandidate) == null) {
-            return bestCandidate;
-        }
-        double maxSizeSoFar = -Double.MAX_VALUE;
-        for (Integer i : pathInversed.get(bestCandidate)) {
-            if (sizedNodes[i] > maxSizeSoFar) {
-                maxSizeSoFar = sizedNodes[i];
-                bestCandidate = i;
-            }
-        }
-        return findLeaf(bestCandidate, pathInversed, sizedNodes);
-    }
-
-    private double findSumInTree(int treeRoot, Map<Integer, List<Integer>> pathInversed, double[] weightedNodes) {
-        if (landmarks.contains(treeRoot)) {
-            return -1.0;
-        }
-        if (pathInversed.get(treeRoot) == null) {
-            return 0;
-        }
-        double sum = weightedNodes[treeRoot];
-        for (Integer i : pathInversed.get(treeRoot)) {
-            double subTreeSum = findSumInTree(i, pathInversed, weightedNodes);
-            if (subTreeSum == -1.0) return -1.0;
-            sum += subTreeSum;
-        }
-        return sum;
-    }
-
-    public void landmarksFarthest(int goalAmount) {
-        // Current implementation is 'FarthestB' (B - breadth)
-        // Simple but not necessarily best. MaxCover yields better results.
-        // TODO: MaxCover for landmark selection
-        if (landmarks.isEmpty()) {
-            Random random = new Random();
-            random.setSeed(666974757);
-            int startNode = random.nextInt(nodeList.size());
-            int[] arr = BFSMaxDistance(startNode);
-            int max = 0;
-            for (int i = 0; i < arr.length; i++) {
-                max = arr[i] > arr[max] ? i : max;
-            }
-            landmarksDistancesBFS.put(startNode, arr);
-            landmarks.add(max);
-        }
-
-        while (landmarks.size() < goalAmount) {
-            int furthestCandidate = getFurthestCandidateLandmark();
-            landmarksDistancesBFS.put(furthestCandidate, BFSMaxDistance(furthestCandidate));
-            landmarks.add(furthestCandidate);
-        }
-    }
-
-    private int getFurthestCandidateLandmark() {
-        int highestMinimal = 0;
-        int furthestCandidate = 0;
-        for (Node n : nodeList) {
-            if (landmarks.contains(n.index)) continue;
-            int lowestCandidateDistance = Integer.MAX_VALUE;
-            for (Integer i : landmarksDistancesBFS.keySet()) {
-                int stepDistance = landmarksDistancesBFS.get(i)[n.index];
-                if (lowestCandidateDistance > stepDistance) {
-                    lowestCandidateDistance = stepDistance;
-                }
-            }
-            if (lowestCandidateDistance > highestMinimal && lowestCandidateDistance != Integer.MAX_VALUE) {
-                furthestCandidate = n.index;
-                highestMinimal = lowestCandidateDistance;
-            }
-        }
-        return furthestCandidate;
     }
 
     private List<Edge> emptyAdjList() {
@@ -316,7 +69,7 @@ public class Graph implements Serializable {
 
     public List<List<Edge>> reverseAdjacencyList(List<List<Edge>> originalList) {
         List<List<Edge>> reversedList = new ArrayList<>(originalList.size());
-        for (int i = 0; i < nodeSize; i++) {
+        for (int i = 0; i < nodeAmount; i++) {
             reversedList.add(emptyAdjList());
         }
         for (int i = 0; i < originalList.size(); i++) {
@@ -328,7 +81,7 @@ public class Graph implements Serializable {
         return reversedList;
     }
 
-    public int getNumberOfEdges() {
+    public int getEdgeAmount() {
         int total = 0;
         for (List<Edge> sublist : adjList) {
             if (sublist != null) {
@@ -348,15 +101,15 @@ public class Graph implements Serializable {
     }
 
     public void addNode(Node node) {
-        node.index = nodeSize;
+        node.index = nodeAmount;
         nodeList.add(node);
         nodeList.indexOf(node);
         adjList.add(emptyAdjList());
-        nodeSize++;
+        nodeAmount++;
     }
 
     public int getNodeAmount() {
-        return nodeSize;
+        return nodeAmount;
     }
 
     public void addEdge(Node from, Node to, double d) {
@@ -372,11 +125,11 @@ public class Graph implements Serializable {
     }
 
     public void removeNodesFromEnd(int number) {
-        adjList = adjList.subList(0, nodeSize - number);
+        adjList = adjList.subList(0, nodeAmount - number);
         for (int i = 0; i < number; i++) {
-            nodeSize--;
-            nodeList.remove(nodeSize);
-            removeAllEdgesTo(nodeSize);
+            nodeAmount--;
+            nodeList.remove(nodeAmount);
+            removeAllEdgesTo(nodeAmount);
         }
     }
 
@@ -388,23 +141,5 @@ public class Graph implements Serializable {
 
     public void setAdjList(List<List<Edge>> adjList) {
         this.adjList = adjList;
-    }
-
-    public Set<Integer> getLandmarks() {
-        return landmarks;
-    }
-
-    public void landmarksRandom(int i) {
-        while (landmarks.size() < i) {
-            landmarks.add(new Random().nextInt(nodeSize));
-        }
-    }
-
-    public void clearLandmarks() {
-        landmarks.clear();
-    }
-
-    public void setLandmarks(Set<Integer> landmarksSet) {
-        landmarks = landmarksSet;
     }
 }

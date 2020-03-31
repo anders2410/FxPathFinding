@@ -5,7 +5,6 @@ import model.*;
 import paths.factory.*;
 import paths.strategy.*;
 
-import java.sql.Time;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -20,6 +19,7 @@ public class SSSP {
     public static int seed = 0;
 
     private static Graph graph;
+    private static Landmarks landmarks;
     private static int source, target;
     private static AlgorithmMode mode;
     private static double goalDistance;
@@ -348,5 +348,13 @@ public class SSSP {
 
     public static Map<Integer, Double> getEstimatedDist(ABDir dir) {
         return dir == A ? estimatedDistA : estimatedDistB;
+    }
+
+    public static Landmarks getLandmarks() {
+        return landmarks;
+    }
+
+    public static void setLandmarks(Landmarks landmarks) {
+        SSSP.landmarks = landmarks;
     }
 }

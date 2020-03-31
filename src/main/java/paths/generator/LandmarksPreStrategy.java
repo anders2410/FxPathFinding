@@ -2,10 +2,11 @@ package paths.generator;
 
 import model.Edge;
 import model.Graph;
-import paths.SSSP.*;
+import paths.Landmarks;
 import paths.strategy.PreprocessStrategy;
 
 import java.util.List;
+import java.util.Set;
 
 import static paths.SSSP.*;
 
@@ -19,11 +20,13 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
         double[][] landmarkArray = getLandmarkArray();
         int target = getTarget(), source = getSource();
         Graph graph = getGraph();
-        if ((landmarkArray == null || !graph.getLandmarks().isEmpty() && landmarkArray.length / 2 < graph.getLandmarks().size())) {
-            landmarkArray = new double[graph.getLandmarks().size() * 2][graph.getNodeAmount()];
+        Set<Integer> landmarkSet = getLandmarks().getLandmarkSet();
+
+        if ((landmarkArray == null || !landmarkSet.isEmpty() && landmarkArray.length / 2 < landmarkSet.size())) {
+            landmarkArray = new double[landmarkSet.size() * 2][graph.getNodeAmount()];
             int index = 0;
             List<List<Edge>> originalList = graph.getAdjList();
-            for (Integer landmarkIndex : graph.getLandmarks()) {
+            for (Integer landmarkIndex : landmarkSet) {
                 List<Double> forwardDistance = singleToAllPath(landmarkIndex).nodeDistance;
                 double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
                 graph.setAdjList(graph.reverseAdjacencyList(graph.getAdjList()));
@@ -32,8 +35,7 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
                 graph.setAdjList(originalList);
                 landmarkArray[index] = arrForward;
                 landmarkArray[index + 1] = arrBackward;
-                index++;
-                index++;
+                index += 2;
             }
             graph.resetPathTrace();
             assert originalList == graph.getAdjList();

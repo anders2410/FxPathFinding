@@ -27,6 +27,7 @@ import model.Graph;
 import model.Node;
 import model.Util;
 import paths.AlgorithmMode;
+import paths.Landmarks;
 import paths.SSSP;
 import paths.ShortestPathResult;
 
@@ -72,6 +73,7 @@ public class FXMLController implements Initializable {
 
     private Stage stage;
     private Graph graph;
+    private Landmarks landmarks;
     private GraphicsContext gc;
     private int xOffset;
     private int yOffset;
@@ -152,6 +154,7 @@ public class FXMLController implements Initializable {
             protected Object call() {
                 GraphImport graphImport = new GraphImport(distanceStrategy);
                 graph = graphImport.loadGraph(fileName);
+                landmarks = new Landmarks(graph);
                 return true;
             }
         };
@@ -181,13 +184,14 @@ public class FXMLController implements Initializable {
     private void setUpGraph() {
         if (gc != null) {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
-            edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
+            edges_label.setText("Number of Edges: " + graph.getEdgeAmount());
         }
         FXMLController.this.setGraphBounds();
         zoomFactor = 1;
         FXMLController.this.setRatios();
         FXMLController.this.redrawGraph();
         SSSP.setGraph(graph);
+        SSSP.setLandmarks(landmarks);
     }
 
     private void setGraphBounds() {
@@ -287,7 +291,7 @@ public class FXMLController implements Initializable {
     }
 
     private void drawAllLandmarks() {
-        for (Integer index : graph.getLandmarks()) {
+        for (Integer index : landmarks.getLandmarkSet()) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);
         }
@@ -715,8 +719,8 @@ public class FXMLController implements Initializable {
     }
 
     public void handleAddLandmarkEvent() {
-        graph.landmarksAvoid(graph.getLandmarks().size() + 1);
-        for (Integer index : graph.getLandmarks()) {
+        landmarks.landmarksAvoid(landmarks.getLandmarkSet().size() + 1);
+        for (Integer index : landmarks.getLandmarkSet()) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);
         }
@@ -767,28 +771,28 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateLandmarksAvoid() {
-        graph.landmarksAvoid(16);
+        landmarks.landmarksAvoid(16);
         drawAllLandmarks();
     }
 
     public void handleGenerateLandmarksMaxCover() {
-        graph.landmarksMaxCover(16);
+        landmarks.landmarksMaxCover(16);
         drawAllLandmarks();
     }
 
     public void handleGenerateLandmarksRandom() {
-        graph.landmarksRandom(16);
+        landmarks.landmarksRandom(16);
         drawAllLandmarks();
     }
 
     public void handleGenerateLandmarksFarthest() {
-        graph.landmarksFarthest(16);
+        landmarks.landmarksFarthest(16);
         drawAllLandmarks();
     }
 
     public void handleLoadLandmarks() {
         try {
-            GraphImport.loadLandmarks(fileName, graph);
+            GraphImport.loadLandmarks(fileName, landmarks);
             drawAllLandmarks();
         } catch (IOException e) {
             e.printStackTrace();
@@ -800,7 +804,7 @@ public class FXMLController implements Initializable {
             String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
             FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(graph.getLandmarks());
+            oos.writeObject(landmarks.getLandmarkSet());
             oos.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -870,7 +874,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleClearLandmarks() {
-        graph.clearLandmarks();
+        landmarks.clearLandmarks();
         redrawGraph();
     }
 }

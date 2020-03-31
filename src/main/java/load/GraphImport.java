@@ -9,6 +9,7 @@ import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
 import model.Util;
+import paths.Landmarks;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -127,7 +128,7 @@ public class GraphImport {
     }
 
     @SuppressWarnings(value = "unchecked")
-    public static void loadLandmarks(String name, Graph graph) throws IOException {
+    public static void loadLandmarks(String name, Landmarks landmarks) throws IOException {
         String fileType = name.substring(name.length() - 3);
         if (fileType.equals("osm")) {
             name = (name.substring(0, name.length() - 4));
@@ -149,7 +150,7 @@ public class GraphImport {
         landmarksStream.close();
 
         assert landmarksSet != null;
-        graph.setLandmarks(landmarksSet);
+        landmarks.setLandmarkSet(landmarksSet);
     }
 
     public static File selectMapFile(Stage stage) {
