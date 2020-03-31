@@ -119,7 +119,7 @@ public class GraphImport {
     }
 
     @SuppressWarnings(value = "unchecked")
-    public void loadLandmarks(String name, Graph graph) throws IOException {
+    public static void loadLandmarks(String name, Graph graph) throws IOException {
         FileInputStream landmarksInput = new FileInputStream(name + "-landmarks.tmp");
 
 

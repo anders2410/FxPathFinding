@@ -83,6 +83,7 @@ public class FXMLController implements Initializable {
     private AlgorithmMode algorithmMode = DIJKSTRA;
     private Deque<Node> selectedNodes = new ArrayDeque<>();
     private int mouseNodes = 0;
+    private String fileName;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -138,6 +139,7 @@ public class FXMLController implements Initializable {
     private void loadGraph(String fileName) {
         GraphImport graphImport = new GraphImport(distanceStrategy);
         graph = graphImport.loadGraph(fileName);
+        this.fileName = fileName;
         if (gc != null) {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
             edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
@@ -688,6 +690,11 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLoadLandmarks() {
+        try {
+            GraphImport.loadLandmarks(fileName, graph);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void handleSaveLandmarks() {
