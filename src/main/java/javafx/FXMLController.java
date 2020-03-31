@@ -29,11 +29,14 @@ import paths.SSSP;
 import paths.ShortestPathResult;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 
+import static load.GraphImport.tempDir;
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -699,6 +702,15 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSaveLandmarks() {
+        try {
+            String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
+            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(graph.getNodeList());
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // https://code.makery.ch/blog/javafx-dialogs-official/
