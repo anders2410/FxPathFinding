@@ -27,7 +27,7 @@ public class GraphImport {
     private Graph graph;
     private BiFunction<Node, Node, Double> distanceStrategy;
 
-    protected static int progress;
+    protected static double progress;
     protected static int bytesRead;
 
     public GraphImport(BiFunction<Node, Node, Double> distanceStrategy) {
@@ -120,7 +120,6 @@ public class GraphImport {
         }
         nodeStream.close();
         edgeStream.close();
-        System.out.println(getProgress());
 
         assert nodeList != null;
         graph = new Graph(nodeList.size());
@@ -164,8 +163,8 @@ public class GraphImport {
         return fileChooser.showOpenDialog(stage);
     }
 
-    public static int getProgress() {
-        progress = (int) ((bytesRead / tempCombinedSize) * 100);
+    public static double getProgress() {
+        progress = (double) ((bytesRead / tempCombinedSize) * 100);
         return progress;
     }
 }

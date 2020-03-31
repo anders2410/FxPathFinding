@@ -162,6 +162,7 @@ public class FXMLController implements Initializable {
             setUpGraph();
             playIndicatorCompleted();
         });
+        progress_indicator.progressProperty().bind(loadGraphTask.progressProperty());
         new Thread(loadGraphTask).start();
     }
 
@@ -227,7 +228,7 @@ public class FXMLController implements Initializable {
         ssspTask = new Task() {
             @Override
             protected Object call() {
-                results = ssspConnectingNodes(selectedNodes);
+                results = ssspConnectingNodes(new ArrayDeque<>(selectedNodes));
                 return null;
             }
         };
