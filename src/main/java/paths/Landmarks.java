@@ -118,7 +118,7 @@ public class Landmarks {
             random.setSeed(664757);
             int randomInitialLandmark = random.nextInt(graph.getNodeAmount());
             landmarkSet.add(randomInitialLandmark);
-            landmarksDistancesBFS.put(randomInitialLandmark, new GraphUtil(graph).BFSMaxDistance(randomInitialLandmark));
+            landmarksDistancesBFS.put(randomInitialLandmark, new GraphUtil(graph).bfsMaxDistance(randomInitialLandmark));
             avoidGetLeaf();
             landmarkSet.remove(randomInitialLandmark);
         }
@@ -211,7 +211,7 @@ public class Landmarks {
             Random random = new Random();
             random.setSeed(666974757);
             int startNode = random.nextInt(graph.getNodeAmount());
-            int[] arr = gu.BFSMaxDistance(startNode);
+            int[] arr = gu.bfsMaxDistance(startNode);
             int max = 0;
             for (int i = 0; i < arr.length; i++) {
                 max = arr[i] > arr[max] ? i : max;
@@ -222,7 +222,7 @@ public class Landmarks {
 
         while (landmarkSet.size() < goalAmount) {
             int furthestCandidate = getFurthestCandidateLandmark();
-            landmarksDistancesBFS.put(furthestCandidate, gu.BFSMaxDistance(furthestCandidate));
+            landmarksDistancesBFS.put(furthestCandidate, gu.bfsMaxDistance(furthestCandidate));
             landmarkSet.add(furthestCandidate);
         }
     }

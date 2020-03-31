@@ -59,6 +59,9 @@
             <Button alignment="CENTER" onAction="#handleChooseFileEvent" styleClass="nav_button" text="FILE"/>
             <Separator styleClass="nav_separator"/>
 
+            <Button alignment="CENTER" onAction="#handleSCCEvent" styleClass="nav_button" text="SCC"/>
+            <Separator styleClass="nav_separator"/>
+
             <Separator styleClass="nav_separator"/>
         </VBox>
     </AnchorPane>
