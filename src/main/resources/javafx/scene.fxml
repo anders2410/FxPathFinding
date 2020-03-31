@@ -36,6 +36,17 @@
             </MenuButton>
 
             <Separator styleClass="nav_separator"/>
+            <MenuButton alignment="CENTER" text="LANDMARKS">
+                <items>
+                    <MenuItem onAction="#handleGenerateLandmarksAvoid" text="GenAvoid"/>
+                    <MenuItem onAction="#handleGenerateLandmarksMaxCover" text="GenMaxCover"/>
+                    <MenuItem onAction="#handleGenerateLandmarksRandom" text="GenRandom"/>
+                    <MenuItem onAction="#handleClearLandmarks" text="Clear"/>
+                    <MenuItem onAction="#handleLoadLandmarks" text="LoadMarks"/>
+                    <MenuItem onAction="#handleSaveLandmarks" text="SaveMarks"/>
+                </items>
+            </MenuButton>
+            <Separator styleClass="nav_separator"/>
 
             <Button alignment="CENTER" onAction="#handleSetParameterEvent" styleClass="nav_button" text="SET"/>
             <Separator styleClass="nav_separator"/>
@@ -46,8 +57,6 @@
             <Button alignment="CENTER" onAction="#handleChooseFileEvent" styleClass="nav_button" text="FILE"/>
             <Separator styleClass="nav_separator"/>
 
-            <Button fx:id="addLandmarkButton" alignment="CENTER" onAction="#handleAddLandmarkEvent"
-                    styleClass="nav_button" text="+LMARK"/>
             <Separator styleClass="nav_separator"/>
         </VBox>
     </AnchorPane>

@@ -1,7 +1,5 @@
 package datastructures;
 
-import model.Graph;
-
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -23,11 +21,22 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
     }
 
     @Override
-    public boolean find(Integer toFind) {
+    public boolean contains(Integer toFind) {
+        int index = 0;
         for (Integer i : binHeap) {
             if (i.equals(toFind)) return true;
+            index++;
         }
         return false;
+    }
+
+    public int find(Integer toFind) {
+        int index = 0;
+        for (Integer i : binHeap) {
+            if (i.equals(toFind)) return index;
+            index++;
+        }
+        return -1;
     }
 
     @Override
@@ -87,10 +96,18 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
 
     @Override
     public void updatePriority(Integer toUpdate) {
-        if (find(toUpdate)) {
-            remove(toUpdate);
+        int index = find(toUpdate);
+        if (index == 0) {
+            bubbleDown(index);
+        } else if (index != -1) {
+            if (0 > comparator.compare(toUpdate, binHeap[parent(index)])) {
+                bubbleUp(index);
+            } else {
+                bubbleDown(index);
+            }
+        } else {
+            insert(toUpdate);
         }
-        insert(toUpdate);
     }
 
     private int parent(int child) {

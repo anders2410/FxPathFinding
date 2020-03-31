@@ -4,6 +4,7 @@ package javafx;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -28,10 +29,14 @@ import paths.SSSP;
 import paths.ShortestPathResult;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 
+import static load.GraphImport.tempDir;
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -81,6 +86,7 @@ public class FXMLController implements Initializable {
     private AlgorithmMode algorithmMode = DIJKSTRA;
     private Deque<Node> selectedNodes = new ArrayDeque<>();
     private int mouseNodes = 0;
+    private String fileName;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -103,6 +109,7 @@ public class FXMLController implements Initializable {
     }
 
     private void loadNewGraph(String fileName) {
+        this.fileName = fileName;
         Task loadGraph = new Task() {
             @Override
             protected Object call() {
@@ -150,6 +157,8 @@ public class FXMLController implements Initializable {
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
+
+
 
     public void runAlgorithm() {
         if (selectedNodes.size() <= 1) {
@@ -596,16 +605,12 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLandmarksEvent() {
-        graph.landmarksAvoid(16);
-        drawAllLandmarks();
         algorithmMode = A_STAR_LANDMARKS;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleBiLandmarksEvent() {
-        graph.landmarksAvoid( 16);
-        drawAllLandmarks();
         algorithmMode = BI_A_STAR_LANDMARKS;
         runAlgorithm();
         setAlgorithmLabels();
@@ -682,6 +687,42 @@ public class FXMLController implements Initializable {
         seed_label.setText("Seed: " + SSSP.seed);
     }
 
+    public void handleGenerateLandmarksAvoid() {
+        graph.landmarksAvoid(16);
+        drawAllLandmarks();
+    }
+
+    public void handleGenerateLandmarksMaxCover() {
+        graph.maxCoverLandmarks(16);
+        drawAllLandmarks();
+    }
+
+    public void handleGenerateLandmarksRandom() {
+        graph.randomLandmarks(16);
+        drawAllLandmarks();
+    }
+
+    public void handleLoadLandmarks() {
+        try {
+            GraphImport.loadLandmarks(fileName, graph);
+            drawAllLandmarks();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleSaveLandmarks() {
+        try {
+            String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
+            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(graph.getLandmarks());
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     // https://code.makery.ch/blog/javafx-dialogs-official/
     public void handleSetParameterEvent() {
         Dialog<List<String>> dialog = new Dialog<>();
@@ -742,5 +783,10 @@ public class FXMLController implements Initializable {
             return null;
         });
         dialog.show();
+    }
+
+    public void handleClearLandmarks() {
+        graph.clearLandmarks();
+        redrawGraph();
     }
 }

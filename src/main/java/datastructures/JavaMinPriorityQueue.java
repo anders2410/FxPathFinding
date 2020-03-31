@@ -12,7 +12,7 @@ public class JavaMinPriorityQueue extends PriorityQueue<Integer> implements MinP
     }
 
     @Override
-    public boolean find(Integer toFind) {
+    public boolean contains(Integer toFind) {
         return super.contains(toFind);
     }
 

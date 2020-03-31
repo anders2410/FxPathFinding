@@ -2,7 +2,7 @@ package datastructures;
 
 public abstract interface MinPriorityQueue {
 
-    public abstract boolean find(Integer toFind);
+    public abstract boolean contains(Integer toFind);
 
     public abstract int size();
 

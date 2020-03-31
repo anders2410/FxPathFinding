@@ -393,4 +393,18 @@ public class Graph implements Serializable {
     public Set<Integer> getLandmarks() {
         return landmarks;
     }
+
+    public void randomLandmarks(int i) {
+        while (landmarks.size() < i) {
+            landmarks.add(new Random().nextInt(nodeSize));
+        }
+    }
+
+    public void clearLandmarks() {
+        landmarks.clear();
+    }
+
+    public void setLandmarks(Set<Integer> landmarksSet) {
+        landmarks = landmarksSet;
+    }
 }
