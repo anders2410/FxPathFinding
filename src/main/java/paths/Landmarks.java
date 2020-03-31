@@ -7,6 +7,7 @@ import paths.factory.LandmarksFactory;
 import paths.strategy.HeuristicFunction;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static paths.SSSP.singleToAllPath;
@@ -15,6 +16,8 @@ public class Landmarks {
     private Set<Integer> landmarkSet;
     private Map<Integer, int[]> landmarksDistancesBFS;
     private Graph graph;
+    private BiConsumer<Double, Double> progressListener;
+    private double progressedIndicator;
 
     public Landmarks(Graph graph) {
         this.graph = graph;
@@ -22,20 +25,36 @@ public class Landmarks {
         landmarksDistancesBFS = new HashMap<>();
     }
 
+    public void updateProgress() {
+        if (progressedIndicator < landmarkSet.size()) {
+            progressedIndicator = landmarkSet.size();
+            if (progressedIndicator <= 16) {
+                progressListener.accept(progressedIndicator, 16.0);
+            }
+        }
+    }
+
+    public void setProgressListener(BiConsumer<Double, Double> progressListener) {
+        this.progressListener = progressListener;
+    }
+
     public void landmarksMaxCover(int goalAmount) {
         if (landmarkSet.size() == goalAmount) {
             return;
         }
-        landmarksAvoid(goalAmount);
+        landmarksAvoid(goalAmount, true);
         Set<Integer> candidateSet = new HashSet<>(landmarkSet);
         int avoidCall = 1;
         while (candidateSet.size() < 4 * goalAmount && avoidCall < goalAmount * 5) {
             removeRandomCandidateAndGraphMarks(landmarkSet);
-            landmarksAvoid(goalAmount);
+            landmarksAvoid(goalAmount, true);
             avoidCall++;
             candidateSet.addAll(landmarkSet);
         }
-        for (int i = 0; i < Math.log(goalAmount + 1); i++) {
+        // Approximate log2(goal+1)
+        int flooredLog = (int) (Math.log(goalAmount + 1) / Math.log(2));
+        progressListener.accept(1.0, 100.0);
+        for (int i = 0; i < flooredLog; i++) {
             List<Integer> candidateSubSetList = new ArrayList<>(candidateSet);
             while (candidateSubSetList.size() > goalAmount) {
                 Collections.shuffle(candidateSubSetList);
@@ -43,7 +62,10 @@ public class Landmarks {
             }
             Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
             boolean improveFound = true;
+            double approximateProgress = i;
             while (improveFound) {
+                progressListener.accept(Math.min((double) i + 1, approximateProgress), (double) flooredLog);
+
                 improveFound = false;
                 int currentProfit = calculateCoverCost(landmarkSet);
                 int bestSwapCandidateIn = -1;
@@ -68,8 +90,11 @@ public class Landmarks {
                     candidateSubSet.remove(bestSwapCandidateIn);
                     candidateSubSet.add(bestSwapCandidateOut);
                 }
+                approximateProgress += 0.1;
             }
+            progressListener.accept((double) i, (double) flooredLog);
         }
+        progressListener.accept(1.00, 1.00);
     }
 
     private int calculateCoverCost(Set<Integer> potentialLandmarks) {
@@ -112,7 +137,7 @@ public class Landmarks {
         }
     }
 
-    public void landmarksAvoid(int goalAmount) {
+    public void landmarksAvoid(int goalAmount, boolean calledAsSubroutine) {
         if (landmarkSet == null || landmarkSet.isEmpty()) {
             Random random = new Random();
             random.setSeed(664757);
@@ -124,8 +149,10 @@ public class Landmarks {
         }
 
         while (landmarkSet.size() < goalAmount) {
+            if (!calledAsSubroutine) updateProgress();
             avoidGetLeaf();
         }
+        if (!calledAsSubroutine) updateProgress();
     }
 
     private void avoidGetLeaf() {
@@ -221,10 +248,12 @@ public class Landmarks {
         }
 
         while (landmarkSet.size() < goalAmount) {
+            updateProgress();
             int furthestCandidate = getFurthestCandidateLandmark();
             landmarksDistancesBFS.put(furthestCandidate, gu.bfsMaxDistance(furthestCandidate));
             landmarkSet.add(furthestCandidate);
         }
+        updateProgress();
     }
 
     private int getFurthestCandidateLandmark() {
@@ -253,8 +282,10 @@ public class Landmarks {
 
     public void landmarksRandom(int i) {
         while (landmarkSet.size() < i) {
+            updateProgress();
             landmarkSet.add(new Random().nextInt(graph.getNodeAmount()));
         }
+        updateProgress();
     }
 
     public void clearLandmarks() {

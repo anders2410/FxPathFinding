@@ -142,6 +142,7 @@ public class FXMLController implements Initializable {
 
     /**
      * Starts a loadGraph thread.
+     *
      * @param fileName file to load.
      */
     private void loadNewGraph(String fileName) {
@@ -729,7 +730,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleAddLandmarkEvent() {
-        landmarks.landmarksAvoid(landmarks.getLandmarkSet().size() + 1);
+        landmarks.landmarksAvoid(1, false);
         for (Integer index : landmarks.getLandmarkSet()) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);
@@ -781,23 +782,74 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateLandmarksAvoid() {
-        landmarks.landmarksAvoid(16);
-        drawAllLandmarks();
+        /*GraphImport graphImport = new GraphImport(distanceStrategy);
+        graphImport.setProgressListener((Long p, Long m) -> updateProgress(p, m));
+        graph = graphImport.loadGraph(fileName);
+        landmarks = new Landmarks(graph);*/
+        Task genLandmarkTask = new Task() {
+            @Override
+            protected Object call() {
+                Landmarks lm = new Landmarks(graph);
+                lm.setProgressListener(this::updateProgress);
+                lm.landmarksAvoid(16, false);
+                landmarks = lm;
+                return true;
+            }
+        };
+        startLandmarksMonitorThread(genLandmarkTask);
+    }
+
+    private void startLandmarksMonitorThread(Task monitorTask) {
+        progress_indicator.setOpacity(1);
+
+        monitorTask.setOnSucceeded(event -> {
+            drawAllLandmarks();
+            playIndicatorCompleted();
+        });
+        progress_indicator.progressProperty().bind(monitorTask.progressProperty());
+        new Thread(monitorTask).start();
     }
 
     public void handleGenerateLandmarksMaxCover() {
-        landmarks.landmarksMaxCover(16);
-        drawAllLandmarks();
+        Task genLandmarkTask = new Task() {
+            @Override
+            protected Object call() {
+                Landmarks lm = new Landmarks(graph);
+                lm.setProgressListener(this::updateProgress);
+                lm.landmarksMaxCover(16);
+                landmarks = lm;
+                return true;
+            }
+        };
+        startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksRandom() {
-        landmarks.landmarksRandom(16);
-        drawAllLandmarks();
+        Task genLandmarkTask = new Task() {
+            @Override
+            protected Object call() {
+                Landmarks lm = new Landmarks(graph);
+                lm.setProgressListener(this::updateProgress);
+                lm.landmarksRandom(16);
+                landmarks = lm;
+                return true;
+            }
+        };
+        startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksFarthest() {
-        landmarks.landmarksFarthest(16);
-        drawAllLandmarks();
+        Task genLandmarkTask = new Task() {
+            @Override
+            protected Object call() {
+                Landmarks lm = new Landmarks(graph);
+                lm.setProgressListener(this::updateProgress);
+                lm.landmarksFarthest(16);
+                landmarks = lm;
+                return true;
+            }
+        };
+        startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleLoadLandmarks() {
