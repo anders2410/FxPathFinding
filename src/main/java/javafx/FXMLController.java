@@ -137,6 +137,10 @@ public class FXMLController implements Initializable {
         scene.setOnKeyPressed(onKeyPressed());
     }
 
+    /**
+     * Starts a loadGraph thread.
+     * @param fileName file to load.
+     */
     private void loadNewGraph(String fileName) {
         this.fileName = fileName;
         Task loadGraph = new Task() {
@@ -153,6 +157,9 @@ public class FXMLController implements Initializable {
         new Thread(loadGraph).start();
     }
 
+    /**
+     * Is called on the GUI thread when a loadGraph thread is finished.
+     */
     private void setUpGraph() {
         if (gc != null) {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
