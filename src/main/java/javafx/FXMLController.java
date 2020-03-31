@@ -6,8 +6,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -159,12 +157,12 @@ public class FXMLController implements Initializable {
         };
         loadGraph.setOnSucceeded(event -> {
             setUpGraph();
-            setIndicatorCompleted();
+            playIndicatorCompleted();
         });
         new Thread(loadGraph).start();
     }
 
-    private void setIndicatorCompleted() {
+    private void playIndicatorCompleted() {
         progress_indicator.setMinHeight(40);
         progress_indicator.setTranslateY(15);
         progress_indicator.setProgress(100);
