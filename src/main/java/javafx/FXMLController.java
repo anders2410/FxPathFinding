@@ -97,9 +97,8 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        setWindowChangeListener();
         loadNewGraph("malta-latest.osm.pbf");
-
+        setWindowChangeListener();
         SSSP.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
     }
@@ -110,12 +109,18 @@ public class FXMLController implements Initializable {
                 newScene.windowProperty().addListener((observableWindow, oldWindow, newWindow) -> {
                     if (oldWindow == null && newWindow != null) {
                         newScene.heightProperty().addListener((observable, oldValue, newValue) -> {
+                            if (graph == null) {
+                                return;
+                            }
                             canvas.setHeight(newValue.doubleValue());
                             setGraphBounds();
                             setRatios();
                             redrawGraph();
                         });
                         newScene.widthProperty().addListener((obs, oldVal, newVal) -> {
+                            if (graph == null) {
+                                return;
+                            }
                             canvas.setWidth(newVal.doubleValue());
                             setGraphBounds();
                             setRatios();
