@@ -10,10 +10,10 @@ import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
 import model.Util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -22,13 +22,15 @@ public class GraphImport {
 
     public static String mapsDir = "maps\\";
     public static String tempDir = mapsDir + "temp\\";
-
     private Graph graph;
     private BiFunction<Node, Node, Double> distanceStrategy;
+    public static int progress;
+    public static int bytesRead;
 
     public GraphImport(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
         generateFolders();
+        progress = 0;
     }
 
     private void generateFolders() {
@@ -51,7 +53,7 @@ public class GraphImport {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                System.out.println("No pre-processing has been made\n");
+                System.out.println("Graph loaded from harddrive\n");
             } else {
                 loadPBF(fileName);
                 System.out.println("No files were found. Pre-processing has completed");
@@ -92,14 +94,19 @@ public class GraphImport {
 
     @SuppressWarnings(value = "unchecked")
     private void loadTMP(String name) throws IOException {
-        FileInputStream nodeInput = new FileInputStream(name + "-node-list.tmp");
-        FileInputStream edgeInput = new FileInputStream(name + "-adj-list.tmp");
+        String nodeListFileName = name + "-node-list.tmp";
+        String adjListFileName = name + "-adj-list.tmp";
+        long nodeListSize = Files.size(Paths.get(nodeListFileName));
+        long adjListSize = Files.size(Paths.get(adjListFileName));
 
-        ObjectInputStream nodeStream = new ObjectInputStream(nodeInput);
-        ObjectInputStream edgeStream = new ObjectInputStream(edgeInput);
+        CountingInputStream nodeCountInput = new CountingInputStream(Files.newInputStream(Paths.get(nodeListFileName)), nodeListSize + adjListSize);
+        CountingInputStream adjCountInput = new CountingInputStream(Files.newInputStream(Paths.get(adjListFileName)), nodeListSize + adjListSize);
 
+        ObjectInputStream nodeStream = new ObjectInputStream(nodeCountInput);
+        ObjectInputStream edgeStream = new ObjectInputStream(adjCountInput);
         List<Node> nodeList = null;
         List<List<Edge>> adjList = null;
+
 
         try {
             nodeList = (List<Node>) nodeStream.readObject();
@@ -107,6 +114,7 @@ public class GraphImport {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        System.out.println(progress);
 
         nodeStream.close();
         edgeStream.close();
@@ -152,5 +160,32 @@ public class GraphImport {
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")
         );
         return fileChooser.showOpenDialog(stage);
+    }
+}
+
+class CountingInputStream extends InputStream implements AutoCloseable {
+
+    private final long finalSize;
+    private final InputStream stream;
+
+    public CountingInputStream(InputStream stream, long finalSize) throws FileNotFoundException {
+        this.stream = stream;
+        this.finalSize = finalSize;
+    }
+
+    @Override
+    public int read() throws IOException {
+        int result = stream.read();
+        if (result != -1) {
+            GraphImport.bytesRead++;
+            GraphImport.progress = (int) ((GraphImport.bytesRead / finalSize) * 100);
+        }
+        return result;
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        stream.close();
     }
 }
