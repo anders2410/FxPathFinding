@@ -148,11 +148,12 @@ public class FXMLController implements Initializable {
      */
     private void loadNewGraph(String fileName) {
         this.fileName = fileName;
-        progress_indicator.setVisible(true);
+        progress_indicator.setOpacity(1);
         Task loadGraphTask = new Task() {
             @Override
             protected Object call() {
                 GraphImport graphImport = new GraphImport(distanceStrategy);
+                graphImport.setProgressListener((Long p, Long m) -> updateProgress(p, m));
                 graph = graphImport.loadGraph(fileName);
                 landmarks = new Landmarks(graph);
                 return true;
@@ -167,15 +168,10 @@ public class FXMLController implements Initializable {
     }
 
     private void playIndicatorCompleted() {
-        progress_indicator.setMinHeight(40);
-        progress_indicator.setTranslateY(15);
-        progress_indicator.setProgress(100);
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1000), actionEvent -> {
-            progress_indicator.setProgress(-1);
-            progress_indicator.setMinHeight(0);
-            progress_indicator.setTranslateY(0);
-            progress_indicator.setVisible(false);
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
+            progress_indicator.setOpacity(progress_indicator.getOpacity() - 0.005);
         }));
+        timeline.setCycleCount(200);
         timeline.playFromStart();
     }
 

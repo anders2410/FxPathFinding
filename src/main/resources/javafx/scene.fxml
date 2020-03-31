@@ -104,8 +104,8 @@
 
         </HBox>
 
-        <HBox alignment="BOTTOM_RIGHT" prefHeight="25.0" prefWidth="25.0" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0">
-            <ProgressIndicator fx:id="progress_indicator" progress="-Infinity"/>
+        <HBox alignment="BOTTOM_RIGHT" prefHeight="40.0" prefWidth="25.0" AnchorPane.bottomAnchor="-8" AnchorPane.rightAnchor="-4">
+            <ProgressIndicator fx:id="progress_indicator" progress="0"/>
         </HBox>
 
         <VBox id="info_box" alignment="TOP_RIGHT" minHeight="0.0" prefWidth="200.0" AnchorPane.rightAnchor="15.0"

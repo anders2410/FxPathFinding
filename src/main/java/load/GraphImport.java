@@ -13,22 +13,23 @@ import paths.Landmarks;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 public class GraphImport {
 
     public static String mapsDir = "maps\\";
     public static String tempDir = mapsDir + "temp\\";
-    private static long tempCombinedSize;
+    private long tempCombinedSize;
     private Graph graph;
     private BiFunction<Node, Node, Double> distanceStrategy;
+    private BiConsumer<Long, Long> progressListener;
 
-    protected static double progress;
-    protected static int bytesRead;
+    protected double progress;
+    protected long bytesRead;
 
     public GraphImport(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
@@ -103,8 +104,8 @@ public class GraphImport {
         long nodeListSize = Files.size(Paths.get(nodeListFileName));
         long adjListSize = Files.size(Paths.get(adjListFileName));
         tempCombinedSize = nodeListSize + adjListSize;
-        CountingInputStream nodeCountInput = new CountingInputStream(nodeListFileName);
-        CountingInputStream adjCountInput = new CountingInputStream(adjListFileName);
+        CountingInputStream nodeCountInput = new CountingInputStream(nodeListFileName, this);
+        CountingInputStream adjCountInput = new CountingInputStream(adjListFileName, this);
 
         ObjectInputStream nodeStream = new ObjectInputStream(nodeCountInput);
         ObjectInputStream edgeStream = new ObjectInputStream(adjCountInput);
@@ -163,37 +164,56 @@ public class GraphImport {
         return fileChooser.showOpenDialog(stage);
     }
 
-    public static double getProgress() {
-        progress = (double) ((bytesRead / tempCombinedSize) * 100);
-        return progress;
+    long next_tier = 0;
+
+    public void updateProgress() {
+        if (next_tier <= bytesRead) {
+            next_tier += tempCombinedSize/100;
+            if (bytesRead <= tempCombinedSize) {
+                progressListener.accept(next_tier, tempCombinedSize);
+            }
+        }
+    }
+
+    public void setProgressListener(BiConsumer<Long, Long> progressListener) {
+        this.progressListener = progressListener;
     }
 }
 
 
 class CountingInputStream extends FileInputStream implements AutoCloseable {
-    public CountingInputStream(String filename) throws FileNotFoundException {
+
+    GraphImport graphImport;
+
+    public CountingInputStream(String filename, GraphImport graphImport) throws FileNotFoundException {
         super(filename);
+        this.graphImport = graphImport;
     }
 
     @Override
     public int read(byte[] b) throws IOException {
         int amountBytesRead = super.read(b);
-        GraphImport.bytesRead += amountBytesRead;
+        graphImport.bytesRead += amountBytesRead;
+        graphImport.updateProgress();
         return amountBytesRead;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int amountBytesRead = super.read(b, off, len);
-        GraphImport.bytesRead += amountBytesRead;
+        graphImport.bytesRead += amountBytesRead;
+        graphImport.updateProgress();
         return amountBytesRead;
     }
+
+
 
     @Override
     public int read() throws IOException {
         int result = super.read();
         if (result != -1) {
-            GraphImport.bytesRead++;
+            graphImport.bytesRead++;
+            graphImport.updateProgress();
         }
         return result;
     }
