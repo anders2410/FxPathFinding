@@ -3,7 +3,6 @@ package javafx;
 // TODO: toggle graphical info about landmarks
 
 import javafx.application.Platform;
-import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,14 +11,14 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import load.GraphImport;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -27,19 +26,16 @@ import model.Util;
 import paths.AlgorithmMode;
 import paths.SSSP;
 import paths.ShortestPathResult;
-import pbfparsing.PBFParser;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.function.BiFunction;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
-import static paths.SSSP.*;
+import static paths.SSSP.seed;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -97,11 +93,7 @@ public class FXMLController implements Initializable {
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
 
-        try {
-            setUpNewGraph("malta-latest.osm.pbf");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        setUpNewGraph("malta-latest.osm.pbf");
 
         SSSP.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
@@ -111,7 +103,7 @@ public class FXMLController implements Initializable {
         scene.setOnKeyPressed(onKeyPressed());
     }
 
-    private void setUpNewGraph(String fileName) throws IOException {
+    private void setUpNewGraph(String fileName) {
         loadGraph(fileName);
         setGraphBounds();
         zoomFactor = 1;
@@ -142,76 +134,16 @@ public class FXMLController implements Initializable {
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
-    private void loadGraph(String fileName) throws IOException {
-        String fileType = fileName.substring(fileName.length() - 3);
-        if (fileType.equals("osm")) {
-            loadOSM(fileName.substring(0, fileName.length() - 4));
-        }
-        if (fileType.equals("pbf")) {
-            String name = fileName.substring(0, fileName.indexOf('.'));
-            File nodeFile = new File(name + "-node-list.tmp");
-            File adjFile = new File(name + "-adj-list.tmp");
-            if (nodeFile.exists() && adjFile.exists()) {
-                loadTMP(name);
-                System.out.println("No pre-processing has been made\n");
-            } else {
-                loadPBF(fileName);
-                System.out.println("No files were found. Pre-processing has completed");
-            }
-        }
+    private void loadGraph(String fileName) {
+        GraphImport graphImport = new GraphImport(distanceStrategy);
+        graph = graphImport.loadGraph(fileName);
         if (gc != null) {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
             edges_label.setText("Number of Edges: " + graph.getNumberOfEdges());
         }
     }
 
-    private void loadOSM(String fileName) {
-        XMLFilter xmlFilter = new XMLFilter(fileName);
-        xmlFilter.executeFilter();
-        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
-        xmlGraphExtractor.setDistanceStrategy(distanceStrategy);
-        xmlGraphExtractor.executeExtractor();
-        graph = xmlGraphExtractor.getGraph();
-    }
 
-    private void loadPBF(String fileName) {
-        try {
-            PBFParser pbfParser = new PBFParser(fileName, true);
-            pbfParser.setDistanceStrategy(distanceStrategy);
-            pbfParser.executePBFParser();
-            graph = pbfParser.getGraph();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SuppressWarnings(value = "unchecked")
-    private void loadTMP(String name) throws IOException {
-        FileInputStream nodeInput = new FileInputStream(name + "-node-list.tmp");
-        FileInputStream edgeInput = new FileInputStream(name + "-adj-list.tmp");
-
-        ObjectInputStream nodeStream = new ObjectInputStream(nodeInput);
-        ObjectInputStream edgeStream = new ObjectInputStream(edgeInput);
-
-        List<Node> nodeList = null;
-        List<List<Edge>> adjList = null;
-
-        try {
-            nodeList = (List<Node>) nodeStream.readObject();
-            adjList = (List<List<Edge>>) edgeStream.readObject();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        nodeStream.close();
-        edgeStream.close();
-
-        assert nodeList != null;
-        graph = new Graph(nodeList.size());
-
-        graph.setNodeList(nodeList);
-        graph.setAdjList(adjList);
-    }
 
     public void runAlgorithm() {
         if (selectedNodes.size() <= 1) {
@@ -713,18 +645,8 @@ public class FXMLController implements Initializable {
 
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("PBF Files", "*.pbf"),
-                new FileChooser.ExtensionFilter("OSM Files", "*.osm")
-        );
-        File selectedFile = fileChooser.showOpenDialog(stage);
-        try {
-            setUpNewGraph(selectedFile.getAbsolutePath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        File selectedFile = GraphImport.selectMapFile(stage);
+        setUpNewGraph(selectedFile.getName());
     }
 
     // UTILITIES

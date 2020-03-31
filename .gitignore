@@ -7,33 +7,33 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
+.idea/**/workspace.load.xml
+.idea/**/tasks.load.xml
+.idea/**/usage.statistics.load.xml
 .idea/**/dictionaries
 .idea/**/shelf
 
 # Generated files
-.idea/**/contentModel.xml
+.idea/**/contentModel.load.xml
 
 # Sensitive or high-churn files
 .idea/**/dataSources/
 .idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
+.idea/**/dataSources.local.load.xml
+.idea/**/sqlDataSources.load.xml
+.idea/**/dynamic.load.xml
+.idea/**/uiDesigner.load.xml
+.idea/**/dbnavigator.load.xml
 
 # Gradle
-.idea/**/gradle.xml
+.idea/**/gradle.load.xml
 .idea/**/libraries
 
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using
 # auto-import.
-# .idea/modules.xml
+# .idea/modules.load.xml
 # .idea/*.iml
 # .idea/modules
 # *.iml
@@ -43,7 +43,7 @@
 cmake-build-*/
 
 # Mongo Explorer plugin
-.idea/**/mongoSettings.xml
+.idea/**/mongoSettings.load.xml
 
 # File-based project format
 *.iws
@@ -55,13 +55,13 @@ out/
 .idea_modules/
 
 # JIRA plugin
-atlassian-ide-plugin.xml
+atlassian-ide-plugin.load.xml
 
 # Cursive Clojure plugin
-.idea/replstate.xml
+.idea/replstate.load.xml
 
 # Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
+com_crashlytics_export_strings.load.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
@@ -76,18 +76,18 @@ fabric.properties
 # Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
 
 # *.iml
-# modules.xml
-# .idea/misc.xml
+# modules.load.xml
+# .idea/misc.load.xml
 # *.ipr
 
 # Sonarlint plugin
 .idea/**/sonarlint/
 
 # SonarQube Plugin
-.idea/**/sonarIssues.xml
+.idea/**/sonarIssues.load.xml
 
 # Markdown Navigator plugin
-.idea/**/markdown-navigator.xml
+.idea/**/markdown-navigator.load.xml
 .idea/**/markdown-navigator/
 
 ### Java ###
@@ -112,7 +112,7 @@ fabric.properties
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.load.xml
 hs_err_pid*
 
 ### Gradle ###

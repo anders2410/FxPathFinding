@@ -1,4 +1,4 @@
-package pbfparsing.interfaces;
+package load.pbfparsing.interfaces;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import model.Graph;

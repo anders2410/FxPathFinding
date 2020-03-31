@@ -1,13 +1,14 @@
 package swingui;
 
 
+import load.GraphImport;
 import model.Graph;
 import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 import paths.SSSP;
-import xml.XMLFilter;
-import xml.XMLGraphExtractor;
+import load.xml.XMLFilter;
+import load.xml.XMLGraphExtractor;
 
 public class UITest {
 
@@ -16,13 +17,8 @@ public class UITest {
 
     @Before
     public void setUp() {
-        XMLFilter xmlFilter = new XMLFilter(fileName);
-        xmlFilter.executeFilter();
-        XMLGraphExtractor xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
-        xmlGraphExtractor.setParseCordStrategy(Util::cordToInt);
-        xmlGraphExtractor.executeExtractor();
-        graph = xmlGraphExtractor.getGraph();
-        // System.out.println(graph.getAdjList());
+        GraphImport graphImport = new GraphImport(Util::flatEarthDistance);
+        graph = graphImport.loadOSMOld(fileName);
     }
 
     @Test

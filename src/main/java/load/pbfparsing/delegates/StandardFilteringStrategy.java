@@ -1,6 +1,6 @@
-package pbfparsing.delegates;
+package load.pbfparsing.delegates;
 
-import pbfparsing.interfaces.FilteringStrategy;
+import load.pbfparsing.interfaces.FilteringStrategy;
 
 public class StandardFilteringStrategy implements FilteringStrategy {
     @Override

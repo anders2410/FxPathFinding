@@ -1,4 +1,4 @@
-package xml;
+package load.xml;
 
 import model.Node;
 import model.Util;
@@ -21,7 +21,7 @@ public class XMLTest {
         xmlFilter = new XMLFilter(fileName);
         xmlFilter.executeFilter();
         long xmlDoneTime = System.currentTimeMillis();
-        System.out.println("Time to xml parse: " + (xmlDoneTime - startTime) / 1000);
+        System.out.println("Time to load.xml parse: " + (xmlDoneTime - startTime) / 1000);
         xmlGraphExtractor = new XMLGraphExtractor(fileName, xmlFilter.getValidNodes());
         long graphExtractDoneTime = System.currentTimeMillis();
         System.out.println("Time to graph extract: " + (graphExtractDoneTime - xmlDoneTime) / 1000);

@@ -1,10 +1,10 @@
-package pbfparsing.delegates;
+package load.pbfparsing.delegates;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import model.Graph;
 import model.Node;
-import pbfparsing.interfaces.CollapsingStrategy;
+import load.pbfparsing.interfaces.CollapsingStrategy;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package pbfparsing;
+package load.pbfparsing;
 
 import de.topobyte.osm4j.core.model.iface.EntityContainer;
 import de.topobyte.osm4j.core.model.iface.EntityType;
@@ -8,15 +8,17 @@ import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
 import model.Graph;
 import model.Node;
-import pbfparsing.delegates.CollapsingStrategyFull;
-import pbfparsing.delegates.CollapsingStrategyNone;
-import pbfparsing.delegates.StandardFilteringStrategy;
-import pbfparsing.interfaces.CollapsingStrategy;
-import pbfparsing.interfaces.FilteringStrategy;
+import load.pbfparsing.delegates.CollapsingStrategyFull;
+import load.pbfparsing.delegates.StandardFilteringStrategy;
+import load.pbfparsing.interfaces.CollapsingStrategy;
+import load.pbfparsing.interfaces.FilteringStrategy;
 
 import java.io.*;
 import java.util.*;
 import java.util.function.BiFunction;
+
+import static load.GraphImport.mapsDir;
+import static load.GraphImport.tempDir;
 
 // A tutorial for the Framework can be found at http://jaryard.com/projects/osm4j/tutorial/index.html
 
@@ -65,7 +67,7 @@ public class PBFParser {
         buildGraph(validNodes);
 
         if (preProcess) {
-            String name = fileName.substring(0, fileName.indexOf('.'));
+            String name = tempDir + fileName.substring(0, fileName.indexOf('.'));
             FileOutputStream fos = new FileOutputStream(name + "-node-list.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(graph.getNodeList());
@@ -88,7 +90,7 @@ public class PBFParser {
      * @throws FileNotFoundException If the file cannot be found.
      */
     private void buildGraph(Map<String, Integer> validNodesMap) throws FileNotFoundException {
-        File file = new File(fileName);
+        File file = new File(mapsDir + fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
         // Iterates over all containers in the .pbf file
@@ -143,7 +145,7 @@ public class PBFParser {
      * @throws FileNotFoundException Is thrown if file cannot be found.
      */
     private Map<String, Integer> findValidNodes() throws FileNotFoundException {
-        File file = new File(fileName);
+        File file = new File(mapsDir + fileName);
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
         HashMap<String, Integer> nodeRefMap = new HashMap<>();

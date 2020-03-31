@@ -1,4 +1,4 @@
-package xml;
+package load.xml;
 
 import java.io.*;
 import java.util.*;
@@ -9,9 +9,12 @@ import javax.xml.parsers.*;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+import static load.GraphImport.mapsDir;
+import static load.GraphImport.tempDir;
+
 public class XMLFilter extends DefaultHandler {
     private final String inFileType = ".osm";
-    private final String outFileType = ".xml";
+    private final String outFileType = ".load.xml";
     private final String osmVersion = "0.6";
 
     private String fileName;
@@ -35,8 +38,8 @@ public class XMLFilter extends DefaultHandler {
 
     public void executeFilter() {
         try {
-            fwriter = new FileWriter(fileName + outFileType);
-            File inputFile = new File(fileName + inFileType);
+            fwriter = new FileWriter(tempDir + fileName + outFileType);
+            File inputFile = new File( mapsDir+ fileName + inFileType);
 
             DefaultHandler handler = this;
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -50,7 +53,7 @@ public class XMLFilter extends DefaultHandler {
     }
 
     public void startDocument() {
-        writeLine("<?xml version = \"1.0\" encoding = \"UTF-8\"?>");
+        writeLine("<?load.xml version = \"1.0\" encoding = \"UTF-8\"?>");
         writeLine("<osm version=\"" + osmVersion + "\">");
     }
 

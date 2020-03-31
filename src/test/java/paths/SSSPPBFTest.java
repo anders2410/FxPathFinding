@@ -6,18 +6,16 @@ import model.Node;
 import model.Util;
 import org.junit.Before;
 import org.junit.Test;
-import pbfparsing.PBFParser;
+import load.pbfparsing.PBFParser;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static paths.ABDir.B;
 import static paths.SSSP.*;
 import static paths.SSSP.getHeuristicFunction;
 
