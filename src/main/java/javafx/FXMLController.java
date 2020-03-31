@@ -147,7 +147,7 @@ public class FXMLController implements Initializable {
     private void loadNewGraph(String fileName) {
         this.fileName = fileName;
         progress_indicator.setVisible(true);
-        Task loadGraph = new Task() {
+        Task loadGraphTask = new Task() {
             @Override
             protected Object call() {
                 GraphImport graphImport = new GraphImport(distanceStrategy);
@@ -155,11 +155,11 @@ public class FXMLController implements Initializable {
                 return true;
             }
         };
-        loadGraph.setOnSucceeded(event -> {
+        loadGraphTask.setOnSucceeded(event -> {
             setUpGraph();
             playIndicatorCompleted();
         });
-        new Thread(loadGraph).start();
+        new Thread(loadGraphTask).start();
     }
 
     private void playIndicatorCompleted() {
@@ -212,24 +212,43 @@ public class FXMLController implements Initializable {
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
+    Task ssspTask;
+    List<ShortestPathResult> results;
 
-    public void runAlgorithm() {
+    private void runAlgorithm() {
         if (selectedNodes.size() <= 1) {
             return;
         }
         graph.resetPathTrace();
-        Deque<Node> selectedNodesCopy = new ArrayDeque<>(selectedNodes);
-        selectedNodesCopy.pollFirst();
-        Node lastNode = selectedNodes.pollLast();
-        assert selectedNodes.size() == selectedNodesCopy.size();
+        ssspTask = new Task() {
+            @Override
+            protected Object call() {
+                results = ssspConnectingNodes(selectedNodes);
+                return null;
+            }
+        };
+        ssspTask.setOnSucceeded(event -> {
+            applyResultsToLabel(results);
+            redrawGraph();
+        });
+        ssspTask.run();
+    }
+
+    private List<ShortestPathResult> ssspConnectingNodes(Deque<Node> nodeQueue) {
         List<ShortestPathResult> results = new ArrayList<>();
-        for (Node fromNode : selectedNodes) {
-            Node toNode = selectedNodesCopy.pollFirst();
-            assert toNode != null;
+        Node firstNode = nodeQueue.pollLast();
+        nodeQueue.addFirst(firstNode);
+        while (firstNode != nodeQueue.peekLast()) {
+            Node fromNode = nodeQueue.pollLast();
+            Node toNode = nodeQueue.peekFirst();
+            nodeQueue.addFirst(toNode);
+            assert fromNode != null && toNode != null;
             results.add(SSSP.findShortestPath(fromNode.index, toNode.index, algorithmMode));
         }
-        selectedNodes.addLast(lastNode);
-        redrawGraph();
+        return results;
+    }
+
+    private void applyResultsToLabel(List<ShortestPathResult> results) {
         Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
             List<Integer> combinedPath = new ArrayList<>(res1.path);
             combinedPath.addAll(res2.path.subList(1, res2.path.size()));
@@ -238,6 +257,12 @@ public class FXMLController implements Initializable {
         if (optCombinedRes.isPresent()) {
             ShortestPathResult combinedRes = optCombinedRes.get();
             setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodes);
+        }
+    }
+
+    private void cancelAlgorithm() {
+        if (ssspTask != null) {
+            ssspTask.cancel();
         }
     }
 
@@ -605,6 +630,7 @@ public class FXMLController implements Initializable {
 
     private void onRightClick() {
         resetSelection();
+        cancelAlgorithm();
     }
 
     private void resetSelection() {
