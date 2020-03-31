@@ -38,4 +38,8 @@ public class GraphUtil {
         }
         return hop;
     }
+
+    public Graph[] SCC() {
+        return null;
+    }
 }
