@@ -8,6 +8,7 @@ import paths.strategy.HeuristicFunction;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static paths.SSSP.singleToAllPath;
@@ -38,9 +39,10 @@ public class Landmarks {
         this.progressListener = progressListener;
     }
 
-    public void landmarksMaxCover(int goalAmount) {
+
+    public Set<Integer> landmarksMaxCover(int goalAmount, boolean calledAsSubRoutine) {
         if (landmarkSet.size() == goalAmount) {
-            return;
+            return landmarkSet;
         }
         landmarksAvoid(goalAmount, true);
         Set<Integer> candidateSet = new HashSet<>(landmarkSet);
@@ -95,6 +97,7 @@ public class Landmarks {
             progressListener.accept((double) i, (double) flooredLog);
         }
         progressListener.accept(1.00, 1.00);
+        return landmarkSet;
     }
 
     private int calculateCoverCost(Set<Integer> potentialLandmarks) {
@@ -137,7 +140,8 @@ public class Landmarks {
         }
     }
 
-    public void landmarksAvoid(int goalAmount, boolean calledAsSubroutine) {
+
+    public Set<Integer> landmarksAvoid(int goalAmount, boolean calledAsSubroutine) {
         if (landmarkSet == null || landmarkSet.isEmpty()) {
             Random random = new Random();
             random.setSeed(664757);
@@ -153,6 +157,7 @@ public class Landmarks {
             avoidGetLeaf();
         }
         if (!calledAsSubroutine) updateProgress();
+        return landmarkSet;
     }
 
     private void avoidGetLeaf() {
@@ -228,7 +233,8 @@ public class Landmarks {
         return sum;
     }
 
-    public void landmarksFarthest(int goalAmount) {
+
+    public Set<Integer> landmarksFarthest(int goalAmount, boolean calledAsSubroutine) {
         // Current implementation is 'FarthestB' (B - breadth)
         // Simple but not necessarily best. MaxCover yields better results.
         // TODO: MaxCover for landmark selection
@@ -254,6 +260,7 @@ public class Landmarks {
             landmarkSet.add(furthestCandidate);
         }
         updateProgress();
+        return landmarkSet;
     }
 
     private int getFurthestCandidateLandmark() {
@@ -280,12 +287,30 @@ public class Landmarks {
         return landmarkSet;
     }
 
-    public void landmarksRandom(int i) {
+
+    public Set<Integer> landmarksRandom(int i, boolean calledAsSubRoutine) {
         while (landmarkSet.size() < i) {
             updateProgress();
             landmarkSet.add(new Random().nextInt(graph.getNodeAmount()));
         }
         updateProgress();
+        return landmarkSet;
+    }
+
+    public BiFunction<Integer, Boolean, Set<Integer>> getAvoidFunction(Landmarks lm) {
+        return lm::landmarksAvoid;
+    }
+
+    public BiFunction<Integer, Boolean, Set<Integer>> getFarthestFunction(Landmarks lm) {
+        return lm::landmarksFarthest;
+    }
+
+    public BiFunction<Integer, Boolean, Set<Integer>> getRandomFunction(Landmarks lm) {
+        return lm::landmarksRandom;
+    }
+
+    public BiFunction<Integer, Boolean, Set<Integer>> getMaxCover(Landmarks lm) {
+        return lm::landmarksMaxCover;
     }
 
     public void clearLandmarks() {

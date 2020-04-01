@@ -768,22 +768,17 @@ public class FXMLController implements Initializable {
         seed_label.setText("Seed: " + SSSP.seed);
     }
 
-    public void handleGenerateLandmarksAvoid() {
-        /*GraphImport graphImport = new GraphImport(distanceStrategy);
-        graphImport.setProgressListener((Long p, Long m) -> updateProgress(p, m));
-        graph = graphImport.loadGraph(fileName);
-        landmarks = new Landmarks(graph);*/
-        Task genLandmarkTask = new Task() {
+
+    private Task generateLandmarksTask(BiFunction<Integer, Boolean, Set<Integer>> landmarksFunction, Landmarks lm, int goalAmount, boolean subRoutineCall) {
+        return new Task() {
             @Override
             protected Object call() {
-                Landmarks lm = new Landmarks(graph);
                 lm.setProgressListener(this::updateProgress);
-                lm.landmarksAvoid(16, false);
+                landmarksFunction.apply(goalAmount, subRoutineCall);
                 landmarks = lm;
                 return true;
             }
         };
-        startLandmarksMonitorThread(genLandmarkTask);
     }
 
     private void startLandmarksMonitorThread(Task monitorTask) {
@@ -797,45 +792,27 @@ public class FXMLController implements Initializable {
         new Thread(monitorTask).start();
     }
 
+    public void handleGenerateLandmarksAvoid() {
+        Landmarks lm = new Landmarks(graph);
+        Task genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16, false);
+        startLandmarksMonitorThread(genLandmarkTask);
+    }
+
     public void handleGenerateLandmarksMaxCover() {
-        Task genLandmarkTask = new Task() {
-            @Override
-            protected Object call() {
-                Landmarks lm = new Landmarks(graph);
-                lm.setProgressListener(this::updateProgress);
-                lm.landmarksMaxCover(16);
-                landmarks = lm;
-                return true;
-            }
-        };
+        Landmarks lm = new Landmarks(graph);
+        Task genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16, false);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksRandom() {
-        Task genLandmarkTask = new Task() {
-            @Override
-            protected Object call() {
-                Landmarks lm = new Landmarks(graph);
-                lm.setProgressListener(this::updateProgress);
-                lm.landmarksRandom(16);
-                landmarks = lm;
-                return true;
-            }
-        };
+        Landmarks lm = new Landmarks(graph);
+        Task genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16, false);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksFarthest() {
-        Task genLandmarkTask = new Task() {
-            @Override
-            protected Object call() {
-                Landmarks lm = new Landmarks(graph);
-                lm.setProgressListener(this::updateProgress);
-                lm.landmarksFarthest(16);
-                landmarks = lm;
-                return true;
-            }
-        };
+        Landmarks lm = new Landmarks(graph);
+        Task genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16, false);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
