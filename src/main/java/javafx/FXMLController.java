@@ -6,6 +6,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -26,10 +27,7 @@ import model.Edge;
 import model.Graph;
 import model.Node;
 import model.Util;
-import paths.AlgorithmMode;
-import paths.Landmarks;
-import paths.SSSP;
-import paths.ShortestPathResult;
+import paths.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -503,10 +501,16 @@ public class FXMLController implements Initializable {
     }
 
     public void handleZoomInEvent() {
+        if (graph == null) {
+            return;
+        }
         zoom(1.1f);
     }
 
     public void handleZoomOutEvent() {
+        if (graph == null) {
+            return;
+        }
         zoom(1 / 1.1f);
     }
 
@@ -528,6 +532,9 @@ public class FXMLController implements Initializable {
     // W A S D navigation TODO: Find out how arrow keys are triggered
     private EventHandler<? super KeyEvent> onKeyPressed() {
         return event -> {
+            if (graph == null) {
+                return;
+            }
             switch (event.getCode()) {
                 case W:
                 case UP:
@@ -567,6 +574,9 @@ public class FXMLController implements Initializable {
 
     private EventHandler<? super MouseEvent> onMouseDragged() {
         return event -> {
+            if (graph == null) {
+                return;
+            }
             // TODO: Make completely smooth by doing reverse mercator
             double magicFactor = 50 / zoomFactor;
             double dx = event.getX() - clickX;
@@ -599,7 +609,7 @@ public class FXMLController implements Initializable {
     public boolean includeAirDistance = false;
 
     private void onLeftClick(MouseEvent event) {
-        if (dragCounter > dragLimit) {
+        if (dragCounter > dragLimit || graph == null) {
             return;
         }
         PixelPoint mousePos = new PixelPoint(event.getX(), event.getY());
@@ -631,6 +641,9 @@ public class FXMLController implements Initializable {
     }
 
     private void onRightClick() {
+        if (graph == null) {
+            return;
+        }
         resetSelection();
         cancelAlgorithm();
     }
@@ -902,5 +915,9 @@ public class FXMLController implements Initializable {
     public void handleClearLandmarks() {
         landmarks.clearLandmarks();
         redrawGraph();
+    }
+
+    public void handleSCCEvent(ActionEvent actionEvent) {
+        List<Graph> graphs = new GraphUtil(graph).scc();
     }
 }

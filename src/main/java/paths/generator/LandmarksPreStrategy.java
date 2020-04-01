@@ -2,7 +2,6 @@ package paths.generator;
 
 import model.Edge;
 import model.Graph;
-import paths.Landmarks;
 import paths.strategy.PreprocessStrategy;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
             for (Integer landmarkIndex : landmarkSet) {
                 List<Double> forwardDistance = singleToAllPath(landmarkIndex).nodeDistance;
                 double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                graph.setAdjList(graph.reverseAdjacencyList(graph.getAdjList()));
+                graph.setAdjList(graph.getReverse(graph.getAdjList()));
                 List<Double> backDistance = singleToAllPath(landmarkIndex).nodeDistance;
                 double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
                 graph.setAdjList(originalList);

@@ -1,16 +1,7 @@
 package model;
 
-import paths.GraphUtil;
-import paths.SSSP;
-import paths.ShortestPathResult;
-import paths.factory.LandmarksFactory;
-import paths.strategy.HeuristicFunction;
-
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static paths.SSSP.singleToAllPath;
 
 public class Graph implements Serializable {
     private List<Node> nodeList;
@@ -46,7 +37,7 @@ public class Graph implements Serializable {
     }
 
     public void reversePaintEdges(List<List<Edge>> revAdjList, List<List<Edge>> mergeList) {
-        List<List<Edge>> restoredList = reverseAdjacencyList(revAdjList);
+        List<List<Edge>> restoredList = getReverse(revAdjList);
         for (int i = 0; i < restoredList.size(); i++) {
             for (Edge e : restoredList.get(i)) {
                 if (e.visited) {
@@ -67,7 +58,7 @@ public class Graph implements Serializable {
         }
     }
 
-    public List<List<Edge>> reverseAdjacencyList(List<List<Edge>> originalList) {
+    public List<List<Edge>> getReverse(List<List<Edge>> originalList) {
         List<List<Edge>> reversedList = new ArrayList<>(originalList.size());
         for (int i = 0; i < nodeAmount; i++) {
             reversedList.add(emptyAdjList());

@@ -150,7 +150,7 @@ public class SSSP {
     private static ShortestPathResult biDirectional() {
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         List<List<Edge>> adjList = graph.getAdjList();
-        List<List<Edge>> revAdjList = graph.reverseAdjacencyList(adjList);
+        List<List<Edge>> revAdjList = graph.getReverse(adjList);
 
         // A-direction
         estimatedDistA.put(source, 0.0);
@@ -237,18 +237,6 @@ public class SSSP {
         }
         return res;
     }
-
-    /*public static void trace(MinPriorityQueue nodeQueue, ABDir dir) {
-        MinPriorityQueue<Integer> copy = new PriorityQueue<Integer>(nodeQueue);
-        if (trace && mode == BI_A_STAR_LANDMARKS) {
-            System.out.print("NodeQueue: ");
-            while (copy.size() != 0) {
-                Integer object = copy.poll();
-                System.out.print("(" + object + ": " + getPriorityFunction().apply(object, dir) + ")");
-            }
-            System.out.println();
-        }
-    }*/
 
     /**
      * @param from from
