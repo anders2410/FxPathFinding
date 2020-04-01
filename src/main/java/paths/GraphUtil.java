@@ -71,38 +71,61 @@ public class GraphUtil {
             //printStack("First recursion stack: ", recursionStack);
         }
 
-        List<List<List<Edge>>> sccAdjLists = new ArrayList<>();
+        List<List<Integer>> sccNodeLists = new ArrayList<>();
         // Reverse edges
         List<List<Edge>> revAdjList = graph.getReverse(adjList);
         // Sort nodes based on finishing time
         List<Node> nodeList = new ArrayList<>(graph.getNodeList());
         nodeList.sort(Comparator.comparing(node -> finishingTimes.get(node.index)));
         for (Node node : nodeList) {
+            whiteNodes.add(node.index);
             System.out.print(node.index + " -> " + finishingTimes.get(node.index) + "     ");
-        }
-        System.out.println();
-        for (int i = 0; i < n; i++) {
-            whiteNodes.add(nodeList.get(i).index);
-        }
+        } System.out.println();
+        recursionStack = new Stack<>();
         // Second DFS
-        Stack<Integer> tree = new Stack<>();
-        sccAdjLists.add(new ArrayList<>());
         while (!whiteNodes.isEmpty()) {
-            Integer node = whiteNodes.pop();
+            Integer node = whiteNodes.peek();
+            if (recursionStack.isEmpty()) {
+                sccNodeLists.add(new ArrayList<>());
+            } else if (node.equals(recursionStack.peek())) {
+                whiteNodes.pop();
+                recursionStack.pop();
+                int curAdjList = sccNodeLists.size() - 1;
+                sccNodeLists.get(curAdjList).add(node);
+                continue;
+            }
+            recursionStack.push(node);
+            //System.out.println("Visited node 2. pass: " + node);
 
             for (Edge edge : revAdjList.get(node)) {
-                if (whiteNodes.contains(edge.to)) {
-                    whiteNodes.remove(edge.to);
+                if (whiteNodes.contains(edge.to) && !recursionStack.contains(edge.to)) {
+                    whiteNodes.removeElement(edge.to);
                     whiteNodes.push(edge.to);
                 }
             }
-            time++;
+            //printStack("First white nodes: ", whiteNodes);
+            //printStack("First recursion stack: ", recursionStack);
+        }
+
+
+        // Collect result of GCC in new graphs
+
+        for (List<Integer> sccNodeList : sccNodeLists) {
+            System.out.print("{");
+            for (Integer integer : sccNodeList) {
+                System.out.print(integer + ", ");
+            }
+            System.out.println("}");
         }
 
         List<Graph> graphs = new ArrayList<>();
-        graphs.add(new Graph(0));
-
-        return null;
+        for (List<Integer> sccNodeList : sccNodeLists) {
+            Graph sccGraph = new Graph(sccNodeList.size());
+            for (Integer node_id : sccNodeList) {
+                sccGraph.addNode(nodeList.get(node_id));
+            }
+        }
+        return graphs;
     }
 
     private void printStack(String s, Stack<Integer> recursionStack) {
