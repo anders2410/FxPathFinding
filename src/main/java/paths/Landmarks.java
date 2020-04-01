@@ -19,15 +19,17 @@ public class Landmarks {
     private Graph graph;
     private BiConsumer<Double, Double> progressListener;
     private double progressedIndicator;
+    private HashMap<Integer, List<Double>> landmarksDistancesActual;
 
     public Landmarks(Graph graph) {
         this.graph = graph;
         landmarkSet = new LinkedHashSet<>();
         landmarksDistancesBFS = new HashMap<>();
+        landmarksDistancesActual = new HashMap<>();
     }
 
     public void updateProgress() {
-        if (progressedIndicator < landmarkSet.size()) {
+        if (progressedIndicator <= landmarkSet.size()) {
             progressedIndicator = landmarkSet.size();
             if (progressedIndicator <= 16) {
                 progressListener.accept(progressedIndicator, 16.0);
@@ -65,11 +67,11 @@ public class Landmarks {
             Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
             boolean improveFound = true;
             double approximateProgress = i;
+            int currentProfit = calculateCoverCost(landmarkSet);
             while (improveFound) {
+                // TODO: 01-04-2020 This needs to be optimised a bit
                 progressListener.accept(Math.min((double) i + 1, approximateProgress), (double) flooredLog);
-
                 improveFound = false;
-                int currentProfit = calculateCoverCost(landmarkSet);
                 int bestSwapCandidateIn = -1;
                 int bestSwapCandidateOut = -1;
                 for (Integer outCandidate : landmarkSet) {
@@ -97,6 +99,7 @@ public class Landmarks {
             progressListener.accept((double) i, (double) flooredLog);
         }
         progressListener.accept(1.00, 1.00);
+        landmarksDistancesActual.clear();
         return landmarkSet;
     }
 
@@ -105,7 +108,7 @@ public class Landmarks {
         Map<Integer, double[]> distanceMap = new HashMap<>();
         List<List<Edge>> originalList = graph.getAdjList();
         for (Integer lMarkIndex : potentialLandmarks) {
-            List<Double> forwardDistance = singleToAllPath(lMarkIndex).nodeDistance;
+            List<Double> forwardDistance = getNodeDistanceLandmark(lMarkIndex);
             double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
             distanceMap.put(lMarkIndex, arrForward);
         }
@@ -123,6 +126,29 @@ public class Landmarks {
 */
                         break;
                     }
+                }
+            }
+        }
+        return covers;
+    }
+
+    private List<Double> getNodeDistanceLandmark(int lm) {
+        landmarksDistancesActual.computeIfAbsent(lm, k -> SSSP.singleToAllPath(k).nodeDistance);
+        return landmarksDistancesActual.get(lm);
+    }
+
+    private int maxCoverCostLandmark(Integer lMarkIndex) {
+        int covers = 0;
+        List<List<Edge>> originalList = graph.getAdjList();
+        List<Double> forwardDistance = getNodeDistanceLandmark(lMarkIndex);
+        double[] distances = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            for (Edge e : originalList.get(i)) {
+                if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
+                    continue;
+                }
+                if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
+                    covers++;
                 }
             }
         }

@@ -71,7 +71,7 @@ public class FXMLController implements Initializable {
 
     private Stage stage;
     private Graph graph;
-    private Landmarks landmarks;
+    private Landmarks landmarksGenerator;
     private GraphicsContext gc;
     private int xOffset;
     private int yOffset;
@@ -154,7 +154,7 @@ public class FXMLController implements Initializable {
                 GraphImport graphImport = new GraphImport(distanceStrategy);
                 graphImport.setProgressListener((Long p, Long m) -> updateProgress(p, m));
                 graph = graphImport.loadGraph(fileName);
-                landmarks = new Landmarks(graph);
+                landmarksGenerator = new Landmarks(graph);
                 return true;
             }
         };
@@ -187,7 +187,7 @@ public class FXMLController implements Initializable {
         FXMLController.this.setRatios();
         FXMLController.this.redrawGraph();
         SSSP.setGraph(graph);
-        SSSP.setLandmarks(landmarks);
+        SSSP.setLandmarks(landmarksGenerator);
     }
 
     private void setGraphBounds() {
@@ -287,7 +287,7 @@ public class FXMLController implements Initializable {
     }
 
     private void drawAllLandmarks() {
-        for (Integer index : landmarks.getLandmarkSet()) {
+        for (Integer index : landmarksGenerator.getLandmarkSet()) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);
         }
@@ -710,14 +710,6 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
-    /*private void selectButton(Button algoButton) {
-        PseudoClass pseudoClass = PseudoClass.getPseudoClass("selected");
-
-        addLandmarkButton.pseudoClassStateChanged(pseudoClass, false);
-
-        algoButton.pseudoClassStateChanged(pseudoClass, true);
-    }*/
-
     private void drawLandMark(Node n) {
         PixelPoint p = toScreenPos(n);
         double radius = 10;
@@ -730,8 +722,8 @@ public class FXMLController implements Initializable {
     }
 
     public void handleAddLandmarkEvent() {
-        landmarks.landmarksAvoid(1, false);
-        for (Integer index : landmarks.getLandmarkSet()) {
+        landmarksGenerator.landmarksAvoid(1, false);
+        for (Integer index : landmarksGenerator.getLandmarkSet()) {
             Node n = graph.getNodeList().get(index);
             drawLandMark(n);
         }
@@ -788,7 +780,7 @@ public class FXMLController implements Initializable {
             protected Object call() {
                 lm.setProgressListener(this::updateProgress);
                 landmarksFunction.apply(goalAmount, false);
-                landmarks = lm;
+                landmarksGenerator = lm;
                 return true;
             }
         };
@@ -798,6 +790,7 @@ public class FXMLController implements Initializable {
         progress_indicator.setOpacity(1);
         monitorTask.setOnSucceeded(event -> {
             drawAllLandmarks();
+            SSSP.setLandmarks(landmarksGenerator);
             playIndicatorCompleted();
         });
         progress_indicator.progressProperty().bind(monitorTask.progressProperty());
@@ -830,7 +823,7 @@ public class FXMLController implements Initializable {
 
     public void handleLoadLandmarks() {
         try {
-            GraphImport.loadLandmarks(fileName, landmarks);
+            GraphImport.loadLandmarks(fileName, landmarksGenerator);
             drawAllLandmarks();
         } catch (IOException e) {
             e.printStackTrace();
@@ -842,7 +835,7 @@ public class FXMLController implements Initializable {
             String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
             FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(landmarks.getLandmarkSet());
+            oos.writeObject(landmarksGenerator.getLandmarkSet());
             oos.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -912,7 +905,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleClearLandmarks() {
-        landmarks.clearLandmarks();
+        landmarksGenerator.clearLandmarks();
         redrawGraph();
     }
 
