@@ -46,10 +46,17 @@ public class Landmarks {
         if (landmarkSet.size() == goalAmount) {
             return landmarkSet;
         }
-        landmarksAvoid(goalAmount, true);
+        landmarksAvoid(goalAmount, false);
         Set<Integer> candidateSet = new HashSet<>(landmarkSet);
         int avoidCall = 1;
         while (candidateSet.size() < 4 * goalAmount && avoidCall < goalAmount * 5) {
+
+            if (candidateSet.size() / (4 * goalAmount) > avoidCall / (goalAmount * 5)) {
+                progressListener.accept(candidateSet.size() * 1.00, 4.0 * goalAmount);
+            } else {
+                progressListener.accept(avoidCall * 1.00, 5.0 * goalAmount);
+            }
+
             removeRandomCandidateAndGraphMarks(landmarkSet);
             landmarksAvoid(goalAmount, true);
             avoidCall++;
@@ -67,22 +74,28 @@ public class Landmarks {
             Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
             boolean improveFound = true;
             double approximateProgress = i;
-            int currentProfit = calculateCoverCost(landmarkSet);
+            Map<Edge, Set<Integer>> coveredEdges = calculateCoveredEdges(landmarkSet);
+            int currentProfit = coveredEdges.size();
             while (improveFound) {
-                // TODO: 01-04-2020 This needs to be optimised a bit
                 progressListener.accept(Math.min((double) i + 1, approximateProgress), (double) flooredLog);
                 improveFound = false;
                 int bestSwapCandidateIn = -1;
                 int bestSwapCandidateOut = -1;
                 for (Integer outCandidate : landmarkSet) {
                     for (Integer swapCandidate : candidateSubSet) {
-                        Set<Integer> copySet = new HashSet<>(landmarkSet);
+                        /*Set<Integer> copySet = new HashSet<>(landmarkSet);
                         copySet.remove(outCandidate);
-                        copySet.add(swapCandidate);
-                        int newValue = calculateCoverCost(copySet);
+                        copySet.add(swapCandidate);*/
+                        Map<Edge, Set<Integer>> coveredEdgesWithoutOut = coveredEdgesWithout(coveredEdges, outCandidate);
+                        int withoutSize = coveredEdgesWithoutOut.size();
+                        Map<Edge, Set<Integer>> coveredEdgesWithIn = coveredEdgesWithLandmark(coveredEdgesWithoutOut, swapCandidate);
+                        int withInSize = coveredEdgesWithIn.size();
+                        assert withInSize >= withoutSize;
+                        int newValue = coveredEdgesWithIn.size();
                         if (newValue > currentProfit) {
                             bestSwapCandidateOut = outCandidate;
                             bestSwapCandidateIn = swapCandidate;
+                            coveredEdges = coveredEdgesWithIn;
                             currentProfit = newValue;
                             improveFound = true;
                         }
@@ -101,6 +114,38 @@ public class Landmarks {
         progressListener.accept(1.00, 1.00);
         landmarksDistancesActual.clear();
         return landmarkSet;
+    }
+
+    private Map<Edge, Set<Integer>> coveredEdgesWithout(Map<Edge, Set<Integer>> edgeCoveredMap, Integer outCandidate) {
+        Iterator<Map.Entry<Edge, Set<Integer>>> iterator = edgeCoveredMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Edge, Set<Integer>> entry = iterator.next();
+            Set<Integer> temp = entry.getValue();
+            temp.remove(outCandidate);
+            if (temp.isEmpty()) {
+                iterator.remove();
+            }
+        }
+        return edgeCoveredMap;
+    }
+
+    private Map<Edge, Set<Integer>> coveredEdgesWithLandmark(Map<Edge, Set<Integer>> edgeCoveredMap, Integer inCandidate) {
+        List<List<Edge>> originalList = graph.getAdjList();
+        List<Double> forwardDistance = getNodeDistanceLandmark(inCandidate);
+        double[] distances = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            for (Edge e : originalList.get(i)) {
+                if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
+                    continue;
+                }
+                if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
+                    Set<Integer> edgedCoveredSet = edgeCoveredMap.computeIfAbsent(e, k -> new HashSet<>());
+                    edgedCoveredSet.add(inCandidate);
+                    edgeCoveredMap.replace(e, edgedCoveredSet);
+                }
+            }
+        }
+        return edgeCoveredMap;
     }
 
     private int calculateCoverCost(Set<Integer> potentialLandmarks) {
@@ -130,6 +175,37 @@ public class Landmarks {
             }
         }
         return covers;
+    }
+
+    private Map<Edge, Set<Integer>> calculateCoveredEdges(Set<Integer> potentialLandmarks) {
+        Map<Edge, Set<Integer>> coveredEdges = new HashMap<>();
+        Map<Integer, double[]> distanceMap = new HashMap<>();
+        List<List<Edge>> originalList = graph.getAdjList();
+        for (Integer lMarkIndex : potentialLandmarks) {
+            List<Double> forwardDistance = getNodeDistanceLandmark(lMarkIndex);
+            double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
+            distanceMap.put(lMarkIndex, arrForward);
+        }
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            for (Edge e : originalList.get(i)) {
+                for (Integer lMarkIndex : potentialLandmarks) {
+                    double[] distances = distanceMap.get(lMarkIndex);
+                    if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
+                        continue;
+                    }
+                    if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
+                        Set<Integer> edgedCoveredSet = coveredEdges.computeIfAbsent(e, k -> new HashSet<>());
+                        edgedCoveredSet.add(lMarkIndex);
+                        coveredEdges.replace(e, edgedCoveredSet);
+                        /*
+                        System.out.println("Edge from: " + i + " to: " + lMarkIndex + " is covered");
+*/
+                        break;
+                    }
+                }
+            }
+        }
+        return coveredEdges;
     }
 
     private List<Double> getNodeDistanceLandmark(int lm) {
