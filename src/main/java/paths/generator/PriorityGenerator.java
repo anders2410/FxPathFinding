@@ -29,7 +29,6 @@ public class PriorityGenerator {
         };
     }
 
-
     public static PriorityStrategy getConHeuristic() {
         return (i, dir) -> {
             List<Double> nodeDist = getNodeDist(dir);

@@ -1,39 +1,12 @@
 package paths.generator;
 
-import paths.strategy.HeuristicFunction;
-import paths.SSSP;
 import paths.strategy.TerminationStrategy;
-import paths.strategy.PriorityStrategy;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import static paths.ABDir.*;
+import static paths.ABDir.A;
+import static paths.ABDir.B;
 import static paths.SSSP.*;
 
 public class TerminationGenerator {
-
-
-    public static TerminationStrategy getEmptyStoppingStrategy() {
-        return (goalDist) -> false;
-    }
-
-    public static TerminationStrategy strongConHeuristicTermination() {
-        return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
-            if (topA != null && topB != null) {
-                double forwardKeyVal = getPriorityFunction().apply(topA, A);
-                double backwardKeyVal = getPriorityFunction().apply(topB, B);
-                double pForwardSource = getHeuristicFunction().apply(getSource(), getTarget());
-                if (forwardKeyVal + backwardKeyVal >= goalDist) {
-                    return forwardKeyVal + backwardKeyVal >= goalDist;
-                }
-            }
-            return false;
-        };
-    }
-
     public static TerminationStrategy strongNonConHeuristicTermination() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
@@ -86,4 +59,25 @@ public class TerminationGenerator {
             return false;
         };
     }
+
+    public static TerminationStrategy getEmptyStoppingStrategy() {
+        return (goalDist) -> false;
+    }
+
+    public static TerminationStrategy strongConHeuristicTermination() {
+        return (goalDist) -> {
+            Integer topA = getQueue(A).peek();
+            Integer topB = getQueue(B).peek();
+            if (topA != null && topB != null) {
+                double forwardKeyVal = getPriorityFunction().apply(topA, A);
+                double backwardKeyVal = getPriorityFunction().apply(topB, B);
+                double pForwardSource = getHeuristicFunction().apply(getSource(), getTarget());
+                if (forwardKeyVal + backwardKeyVal >= goalDist) {
+                    return forwardKeyVal + backwardKeyVal >= goalDist;
+                }
+            }
+            return false;
+        };
+    }
+
 }
