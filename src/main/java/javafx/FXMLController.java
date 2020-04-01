@@ -241,7 +241,7 @@ public class FXMLController implements Initializable {
         while (firstNode != nodeQueue.peekLast()) {
             Node fromNode = nodeQueue.pollLast();
             Node toNode = nodeQueue.peekFirst();
-            nodeQueue.addFirst(toNode);
+            nodeQueue.addFirst(fromNode);
             assert fromNode != null && toNode != null;
             results.add(SSSP.findShortestPath(fromNode.index, toNode.index, algorithmMode));
         }

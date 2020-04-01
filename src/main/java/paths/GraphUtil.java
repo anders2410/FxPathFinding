@@ -64,6 +64,7 @@ public class GraphUtil {
             }
             System.out.println();*/
             time++;
+
             finishingTimes.put(node, time);
         }
 
