@@ -119,12 +119,6 @@ public class GraphUtil {
         }
 
         List<Graph> graphs = new ArrayList<>();
-        for (List<Integer> sccNodeList : sccNodeLists) {
-            Graph sccGraph = new Graph(sccNodeList.size());
-            for (Integer node_id : sccNodeList) {
-                sccGraph.addNode(nodeList.get(node_id));
-            }
-        }
         return graphs;
     }
 

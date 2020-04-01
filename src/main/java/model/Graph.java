@@ -13,6 +13,24 @@ public class Graph implements Serializable {
         init(nodeAmount);
     }
 
+    public Graph subGraph(List<Integer> nodesToKeep, Map<Integer, Integer> edgesToKeep) {
+        Graph subGraph = new Graph(nodesToKeep.size());
+        /*List<Node> subNodeList = subGraph.getNodeList();
+        List<List<Edge>> subAdjList = subGraph.getAdjList();
+        for (int i = 0; i < nodesToKeep.size(); i++) {
+            Node oldNode = nodeList.get(nodesToKeep.get(i));
+            Node newNode = new Node(i, oldNode.longitude, oldNode.latitude);
+            subNodeList.add(newNode);
+        }
+        for (List<Edge> edges : adjList) {
+            Node from = nodeList.get(edges.to);
+            for (Edge edge : edges) {
+                Node to = nodeList.get(edge.to);
+            }
+        }*/
+        return subGraph;
+    }
+
     public void init(int size) {
         this.nodeAmount = size;
         nodeList = new ArrayList<>();
@@ -48,7 +66,6 @@ public class Graph implements Serializable {
                                 e.inPath = true;
                             }
                             e.visitedReverse = true;
-
 
                             mergeList.get(i).set(j, e);
                         }
@@ -113,6 +130,7 @@ public class Graph implements Serializable {
 
     public void setNodeList(List<Node> nodeList) {
         this.nodeList = nodeList;
+        nodeAmount = nodeList.size();
     }
 
     public void removeNodesFromEnd(int number) {
