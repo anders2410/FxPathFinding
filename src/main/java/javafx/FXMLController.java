@@ -782,12 +782,12 @@ public class FXMLController implements Initializable {
     }
 
 
-    private Task generateLandmarksTask(BiFunction<Integer, Boolean, Set<Integer>> landmarksFunction, Landmarks lm, int goalAmount, boolean subRoutineCall) {
+    private Task generateLandmarksTask(BiFunction<Integer, Boolean, Set<Integer>> landmarksFunction, Landmarks lm, int goalAmount) {
         return new Task() {
             @Override
             protected Object call() {
                 lm.setProgressListener(this::updateProgress);
-                landmarksFunction.apply(goalAmount, subRoutineCall);
+                landmarksFunction.apply(goalAmount, false);
                 landmarks = lm;
                 return true;
             }
@@ -796,7 +796,6 @@ public class FXMLController implements Initializable {
 
     private void startLandmarksMonitorThread(Task monitorTask) {
         progress_indicator.setOpacity(1);
-
         monitorTask.setOnSucceeded(event -> {
             drawAllLandmarks();
             playIndicatorCompleted();
@@ -807,25 +806,25 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateLandmarksAvoid() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16, false);
+        Task genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksMaxCover() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16, false);
+        Task genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksRandom() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16, false);
+        Task genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksFarthest() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16, false);
+        Task genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
