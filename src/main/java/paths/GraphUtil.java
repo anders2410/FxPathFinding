@@ -48,42 +48,49 @@ public class GraphUtil {
         for (int i = n; i > 0; i--) {
             whiteNodes.add(i - 1);
         }
+        Stack<Integer> recursionStack = new Stack<>();
         // First DFS
         while (!whiteNodes.isEmpty()) {
-            Integer node = whiteNodes.pop();
+            Integer node = whiteNodes.peek();
+            if (!recursionStack.isEmpty() && node.equals(recursionStack.peek())) {
+                time++;
+                whiteNodes.pop();
+                recursionStack.pop();
+                finishingTimes.put(node, time);
+                continue;
+            }
+            recursionStack.push(node);
             //System.out.println("Visited node: " + node);
             for (Edge edge : adjList.get(node)) {
-                if (whiteNodes.contains(edge.to)) {
+                if (whiteNodes.contains(edge.to) && !recursionStack.contains(edge.to)) {
                     whiteNodes.removeElement(edge.to);
                     whiteNodes.push(edge.to);
                 }
             }
-            /*System.out.print("First white nodes: ");
-            for (int i = whiteNodes.size(); i > max(whiteNodes.size() - 10, 0); i--) {
-                System.out.print(whiteNodes.get(i - 1) + ", ");
-            }
-            System.out.println();*/
-            time++;
-
-            finishingTimes.put(node, time);
+            //printStack("First white nodes: ", whiteNodes);
+            //printStack("First recursion stack: ", recursionStack);
         }
 
         List<List<List<Edge>>> sccAdjLists = new ArrayList<>();
         // Reverse edges
-        adjList = graph.getReverse(adjList);
+        List<List<Edge>> revAdjList = graph.getReverse(adjList);
         // Sort nodes based on finishing time
-        List<Node> nodeList = graph.getNodeList();
+        List<Node> nodeList = new ArrayList<>(graph.getNodeList());
         nodeList.sort(Comparator.comparing(node -> finishingTimes.get(node.index)));
+        for (Node node : nodeList) {
+            System.out.print(node.index + " -> " + finishingTimes.get(node.index) + "     ");
+        }
+        System.out.println();
         for (int i = 0; i < n; i++) {
             whiteNodes.add(nodeList.get(i).index);
         }
         // Second DFS
-        /*Stack<Integer> tree = new Stack<>();
+        Stack<Integer> tree = new Stack<>();
         sccAdjLists.add(new ArrayList<>());
         while (!whiteNodes.isEmpty()) {
             Integer node = whiteNodes.pop();
 
-            for (Edge edge : adjList.get(node)) {
+            for (Edge edge : revAdjList.get(node)) {
                 if (whiteNodes.contains(edge.to)) {
                     whiteNodes.remove(edge.to);
                     whiteNodes.push(edge.to);
@@ -93,8 +100,16 @@ public class GraphUtil {
         }
 
         List<Graph> graphs = new ArrayList<>();
-        graphs.add(new Graph(0));*/
+        graphs.add(new Graph(0));
 
         return null;
+    }
+
+    private void printStack(String s, Stack<Integer> recursionStack) {
+        System.out.print(s);
+        for (int i = recursionStack.size(); i > max(recursionStack.size() - 10, 0); i--) {
+            System.out.print(recursionStack.get(i - 1) + ", ");
+        }
+        System.out.println();
     }
 }
