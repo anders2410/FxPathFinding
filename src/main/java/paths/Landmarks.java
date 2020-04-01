@@ -46,10 +46,17 @@ public class Landmarks {
         if (landmarkSet.size() == goalAmount) {
             return landmarkSet;
         }
-        landmarksAvoid(goalAmount, true);
+        landmarksAvoid(goalAmount, false);
         Set<Integer> candidateSet = new HashSet<>(landmarkSet);
         int avoidCall = 1;
         while (candidateSet.size() < 4 * goalAmount && avoidCall < goalAmount * 5) {
+
+            if (candidateSet.size() / (4 * goalAmount) > avoidCall / (goalAmount * 5)) {
+                progressListener.accept(candidateSet.size() * 1.00, 4.0 * goalAmount);
+            } else {
+                progressListener.accept(avoidCall * 1.00, 5.0 * goalAmount);
+            }
+
             removeRandomCandidateAndGraphMarks(landmarkSet);
             landmarksAvoid(goalAmount, true);
             avoidCall++;
