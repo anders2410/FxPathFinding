@@ -390,8 +390,7 @@ public class FXMLController implements Initializable {
         }
     }
 
-    //Projections
-
+    // Projections
     PixelPoint toScreenPos(Node node) {
         return new PixelPoint(toScreenPosX(node.longitude), toScreenPosY(node.latitude));
     }
@@ -475,7 +474,6 @@ public class FXMLController implements Initializable {
 
 
     // Here comes all the eventHandle methods that are called when clicked
-
     public void handleNavUpEvent() {
         yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
                 ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
@@ -529,7 +527,8 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
-    // W A S D navigation TODO: Find out how arrow keys are triggered
+    // W A S D navigation
+    // TODO: Find out how arrow keys are triggered
     private EventHandler<? super KeyEvent> onKeyPressed() {
         return event -> {
             if (graph == null) {
@@ -719,14 +718,6 @@ public class FXMLController implements Initializable {
         gc.fillOval(p.x - shift, p.y - shift, radius, radius);
         gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
 
-    }
-
-    public void handleAddLandmarkEvent() {
-        landmarksGenerator.landmarksAvoid(1, false);
-        for (Integer index : landmarksGenerator.getLandmarkSet()) {
-            Node n = graph.getNodeList().get(index);
-            drawLandMark(n);
-        }
     }
 
     public void handleSeedEvent() {

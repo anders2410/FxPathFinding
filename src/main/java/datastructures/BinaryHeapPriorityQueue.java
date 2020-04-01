@@ -8,8 +8,11 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
     private final int defaultElement;
     private Comparator<? super Integer> comparator;
     private int size;
-    //TODO array or ArrayList?
-    //With array we initialise to full capacity meaning we have an array of the graph's size of ints, but with arraylist we do costly calls to double size underway, so which is more efficient?
+
+    // TODO: Array or ArrayList?
+    // With array we initialise to full capacity meaning we have an array of the graph's size of ints,
+    // but with array list we do costly calls to double size underway, so which is more efficient?
+
     private int[] binHeap;
 
     public BinaryHeapPriorityQueue(Comparator<? super Integer> comparator, int graph) {
@@ -22,10 +25,8 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
 
     @Override
     public boolean contains(Integer toFind) {
-        int index = 0;
         for (Integer i : binHeap) {
             if (i.equals(toFind)) return true;
-            index++;
         }
         return false;
     }

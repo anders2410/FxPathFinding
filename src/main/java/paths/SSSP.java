@@ -43,14 +43,13 @@ public class SSSP {
     private static Set<Integer> visitedB;                   // A set of visited nodes starting from Node: target
     private static Map<Integer, Integer> pathMapA;
     private static Map<Integer, Integer> pathMapB;
-    private static MinPriorityQueue queueA;           // Queue to hold the paths from Node: source
-    private static MinPriorityQueue queueB;           // Queue to hold the paths from Node: target
+    private static MinPriorityQueue queueA;                 // Queue to hold the paths from Node: source
+    private static MinPriorityQueue queueB;                 // Queue to hold the paths from Node: target
     private static Map<Integer, Double> estimatedDistA;
     private static Map<Integer, Double> estimatedDistB;
     private static GetPQueueStrategy priorityQueueGetter;
 
     // Initialization
-
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
         source = sourceP;
@@ -99,7 +98,6 @@ public class SSSP {
     }
 
     // Path finding
-
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
         if (sourceP == targetP) {
             return new ShortestPathResult(0, singletonList(sourceP), 0);
@@ -252,28 +250,13 @@ public class SSSP {
         return nodeDist;
     }
 
-    private static void printInfo(Set<Integer> visitedA, Map<Integer, Integer> backPointersA, Set<Integer> visitedB, Map<Integer, Integer> backPointersB, int middlePoint) {
-        System.out.println(visitedA);
-        System.out.println(visitedA.size());
-        System.out.println();
-
-        System.out.println("From: " + source);
-        System.out.println("MiddlePoint: " + middlePoint);
-        System.out.println("To: " + target);
-
-        System.out.println("Contains MiddlePoint A: " + visitedA.contains(middlePoint));
-        System.out.println("Contains MiddlePoint B: " + visitedB.contains(middlePoint));
-
-        System.out.println("Get MiddlePoint A: " + backPointersA.get(middlePoint));
-        System.out.println("Get MiddlePoint B: " + backPointersB.get(middlePoint));
-    }
-
     private static void traceRelax(Integer currentNode, Edge edge) {
         if (trace) {
             System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
         }
     }
 
+    // Public Access Methods
     public static void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
         SSSP.distanceStrategy = distanceStrategy;
     }
