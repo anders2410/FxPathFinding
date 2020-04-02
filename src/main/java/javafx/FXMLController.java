@@ -147,7 +147,6 @@ public class FXMLController implements Initializable {
      */
     private void loadNewGraph(String fileName) {
         this.fileName = fileName;
-        progress_indicator.setOpacity(1);
         Task<Graph> loadGraphTask = new Task<>() {
             @Override
             protected Graph call() {
@@ -898,9 +897,24 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
-    public void handleSCCEvent(ActionEvent actionEvent) {
-        List<Graph> graphs  = new GraphUtil(graph).scc();
-        graph = graphs.get(0);
-        setUpGraph();
+    public void handleSCCEvent() {
+        Task<List<Graph>> sccTask = new Task<>() {
+            @Override
+            protected List<Graph> call() {
+                GraphUtil gu = new GraphUtil(graph);
+                gu.setProgressListener(this::updateProgress);
+                List<Graph> graphs = new GraphUtil(graph).scc();
+                updateProgress(100L, 100L);
+                return graphs;
+            }
+        };
+        sccTask.setOnSucceeded(e -> {
+            playIndicatorCompleted();
+            List<Graph> graphs  = sccTask.getValue();
+            graph = graphs.get(0);
+            setUpGraph();
+        });
+        progress_indicator.progressProperty().bind(sccTask.progressProperty());
+        sccTask.run();
     }
 }

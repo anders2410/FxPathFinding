@@ -5,6 +5,7 @@ import model.Graph;
 import model.Node;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static java.lang.Integer.max;
@@ -12,6 +13,8 @@ import static java.lang.Integer.max;
 public class GraphUtil {
 
     private Graph graph;
+
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {};
 
     public GraphUtil(Graph graph) {
         this.graph = graph;
@@ -71,6 +74,7 @@ public class GraphUtil {
             //printStack("First white nodes: ", whiteNodes);
             //printStack("First recursion stack: ", recursionStack);
         }
+        progressListener.accept(33L, 100L);
 
         List<List<Integer>> sccNodeLists = new ArrayList<>();
         // Reverse edges
@@ -113,6 +117,7 @@ public class GraphUtil {
         for (Integer node : sccNodeLists.get(0)) {
             System.out.print(node + ", ");
         } System.out.println("}");*/
+        progressListener.accept(66L, 100L);
         Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
         return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
     }
@@ -148,5 +153,9 @@ public class GraphUtil {
             System.out.print(recursionStack.get(i - 1) + ", ");
         }
         System.out.println();
+    }
+
+    public void setProgressListener(BiConsumer<Long, Long> progressListener) {
+        this.progressListener = progressListener;
     }
 }
