@@ -148,17 +148,17 @@ public class FXMLController implements Initializable {
     private void loadNewGraph(String fileName) {
         this.fileName = fileName;
         progress_indicator.setOpacity(1);
-        Task loadGraphTask = new Task() {
+        Task<Graph> loadGraphTask = new Task<>() {
             @Override
-            protected Object call() {
+            protected Graph call() {
                 GraphImport graphImport = new GraphImport(distanceStrategy);
-                graphImport.setProgressListener((Long p, Long m) -> updateProgress(p, m));
-                graph = graphImport.loadGraph(fileName);
-                landmarksGenerator = new Landmarks(graph);
-                return true;
+                graphImport.setProgressListener(this::updateProgress);
+                return graphImport.loadGraph(fileName);
             }
         };
         loadGraphTask.setOnSucceeded(event -> {
+            graph = loadGraphTask.getValue();
+            landmarksGenerator = new Landmarks(graph);
             setUpGraph();
             playIndicatorCompleted();
         });
@@ -212,23 +212,21 @@ public class FXMLController implements Initializable {
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
-    Task ssspTask;
-    List<ShortestPathResult> results;
+    Task<List<ShortestPathResult>> ssspTask;
 
     private void runAlgorithm() {
         if (selectedNodes.size() <= 1) {
             return;
         }
         graph.resetPathTrace();
-        ssspTask = new Task() {
+        ssspTask = new Task<>() {
             @Override
-            protected Object call() {
-                results = ssspConnectingNodes(new ArrayDeque<>(selectedNodes));
-                return null;
+            protected List<ShortestPathResult> call() {
+                return ssspConnectingNodes(new ArrayDeque<>(selectedNodes));
             }
         };
         ssspTask.setOnSucceeded(event -> {
-            applyResultsToLabel(results);
+            applyResultsToLabel(ssspTask.getValue());
             redrawGraph();
         });
         ssspTask.run();
@@ -765,19 +763,19 @@ public class FXMLController implements Initializable {
     }
 
 
-    private Task generateLandmarksTask(BiFunction<Integer, Boolean, Set<Integer>> landmarksFunction, Landmarks lm, int goalAmount) {
-        return new Task() {
+    private Task<Void> generateLandmarksTask(BiFunction<Integer, Boolean, Set<Integer>> landmarksFunction, Landmarks lm, int goalAmount) {
+        return new Task<>() {
             @Override
-            protected Object call() {
+            protected Void call() {
                 lm.setProgressListener(this::updateProgress);
                 landmarksFunction.apply(goalAmount, false);
                 landmarksGenerator = lm;
-                return true;
+                return null;
             }
         };
     }
 
-    private void startLandmarksMonitorThread(Task monitorTask) {
+    private void startLandmarksMonitorThread(Task<Void> monitorTask) {
         progress_indicator.setOpacity(1);
         monitorTask.setOnSucceeded(event -> {
             drawAllLandmarks();
@@ -790,25 +788,25 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateLandmarksAvoid() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksMaxCover() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksRandom() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksFarthest() {
         Landmarks lm = new Landmarks(graph);
-        Task genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
@@ -902,7 +900,6 @@ public class FXMLController implements Initializable {
 
     public void handleSCCEvent(ActionEvent actionEvent) {
         List<Graph> graphs  = new GraphUtil(graph).scc();
-        System.out.println(graphs.size());
         graph = graphs.get(0);
         setUpGraph();
     }
