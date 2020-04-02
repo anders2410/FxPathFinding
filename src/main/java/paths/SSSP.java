@@ -6,6 +6,7 @@ import paths.factory.*;
 import paths.strategy.*;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
 import static java.util.Collections.singletonList;
@@ -118,7 +119,7 @@ public class SSSP {
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
         if (sourceP == targetP) {
-            return new ShortestPathResult(0, singletonList(sourceP), 0);
+            return new ShortestPathResult(0, singletonList(sourceP), 0, 0);
         }
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
@@ -127,7 +128,7 @@ public class SSSP {
     }
 
     private static ShortestPathResult oneDirectional() {
-
+        long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
 
@@ -135,8 +136,10 @@ public class SSSP {
             if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
             takeStep(adjList, A, false);
         }
+        long endTime = System.nanoTime();
+        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size());
+        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size(), duration);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir, boolean biDirectional) {
@@ -159,6 +162,7 @@ public class SSSP {
     }
 
     private static ShortestPathResult biDirectional() {
+        long startTime = System.nanoTime();
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.getReverse(adjList);
@@ -178,27 +182,32 @@ public class SSSP {
                 takeStep(revAdjList, B, true);
             }
         }
+        long endTime = System.nanoTime();
+        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
 
         if (middlePoint == -1) {
-            return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
+            return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0, 0);
         }
         List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
         double distance = goalDistance;
-        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size());
+        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size(), duration);
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
         applyFactory(new DijkstraFactory());
         initFields(DIJKSTRA, sourceP, 0);
         initDataStructures();
+        long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
 
         while (!queueA.isEmpty()) {
             takeStep(adjList, A, false);
         }
+        long endTime = System.nanoTime();
+        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA);
+        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA, duration);
     }
 
     private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
