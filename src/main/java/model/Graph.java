@@ -6,29 +6,12 @@ import java.util.*;
 public class Graph implements Serializable {
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
+    private List<Integer> parentNodes;
 
     private int nodeAmount;
 
     public Graph(int nodeAmount) {
         init(nodeAmount);
-    }
-
-    public Graph subGraph(List<Integer> nodesToKeep, Map<Integer, Integer> edgesToKeep) {
-        Graph subGraph = new Graph(nodesToKeep.size());
-        /*List<Node> subNodeList = subGraph.getNodeList();
-        List<List<Edge>> subAdjList = subGraph.getAdjList();
-        for (int i = 0; i < nodesToKeep.size(); i++) {
-            Node oldNode = nodeList.get(nodesToKeep.get(i));
-            Node newNode = new Node(i, oldNode.longitude, oldNode.latitude);
-            subNodeList.add(newNode);
-        }
-        for (List<Edge> edges : adjList) {
-            Node from = nodeList.get(edges.to);
-            for (Edge edge : edges) {
-                Node to = nodeList.get(edge.to);
-            }
-        }*/
-        return subGraph;
     }
 
     public void init(int size) {
@@ -124,6 +107,10 @@ public class Graph implements Serializable {
         adjList.get(from.index).add(new Edge(to.index, d));
     }
 
+    public void addEdge(int from, int to, double d) {
+        adjList.get(from).add(new Edge(to, d));
+    }
+
     public void addEdge(Node from, Edge edge) {
         adjList.get(from.index).add(edge);
     }
@@ -150,5 +137,28 @@ public class Graph implements Serializable {
 
     public void setAdjList(List<List<Edge>> adjList) {
         this.adjList = adjList;
+    }
+
+    public void printAdjList() {
+        System.out.println("[AdjList] size " + nodeAmount);
+        for (int i = 0; i < adjList.size(); i++) {
+            List<Edge> edges = adjList.get(i);
+            System.out.print("From " + i + " to: ");
+            for (Edge edge : edges) {
+                System.out.print(edge.to);
+                System.out.print(" d=");
+                System.out.print(edge.d);
+                System.out.print("; ");
+            }
+            System.out.println();
+        }
+    }
+
+    public List<Integer> getParentNodes() {
+        return parentNodes;
+    }
+
+    public void setParentNodes(List<Integer> parentNodes) {
+        this.parentNodes = parentNodes;
     }
 }

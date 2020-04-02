@@ -901,6 +901,9 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSCCEvent(ActionEvent actionEvent) {
-        List<Graph> graphs = new GraphUtil(graph).scc();
+        List<Graph> graphs  = new GraphUtil(graph).scc();
+        System.out.println(graphs.size());
+        graph = graphs.get(0);
+        setUpGraph();
     }
 }

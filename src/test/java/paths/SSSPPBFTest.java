@@ -24,7 +24,7 @@ public class SSSPPBFTest {
     String fileName = "malta-latest.osm.pbf";
 
     @Before
-    public void setUp() throws FileNotFoundException {
+    public void setUp() {
         PBFParser pbfParser = new PBFParser(fileName, false);
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
@@ -37,7 +37,6 @@ public class SSSPPBFTest {
             e.printStackTrace();
         }
         graph = pbfParser.getGraph();
-        graph.landmarksFarthest(16);
         SSSP.setGraph(graph);
     }
 
@@ -106,7 +105,7 @@ public class SSSPPBFTest {
     @Test
     public void testAlgorithms() {
         int[] matrix = new int[7];
-        graph.landmarksFarthest(16);
+        new Landmarks(graph).landmarksFarthest(16, false);
         for (int i = 0; i < 4000; i++) {
             SSSP.seed = i;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);

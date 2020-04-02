@@ -5,6 +5,7 @@ import model.Graph;
 import model.Node;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.max;
 
@@ -79,8 +80,8 @@ public class GraphUtil {
         nodeList.sort(Comparator.comparing(node -> finishingTimes.get(node.index)));
         for (Node node : nodeList) {
             whiteNodes.add(node.index);
-            System.out.print(node.index + " -> " + finishingTimes.get(node.index) + "     ");
-        } System.out.println();
+            //System.out.print(node.index + " -> " + finishingTimes.get(node.index) + "     ");
+        } //System.out.println();
         recursionStack = new Stack<>();
         // Second DFS
         while (!whiteNodes.isEmpty()) {
@@ -107,19 +108,38 @@ public class GraphUtil {
             //printStack("First recursion stack: ", recursionStack);
         }
 
+        // Collect result of GCC in new graphs sorted by size from largest to smallest
+        /*System.out.print("{");
+        for (Integer node : sccNodeLists.get(0)) {
+            System.out.print(node + ", ");
+        } System.out.println("}");*/
+        Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
+        return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
+    }
 
-        // Collect result of GCC in new graphs
-
-        for (List<Integer> sccNodeList : sccNodeLists) {
-            System.out.print("{");
-            for (Integer integer : sccNodeList) {
-                System.out.print(integer + ", ");
-            }
-            System.out.println("}");
+    public Graph subGraph(List<Integer> nodesToKeep) {
+        Graph subGraph = new Graph(nodesToKeep.size());
+        subGraph.setParentNodes(nodesToKeep);
+        Map<Integer, Integer> indexMap = new HashMap<>();
+        List<Node> subNodeList = subGraph.getNodeList();
+        List<List<Edge>> subAdjList = subGraph.getAdjList();
+        for (int i = 0; i < nodesToKeep.size(); i++) {
+            indexMap.put(nodesToKeep.get(i), i);
+            Node oldNode = graph.getNodeList().get(nodesToKeep.get(i));
+            Node newNode = new Node(i, oldNode.longitude, oldNode.latitude);
+            subNodeList.add(newNode);
         }
 
-        List<Graph> graphs = new ArrayList<>();
-        return graphs;
+        for (int from : nodesToKeep) {
+            for (Edge edge : graph.getAdjList().get(from)) {
+                if (nodesToKeep.contains(edge.to)) {
+                    int newFrom = indexMap.get(from);
+                    int newTo = indexMap.get(edge.to);
+                    subAdjList.get(newFrom).add(new Edge(newTo, edge.d));
+                }
+            }
+        }
+        return subGraph;
     }
 
     private void printStack(String s, Stack<Integer> recursionStack) {
