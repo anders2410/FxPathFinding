@@ -112,10 +112,10 @@
         <VBox id="info_box" alignment="TOP_RIGHT" minHeight="0.0" prefWidth="200.0" AnchorPane.rightAnchor="15.0"
               AnchorPane.topAnchor="15.0">
             <Label fx:id="algorithm_label" styleClass="info_label" text="Algorithm: "/>
-            <Label fx:id="distance_label" styleClass="info_label" text="Total Distance: "/>
+            <Label fx:id="distance_label" styleClass="info_label" text="Distance (km): "/>
             <Label fx:id="nodes_visited_label" styleClass="info_label" text="Nodes Visited: "/>
-            <Label fx:id="nodes_label" styleClass="info_label" text="Number of Nodes: "/>
-            <Label fx:id="edges_label" styleClass="info_label" text="Number of Edges: "/>
+            <Label fx:id="nodes_label" styleClass="info_label" text="Nodes in Graph: "/>
+            <Label fx:id="edges_label" styleClass="info_label" text="Edges in Graph: "/>
             <Label fx:id="source_label" styleClass="info_label" text="Source: "/>
             <Label fx:id="target_label" styleClass="info_label" text="Target: "/>
             <Label fx:id="seed_label" styleClass="info_label" text="Seed: "/>

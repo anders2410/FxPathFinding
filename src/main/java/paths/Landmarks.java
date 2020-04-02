@@ -95,7 +95,6 @@ public class Landmarks {
                         if (newValue > currentProfit) {
                             bestSwapCandidateOut = outCandidate;
                             bestSwapCandidateIn = swapCandidate;
-                            coveredEdges = coveredEdgesWithIn;
                             currentProfit = newValue;
                             improveFound = true;
                         }
