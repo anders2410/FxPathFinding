@@ -416,9 +416,9 @@ public class FXMLController implements Initializable {
 
         PixelPoint oldCenter = toScreenPos(centerNode);
         PixelPoint screenCenter = getScreenCenter();
-        // TODO: Fix magic factor??
-        xOffset += 1.1 * (screenCenter.x - oldCenter.x) / mapWidthRatio;
-        yOffset -= 1.1 * (screenCenter.y - oldCenter.y) / mapWidthRatio;
+
+        xOffset += (screenCenter.x - oldCenter.x) / globalRatio;
+        yOffset -= (screenCenter.y - oldCenter.y) / globalRatio;
 
         redrawGraph();
     }
@@ -620,8 +620,8 @@ public class FXMLController implements Initializable {
             // TODO: Make completely smooth by doing reverse mercator
             double dx = event.getX() - clickX;
             double dy = clickY - event.getY();
-            xOffset += 1.1 * dx / mapWidthRatio;
-            yOffset += 1.1 * dy / mapWidthRatio;
+            xOffset += dx / globalRatio;
+            yOffset += dy / globalRatio;
             clickX = event.getX();
             clickY = event.getY();
             dragCounter++;
