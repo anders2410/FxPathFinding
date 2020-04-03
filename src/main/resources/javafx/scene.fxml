@@ -92,6 +92,7 @@
                     GridPane.rowIndex="1"/>
             <Button id="nav_down" onAction="#handleNavDownEvent" styleClass="map_nav_buttons" GridPane.columnIndex="1"
                     GridPane.rowIndex="2"/>
+            <Button id="nav_center" onAction="#handleNavCenterEvent" styleClass="map_nav_buttons" GridPane.columnIndex="1" GridPane.rowIndex="1" text="O"/>
         </GridPane>
         <HBox alignment="BOTTOM_RIGHT" layoutX="832.0" layoutY="580.0" prefHeight="25.0" prefWidth="70.0"
               AnchorPane.bottomAnchor="35.0" AnchorPane.rightAnchor="50.0">

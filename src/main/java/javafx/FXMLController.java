@@ -7,7 +7,6 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -76,20 +75,6 @@ public class FXMLController implements Initializable {
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
 
-    private int xOffset;
-    private int yOffset;
-
-    private PixelPoint minXY = new PixelPoint(-1, -1);
-    private PixelPoint maxXY = new PixelPoint(-1, -1);
-
-    private double globalRatio;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
-
-    private float zoomFactor;
-    private int widthOfBoundingBox;
-    private int heightOfBoundingBox;
-
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
     private Deque<Node> selectedNodes = new ArrayDeque<>();
@@ -152,34 +137,9 @@ public class FXMLController implements Initializable {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
             edges_label.setText("Number of Edges: " + graph.getEdgeAmount());
         }
-        setGraphBounds();
-        zoomFactor = 1;
-        setRatios();
-        redrawGraph();
+        fitGraph();
         SSSP.setGraph(graph);
         SSSP.setLandmarks(landmarksGenerator);
-    }
-
-    private void setGraphBounds() {
-        minXY = new PixelPoint(-1, -1);
-        maxXY = new PixelPoint(-1, -1);
-
-        List<Node> nodeList = graph.getNodeList();
-        for (Node n : nodeList) {
-            double x = mercatorX(n.longitude);
-            double y = mercatorY(n.latitude);
-            minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
-            minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
-        }
-
-        for (Node n : nodeList) {
-            double x = mercatorX(n.longitude) - minXY.x;
-            double y = mercatorY(n.latitude) - minXY.y;
-            maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
-            maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
-        }
-        widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
-        heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
     private Task<List<ShortestPathResult>> ssspTask;
@@ -232,15 +192,6 @@ public class FXMLController implements Initializable {
         if (ssspTask != null) {
             ssspTask.cancel();
         }
-    }
-
-    private void setRatios() {
-        // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
-        mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
-        // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
-        // the global ratio that will perfectly fit into the given image dimension
-        globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
     }
 
     /**
@@ -368,6 +319,150 @@ public class FXMLController implements Initializable {
         }
     }
 
+    // Graph zoom control
+    private float zoomFactor;
+
+    private void fitGraph() {
+        setGraphBounds();
+        zoomFactor = 1;
+        setRatios();
+        redrawGraph();
+    }
+
+    private PixelPoint minXY = new PixelPoint(-1, -1);
+    private PixelPoint maxXY = new PixelPoint(-1, -1);
+
+    private int widthMeter;
+    private int heightMeter;
+
+    private void setGraphBounds() {
+        minXY = new PixelPoint(-1, -1);
+        maxXY = new PixelPoint(-1, -1);
+
+        List<Node> nodeList = graph.getNodeList();
+        for (Node n : nodeList) {
+            double x = mercatorX(n.longitude);
+            double y = mercatorY(n.latitude);
+            minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
+            minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
+        }
+
+        for (Node n : nodeList) {
+            double x = mercatorX(n.longitude);
+            double y = mercatorY(n.latitude);
+            maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
+            maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
+        }
+        widthMeter = (int) Math.abs(maxXY.x - minXY.x);
+        heightMeter = (int) Math.abs(maxXY.y - minXY.y);
+    }
+
+    private double globalRatio;
+    private double mapWidthRatio;
+    private double mapHeightRatio;
+
+    private void setRatios() {
+        // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
+        mapWidthRatio = zoomFactor * canvas.getWidth() / widthMeter;
+        mapHeightRatio = zoomFactor * canvas.getHeight() / heightMeter;
+        // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
+        // the global ratio that will perfectly fit into the given image dimension
+        globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
+    }
+
+    /**
+     * Should be run on GUI thread
+     */
+    private void setWindowChangeListener() {
+        canvas.sceneProperty().addListener((observableScene, oldScene, newScene) -> {
+            if (oldScene == null && newScene != null) {
+                newScene.windowProperty().addListener((observableWindow, oldWindow, newWindow) -> {
+                    if (oldWindow == null && newWindow != null) {
+                        newScene.heightProperty().addListener((observable, oldValue, newValue) -> {
+                            if (graph == null) {
+                                return;
+                            }
+                            canvas.setHeight(newValue.doubleValue());
+                            fitGraph();
+                        });
+                        newScene.widthProperty().addListener((obs, oldVal, newVal) -> {
+                            if (graph == null) {
+                                return;
+                            }
+                            canvas.setWidth(newVal.doubleValue());
+                            fitGraph();
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    public void setSceneListeners(Scene scene) {
+        scene.setOnKeyPressed(onKeyPressed());
+    }
+
+    private int xOffset;
+    private int yOffset;
+
+    private double magicConstant = 50;
+
+    private void zoom(float v) {
+        Node centerNode = toNode(getScreenCenter());
+        zoomFactor *= v;
+        setRatios();
+
+        PixelPoint oldCenter = toScreenPos(centerNode);
+        PixelPoint screenCenter = getScreenCenter();
+        // TODO: Fix magic factor??
+        double magicFactor = magicConstant / zoomFactor;
+        xOffset += magicFactor * (screenCenter.x - oldCenter.x);
+        yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
+
+        redrawGraph();
+    }
+
+    private Node selectOutsideGraph(PixelPoint mousePos, Node closestNode) {
+        Node mouseNode = toNode(mousePos);
+        double dist = distanceStrategy.apply(mouseNode, closestNode);
+        graph.addNode(mouseNode);
+        Edge forth = new Edge(closestNode.index, dist);
+        forth.mouseEdge = true;
+        graph.addEdge(mouseNode, forth);
+        Edge back = new Edge(mouseNode.index, dist);
+        back.mouseEdge = true;
+        graph.addEdge(closestNode, back);
+        closestNode = mouseNode;
+        mouseNodes++;
+        return closestNode;
+    }
+
+    private void resetSelection() {
+        selectedNodes = new ArrayDeque<>();
+        graph.removeNodesFromEnd(mouseNodes);
+        mouseNodes = 0;
+        graph.resetPathTrace();
+        redrawGraph();
+    }
+
+    private Node selectClosestNode(PixelPoint p) {
+        List<Node> nodeList = graph.getNodeList();
+        Node closestNode = nodeList.get(0);
+        double closestDistance = nodeToPointDistance(closestNode, p);
+        for (Node node : nodeList) {
+            double distance = nodeToPointDistance(node, p);
+            if (distance < closestDistance) {
+                closestNode = node;
+                closestDistance = distance;
+            }
+        }
+        return closestNode;
+    }
+
+    private PixelPoint getScreenCenter() {
+        return new PixelPoint(canvas.getWidth() / 2, canvas.getHeight() / 2);
+    }
+
     // Projections
 
     PixelPoint toScreenPos(Node node) {
@@ -433,124 +528,29 @@ public class FXMLController implements Initializable {
         return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
     }
 
-    private Node selectClosestNode(PixelPoint p) {
-        List<Node> nodeList = graph.getNodeList();
-        Node closestNode = nodeList.get(0);
-        double closestDistance = nodeToPointDistance(closestNode, p);
-        for (Node node : nodeList) {
-            double distance = nodeToPointDistance(node, p);
-            if (distance < closestDistance) {
-                closestNode = node;
-                closestDistance = distance;
-            }
-        }
-        return closestNode;
-    }
-
-    private PixelPoint getScreenCenter() {
-        return new PixelPoint(canvas.getWidth() / 2, canvas.getHeight() / 2);
-    }
-
-
-    /**
-     * Should be run on GUI thread
-     */
-    private void setWindowChangeListener() {
-        canvas.sceneProperty().addListener((observableScene, oldScene, newScene) -> {
-            if (oldScene == null && newScene != null) {
-                newScene.windowProperty().addListener((observableWindow, oldWindow, newWindow) -> {
-                    if (oldWindow == null && newWindow != null) {
-                        newScene.heightProperty().addListener((observable, oldValue, newValue) -> {
-                            if (graph == null) {
-                                return;
-                            }
-                            canvas.setHeight(newValue.doubleValue());
-                            setGraphBounds();
-                            setRatios();
-                            redrawGraph();
-                        });
-                        newScene.widthProperty().addListener((obs, oldVal, newVal) -> {
-                            if (graph == null) {
-                                return;
-                            }
-                            canvas.setWidth(newVal.doubleValue());
-                            setGraphBounds();
-                            setRatios();
-                            redrawGraph();
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    public void setSceneListeners(Scene scene) {
-        scene.setOnKeyPressed(onKeyPressed());
-    }
-
-    private double magicConstant = 50;
-
-    private void zoom(float v) {
-        Node centerNode = toNode(getScreenCenter());
-        zoomFactor *= v;
-        setRatios();
-
-        PixelPoint oldCenter = toScreenPos(centerNode);
-        PixelPoint screenCenter = getScreenCenter();
-        // TODO: Fix magic factor??
-        double magicFactor = magicConstant / zoomFactor;
-        xOffset += magicFactor * (screenCenter.x - oldCenter.x);
-        yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
-
-        redrawGraph();
-    }
-
-    private Node selectOutsideGraph(PixelPoint mousePos, Node closestNode) {
-        Node mouseNode = toNode(mousePos);
-        double dist = distanceStrategy.apply(mouseNode, closestNode);
-        graph.addNode(mouseNode);
-        Edge forth = new Edge(closestNode.index, dist);
-        forth.mouseEdge = true;
-        graph.addEdge(mouseNode, forth);
-        Edge back = new Edge(mouseNode.index, dist);
-        back.mouseEdge = true;
-        graph.addEdge(closestNode, back);
-        closestNode = mouseNode;
-        mouseNodes++;
-        return closestNode;
-    }
-
-    private void resetSelection() {
-        selectedNodes = new ArrayDeque<>();
-        graph.removeNodesFromEnd(mouseNodes);
-        mouseNodes = 0;
-        graph.resetPathTrace();
-        redrawGraph();
-    }
-
     // Here comes all the eventHandle methods that are called when buttons are clicked
     public void handleNavUpEvent() {
-        yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
-                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
+        yOffset -= 0.1 * heightMeter / zoomFactor;
         redrawGraph();
     }
 
     public void handleNavDownEvent() {
-        yOffset += (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
-                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
+        yOffset += 0.1 * heightMeter / zoomFactor;
         redrawGraph();
     }
 
     public void handleNavLeftEvent() {
-        xOffset += (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
-                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
+        xOffset += (0.1 * widthMeter) / zoomFactor;
         redrawGraph();
     }
 
     public void handleNavRightEvent() {
-        xOffset -= (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
-                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
+        xOffset -= (0.1 * widthMeter) / zoomFactor;
         redrawGraph();
+    }
+
+    public void handleNavCenterEvent() {
+        fitGraph();
     }
 
     public void handleZoomInEvent() {
@@ -595,15 +595,24 @@ public class FXMLController implements Initializable {
                     toggleAirDistance();
                     break;
                 case M:
-                    magicConstant *= 1.5;
-                    System.out.println("Magic constant: " + magicConstant);
+                    magicConstant *= 1.25;
+                    reportMagicConstant();
                     break;
                 case N:
-                    magicConstant *= 0.5;
-                    System.out.println("Magic constant: " + magicConstant);
+                    magicConstant *= 0.8;
+                    reportMagicConstant();
+                    break;
+                case B:
+                    magicConstant = 50 * widthMeter /42661f;
+                    reportMagicConstant();
                     break;
             }
         };
+    }
+
+    private void reportMagicConstant() {
+        System.out.println("Magic constant: " + magicConstant);
+        System.out.println("Map size: " + widthMeter + ", " + heightMeter);
     }
 
     // Used for calculating how far to drag
