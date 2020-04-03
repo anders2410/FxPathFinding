@@ -553,6 +553,13 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
+    public void handleNavCenterEvent() {
+        setGraphBounds();
+        zoomFactor = 1;
+        setRatios();
+        redrawGraph();
+    }
+
     public void handleZoomInEvent() {
         if (graph == null) {
             return;
