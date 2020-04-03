@@ -42,10 +42,9 @@ public class GraphUtil {
         }
         return hop;
     }
-
     public List<Graph> scc() {
-        List<List<Edge>> adjList = graph.getAdjList();
         int n = graph.getNodeAmount();
+        List<List<Edge>> adjList = graph.getAdjList();
         int time = 0;
         Map<Integer, Integer> finishingTimes = new HashMap<>();
         Stack<Integer> whiteNodes = new Stack<>();

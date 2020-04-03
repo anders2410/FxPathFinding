@@ -5,6 +5,7 @@ package javafx;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -36,6 +37,7 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
@@ -73,16 +75,21 @@ public class FXMLController implements Initializable {
     private Graph graph;
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
+
     private int xOffset;
     private int yOffset;
+
     private PixelPoint minXY = new PixelPoint(-1, -1);
     private PixelPoint maxXY = new PixelPoint(-1, -1);
+
     private double globalRatio;
+    private double mapWidthRatio;
+    private double mapHeightRatio;
+
     private float zoomFactor;
     private int widthOfBoundingBox;
     private int heightOfBoundingBox;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
+
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
     private Deque<Node> selectedNodes = new ArrayDeque<>();
@@ -125,7 +132,7 @@ public class FXMLController implements Initializable {
             setUpGraph();
             playIndicatorCompleted();
         });
-        progress_indicator.progressProperty().bind(loadGraphTask.progressProperty());
+        attachProgressIndicator(loadGraphTask.progressProperty());
         new Thread(loadGraphTask).start();
     }
 
@@ -175,7 +182,7 @@ public class FXMLController implements Initializable {
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
-    Task<List<ShortestPathResult>> ssspTask;
+    private Task<List<ShortestPathResult>> ssspTask;
 
     private void runAlgorithm() {
         if (selectedNodes.size() <= 1) {
@@ -245,23 +252,6 @@ public class FXMLController implements Initializable {
         drawAllEdges();
         drawSelectedNodes();
         drawAllLandmarks();
-    }
-
-    private void drawAllLandmarks() {
-        for (Integer index : landmarksGenerator.getLandmarkSet()) {
-            Node n = graph.getNodeList().get(index);
-            drawLandMark(n);
-        }
-    }
-
-    private void drawLandMark(Node n) {
-        PixelPoint p = toScreenPos(n);
-        double radius = 10;
-        double shift = radius / 2;
-        gc.setFill(Color.HOTPINK);
-        gc.setStroke(Color.HOTPINK);
-        gc.fillOval(p.x - shift, p.y - shift, radius, radius);
-        gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
     }
 
     private void drawSelectedNodes() {
@@ -351,6 +341,23 @@ public class FXMLController implements Initializable {
             }
         }
         return oppositeEdge;
+    }
+
+    private void drawAllLandmarks() {
+        for (Integer index : landmarksGenerator.getLandmarkSet()) {
+            Node n = graph.getNodeList().get(index);
+            drawLandMark(n);
+        }
+    }
+
+    private void drawLandMark(Node n) {
+        PixelPoint p = toScreenPos(n);
+        double radius = 10;
+        double shift = radius / 2;
+        gc.setFill(Color.HOTPINK);
+        gc.setStroke(Color.HOTPINK);
+        gc.fillOval(p.x - shift, p.y - shift, radius, radius);
+        gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
     }
 
     private void resetIsDrawn(List<List<Edge>> adjList) {
@@ -481,6 +488,8 @@ public class FXMLController implements Initializable {
         scene.setOnKeyPressed(onKeyPressed());
     }
 
+    private double magicConstant = 50;
+
     private void zoom(float v) {
         Node centerNode = toNode(getScreenCenter());
         zoomFactor *= v;
@@ -489,7 +498,7 @@ public class FXMLController implements Initializable {
         PixelPoint oldCenter = toScreenPos(centerNode);
         PixelPoint screenCenter = getScreenCenter();
         // TODO: Fix magic factor??
-        double magicFactor = 50 / zoomFactor;
+        double magicFactor = magicConstant / zoomFactor;
         xOffset += magicFactor * (screenCenter.x - oldCenter.x);
         yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
 
@@ -585,6 +594,14 @@ public class FXMLController implements Initializable {
                 case SHIFT:
                     toggleAirDistance();
                     break;
+                case M:
+                    magicConstant *= 1.5;
+                    System.out.println("Magic constant: " + magicConstant);
+                    break;
+                case N:
+                    magicConstant *= 0.5;
+                    System.out.println("Magic constant: " + magicConstant);
+                    break;
             }
         };
     }
@@ -608,7 +625,7 @@ public class FXMLController implements Initializable {
                 return;
             }
             // TODO: Make completely smooth by doing reverse mercator
-            double magicFactor = 50 / zoomFactor;
+            double magicFactor = magicConstant / zoomFactor;
             double dx = event.getX() - clickX;
             double dy = clickY - event.getY();
             xOffset += magicFactor * dx;
@@ -833,13 +850,12 @@ public class FXMLController implements Initializable {
     }
 
     private void startLandmarksMonitorThread(Task<Void> monitorTask) {
-        progress_indicator.setOpacity(1);
         monitorTask.setOnSucceeded(event -> {
             drawAllLandmarks();
             SSSP.setLandmarks(landmarksGenerator);
             playIndicatorCompleted();
         });
-        progress_indicator.progressProperty().bind(monitorTask.progressProperty());
+        attachProgressIndicator(monitorTask.progressProperty());
         new Thread(monitorTask).start();
     }
 
@@ -916,18 +932,23 @@ public class FXMLController implements Initializable {
             protected List<Graph> call() {
                 GraphUtil gu = new GraphUtil(graph);
                 gu.setProgressListener(this::updateProgress);
-                List<Graph> graphs = new GraphUtil(graph).scc();
+                List<Graph> graphs = gu.scc();
                 updateProgress(100L, 100L);
                 return graphs;
             }
         };
         sccTask.setOnSucceeded(e -> {
             playIndicatorCompleted();
-            List<Graph> graphs  = sccTask.getValue();
-            graph = graphs.get(0);
+            List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
+            graph = subGraphs.get(0);
             setUpGraph();
         });
-        progress_indicator.progressProperty().bind(sccTask.progressProperty());
+        attachProgressIndicator(sccTask.progressProperty());
         sccTask.run();
+    }
+
+    private void attachProgressIndicator(ReadOnlyDoubleProperty progressProperty) {
+        progress_indicator.setOpacity(1);
+        progress_indicator.progressProperty().bind(progressProperty);
     }
 }
