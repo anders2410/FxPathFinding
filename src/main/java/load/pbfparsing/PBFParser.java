@@ -19,8 +19,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-import static load.GraphImport.mapsDir;
-import static load.GraphImport.tempDir;
+import static load.GraphIO.mapsDir;
 
 // A tutorial for the Framework can be found at http://jaryard.com/projects/osm4j/tutorial/index.html
 

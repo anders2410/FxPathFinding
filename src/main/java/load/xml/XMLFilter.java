@@ -9,8 +9,8 @@ import javax.xml.parsers.*;
 
 import org.xml.sax.helpers.DefaultHandler;
 
-import static load.GraphImport.mapsDir;
-import static load.GraphImport.tempDir;
+import static load.GraphIO.mapsDir;
+import static load.GraphIO.tempDir;
 
 public class XMLFilter extends DefaultHandler {
     private final String inFileType = ".osm";

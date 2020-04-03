@@ -22,7 +22,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import load.GraphImport;
+import load.GraphIO;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -106,9 +106,10 @@ public class FXMLController implements Initializable {
         Task<Graph> loadGraphTask = new Task<>() {
             @Override
             protected Graph call() {
-                GraphImport graphImport = new GraphImport(distanceStrategy);
-                graphImport.setProgressListener(this::updateProgress);
-                return graphImport.loadGraph(fileName);
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                graphIO.setProgressListener(this::updateProgress);
+                graphIO.loadGraph(fileName);
+                return graphIO.getGraph();
             }
         };
         loadGraphTask.setOnSucceeded(event -> {
@@ -125,8 +126,8 @@ public class FXMLController implements Initializable {
         Task<Void> storeGraphTask = new Task<>() {
             @Override
             protected Void call() {
-                GraphImport graphImport = new GraphImport(distanceStrategy);
-                graphImport.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
                 return null;
             }
         };
@@ -744,7 +745,7 @@ public class FXMLController implements Initializable {
 
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
-        File selectedFile = GraphImport.selectMapFile(stage);
+        File selectedFile = GraphIO.selectMapFile(stage);
         loadNewGraph(selectedFile.getName());
     }
 
@@ -774,7 +775,7 @@ public class FXMLController implements Initializable {
 
     public void handleLoadLandmarks() {
         try {
-            GraphImport.loadLandmarks(fileName, landmarksGenerator);
+            GraphIO.loadLandmarks(fileName, landmarksGenerator);
             drawAllLandmarks();
         } catch (IOException e) {
             e.printStackTrace();
@@ -783,7 +784,7 @@ public class FXMLController implements Initializable {
 
     public void handleSaveLandmarks() {
         try {
-            String name = GraphImport.tempDir + Util.trimFileTypes(fileName);
+            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
             FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(landmarksGenerator.getLandmarkSet());

@@ -1,10 +1,7 @@
 package load;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import model.Edge;
 import model.Graph;
 import model.Node;
 import load.pbfparsing.PBFParser;
@@ -16,25 +13,23 @@ import paths.Landmarks;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-public class GraphImport {
+public class GraphIO {
 
     public static String mapsDir = "maps\\";
     public static String tempDir = mapsDir + "temp\\";
-    private long tempCombinedSize;
     private Graph graph;
+    private long fileSize;
     private BiFunction<Node, Node, Double> distanceStrategy;
     private BiConsumer<Long, Long> progressListener;
 
     protected double progress;
     protected long bytesRead;
 
-    public GraphImport(BiFunction<Node, Node, Double> distanceStrategy) {
+    public GraphIO(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
         generateFolders();
         progress = 0;
@@ -46,39 +41,30 @@ public class GraphImport {
         new File(tempDir).mkdir();
     }
 
-    public Graph loadGraph(String fileName) {
+    public void loadGraph(String fileName) {
+        // Check for temp file to load instead
+        String tmpName = tempDir + Util.trimFileTypes(fileName);
+        File sccFile = new File(tmpName + "-scc-graph.tmp");
+        if (sccFile.exists()) {
+            loadTMP(tmpName + "-scc", "SCC graph loaded from storage");
+            return;
+        }
+        File tmpFile = new File(tmpName + "-graph.tmp");
+        if (tmpFile.exists()) {
+            loadTMP(tmpName, "Graph loaded from storage");
+            return;
+        }
+        // Load actual file
         String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
             loadOSM(Util.trimFileTypes(fileName));
+            return;
         }
         if (fileType.equals("pbf")) {
-            String name = tempDir + Util.trimFileTypes(fileName);
-            File nodeFile = new File(name + "-node-list.tmp");
-            File adjFile = new File(name + "-adj-list.tmp");
-            File nodeFileSCC = new File(name + "-scc-node-list.tmp");
-            File adjFileSCC = new File(name + "-scc-adj-list.tmp");
-            if (nodeFileSCC.exists() && adjFileSCC.exists()) {
-                try {
-                    loadTMP(name + "-scc");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    System.out.println("SCC graph loaded from storage\n");
-                }
-            } else if (nodeFile.exists() && adjFile.exists()) {
-                try {
-                    loadTMP(name);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    System.out.println("Graph loaded from storage\n");
-                }
-            } else {
-                loadPBF(fileName);
-                System.out.println("No files were found. Pre-processing has completed");
-            }
+            System.out.println("No tmp files were found. Starting pre-processing");
+            loadPBF(fileName);
+            System.out.println("Pre-processing completed");
         }
-        return graph;
     }
 
     private void loadOSM(String fileName) {
@@ -115,51 +101,28 @@ public class GraphImport {
     public void storeTMP(String fileName, Graph graph) {
         try {
             String name = tempDir + fileName;
-            FileOutputStream fos = new FileOutputStream(name + "-node-list.tmp");
+            FileOutputStream fos = new FileOutputStream(name + "-graph.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(graph.getNodeList());
+            oos.writeObject(graph);
             oos.close();
-
-            FileOutputStream fos1 = new FileOutputStream(name + "-adj-list.tmp");
-            ObjectOutputStream oos1 = null;
-            oos1 = new ObjectOutputStream(fos1);
-            oos1.writeObject(graph.getAdjList());
-            oos1.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @SuppressWarnings(value = "unchecked")
-    private void loadTMP(String name) throws IOException {
-        String nodeListFileName = name + "-node-list.tmp";
-        String adjListFileName = name + "-adj-list.tmp";
-        long nodeListSize = Files.size(Paths.get(nodeListFileName));
-        long adjListSize = Files.size(Paths.get(adjListFileName));
-        tempCombinedSize = nodeListSize + adjListSize;
-        CountingInputStream nodeCountInput = new CountingInputStream(nodeListFileName, this);
-        CountingInputStream adjCountInput = new CountingInputStream(adjListFileName, this);
-
-        ObjectInputStream nodeStream = new ObjectInputStream(nodeCountInput);
-        ObjectInputStream edgeStream = new ObjectInputStream(adjCountInput);
-        List<Node> nodeList = null;
-        List<List<Edge>> adjList = null;
-
-
+    private void loadTMP(String name, String msg) {
         try {
-            nodeList = (List<Node>) nodeStream.readObject();
-            adjList = (List<List<Edge>>) edgeStream.readObject();
-        } catch (ClassNotFoundException e) {
+            String graphFileName = name + "-graph.tmp";
+            fileSize = Files.size(Paths.get(graphFileName));
+            CountingInputStream input = new CountingInputStream(graphFileName, this);
+            ObjectInputStream objectStream = new ObjectInputStream(input);
+            graph = (Graph) objectStream.readObject();
+            objectStream.close();
+        } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
+        } finally {
+            System.out.println(msg);
         }
-        nodeStream.close();
-        edgeStream.close();
-
-        assert nodeList != null;
-        graph = new Graph(nodeList.size());
-
-        graph.setNodeList(nodeList);
-        graph.setAdjList(adjList);
     }
 
     @SuppressWarnings(value = "unchecked")
@@ -201,9 +164,9 @@ public class GraphImport {
 
     public void updateProgress() {
         if (next_tier <= bytesRead) {
-            next_tier += tempCombinedSize/100;
-            if (bytesRead <= tempCombinedSize) {
-                progressListener.accept(next_tier, tempCombinedSize);
+            next_tier += fileSize /100;
+            if (bytesRead <= fileSize) {
+                progressListener.accept(next_tier, fileSize);
             }
         }
     }
@@ -211,31 +174,35 @@ public class GraphImport {
     public void setProgressListener(BiConsumer<Long, Long> progressListener) {
         this.progressListener = progressListener;
     }
+
+    public Graph getGraph() {
+        return graph;
+    }
 }
 
 
 class CountingInputStream extends FileInputStream implements AutoCloseable {
 
-    GraphImport graphImport;
+    GraphIO graphIO;
 
-    public CountingInputStream(String filename, GraphImport graphImport) throws FileNotFoundException {
+    public CountingInputStream(String filename, GraphIO graphIO) throws FileNotFoundException {
         super(filename);
-        this.graphImport = graphImport;
+        this.graphIO = graphIO;
     }
 
     @Override
     public int read(byte[] b) throws IOException {
         int amountBytesRead = super.read(b);
-        graphImport.bytesRead += amountBytesRead;
-        graphImport.updateProgress();
+        graphIO.bytesRead += amountBytesRead;
+        graphIO.updateProgress();
         return amountBytesRead;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int amountBytesRead = super.read(b, off, len);
-        graphImport.bytesRead += amountBytesRead;
-        graphImport.updateProgress();
+        graphIO.bytesRead += amountBytesRead;
+        graphIO.updateProgress();
         return amountBytesRead;
     }
 
@@ -245,8 +212,8 @@ class CountingInputStream extends FileInputStream implements AutoCloseable {
     public int read() throws IOException {
         int result = super.read();
         if (result != -1) {
-            graphImport.bytesRead++;
-            graphImport.updateProgress();
+            graphIO.bytesRead++;
+            graphIO.updateProgress();
         }
         return result;
     }
