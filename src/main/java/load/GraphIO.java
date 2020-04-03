@@ -55,16 +55,15 @@ public class GraphIO {
             return;
         }
         // Load actual file
+        System.out.println("No tmp files were found");
         String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
             loadOSM(Util.trimFileTypes(fileName));
-            return;
         }
         if (fileType.equals("pbf")) {
-            System.out.println("No tmp files were found. Starting pre-processing");
             loadPBF(fileName);
-            System.out.println("Pre-processing completed");
         }
+        System.out.println("Pre-processing completed");
     }
 
     private void loadOSM(String fileName) {
