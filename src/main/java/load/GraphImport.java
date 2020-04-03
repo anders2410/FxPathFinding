@@ -1,5 +1,7 @@
 package load;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Edge;
@@ -15,6 +17,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -44,28 +47,36 @@ public class GraphImport {
     }
 
     public Graph loadGraph(String fileName) {
-        String fileType = fileName.substring(fileName.length() - 3);
+        String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
-            loadOSM(fileName.substring(0, fileName.length() - 4));
+            loadOSM(Util.trimFileTypes(fileName));
         }
         if (fileType.equals("pbf")) {
-            String name = tempDir + fileName.substring(0, fileName.indexOf('.'));
+            String name = tempDir + Util.trimFileTypes(fileName);
             File nodeFile = new File(name + "-node-list.tmp");
             File adjFile = new File(name + "-adj-list.tmp");
-            if (nodeFile.exists() && adjFile.exists()) {
+            File nodeFileSCC = new File(name + "-scc-node-list.tmp");
+            File adjFileSCC = new File(name + "-scc-adj-list.tmp");
+            if (nodeFileSCC.exists() && adjFileSCC.exists()) {
+                try {
+                    loadTMP(name + "-scc");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    System.out.println("SCC graph loaded from storage\n");
+                }
+            } else if (nodeFile.exists() && adjFile.exists()) {
                 try {
                     loadTMP(name);
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    System.out.println("Graph loaded from storage\n");
                 }
-                System.out.println("Graph loaded from harddrive\n");
             } else {
                 loadPBF(fileName);
                 System.out.println("No files were found. Pre-processing has completed");
             }
-        }
-        if (fileType.equals("scc")) {
-            loadSCC();
         }
         return graph;
     }
@@ -101,7 +112,7 @@ public class GraphImport {
         }
     }
 
-    private void storeTMP(String fileName, Graph graph) {
+    public void storeTMP(String fileName, Graph graph) {
         try {
             String name = tempDir + fileName;
             FileOutputStream fos = new FileOutputStream(name + "-node-list.tmp");
@@ -151,20 +162,16 @@ public class GraphImport {
         graph.setAdjList(adjList);
     }
 
-    private void loadSCC() {
-
-    }
-
     @SuppressWarnings(value = "unchecked")
-    public static void loadLandmarks(String name, Landmarks landmarks) throws IOException {
-        String fileType = name.substring(name.length() - 3);
+    public static void loadLandmarks(String fileName, Landmarks landmarks) throws IOException {
+        String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
-            name = (name.substring(0, name.length() - 4));
+            fileName = Util.trimFileTypes(fileName);
         }
         if (fileType.equals("pbf")) {
-            name = name.substring(0, name.indexOf('.'));
+            fileName = Util.trimFileTypes(fileName);
         }
-        FileInputStream landmarksInput = new FileInputStream(tempDir + name + "-landmarks.tmp");
+        FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-landmarks.tmp");
         ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
 
         Set<Integer> landmarksSet = null;

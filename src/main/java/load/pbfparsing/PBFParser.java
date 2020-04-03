@@ -12,6 +12,7 @@ import load.pbfparsing.delegates.CollapsingStrategyFull;
 import load.pbfparsing.delegates.StandardFilteringStrategy;
 import load.pbfparsing.interfaces.CollapsingStrategy;
 import load.pbfparsing.interfaces.FilteringStrategy;
+import model.Util;
 
 import java.io.*;
 import java.util.*;
@@ -67,7 +68,7 @@ public class PBFParser {
         buildGraph(validNodes);
 
         if (storeTMPListener != null) {
-            storeTMPListener.accept(fileName.substring(0, fileName.indexOf('.')), graph);
+            storeTMPListener.accept(Util.trimFileTypes(fileName), graph);
         }
 
         System.out.print("Finished PBFParsing\n");

@@ -121,12 +121,16 @@ public class FXMLController implements Initializable {
         new Thread(loadGraphTask).start();
     }
 
-    private void playIndicatorCompleted() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
-            progress_indicator.setOpacity(progress_indicator.getOpacity() - 0.005);
-        }));
-        timeline.setCycleCount(200);
-        timeline.playFromStart();
+    private void storeGraph(String prefix) {
+        Task<Void> storeGraphTask = new Task<>() {
+            @Override
+            protected Void call() {
+                GraphImport graphImport = new GraphImport(distanceStrategy);
+                graphImport.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
+                return null;
+            }
+        };
+        storeGraphTask.run();
     }
 
     /**
@@ -358,13 +362,11 @@ public class FXMLController implements Initializable {
     }
 
     private double globalRatio;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
 
     private void setRatios() {
         // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = zoomFactor * canvas.getWidth() / widthMeter;
-        mapHeightRatio = zoomFactor * canvas.getHeight() / heightMeter;
+        double mapWidthRatio = zoomFactor * canvas.getWidth() / widthMeter;
+        double mapHeightRatio = zoomFactor * canvas.getHeight() / heightMeter;
         // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
@@ -781,7 +783,7 @@ public class FXMLController implements Initializable {
 
     public void handleSaveLandmarks() {
         try {
-            String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
+            String name = GraphImport.tempDir + Util.trimFileTypes(fileName);
             FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(landmarksGenerator.getLandmarkSet());
@@ -931,6 +933,7 @@ public class FXMLController implements Initializable {
             playIndicatorCompleted();
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
+            storeGraph("-scc");
             setUpGraph();
         });
         attachProgressIndicator(sccTask.progressProperty());
@@ -940,5 +943,13 @@ public class FXMLController implements Initializable {
     private void attachProgressIndicator(ReadOnlyDoubleProperty progressProperty) {
         progress_indicator.setOpacity(1);
         progress_indicator.progressProperty().bind(progressProperty);
+    }
+
+    private void playIndicatorCompleted() {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
+            progress_indicator.setOpacity(progress_indicator.getOpacity() - 0.005);
+        }));
+        timeline.setCycleCount(200);
+        timeline.playFromStart();
     }
 }
