@@ -42,6 +42,13 @@ public class GraphUtil {
         }
         return hop;
     }
+
+    boolean trace = true;
+    private void trace(String msg) {
+        if (trace) {
+            System.out.print(msg);
+        }
+    }
     public List<Graph> scc() {
         int n = graph.getNodeAmount();
         List<List<Edge>> adjList = graph.getAdjList();
@@ -63,15 +70,15 @@ public class GraphUtil {
                 continue;
             }
             recursionStack.push(node);
-            //System.out.println("Visited node: " + node);
+            trace("Visited node: " + node);
             for (Edge edge : adjList.get(node)) {
                 if (whiteNodes.contains(edge.to) && !recursionStack.contains(edge.to)) {
                     whiteNodes.removeElement(edge.to);
                     whiteNodes.push(edge.to);
                 }
             }
-            //printStack("First white nodes: ", whiteNodes);
-            //printStack("First recursion stack: ", recursionStack);
+            traceStack("First white nodes: ", whiteNodes);
+            traceStack("First recursion stack: ", recursionStack);
         }
         progressListener.accept(33L, 100L);
 
@@ -83,8 +90,8 @@ public class GraphUtil {
         nodeList.sort(Comparator.comparing(node -> finishingTimes.get(node.index)));
         for (Node node : nodeList) {
             whiteNodes.add(node.index);
-            //System.out.print(node.index + " -> " + finishingTimes.get(node.index) + "     ");
-        } //System.out.println();
+            trace(node.index + " -> " + finishingTimes.get(node.index) + "     ");
+        } trace("\n");
         recursionStack = new Stack<>();
         // Second DFS
         while (!whiteNodes.isEmpty()) {
@@ -99,7 +106,7 @@ public class GraphUtil {
                 continue;
             }
             recursionStack.push(node);
-            //System.out.println("Visited node 2. pass: " + node);
+            trace("Visited node 2. pass: " + node + "\n");
 
             for (Edge edge : revAdjList.get(node)) {
                 if (whiteNodes.contains(edge.to) && !recursionStack.contains(edge.to)) {
@@ -107,15 +114,15 @@ public class GraphUtil {
                     whiteNodes.push(edge.to);
                 }
             }
-            //printStack("First white nodes: ", whiteNodes);
-            //printStack("First recursion stack: ", recursionStack);
+            traceStack("First white nodes: ", whiteNodes);
+            traceStack("First recursion stack: ", recursionStack);
         }
 
         // Collect result of GCC in new graphs sorted by size from largest to smallest
-        /*System.out.print("{");
+        trace("{");
         for (Integer node : sccNodeLists.get(0)) {
-            System.out.print(node + ", ");
-        } System.out.println("}");*/
+            trace(node + ", ");
+        } trace("}\n");
         progressListener.accept(66L, 100L);
         Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
         return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
@@ -146,8 +153,12 @@ public class GraphUtil {
         return subGraph;
     }
 
-    private void printStack(String s, Stack<Integer> recursionStack) {
-        System.out.print(s);
+    boolean traceStack = false;
+    private void traceStack(String s, Stack<Integer> recursionStack) {
+        if (!traceStack) {
+            return;
+        }
+        System.out.println(s);
         for (int i = recursionStack.size(); i > max(recursionStack.size() - 10, 0); i--) {
             System.out.print(recursionStack.get(i - 1) + ", ");
         }

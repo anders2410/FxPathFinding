@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static load.GraphImport.tempDir;
+import static load.GraphIO.tempDir;
 
 public class XMLGraphExtractor extends DefaultHandler {
 

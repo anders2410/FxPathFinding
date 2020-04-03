@@ -1,14 +1,12 @@
 package swingui;
 
 
-import load.GraphImport;
+import load.GraphIO;
 import model.Graph;
 import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 import paths.SSSP;
-import load.xml.XMLFilter;
-import load.xml.XMLGraphExtractor;
 
 public class UITest {
 
@@ -17,8 +15,8 @@ public class UITest {
 
     @Before
     public void setUp() {
-        GraphImport graphImport = new GraphImport(Util::flatEarthDistance);
-        graph = graphImport.loadOSMOld(fileName);
+        GraphIO graphIO = new GraphIO(Util::flatEarthDistance);
+        graph = graphIO.loadOSMOld(fileName);
     }
 
     @Test

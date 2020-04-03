@@ -12,13 +12,14 @@ import load.pbfparsing.delegates.CollapsingStrategyFull;
 import load.pbfparsing.delegates.StandardFilteringStrategy;
 import load.pbfparsing.interfaces.CollapsingStrategy;
 import load.pbfparsing.interfaces.FilteringStrategy;
+import model.Util;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-import static load.GraphImport.mapsDir;
-import static load.GraphImport.tempDir;
+import static load.GraphIO.mapsDir;
 
 // A tutorial for the Framework can be found at http://jaryard.com/projects/osm4j/tutorial/index.html
 
@@ -33,20 +34,19 @@ public class PBFParser {
     private ArrayList<Node> nodeList;
     private Map<String, Node> nodeMap;
     private int indexCounter;
-    private boolean preProcess;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
     private FilteringStrategy filteringStrategy = new StandardFilteringStrategy();
     private CollapsingStrategy collapsingStrategy = new CollapsingStrategyFull();
+    private BiConsumer<String, Graph> storeTMPListener = null;
 
     /**
      * The constructor of the PBFParser.
      *
      * @param fileName the name of the file you want to extract information from.
      */
-    public PBFParser(String fileName, boolean preProcess) {
+    public PBFParser(String fileName) {
         this.fileName = fileName;
-        this.preProcess = preProcess;
         nodeList = new ArrayList<>();
         nodeMap = new HashMap<>();
         indexCounter = 0;
@@ -66,17 +66,8 @@ public class PBFParser {
         graph = new Graph(sumOfValid);
         buildGraph(validNodes);
 
-        if (preProcess) {
-            String name = tempDir + fileName.substring(0, fileName.indexOf('.'));
-            FileOutputStream fos = new FileOutputStream(name + "-node-list.tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(graph.getNodeList());
-            oos.close();
-
-            FileOutputStream fos1 = new FileOutputStream(name + "-adj-list.tmp");
-            ObjectOutputStream oos1 = new ObjectOutputStream(fos1);
-            oos1.writeObject(graph.getAdjList());
-            oos1.close();
+        if (storeTMPListener != null) {
+            storeTMPListener.accept(Util.trimFileTypes(fileName), graph);
         }
 
         System.out.print("Finished PBFParsing\n");
@@ -169,5 +160,9 @@ public class PBFParser {
 
     public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {
         this.distanceStrategy = distanceStrategy;
+    }
+
+    public void setStoreTMPListener(BiConsumer<String, Graph> storeTMPListener) {
+        this.storeTMPListener = storeTMPListener;
     }
 }

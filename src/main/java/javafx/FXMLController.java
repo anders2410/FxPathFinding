@@ -22,7 +22,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import load.GraphImport;
+import load.GraphIO;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -106,9 +106,10 @@ public class FXMLController implements Initializable {
         Task<Graph> loadGraphTask = new Task<>() {
             @Override
             protected Graph call() {
-                GraphImport graphImport = new GraphImport(distanceStrategy);
-                graphImport.setProgressListener(this::updateProgress);
-                return graphImport.loadGraph(fileName);
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                graphIO.setProgressListener(this::updateProgress);
+                graphIO.loadGraph(fileName);
+                return graphIO.getGraph();
             }
         };
         loadGraphTask.setOnSucceeded(event -> {
@@ -121,12 +122,16 @@ public class FXMLController implements Initializable {
         new Thread(loadGraphTask).start();
     }
 
-    private void playIndicatorCompleted() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
-            progress_indicator.setOpacity(progress_indicator.getOpacity() - 0.005);
-        }));
-        timeline.setCycleCount(200);
-        timeline.playFromStart();
+    private void storeGraph(String prefix) {
+        Task<Void> storeGraphTask = new Task<>() {
+            @Override
+            protected Void call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
+                return null;
+            }
+        };
+        storeGraphTask.run();
     }
 
     /**
@@ -358,13 +363,11 @@ public class FXMLController implements Initializable {
     }
 
     private double globalRatio;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
 
     private void setRatios() {
         // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = zoomFactor * canvas.getWidth() / widthMeter;
-        mapHeightRatio = zoomFactor * canvas.getHeight() / heightMeter;
+        double mapWidthRatio = zoomFactor * canvas.getWidth() / widthMeter;
+        double mapHeightRatio = zoomFactor * canvas.getHeight() / heightMeter;
         // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
@@ -405,19 +408,19 @@ public class FXMLController implements Initializable {
     private int xOffset;
     private int yOffset;
 
-    private double magicConstant = 50;
-
     private void zoom(float v) {
+        if (v < 1 && zoomFactor < 0.01 || v > 1 && zoomFactor > 1000) {
+            return;
+        }
         Node centerNode = toNode(getScreenCenter());
         zoomFactor *= v;
         setRatios();
 
         PixelPoint oldCenter = toScreenPos(centerNode);
         PixelPoint screenCenter = getScreenCenter();
-        // TODO: Fix magic factor??
-        double magicFactor = magicConstant / zoomFactor;
-        xOffset += magicFactor * (screenCenter.x - oldCenter.x);
-        yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
+
+        xOffset += (screenCenter.x - oldCenter.x) / globalRatio;
+        yOffset -= (screenCenter.y - oldCenter.y) / globalRatio;
 
         redrawGraph();
     }
@@ -594,25 +597,8 @@ public class FXMLController implements Initializable {
                 case SHIFT:
                     toggleAirDistance();
                     break;
-                case M:
-                    magicConstant *= 1.25;
-                    reportMagicConstant();
-                    break;
-                case N:
-                    magicConstant *= 0.8;
-                    reportMagicConstant();
-                    break;
-                case B:
-                    magicConstant = 50 * widthMeter /42661f;
-                    reportMagicConstant();
-                    break;
             }
         };
-    }
-
-    private void reportMagicConstant() {
-        System.out.println("Magic constant: " + magicConstant);
-        System.out.println("Map size: " + widthMeter + ", " + heightMeter);
     }
 
     // Used for calculating how far to drag
@@ -633,12 +619,10 @@ public class FXMLController implements Initializable {
             if (graph == null) {
                 return;
             }
-            // TODO: Make completely smooth by doing reverse mercator
-            double magicFactor = magicConstant / zoomFactor;
             double dx = event.getX() - clickX;
             double dy = clickY - event.getY();
-            xOffset += magicFactor * dx;
-            yOffset += magicFactor * dy;
+            xOffset += dx / globalRatio;
+            yOffset += dy / globalRatio;
             clickX = event.getX();
             clickY = event.getY();
             dragCounter++;
@@ -761,7 +745,7 @@ public class FXMLController implements Initializable {
 
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
-        File selectedFile = GraphImport.selectMapFile(stage);
+        File selectedFile = GraphIO.selectMapFile(stage);
         loadNewGraph(selectedFile.getName());
     }
 
@@ -791,7 +775,7 @@ public class FXMLController implements Initializable {
 
     public void handleLoadLandmarks() {
         try {
-            GraphImport.loadLandmarks(fileName, landmarksGenerator);
+            GraphIO.loadLandmarks(fileName, landmarksGenerator);
             drawAllLandmarks();
         } catch (IOException e) {
             e.printStackTrace();
@@ -800,7 +784,7 @@ public class FXMLController implements Initializable {
 
     public void handleSaveLandmarks() {
         try {
-            String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
+            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
             FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(landmarksGenerator.getLandmarkSet());
@@ -936,6 +920,7 @@ public class FXMLController implements Initializable {
     }
 
     private void runSCC() {
+        System.out.println("Computing SCC");
         Task<List<Graph>> sccTask = new Task<>() {
             @Override
             protected List<Graph> call() {
@@ -950,7 +935,9 @@ public class FXMLController implements Initializable {
             playIndicatorCompleted();
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
+            storeGraph("-scc");
             setUpGraph();
+            System.out.println("Finished computing SCC");
         });
         attachProgressIndicator(sccTask.progressProperty());
         sccTask.run();
@@ -959,5 +946,13 @@ public class FXMLController implements Initializable {
     private void attachProgressIndicator(ReadOnlyDoubleProperty progressProperty) {
         progress_indicator.setOpacity(1);
         progress_indicator.progressProperty().bind(progressProperty);
+    }
+
+    private void playIndicatorCompleted() {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
+            progress_indicator.setOpacity(progress_indicator.getOpacity() - 0.005);
+        }));
+        timeline.setCycleCount(200);
+        timeline.playFromStart();
     }
 }

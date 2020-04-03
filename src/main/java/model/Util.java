@@ -73,4 +73,12 @@ public class Util {
         df.setRoundingMode(RoundingMode.CEILING);
         return df.format(value);
     }
+
+    public static String trimFileTypes(String fileName) {
+        return fileName.substring(0, fileName.indexOf('.'));
+    }
+
+    public static String getFileType(String fileName) {
+        return fileName.substring(fileName.length() - 3);
+    }
 }
