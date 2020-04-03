@@ -920,6 +920,7 @@ public class FXMLController implements Initializable {
     }
 
     private void runSCC() {
+        System.out.println("Computing SCC");
         Task<List<Graph>> sccTask = new Task<>() {
             @Override
             protected List<Graph> call() {
@@ -936,6 +937,7 @@ public class FXMLController implements Initializable {
             graph = subGraphs.get(0);
             storeGraph("-scc");
             setUpGraph();
+            System.out.println("Finished computing SCC");
         });
         attachProgressIndicator(sccTask.progressProperty());
         sccTask.run();
