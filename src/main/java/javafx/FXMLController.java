@@ -76,20 +76,6 @@ public class FXMLController implements Initializable {
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
 
-    private int xOffset;
-    private int yOffset;
-
-    private PixelPoint minXY = new PixelPoint(-1, -1);
-    private PixelPoint maxXY = new PixelPoint(-1, -1);
-
-    private double globalRatio;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
-
-    private float zoomFactor;
-    private int widthOfBoundingBox;
-    private int heightOfBoundingBox;
-
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
     private Deque<Node> selectedNodes = new ArrayDeque<>();
@@ -207,15 +193,6 @@ public class FXMLController implements Initializable {
         if (ssspTask != null) {
             ssspTask.cancel();
         }
-    }
-
-    private void setRatios() {
-        // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
-        mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
-        // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
-        // the global ratio that will perfectly fit into the given image dimension
-        globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
     }
 
     /**
@@ -343,90 +320,20 @@ public class FXMLController implements Initializable {
         }
     }
 
-    // Projections
-
-    PixelPoint toScreenPos(Node node) {
-        return new PixelPoint(toScreenPosX(node.longitude), toScreenPosY(node.latitude));
-    }
-
-    Node toNode(PixelPoint p) {
-        return new Node(-1, toLongitude(p.x), toLatitude(p.y));
-    }
-
-    final double RADIUS_MAJOR = 6378137.0;
-
-    /**
-     * @param cord longitude input
-     * @return x coordinate in canvas
-     */
-    double mercatorX(double cord) {
-        return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
-    }
-
-    double invMercatorX(double x) {
-        return Math.toDegrees((x - xOffset) / RADIUS_MAJOR);
-    }
-
-    double toScreenPosX(double longitude) {
-        double x = mercatorX(longitude) - minXY.x;
-        return x * globalRatio;
-    }
-
-    double toLongitude(double x) {
-        return invMercatorX(x / globalRatio + minXY.x);
-    }
-
-    final double RADIUS_MINOR = 6356752.3142;
-
-    /**
-     * @param cord latitude input
-     * @return y coordinate in canvas
-     */
-    double mercatorY(double cord) {
-        return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
-    }
-
-    double invMercatorY(double y) {
-        return Math.toDegrees(2 * Math.atan(Math.exp((y - yOffset) / RADIUS_MINOR)) - Math.PI / 2);
-    }
-
-    double toScreenPosY(double latitude) {
-        double y = mercatorY(latitude) - minXY.y;
-        return canvas.getHeight() - y * globalRatio;
-    }
-
-    double toLatitude(double y) {
-        return invMercatorY((canvas.getHeight() - y) / globalRatio + minXY.y);
-    }
-
-    double nodeToPointDistance(Node node, PixelPoint p) {
-        PixelPoint nodeP = toScreenPos(node);
-        return distance(nodeP, p);
-    }
-
-    double distance(PixelPoint p1, PixelPoint p2) {
-        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-    }
-
-    private Node selectClosestNode(PixelPoint p) {
-        List<Node> nodeList = graph.getNodeList();
-        Node closestNode = nodeList.get(0);
-        double closestDistance = nodeToPointDistance(closestNode, p);
-        for (Node node : nodeList) {
-            double distance = nodeToPointDistance(node, p);
-            if (distance < closestDistance) {
-                closestNode = node;
-                closestDistance = distance;
-            }
-        }
-        return closestNode;
-    }
-
-    private PixelPoint getScreenCenter() {
-        return new PixelPoint(canvas.getWidth() / 2, canvas.getHeight() / 2);
-    }
-
     // Graph zoom control
+    private int xOffset;
+    private int yOffset;
+
+    private PixelPoint minXY = new PixelPoint(-1, -1);
+    private PixelPoint maxXY = new PixelPoint(-1, -1);
+
+    private double globalRatio;
+    private double mapWidthRatio;
+    private double mapHeightRatio;
+
+    private float zoomFactor;
+    private int widthOfBoundingBox;
+    private int heightOfBoundingBox;
 
     private void fitGraph() {
         setGraphBounds();
@@ -455,6 +362,15 @@ public class FXMLController implements Initializable {
         }
         widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
+    }
+
+    private void setRatios() {
+        // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
+        mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
+        mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
+        // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
+        // the global ratio that will perfectly fit into the given image dimension
+        globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
     }
 
     /**
@@ -527,6 +443,89 @@ public class FXMLController implements Initializable {
         mouseNodes = 0;
         graph.resetPathTrace();
         redrawGraph();
+    }
+
+    private Node selectClosestNode(PixelPoint p) {
+        List<Node> nodeList = graph.getNodeList();
+        Node closestNode = nodeList.get(0);
+        double closestDistance = nodeToPointDistance(closestNode, p);
+        for (Node node : nodeList) {
+            double distance = nodeToPointDistance(node, p);
+            if (distance < closestDistance) {
+                closestNode = node;
+                closestDistance = distance;
+            }
+        }
+        return closestNode;
+    }
+
+    private PixelPoint getScreenCenter() {
+        return new PixelPoint(canvas.getWidth() / 2, canvas.getHeight() / 2);
+    }
+
+    // Projections
+
+    PixelPoint toScreenPos(Node node) {
+        return new PixelPoint(toScreenPosX(node.longitude), toScreenPosY(node.latitude));
+    }
+
+    Node toNode(PixelPoint p) {
+        return new Node(-1, toLongitude(p.x), toLatitude(p.y));
+    }
+
+    final double RADIUS_MAJOR = 6378137.0;
+
+    /**
+     * @param cord longitude input
+     * @return x coordinate in canvas
+     */
+    double mercatorX(double cord) {
+        return (Math.toRadians(cord) * RADIUS_MAJOR) + xOffset;
+    }
+
+    double invMercatorX(double x) {
+        return Math.toDegrees((x - xOffset) / RADIUS_MAJOR);
+    }
+
+    double toScreenPosX(double longitude) {
+        double x = mercatorX(longitude) - minXY.x;
+        return x * globalRatio;
+    }
+
+    double toLongitude(double x) {
+        return invMercatorX(x / globalRatio + minXY.x);
+    }
+
+    final double RADIUS_MINOR = 6356752.3142;
+
+    /**
+     * @param cord latitude input
+     * @return y coordinate in canvas
+     */
+    double mercatorY(double cord) {
+        return (Math.log(Math.tan(Math.PI / 4 + Math.toRadians(cord) / 2)) * RADIUS_MINOR) + yOffset;
+    }
+
+    double invMercatorY(double y) {
+        return Math.toDegrees(2 * Math.atan(Math.exp((y - yOffset) / RADIUS_MINOR)) - Math.PI / 2);
+    }
+
+    double toScreenPosY(double latitude) {
+        double y = mercatorY(latitude) - minXY.y;
+        return canvas.getHeight() - y * globalRatio;
+    }
+
+    double toLatitude(double y) {
+        return invMercatorY((canvas.getHeight() - y) / globalRatio + minXY.y);
+    }
+
+    double nodeToPointDistance(Node node, PixelPoint p) {
+        PixelPoint nodeP = toScreenPos(node);
+        return distance(nodeP, p);
+    }
+
+    double distance(PixelPoint p1, PixelPoint p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
     }
 
     // Here comes all the eventHandle methods that are called when buttons are clicked
