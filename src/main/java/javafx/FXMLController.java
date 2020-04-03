@@ -253,23 +253,6 @@ public class FXMLController implements Initializable {
         drawAllLandmarks();
     }
 
-    private void drawAllLandmarks() {
-        for (Integer index : landmarksGenerator.getLandmarkSet()) {
-            Node n = graph.getNodeList().get(index);
-            drawLandMark(n);
-        }
-    }
-
-    private void drawLandMark(Node n) {
-        PixelPoint p = toScreenPos(n);
-        double radius = 10;
-        double shift = radius / 2;
-        gc.setFill(Color.HOTPINK);
-        gc.setStroke(Color.HOTPINK);
-        gc.fillOval(p.x - shift, p.y - shift, radius, radius);
-        gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
-    }
-
     private void drawSelectedNodes() {
         if (selectedNodes.isEmpty()) {
             return;
@@ -357,6 +340,23 @@ public class FXMLController implements Initializable {
             }
         }
         return oppositeEdge;
+    }
+
+    private void drawAllLandmarks() {
+        for (Integer index : landmarksGenerator.getLandmarkSet()) {
+            Node n = graph.getNodeList().get(index);
+            drawLandMark(n);
+        }
+    }
+
+    private void drawLandMark(Node n) {
+        PixelPoint p = toScreenPos(n);
+        double radius = 10;
+        double shift = radius / 2;
+        gc.setFill(Color.HOTPINK);
+        gc.setStroke(Color.HOTPINK);
+        gc.fillOval(p.x - shift, p.y - shift, radius, radius);
+        gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
     }
 
     private void resetIsDrawn(List<List<Edge>> adjList) {
