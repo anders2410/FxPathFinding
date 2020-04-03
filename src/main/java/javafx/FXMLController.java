@@ -7,7 +7,6 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -333,8 +332,8 @@ public class FXMLController implements Initializable {
     private PixelPoint minXY = new PixelPoint(-1, -1);
     private PixelPoint maxXY = new PixelPoint(-1, -1);
 
-    private int widthOfBoundingBox;
-    private int heightOfBoundingBox;
+    private int widthMeter;
+    private int heightMeter;
 
     private void setGraphBounds() {
         minXY = new PixelPoint(-1, -1);
@@ -354,8 +353,8 @@ public class FXMLController implements Initializable {
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
-        widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
-        heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
+        widthMeter = (int) Math.abs(maxXY.x - minXY.x);
+        heightMeter = (int) Math.abs(maxXY.y - minXY.y);
     }
 
     private double globalRatio;
@@ -364,8 +363,8 @@ public class FXMLController implements Initializable {
 
     private void setRatios() {
         // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = zoomFactor * canvas.getWidth() / widthOfBoundingBox;
-        mapHeightRatio = zoomFactor * canvas.getHeight() / heightOfBoundingBox;
+        mapWidthRatio = zoomFactor * canvas.getWidth() / widthMeter;
+        mapHeightRatio = zoomFactor * canvas.getHeight() / heightMeter;
         // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
@@ -531,26 +530,22 @@ public class FXMLController implements Initializable {
 
     // Here comes all the eventHandle methods that are called when buttons are clicked
     public void handleNavUpEvent() {
-        yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
-                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
+        yOffset -= 0.1 * heightMeter / zoomFactor;
         redrawGraph();
     }
 
     public void handleNavDownEvent() {
-        yOffset += (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
-                ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
+        yOffset += 0.1 * heightMeter / zoomFactor;
         redrawGraph();
     }
 
     public void handleNavLeftEvent() {
-        xOffset += (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
-                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
+        xOffset += (0.1 * widthMeter) / zoomFactor;
         redrawGraph();
     }
 
     public void handleNavRightEvent() {
-        xOffset -= (zoomFactor <= 1) ? ((0.1 * widthOfBoundingBox * mapWidthRatio) / zoomFactor) :
-                ((0.1 * widthOfBoundingBox * mapWidthRatio) / (2.5 * zoomFactor));
+        xOffset -= (0.1 * widthMeter) / zoomFactor;
         redrawGraph();
     }
 
@@ -608,7 +603,7 @@ public class FXMLController implements Initializable {
                     reportMagicConstant();
                     break;
                 case B:
-                    magicConstant = 50 * widthOfBoundingBox/42661f;
+                    magicConstant = 50 * widthMeter /42661f;
                     reportMagicConstant();
                     break;
             }
@@ -617,7 +612,7 @@ public class FXMLController implements Initializable {
 
     private void reportMagicConstant() {
         System.out.println("Magic constant: " + magicConstant);
-        System.out.println("Map size: " + widthOfBoundingBox + ", " + heightOfBoundingBox);
+        System.out.println("Map size: " + widthMeter + ", " + heightMeter);
     }
 
     // Used for calculating how far to drag
