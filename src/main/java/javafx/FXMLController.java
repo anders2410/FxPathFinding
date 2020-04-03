@@ -617,7 +617,6 @@ public class FXMLController implements Initializable {
             if (graph == null) {
                 return;
             }
-            // TODO: Make completely smooth by doing reverse mercator
             double dx = event.getX() - clickX;
             double dy = clickY - event.getY();
             xOffset += dx / globalRatio;
