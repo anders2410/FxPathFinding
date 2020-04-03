@@ -36,6 +36,7 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
@@ -175,7 +176,7 @@ public class FXMLController implements Initializable {
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
-    Task<List<ShortestPathResult>> ssspTask;
+    private Task<List<ShortestPathResult>> ssspTask;
 
     private void runAlgorithm() {
         if (selectedNodes.size() <= 1) {
@@ -923,8 +924,8 @@ public class FXMLController implements Initializable {
         };
         sccTask.setOnSucceeded(e -> {
             playIndicatorCompleted();
-            List<Graph> graphs  = sccTask.getValue();
-            graph = graphs.get(0);
+            List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
+            graph = subGraphs.get(0);
             setUpGraph();
         });
         progress_indicator.progressProperty().bind(sccTask.progressProperty());
