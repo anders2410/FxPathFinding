@@ -105,42 +105,6 @@ public class FXMLController implements Initializable {
     }
 
     /**
-     * Should be run on GUI thread
-     */
-    private void setWindowChangeListener() {
-        canvas.sceneProperty().addListener((observableScene, oldScene, newScene) -> {
-            if (oldScene == null && newScene != null) {
-                newScene.windowProperty().addListener((observableWindow, oldWindow, newWindow) -> {
-                    if (oldWindow == null && newWindow != null) {
-                        newScene.heightProperty().addListener((observable, oldValue, newValue) -> {
-                            if (graph == null) {
-                                return;
-                            }
-                            canvas.setHeight(newValue.doubleValue());
-                            setGraphBounds();
-                            setRatios();
-                            redrawGraph();
-                        });
-                        newScene.widthProperty().addListener((obs, oldVal, newVal) -> {
-                            if (graph == null) {
-                                return;
-                            }
-                            canvas.setWidth(newVal.doubleValue());
-                            setGraphBounds();
-                            setRatios();
-                            redrawGraph();
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    public void setSceneListeners(Scene scene) {
-        scene.setOnKeyPressed(onKeyPressed());
-    }
-
-    /**
      * Starts a loadGraph thread.
      *
      * @param fileName file to load.
@@ -181,10 +145,10 @@ public class FXMLController implements Initializable {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
             edges_label.setText("Number of Edges: " + graph.getEdgeAmount());
         }
-        FXMLController.this.setGraphBounds();
+        setGraphBounds();
         zoomFactor = 1;
-        FXMLController.this.setRatios();
-        FXMLController.this.redrawGraph();
+        setRatios();
+        redrawGraph();
         SSSP.setGraph(graph);
         SSSP.setLandmarks(landmarksGenerator);
     }
@@ -290,6 +254,16 @@ public class FXMLController implements Initializable {
         }
     }
 
+    private void drawLandMark(Node n) {
+        PixelPoint p = toScreenPos(n);
+        double radius = 10;
+        double shift = radius / 2;
+        gc.setFill(Color.HOTPINK);
+        gc.setStroke(Color.HOTPINK);
+        gc.fillOval(p.x - shift, p.y - shift, radius, radius);
+        gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
+    }
+
     private void drawSelectedNodes() {
         if (selectedNodes.isEmpty()) {
             return;
@@ -388,6 +362,7 @@ public class FXMLController implements Initializable {
     }
 
     // Projections
+
     PixelPoint toScreenPos(Node node) {
         return new PixelPoint(toScreenPosX(node.longitude), toScreenPosY(node.latitude));
     }
@@ -470,7 +445,81 @@ public class FXMLController implements Initializable {
     }
 
 
-    // Here comes all the eventHandle methods that are called when clicked
+    /**
+     * Should be run on GUI thread
+     */
+    private void setWindowChangeListener() {
+        canvas.sceneProperty().addListener((observableScene, oldScene, newScene) -> {
+            if (oldScene == null && newScene != null) {
+                newScene.windowProperty().addListener((observableWindow, oldWindow, newWindow) -> {
+                    if (oldWindow == null && newWindow != null) {
+                        newScene.heightProperty().addListener((observable, oldValue, newValue) -> {
+                            if (graph == null) {
+                                return;
+                            }
+                            canvas.setHeight(newValue.doubleValue());
+                            setGraphBounds();
+                            setRatios();
+                            redrawGraph();
+                        });
+                        newScene.widthProperty().addListener((obs, oldVal, newVal) -> {
+                            if (graph == null) {
+                                return;
+                            }
+                            canvas.setWidth(newVal.doubleValue());
+                            setGraphBounds();
+                            setRatios();
+                            redrawGraph();
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    public void setSceneListeners(Scene scene) {
+        scene.setOnKeyPressed(onKeyPressed());
+    }
+
+    private void zoom(float v) {
+        Node centerNode = toNode(getScreenCenter());
+        zoomFactor *= v;
+        setRatios();
+
+        PixelPoint oldCenter = toScreenPos(centerNode);
+        PixelPoint screenCenter = getScreenCenter();
+        // TODO: Fix magic factor??
+        double magicFactor = 50 / zoomFactor;
+        xOffset += magicFactor * (screenCenter.x - oldCenter.x);
+        yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
+
+        redrawGraph();
+    }
+
+    private Node selectOutsideGraph(PixelPoint mousePos, Node closestNode) {
+        Node mouseNode = toNode(mousePos);
+        double dist = distanceStrategy.apply(mouseNode, closestNode);
+        graph.addNode(mouseNode);
+        Edge forth = new Edge(closestNode.index, dist);
+        forth.mouseEdge = true;
+        graph.addEdge(mouseNode, forth);
+        Edge back = new Edge(mouseNode.index, dist);
+        back.mouseEdge = true;
+        graph.addEdge(closestNode, back);
+        closestNode = mouseNode;
+        mouseNodes++;
+        return closestNode;
+    }
+
+    private void resetSelection() {
+        selectedNodes = new ArrayDeque<>();
+        graph.removeNodesFromEnd(mouseNodes);
+        mouseNodes = 0;
+        graph.resetPathTrace();
+        redrawGraph();
+    }
+
+    // Here comes all the eventHandle methods that are called when buttons are clicked
     public void handleNavUpEvent() {
         yOffset -= (zoomFactor <= 1) ? ((0.1 * heightOfBoundingBox * mapHeightRatio) / zoomFactor) :
                 ((0.1 * heightOfBoundingBox * mapHeightRatio) / (2.5 * zoomFactor));
@@ -507,21 +556,6 @@ public class FXMLController implements Initializable {
             return;
         }
         zoom(1 / 1.1f);
-    }
-
-    private void zoom(float v) {
-        Node centerNode = toNode(getScreenCenter());
-        zoomFactor *= v;
-        setRatios();
-
-        PixelPoint oldCenter = toScreenPos(centerNode);
-        PixelPoint screenCenter = getScreenCenter();
-        // TODO: Fix magic factor??
-        double magicFactor = 50 / zoomFactor;
-        xOffset += magicFactor * (screenCenter.x - oldCenter.x);
-        yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
-
-        redrawGraph();
     }
 
     // W A S D navigation
@@ -611,17 +645,7 @@ public class FXMLController implements Initializable {
         PixelPoint mousePos = new PixelPoint(event.getX(), event.getY());
         Node node = selectClosestNode(mousePos);
         if (includeAirDistance) {
-            Node mouseNode = toNode(mousePos);
-            double dist = distanceStrategy.apply(mouseNode, node);
-            graph.addNode(mouseNode);
-            Edge forth = new Edge(node.index, dist);
-            forth.mouseEdge = true;
-            graph.addEdge(mouseNode, forth);
-            Edge back = new Edge(mouseNode.index, dist);
-            back.mouseEdge = true;
-            graph.addEdge(node, back);
-            node = mouseNode;
-            mouseNodes++;
+            node = selectOutsideGraph(mousePos, node);
         }
         selectedNodes.addLast(node);
         if (selectedNodes.size() > 1) {
@@ -642,14 +666,6 @@ public class FXMLController implements Initializable {
         }
         resetSelection();
         cancelAlgorithm();
-    }
-
-    private void resetSelection() {
-        selectedNodes = new ArrayDeque<>();
-        graph.removeNodesFromEnd(mouseNodes);
-        mouseNodes = 0;
-        graph.resetPathTrace();
-        redrawGraph();
     }
 
     private EventHandler<? super ScrollEvent> onMouseScrolled() {
@@ -706,17 +722,6 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
-    private void drawLandMark(Node n) {
-        PixelPoint p = toScreenPos(n);
-        double radius = 10;
-        double shift = radius / 2;
-        gc.setFill(Color.HOTPINK);
-        gc.setStroke(Color.HOTPINK);
-        gc.fillOval(p.x - shift, p.y - shift, radius, radius);
-        gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
-
-    }
-
     public void handleSeedEvent() {
         seed++;
         int n = graph.getNodeAmount();
@@ -732,6 +737,59 @@ public class FXMLController implements Initializable {
         selectedNodes = new ArrayDeque<>();
         File selectedFile = GraphImport.selectMapFile(stage);
         loadNewGraph(selectedFile.getName());
+    }
+
+    public void handleGenerateLandmarksAvoid() {
+        Landmarks lm = new Landmarks(graph);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16);
+        startLandmarksMonitorThread(genLandmarkTask);
+    }
+
+    public void handleGenerateLandmarksMaxCover() {
+        Landmarks lm = new Landmarks(graph);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16);
+        startLandmarksMonitorThread(genLandmarkTask);
+    }
+
+    public void handleGenerateLandmarksRandom() {
+        Landmarks lm = new Landmarks(graph);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16);
+        startLandmarksMonitorThread(genLandmarkTask);
+    }
+
+    public void handleGenerateLandmarksFarthest() {
+        Landmarks lm = new Landmarks(graph);
+        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16);
+        startLandmarksMonitorThread(genLandmarkTask);
+    }
+
+    public void handleLoadLandmarks() {
+        try {
+            GraphImport.loadLandmarks(fileName, landmarksGenerator);
+            drawAllLandmarks();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleSaveLandmarks() {
+        try {
+            String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
+            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(landmarksGenerator.getLandmarkSet());
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleSetParameterEvent() {
+        displayParameterDialog();
+    }
+
+    public void handleSCCEvent() {
+        runSCC();
     }
 
     // UTILITIES
@@ -785,53 +843,8 @@ public class FXMLController implements Initializable {
         new Thread(monitorTask).start();
     }
 
-    public void handleGenerateLandmarksAvoid() {
-        Landmarks lm = new Landmarks(graph);
-        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16);
-        startLandmarksMonitorThread(genLandmarkTask);
-    }
-
-    public void handleGenerateLandmarksMaxCover() {
-        Landmarks lm = new Landmarks(graph);
-        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16);
-        startLandmarksMonitorThread(genLandmarkTask);
-    }
-
-    public void handleGenerateLandmarksRandom() {
-        Landmarks lm = new Landmarks(graph);
-        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16);
-        startLandmarksMonitorThread(genLandmarkTask);
-    }
-
-    public void handleGenerateLandmarksFarthest() {
-        Landmarks lm = new Landmarks(graph);
-        Task<Void> genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16);
-        startLandmarksMonitorThread(genLandmarkTask);
-    }
-
-    public void handleLoadLandmarks() {
-        try {
-            GraphImport.loadLandmarks(fileName, landmarksGenerator);
-            drawAllLandmarks();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void handleSaveLandmarks() {
-        try {
-            String name = GraphImport.tempDir + fileName.substring(0, fileName.indexOf('.'));
-            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(landmarksGenerator.getLandmarkSet());
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     // https://code.makery.ch/blog/javafx-dialogs-official/
-    public void handleSetParameterEvent() {
+    private void displayParameterDialog() {
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Set your parameters");
 
@@ -897,7 +910,7 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
-    public void handleSCCEvent() {
+    private void runSCC() {
         Task<List<Graph>> sccTask = new Task<>() {
             @Override
             protected List<Graph> call() {
