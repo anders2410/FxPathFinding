@@ -406,7 +406,7 @@ public class FXMLController implements Initializable {
     private int yOffset;
 
     private void zoom(float v) {
-        if (v < 1 && zoomFactor < 0.01 || v > 1 && zoomFactor > 100) {
+        if (v < 1 && zoomFactor < 0.01 || v > 1 && zoomFactor > 1000) {
             return;
         }
         Node centerNode = toNode(getScreenCenter());
