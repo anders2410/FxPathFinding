@@ -39,7 +39,7 @@ public class XMLFilter extends DefaultHandler {
     public void executeFilter() {
         try {
             fwriter = new FileWriter(tempDir + fileName + outFileType);
-            File inputFile = new File( mapsDir+ fileName + inFileType);
+            File inputFile = new File( mapsDir + fileName + inFileType);
 
             DefaultHandler handler = this;
             SAXParserFactory factory = SAXParserFactory.newInstance();

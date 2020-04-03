@@ -64,6 +64,9 @@ public class GraphImport {
                 System.out.println("No files were found. Pre-processing has completed");
             }
         }
+        if (fileType.equals("scc")) {
+            loadSCC();
+        }
         return graph;
     }
 
@@ -88,10 +91,29 @@ public class GraphImport {
 
     private void loadPBF(String fileName) {
         try {
-            PBFParser pbfParser = new PBFParser(fileName, true);
+            PBFParser pbfParser = new PBFParser(fileName);
+            pbfParser.setStoreTMPListener(this::storeTMP);
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void storeTMP(String fileName, Graph graph) {
+        try {
+            String name = tempDir + fileName;
+            FileOutputStream fos = new FileOutputStream(name + "-node-list.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(graph.getNodeList());
+            oos.close();
+
+            FileOutputStream fos1 = new FileOutputStream(name + "-adj-list.tmp");
+            ObjectOutputStream oos1 = null;
+            oos1 = new ObjectOutputStream(fos1);
+            oos1.writeObject(graph.getAdjList());
+            oos1.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -127,6 +149,10 @@ public class GraphImport {
 
         graph.setNodeList(nodeList);
         graph.setAdjList(adjList);
+    }
+
+    private void loadSCC() {
+
     }
 
     @SuppressWarnings(value = "unchecked")

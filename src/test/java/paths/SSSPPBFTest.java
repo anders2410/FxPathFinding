@@ -25,7 +25,7 @@ public class SSSPPBFTest {
 
     @Before
     public void setUp() {
-        PBFParser pbfParser = new PBFParser(fileName, false);
+        PBFParser pbfParser = new PBFParser(fileName);
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
 
