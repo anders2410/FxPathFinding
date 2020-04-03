@@ -409,7 +409,6 @@ public class FXMLController implements Initializable {
         if (v < 1 && zoomFactor < 0.01 || v > 1 && zoomFactor > 100) {
             return;
         }
-        System.out.println(zoomFactor);
         Node centerNode = toNode(getScreenCenter());
         zoomFactor *= v;
         setRatios();
