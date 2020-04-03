@@ -321,19 +321,7 @@ public class FXMLController implements Initializable {
     }
 
     // Graph zoom control
-    private int xOffset;
-    private int yOffset;
-
-    private PixelPoint minXY = new PixelPoint(-1, -1);
-    private PixelPoint maxXY = new PixelPoint(-1, -1);
-
-    private double globalRatio;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
-
     private float zoomFactor;
-    private int widthOfBoundingBox;
-    private int heightOfBoundingBox;
 
     private void fitGraph() {
         setGraphBounds();
@@ -341,6 +329,12 @@ public class FXMLController implements Initializable {
         setRatios();
         redrawGraph();
     }
+
+    private PixelPoint minXY = new PixelPoint(-1, -1);
+    private PixelPoint maxXY = new PixelPoint(-1, -1);
+
+    private int widthOfBoundingBox;
+    private int heightOfBoundingBox;
 
     private void setGraphBounds() {
         minXY = new PixelPoint(-1, -1);
@@ -355,8 +349,8 @@ public class FXMLController implements Initializable {
         }
 
         for (Node n : nodeList) {
-            double x = mercatorX(n.longitude) - minXY.x;
-            double y = mercatorY(n.latitude) - minXY.y;
+            double x = mercatorX(n.longitude);
+            double y = mercatorY(n.latitude);
             maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
             maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
         }
@@ -364,10 +358,14 @@ public class FXMLController implements Initializable {
         heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
+    private double globalRatio;
+    private double mapWidthRatio;
+    private double mapHeightRatio;
+
     private void setRatios() {
         // Determine the width and height ratio because we need to magnify the map to fit into the given image dimension
-        mapWidthRatio = zoomFactor * canvas.getWidth() / maxXY.x;
-        mapHeightRatio = zoomFactor * canvas.getHeight() / maxXY.y;
+        mapWidthRatio = zoomFactor * canvas.getWidth() / widthOfBoundingBox;
+        mapHeightRatio = zoomFactor * canvas.getHeight() / heightOfBoundingBox;
         // Using different ratios for width and height will cause the map to be stretched. So, we have to determine
         // the global ratio that will perfectly fit into the given image dimension
         globalRatio = Math.min(mapWidthRatio, mapHeightRatio);
@@ -404,6 +402,9 @@ public class FXMLController implements Initializable {
     public void setSceneListeners(Scene scene) {
         scene.setOnKeyPressed(onKeyPressed());
     }
+
+    private int xOffset;
+    private int yOffset;
 
     private double magicConstant = 50;
 
@@ -599,15 +600,24 @@ public class FXMLController implements Initializable {
                     toggleAirDistance();
                     break;
                 case M:
-                    magicConstant *= 1.5;
-                    System.out.println("Magic constant: " + magicConstant);
+                    magicConstant *= 1.25;
+                    reportMagicConstant();
                     break;
                 case N:
-                    magicConstant *= 0.5;
-                    System.out.println("Magic constant: " + magicConstant);
+                    magicConstant *= 0.8;
+                    reportMagicConstant();
+                    break;
+                case B:
+                    magicConstant = 50 * widthOfBoundingBox/42661f;
+                    reportMagicConstant();
                     break;
             }
         };
+    }
+
+    private void reportMagicConstant() {
+        System.out.println("Magic constant: " + magicConstant);
+        System.out.println("Map size: " + widthOfBoundingBox + ", " + heightOfBoundingBox);
     }
 
     // Used for calculating how far to drag
