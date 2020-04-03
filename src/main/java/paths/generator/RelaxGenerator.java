@@ -17,7 +17,7 @@ public class RelaxGenerator {
 
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
-                getQueue(dir).updatePriority(edge.to);
+                updatePriority(edge.to, dir);
                 getPathMap(dir).put(edge.to, from);
 /*
                 trace(getQueue(dir), dir);
@@ -25,7 +25,7 @@ public class RelaxGenerator {
             }
         };
     }
-
+/*
     public static RelaxStrategy getAStarNew() {
         return (from, edge, dir) -> {
             edge.visited = true;
@@ -99,5 +99,5 @@ public class RelaxGenerator {
             getPathMap(dir).put(edge.to, from);
             getQueue(dir).updatePriority(edge.to);
         }
-    }
+    }*/
 }

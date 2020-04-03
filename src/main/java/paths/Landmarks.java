@@ -29,6 +29,9 @@ public class Landmarks {
     }
 
     public void updateProgress() {
+        if (progressListener == null) {
+            return;
+        }
         if (progressedIndicator <= landmarkSet.size()) {
             progressedIndicator = landmarkSet.size();
             if (progressedIndicator <= 16) {
@@ -50,11 +53,12 @@ public class Landmarks {
         Set<Integer> candidateSet = new HashSet<>(landmarkSet);
         int avoidCall = 1;
         while (candidateSet.size() < 4 * goalAmount && avoidCall < goalAmount * 5) {
-
-            if (candidateSet.size() / (4 * goalAmount) > avoidCall / (goalAmount * 5)) {
-                progressListener.accept(candidateSet.size() * 1.00, 4.0 * goalAmount);
-            } else {
-                progressListener.accept(avoidCall * 1.00, 5.0 * goalAmount);
+            if (progressListener != null) {
+                if (candidateSet.size() / (4 * goalAmount) > avoidCall / (goalAmount * 5)) {
+                    progressListener.accept(candidateSet.size() * 1.00, 4.0 * goalAmount);
+                } else {
+                    progressListener.accept(avoidCall * 1.00, 5.0 * goalAmount);
+                }
             }
 
             removeRandomCandidateAndGraphMarks(landmarkSet);
@@ -64,7 +68,7 @@ public class Landmarks {
         }
         // Approximate log2(goal+1)
         int flooredLog = (int) (Math.log(goalAmount + 1) / Math.log(2));
-        progressListener.accept(1.0, 100.0);
+        if (progressListener != null) progressListener.accept(1.0, 100.0);
         for (int i = 0; i < flooredLog; i++) {
             List<Integer> candidateSubSetList = new ArrayList<>(candidateSet);
             while (candidateSubSetList.size() > goalAmount) {
@@ -77,7 +81,8 @@ public class Landmarks {
             Map<Edge, Set<Integer>> coveredEdges = calculateCoveredEdges(landmarkSet);
             int currentProfit = coveredEdges.size();
             while (improveFound) {
-                progressListener.accept(Math.min((double) i + 1, approximateProgress), (double) flooredLog);
+                if (progressListener != null)
+                    progressListener.accept(Math.min((double) i + 1, approximateProgress), (double) flooredLog);
                 improveFound = false;
                 int bestSwapCandidateIn = -1;
                 int bestSwapCandidateOut = -1;
@@ -108,9 +113,9 @@ public class Landmarks {
                 }
                 approximateProgress += 0.1;
             }
-            progressListener.accept((double) i, (double) flooredLog);
+            if (progressListener != null) progressListener.accept((double) i, (double) flooredLog);
         }
-        progressListener.accept(1.00, 1.00);
+        if (progressListener != null) progressListener.accept(1.00, 1.00);
         landmarksDistancesActual.clear();
         return landmarkSet;
     }

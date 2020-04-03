@@ -6,6 +6,7 @@ import paths.factory.*;
 import paths.strategy.*;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
 import static java.util.Collections.singletonList;
@@ -45,8 +46,8 @@ public class SSSP {
     private static Map<Integer, Integer> pathMapB;
     private static MinPriorityQueue queueA;                 // Queue to hold the paths from Node: source
     private static MinPriorityQueue queueB;                 // Queue to hold the paths from Node: target
-    private static Map<Integer, Double> estimatedDistA;
-    private static Map<Integer, Double> estimatedDistB;
+    private static double[] heuristicValuesA;
+    private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
 
     // Initialization
@@ -65,12 +66,30 @@ public class SSSP {
         pathMapB = new HashMap<>();
         queueA = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyA, A), graph.getNodeAmount());
         queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B), graph.getNodeAmount());
-        estimatedDistA = new HashMap<>();
-        estimatedDistB = new HashMap<>();
+        heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
+        heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
+    }
+
+    private static double[] initHeuristicValues(int nodeAmount) {
+        double[] arr = new double[nodeAmount];
+        Arrays.fill(arr, -1.0);
+        return arr;
+    }
+
+    public static void updatePriority(int nodeToUpdate, ABDir dir) {
+        if (dir == A) heuristicValuesA[nodeToUpdate] = priorityStrategyA.apply(nodeToUpdate, dir);
+        else heuristicValuesB[nodeToUpdate] = priorityStrategyB.apply(nodeToUpdate, dir);
+        getQueue(dir).updatePriority(nodeToUpdate);
     }
 
     private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
-        return Comparator.comparingDouble(i -> priorityStrategy.apply(i, dir));
+        return Comparator.comparingDouble(i -> {
+            if (dir == A) {
+                return heuristicValuesA[i];
+            } else {
+                return heuristicValuesB[i];
+            }
+        });
     }
 
     private static Map<AlgorithmMode, AlgorithmFactory> factoryMap = new HashMap<>();
@@ -100,7 +119,7 @@ public class SSSP {
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
         if (sourceP == targetP) {
-            return new ShortestPathResult(0, singletonList(sourceP), 0);
+            return new ShortestPathResult(0, singletonList(sourceP), 0, 0);
         }
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
@@ -109,21 +128,18 @@ public class SSSP {
     }
 
     private static ShortestPathResult oneDirectional() {
-        long startTime = System.currentTimeMillis();
-
+        long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
-        estimatedDistA.put(source, 0.0);
         queueA.insert(source);
 
         while (!queueA.isEmpty()) {
             if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
             takeStep(adjList, A, false);
         }
-        long endTime = System.currentTimeMillis();
-        System.out.println("That took " + (endTime - startTime) + " milliseconds");
-
+        long endTime = System.nanoTime();
+        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size());
+        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size(), duration);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir, boolean biDirectional) {
@@ -146,15 +162,14 @@ public class SSSP {
     }
 
     private static ShortestPathResult biDirectional() {
+        long startTime = System.nanoTime();
         // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.getReverse(adjList);
 
         // A-direction
-        estimatedDistA.put(source, 0.0);
         queueA.insert(source);
         // B-direction
-        estimatedDistB.put(target, 0.0);
         queueB.insert(target);
 
         goalDistance = Double.MAX_VALUE;
@@ -167,27 +182,32 @@ public class SSSP {
                 takeStep(revAdjList, B, true);
             }
         }
+        long endTime = System.nanoTime();
+        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
 
         if (middlePoint == -1) {
-            return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0);
+            return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0, 0);
         }
         List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
         double distance = goalDistance;
-        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size());
+        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size(), duration);
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
         applyFactory(new DijkstraFactory());
         initFields(DIJKSTRA, sourceP, 0);
         initDataStructures();
+        long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
 
         while (!queueA.isEmpty()) {
             takeStep(adjList, A, false);
         }
+        long endTime = System.nanoTime();
+        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA);
+        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA, duration);
     }
 
     private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
@@ -317,9 +337,9 @@ public class SSSP {
         return dir == A ? queueA : queueB;
     }
 
-    public static Map<Integer, Double> getEstimatedDist(ABDir dir) {
+   /* public static Map<Integer, Double> getEstimatedDist(ABDir dir) {
         return dir == A ? estimatedDistA : estimatedDistB;
-    }
+    }*/
 
     public static Landmarks getLandmarks() {
         return landmarks;

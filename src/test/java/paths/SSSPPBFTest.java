@@ -105,63 +105,61 @@ public class SSSPPBFTest {
     @Test
     public void testAlgorithms() {
         int[] matrix = new int[7];
-        new Landmarks(graph).landmarksFarthest(16, false);
+        List<Graph> graphs = new GraphUtil(graph).scc();
+        graph = graphs.get(0);
+        SSSP.setGraph(graph);
+        Landmarks lm = new Landmarks(graph);
+        SSSP.setLandmarks(lm);
+        lm.landmarksMaxCover(16, true);
+        SSSP.setLandmarks(lm);
         for (int i = 0; i < 4000; i++) {
             SSSP.seed = i;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
-/*
             ShortestPathResult aStarRes = SSSP.randomPath(AlgorithmMode.A_STAR);
-*/
             ShortestPathResult biDijkRes = SSSP.randomPath(AlgorithmMode.BI_DIJKSTRA);
             ShortestPathResult biAStarConRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_CONSISTENT);
-/*
-            ShortestPathResult biAStarLandRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_LANDMARKS);
-*/
-/*
             ShortestPathResult biAStarSymRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_SYMMETRIC);
-*/
-/*
             ShortestPathResult landmarksRes = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-*/
+            ShortestPathResult biAStarLandRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_LANDMARKS);
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
-          /*  double distBiLand = biAStarLandRes.d;
-            List<Integer> pathBiLand = biAStarConRes.path;*/
+            double distBiLand = biAStarLandRes.d;
+            List<Integer> pathBiLand = biAStarConRes.path;
 
             double distBiCon = biAStarConRes.d;
             List<Integer> pathBiCon = biAStarConRes.path;
 
-         /*   double distAstar = aStarRes.d;
-            List<Integer> pathAstar = aStarRes.path;*/
+            double distAstar = aStarRes.d;
+            List<Integer> pathAstar = aStarRes.path;
 
             double distBiDijk = biDijkRes.d;
             List<Integer> pathBiDijk = biDijkRes.path;
 
-          /*  double distBiAstarSym = biAStarSymRes.d;
-            List<Integer> pathBiAstarSym = biAStarSymRes.path;*/
+            double distBiAstarSym = biAStarSymRes.d;
+            List<Integer> pathBiAstarSym = biAStarSymRes.path;
 
-           /* double distLandmarks = landmarksRes.d;
-            List<Integer> pathLandmarks = landmarksRes.path;*/
-            /*if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
+            double distLandmarks = landmarksRes.d;
+            List<Integer> pathLandmarks = landmarksRes.path;
+            if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
                 matrix[1]++;
-            }*/
+            }
             if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
                 matrix[2]++;
             }
-          /*  if (Math.abs(distDijk - distBiAstarSym) > 0.00000000001 || !pathDijk.equals(pathBiAstarSym)) {
+            if (Math.abs(distDijk - distBiAstarSym) > 0.00000000001 || !pathDijk.equals(pathBiAstarSym)) {
                 matrix[3]++;
-            }*/
-            /*if (Math.abs(distDijk - distLandmarks) > 0.00000000001 || !pathLandmarks.equals(pathDijk)) {
+            }
+            if (Math.abs(distDijk - distLandmarks) > 0.00000000001 || !pathLandmarks.equals(pathDijk)) {
                 matrix[4]++;
-            }*/
+            }
             if (Math.abs(distDijk - distBiCon) > 0.00000000001 || !pathBiCon.equals(pathDijk)) {
                 matrix[5]++;
             }
-            /*if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
+            if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
                 matrix[6]++;
-            }*/
+            }
             /*if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
                 matrix[1][2]++;
             }
