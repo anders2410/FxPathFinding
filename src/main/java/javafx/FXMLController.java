@@ -152,34 +152,9 @@ public class FXMLController implements Initializable {
             nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
             edges_label.setText("Number of Edges: " + graph.getEdgeAmount());
         }
-        setGraphBounds();
-        zoomFactor = 1;
-        setRatios();
-        redrawGraph();
+        fitGraph();
         SSSP.setGraph(graph);
         SSSP.setLandmarks(landmarksGenerator);
-    }
-
-    private void setGraphBounds() {
-        minXY = new PixelPoint(-1, -1);
-        maxXY = new PixelPoint(-1, -1);
-
-        List<Node> nodeList = graph.getNodeList();
-        for (Node n : nodeList) {
-            double x = mercatorX(n.longitude);
-            double y = mercatorY(n.latitude);
-            minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
-            minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
-        }
-
-        for (Node n : nodeList) {
-            double x = mercatorX(n.longitude) - minXY.x;
-            double y = mercatorY(n.latitude) - minXY.y;
-            maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
-            maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
-        }
-        widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
-        heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
     }
 
     private Task<List<ShortestPathResult>> ssspTask;
@@ -451,6 +426,36 @@ public class FXMLController implements Initializable {
         return new PixelPoint(canvas.getWidth() / 2, canvas.getHeight() / 2);
     }
 
+    // Graph zoom control
+
+    private void fitGraph() {
+        setGraphBounds();
+        zoomFactor = 1;
+        setRatios();
+        redrawGraph();
+    }
+
+    private void setGraphBounds() {
+        minXY = new PixelPoint(-1, -1);
+        maxXY = new PixelPoint(-1, -1);
+
+        List<Node> nodeList = graph.getNodeList();
+        for (Node n : nodeList) {
+            double x = mercatorX(n.longitude);
+            double y = mercatorY(n.latitude);
+            minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
+            minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
+        }
+
+        for (Node n : nodeList) {
+            double x = mercatorX(n.longitude) - minXY.x;
+            double y = mercatorY(n.latitude) - minXY.y;
+            maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
+            maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
+        }
+        widthOfBoundingBox = (int) Math.abs(maxXY.x - minXY.x);
+        heightOfBoundingBox = (int) Math.abs(maxXY.y - minXY.y);
+    }
 
     /**
      * Should be run on GUI thread
@@ -465,18 +470,14 @@ public class FXMLController implements Initializable {
                                 return;
                             }
                             canvas.setHeight(newValue.doubleValue());
-                            setGraphBounds();
-                            setRatios();
-                            redrawGraph();
+                            fitGraph();
                         });
                         newScene.widthProperty().addListener((obs, oldVal, newVal) -> {
                             if (graph == null) {
                                 return;
                             }
                             canvas.setWidth(newVal.doubleValue());
-                            setGraphBounds();
-                            setRatios();
-                            redrawGraph();
+                            fitGraph();
                         });
                     }
                 });
@@ -554,10 +555,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleNavCenterEvent() {
-        setGraphBounds();
-        zoomFactor = 1;
-        setRatios();
-        redrawGraph();
+        fitGraph();
     }
 
     public void handleZoomInEvent() {
