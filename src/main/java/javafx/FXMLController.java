@@ -405,9 +405,11 @@ public class FXMLController implements Initializable {
     private int xOffset;
     private int yOffset;
 
-    private double magicConstant = 50;
-
     private void zoom(float v) {
+        if (v < 1 && zoomFactor < 0.01 || v > 1 && zoomFactor > 100) {
+            return;
+        }
+        System.out.println(zoomFactor);
         Node centerNode = toNode(getScreenCenter());
         zoomFactor *= v;
         setRatios();
@@ -415,9 +417,8 @@ public class FXMLController implements Initializable {
         PixelPoint oldCenter = toScreenPos(centerNode);
         PixelPoint screenCenter = getScreenCenter();
         // TODO: Fix magic factor??
-        double magicFactor = magicConstant / zoomFactor;
-        xOffset += magicFactor * (screenCenter.x - oldCenter.x);
-        yOffset -= magicFactor * (screenCenter.y - oldCenter.y);
+        xOffset += 1.1 * (screenCenter.x - oldCenter.x) / mapWidthRatio;
+        yOffset -= 1.1 * (screenCenter.y - oldCenter.y) / mapWidthRatio;
 
         redrawGraph();
     }
@@ -594,25 +595,8 @@ public class FXMLController implements Initializable {
                 case SHIFT:
                     toggleAirDistance();
                     break;
-                case M:
-                    magicConstant *= 1.25;
-                    reportMagicConstant();
-                    break;
-                case N:
-                    magicConstant *= 0.8;
-                    reportMagicConstant();
-                    break;
-                case B:
-                    magicConstant = 50 * widthMeter /42661f;
-                    reportMagicConstant();
-                    break;
             }
         };
-    }
-
-    private void reportMagicConstant() {
-        System.out.println("Magic constant: " + magicConstant);
-        System.out.println("Map size: " + widthMeter + ", " + heightMeter);
     }
 
     // Used for calculating how far to drag
@@ -634,11 +618,10 @@ public class FXMLController implements Initializable {
                 return;
             }
             // TODO: Make completely smooth by doing reverse mercator
-            double magicFactor = magicConstant / zoomFactor;
             double dx = event.getX() - clickX;
             double dy = clickY - event.getY();
-            xOffset += magicFactor * dx;
-            yOffset += magicFactor * dy;
+            xOffset += 1.1 * dx / mapWidthRatio;
+            yOffset += 1.1 * dy / mapWidthRatio;
             clickX = event.getX();
             clickY = event.getY();
             dragCounter++;
