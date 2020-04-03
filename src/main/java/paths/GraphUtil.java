@@ -42,7 +42,6 @@ public class GraphUtil {
         }
         return hop;
     }
-
     public List<Graph> scc() {
         int n = graph.getNodeAmount();
         List<List<Edge>> adjList = graph.getAdjList();

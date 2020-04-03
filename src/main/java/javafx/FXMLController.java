@@ -74,16 +74,21 @@ public class FXMLController implements Initializable {
     private Graph graph;
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
+
     private int xOffset;
     private int yOffset;
+
     private PixelPoint minXY = new PixelPoint(-1, -1);
     private PixelPoint maxXY = new PixelPoint(-1, -1);
+
     private double globalRatio;
+    private double mapWidthRatio;
+    private double mapHeightRatio;
+
     private float zoomFactor;
     private int widthOfBoundingBox;
     private int heightOfBoundingBox;
-    private double mapWidthRatio;
-    private double mapHeightRatio;
+
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
     private Deque<Node> selectedNodes = new ArrayDeque<>();
