@@ -250,7 +250,7 @@ public class FXMLController implements Initializable {
         Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
             List<Integer> combinedPath = new ArrayList<>(res1.path);
             combinedPath.addAll(res2.path.subList(1, res2.path.size()));
-            return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes);
+            return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes, res1.runTime + res2.runTime);
         });
         if (optCombinedRes.isPresent()) {
             ShortestPathResult combinedRes = optCombinedRes.get();
@@ -899,7 +899,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSCCEvent(ActionEvent actionEvent) {
-        List<Graph> graphs  = new GraphUtil(graph).scc();
+        List<Graph> graphs = new GraphUtil(graph).scc();
         graph = graphs.get(0);
         setUpGraph();
     }
