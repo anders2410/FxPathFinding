@@ -917,7 +917,7 @@ public class FXMLController implements Initializable {
             protected List<Graph> call() {
                 GraphUtil gu = new GraphUtil(graph);
                 gu.setProgressListener(this::updateProgress);
-                List<Graph> graphs = new GraphUtil(graph).scc();
+                List<Graph> graphs = gu.scc();
                 updateProgress(100L, 100L);
                 return graphs;
             }
