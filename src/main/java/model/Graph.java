@@ -14,6 +14,13 @@ public class Graph implements Serializable {
         init(nodeAmount);
     }
 
+    public Graph(Graph g) {
+        this.nodeList = new ArrayList<>(g.getNodeList());
+        this.adjList = new ArrayList<>(g.getAdjList());
+        this.parentNodes = new ArrayList<>(g.getParentNodes());
+        this.nodeAmount = g.getNodeAmount();
+    }
+
     public void init(int size) {
         this.nodeAmount = size;
         nodeList = new ArrayList<>();

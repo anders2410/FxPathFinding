@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 public class ReachProcessor {
     private Graph graph;
+    private double[] bounds;
+    private double[] reachLCPT;
 
     double reachMetric(int nodeFrom, Edge e) {
         return e.d;
@@ -22,22 +24,23 @@ public class ReachProcessor {
         this.graph = graph;
     }
 
-    public void computeReachBound(Graph g, int[] boundCeilingArr) {
-        double[] bounds = new double[g.getNodeAmount()];
+    public Graph computeReachBound(Graph g) {
+        bounds = new double[g.getNodeAmount()];
         Arrays.fill(bounds, Double.MAX_VALUE);
-        Graph subGraph = g;
+        Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
-            subGraph = computeReachBoundsSubgraph(g, subGraph, i, bounds);
+            subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
+        return subGraph;
     }
 
-    private Graph computeReachBoundsSubgraph(Graph mainGraph, Graph subGraph, int b, double[] bounds) {
+    private Graph computeReachBoundsSubgraph(Graph mainGraph, Graph subGraph, int b) {
         double maxReachOriginalGraph;
         List<Node> originalNodeList = mainGraph.getNodeList();
         List<Node> subGraphNodeList = subGraph.getNodeList();
         //reachSPT is reach of nodes in least-cost path trees. (SPT != least-cost, but close). Least-cost uses reach metric, SPT uses weight metric.
-        double[] reachLCPT = new double[bounds.length];
-        maxReachOriginalGraph = exclusiveOriginalGraphReachBound(mainGraph, subGraph, bounds, originalNodeList, subGraphNodeList);
+        reachLCPT = new double[bounds.length];
+        maxReachOriginalGraph = exclusiveOriginalGraphReachBound(mainGraph, subGraph, originalNodeList, subGraphNodeList);
         for (int i = 0; i < subGraphNodeList.size(); i++) {
             if (subGraphNodeList.get(i) != null) {
                 bounds[i] = 0;
@@ -65,30 +68,84 @@ public class ReachProcessor {
             Map<Integer, List<Integer>> leastCostTreeH = SPTH.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
             traverseTree(leastCostTreeH, connectiveGraph, i, b, maxReachOriginalGraph, g, d);
         }
-
-        return null;
+        for (int i = 0; i < subGraphNodeList.size(); i++) {
+            if (reachLCPT[i] >= b) {
+                bounds[i] = Double.MAX_VALUE;
+            }
+        }
+        Graph smallerGraph = new Graph(mainGraph);
+        for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
+            if (bounds[i] != Double.MAX_VALUE) {
+                smallerGraph.getNodeList().set(i, null);
+            }
+        }
+        for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
+            Iterator<Edge> iterator = smallerGraph.getAdjList().get(i).iterator();
+            while (iterator.hasNext()) {
+                Edge e = iterator.next();
+                if (smallerGraph.getNodeList().get(i) == null && smallerGraph.getNodeList().get(e.to) == null)
+                    iterator.remove();
+            }
+        }
+        return smallerGraph;
     }
 
     private void traverseTree(Map<Integer, List<Integer>> leastCostTreeH, Graph graph, int rootNode, int b, double c, double g, double d) {
-        double pathMetric = 0.0;
-        //r(v,T)
-        double rvt = 0.0;
         double runningMetric = 0.0;
         double metricFirstEdge;
         for (Integer i : leastCostTreeH.get(rootNode)) {
             metricFirstEdge = reachMetric(rootNode, getEdge(i, graph.getAdjList().get(rootNode)));
-            traverseSubTree(leastCostTreeH, rootNode, i, runningMetric, metricFirstEdge, graph, b, c, g, d);
+            double upperBoundPaths = 2 * b + c + d + metricFirstEdge;
+            LinkedHashMap<Integer, Double> sourceNodeMap = new LinkedHashMap<>();
+            sourceNodeMap.put(rootNode, 0.0);
+            updateBoundsSubTree(leastCostTreeH, rootNode, i, runningMetric, upperBoundPaths, graph, g, sourceNodeMap);
         }
     }
 
-    private double traverseSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double runningMetric, double metricFirstEdge, Graph graph, int b, double c, double g, double d) {
-        double reachMetricLast = reachMetric(parentNode, getEdge(parentNode, graph.getAdjList().get(node)));
+    private double updateBoundsSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double runningMetric, double upperBoundPaths, Graph graph, double g, LinkedHashMap<Integer, Double> sourceNodeMap) {
+        double reachMetricLast = reachMetric(parentNode, getEdge(node, graph.getAdjList().get(parentNode)));
         runningMetric += reachMetricLast;
-        double reachSourceNode = runningMetric;
-        if (runningMetric >= 2 * b + c + d + metricFirstEdge + reachMetricLast) {
+        if (runningMetric >= upperBoundPaths + reachMetricLast || leastCostTreeH.get(node) == null) {
+            //This condition is equivalent to leaf being found
+            double rt = 0;
+            if (graph.getNodeList().get(node) == null) {
+                // leaf is in Supergraph but not subgraph
+                rt = bounds[node];
+            }
+            for (Map.Entry<Integer, Double> entry : sourceNodeMap.entrySet()) {
+                int key = entry.getKey();
+                double value = entry.getValue();
+                double nodeToLeaf = runningMetric - value;
+                double rb = Math.min(g + value, rt + nodeToLeaf);
+                if (rb > bounds[key]) {
+                    bounds[key] = rb;
+                }
+            }
+
             return runningMetric - reachMetricLast;
         }
-        return reachMetricLast;
+        int subpaths = leastCostTreeH.get(node).size();
+        double[] maxPathLengths = new double[leastCostTreeH.get(node).size()];
+        int arrayIndex = 0;
+        sourceNodeMap.put(node, runningMetric);
+        for (Integer i : leastCostTreeH.get(node)) {
+            LinkedHashMap<Integer, Double> newsourceNodeMap = new LinkedHashMap<>(sourceNodeMap);
+            double runningPathReachMetric = updateBoundsSubTree(leastCostTreeH, node, i, runningMetric, upperBoundPaths, graph, g, newsourceNodeMap);
+            maxPathLengths[arrayIndex] = runningPathReachMetric;
+            arrayIndex++;
+        }
+        double maxPath = 0;
+        for (double maxPathLength : maxPathLengths) {
+            maxPath = Math.max(maxPath, maxPathLength);
+        }
+        for (Map.Entry<Integer, Double> entry : sourceNodeMap.entrySet()) {
+            int key = entry.getKey();
+            double value = entry.getValue();
+            double nodeToLeaf = runningMetric - value;
+            double min = Math.min(value, nodeToLeaf);
+            if (min > reachLCPT[key]) reachLCPT[key] = min;
+        }
+        return maxPath;
     }
 
     private Edge getEdge(int i, List<Edge> eList) {
@@ -121,7 +178,7 @@ public class ReachProcessor {
         connectiveGraph.setNodeList(subGraph.getNodeList());
         for (int i = 0; i < subGraph.getAdjList().size(); i++) {
             for (Edge e : subGraph.getAdjList().get(i)) {
-                if (subGraph.getNodeList().get(e.to) == null) {
+                if (g.getNodeList().get(e.to) != null) {
                     connectiveGraph.getAdjList().get(i).add(e);
                     connectiveGraph.getNodeList().set(i, g.getNodeList().get(e.to));
                 }
@@ -131,7 +188,7 @@ public class ReachProcessor {
         return connectiveGraph;
     }
 
-    private double exclusiveOriginalGraphReachBound(Graph g, Graph subGraph, double[] bounds, List<Node> originalNodeList, List<Node> subGraphNodeList) {
+    private double exclusiveOriginalGraphReachBound(Graph g, Graph subGraph, List<Node> originalNodeList, List<Node> subGraphNodeList) {
         double maxReachOriginalGraph = 0;
         if (!g.getNodeList().equals(subGraph.getNodeList())) {
             double maxSoFar = -1;
