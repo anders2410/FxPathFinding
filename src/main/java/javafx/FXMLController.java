@@ -1,7 +1,5 @@
 package javafx;
 
-// TODO: toggle graphical info about landmarks
-
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -15,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -38,6 +37,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static javafx.scene.input.KeyCode.*;
 import static model.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -49,26 +49,16 @@ import static paths.SSSP.seed;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML
-    private Canvas canvas;
-    @FXML
-    private Label algorithm_label;
-    @FXML
-    private Label distance_label;
-    @FXML
-    private Label nodes_visited_label;
-    @FXML
-    private Label nodes_label;
-    @FXML
-    private Label edges_label;
-    @FXML
-    private Label source_label;
-    @FXML
-    private Label target_label;
-    @FXML
-    private Label seed_label;
-    @FXML
-    private ProgressIndicator progress_indicator;
+    @FXML private Canvas canvas;
+    @FXML private Label algorithm_label;
+    @FXML private Label distance_label;
+    @FXML private Label nodes_visited_label;
+    @FXML private Label nodes_label;
+    @FXML private Label edges_label;
+    @FXML private Label source_label;
+    @FXML private Label target_label;
+    @FXML private Label seed_label;
+    @FXML private ProgressIndicator progress_indicator;
 
     private Stage stage;
     private Graph graph;
@@ -139,8 +129,8 @@ public class FXMLController implements Initializable {
      */
     private void setUpGraph() {
         if (gc != null) {
-            nodes_label.setText("Number of Nodes: " + graph.getNodeAmount());
-            edges_label.setText("Number of Edges: " + graph.getEdgeAmount());
+            nodes_label.setText("Nodes in Graph: " + graph.getNodeAmount());
+            edges_label.setText("Edges in Graph: " + graph.getEdgeAmount());
         }
         fitGraph();
         SSSP.setGraph(graph);
@@ -468,11 +458,11 @@ public class FXMLController implements Initializable {
 
     // Projections
 
-    PixelPoint toScreenPos(Node node) {
+    private PixelPoint toScreenPos(Node node) {
         return new PixelPoint(toScreenPosX(node.longitude), toScreenPosY(node.latitude));
     }
 
-    Node toNode(PixelPoint p) {
+    private Node toNode(PixelPoint p) {
         return new Node(-1, toLongitude(p.x), toLatitude(p.y));
     }
 
@@ -571,7 +561,6 @@ public class FXMLController implements Initializable {
     }
 
     // W A S D navigation
-    // TODO: Find out how arrow keys are triggered
     private EventHandler<? super KeyEvent> onKeyPressed() {
         return event -> {
             if (graph == null) {
@@ -579,19 +568,15 @@ public class FXMLController implements Initializable {
             }
             switch (event.getCode()) {
                 case W:
-                case UP:
                     handleNavUpEvent();
                     break;
                 case A:
-                case LEFT:
                     handleNavLeftEvent();
                     break;
                 case S:
-                case DOWN:
                     handleNavDownEvent();
                     break;
                 case D:
-                case RIGHT:
                     handleNavRightEvent();
                     break;
                 case SHIFT:
@@ -603,6 +588,7 @@ public class FXMLController implements Initializable {
 
     // Used for calculating how far to drag
     private double clickX = 0, clickY = 0;
+
     // Used for deciding whether a drag should interrupt a normal click
     private int dragCounter = 0, dragLimit = 5;
 
@@ -814,7 +800,7 @@ public class FXMLController implements Initializable {
     private void setLabels(String distance, int visitedNodes) {
         setAlgorithmLabels();
 
-        distance_label.setText("Total Distance: " + distance);
+        distance_label.setText("Distance (km): " + distance);
         nodes_visited_label.setText("Nodes Visited: " + visitedNodes);
     }
 
