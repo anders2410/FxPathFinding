@@ -87,6 +87,7 @@ public class ReachProcessor {
                     iterator.remove();
             }
         }
+        // TODO: 05-04-2020 Validation check remains
         return smallerGraph;
     }
 
