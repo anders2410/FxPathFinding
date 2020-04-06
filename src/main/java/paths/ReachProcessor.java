@@ -24,14 +24,15 @@ public class ReachProcessor {
         this.graph = graph;
     }
 
-    public Graph computeReachBound(Graph g) {
+    public double[] computeReachBound(Graph g) {
         bounds = new double[g.getNodeAmount()];
         Arrays.fill(bounds, Double.MAX_VALUE);
         Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
+            System.out.println(i);
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
-        return subGraph;
+        return bounds;
     }
 
     private Graph computeReachBoundsSubgraph(Graph mainGraph, Graph subGraph, int b) {
@@ -66,6 +67,7 @@ public class ReachProcessor {
             SSSP.setGraph(connectiveGraph);
             ShortestPathResult SPTH = SSSP.singleToAllPath(i);
             Map<Integer, List<Integer>> leastCostTreeH = SPTH.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
+            if (leastCostTreeH.size() == 0) continue;
             traverseTree(leastCostTreeH, connectiveGraph, i, b, maxReachOriginalGraph, g, d);
         }
         for (int i = 0; i < subGraphNodeList.size(); i++) {
@@ -94,6 +96,7 @@ public class ReachProcessor {
     private void traverseTree(Map<Integer, List<Integer>> leastCostTreeH, Graph graph, int rootNode, int b, double c, double g, double d) {
         double runningMetric = 0.0;
         double metricFirstEdge;
+
         for (Integer i : leastCostTreeH.get(rootNode)) {
             metricFirstEdge = reachMetric(rootNode, getEdge(i, graph.getAdjList().get(rootNode)));
             double upperBoundPaths = 2 * b + c + d + metricFirstEdge;
@@ -174,9 +177,12 @@ public class ReachProcessor {
         return nodesIngoingMap;
     }
 
+    public ReachProcessor() {
+    }
+
     private Graph createConnectiveGraph(Graph g, Graph subGraph) {
         Graph connectiveGraph = new Graph(g.getNodeAmount());
-        connectiveGraph.setNodeList(subGraph.getNodeList());
+        connectiveGraph.setNodeList(new ArrayList<>(subGraph.getNodeList()));
         for (int i = 0; i < subGraph.getAdjList().size(); i++) {
             for (Edge e : subGraph.getAdjList().get(i)) {
                 if (g.getNodeList().get(e.to) != null) {

@@ -49,6 +49,7 @@ public class SSSP {
     private static double[] heuristicValuesA;
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
+    private static double[] reachBounds;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -102,6 +103,7 @@ public class SSSP {
         factoryMap.put(BI_A_STAR_SYMMETRIC, new BiAStarSymmetricFactory());
         factoryMap.put(A_STAR_LANDMARKS, new LandmarksFactory());
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
+        factoryMap.put(REACH, new ReachFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -347,5 +349,13 @@ public class SSSP {
 
     public static void setLandmarks(Landmarks landmarks) {
         SSSP.landmarks = landmarks;
+    }
+
+    public static double[] getReachBounds() {
+        return reachBounds;
+    }
+
+    public static void setReachBounds(double[] bounds) {
+        reachBounds = bounds;
     }
 }

@@ -42,7 +42,7 @@ public class ReachTest {
     @Test
     public void testReachMainFunction() {
         ReachProcessor reachProcessor = new ReachProcessor();
-        Graph g = reachProcessor.computeReachBound(graph);
-        g.getNodeAmount();
+        double[] arr = reachProcessor.computeReachBound(graph);
+        System.out.println(arr);
     }
 }

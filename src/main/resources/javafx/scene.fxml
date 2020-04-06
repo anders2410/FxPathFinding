@@ -50,6 +50,11 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
+            <Button alignment="CENTER" onAction="#handleReachEvent" styleClass="nav_button" text="Reach"/>
+            <Separator styleClass="nav_separator"/>
+
+            <Separator styleClass="nav_separator"/>
+
             <Button alignment="CENTER" onAction="#handleSetParameterEvent" styleClass="nav_button" text="SET"/>
             <Separator styleClass="nav_separator"/>
 

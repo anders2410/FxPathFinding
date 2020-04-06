@@ -5,6 +5,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -940,5 +941,11 @@ public class FXMLController implements Initializable {
         }));
         timeline.setCycleCount(200);
         timeline.playFromStart();
+    }
+
+    public void handleReachEvent() {
+        algorithmMode = REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
     }
 }
