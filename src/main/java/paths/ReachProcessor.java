@@ -3,6 +3,7 @@ package paths;
 import model.Edge;
 import model.Graph;
 import model.Node;
+import model.Util;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class ReachProcessor {
         bounds = new double[g.getNodeAmount()];
         Arrays.fill(bounds, Double.MAX_VALUE);
         Graph subGraph = new Graph(g);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 1; i < 100; i++) {
             System.out.println(i);
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
@@ -58,8 +59,11 @@ public class ReachProcessor {
                 double gMax = 0;
                 double dMax = 0;
                 for (Integer j : nodesIngoingMap.get(i)) {
-                    List<Edge> eList = subGraph.getAdjList().get(j);
+                    List<Edge> eList = mainGraph.getAdjList().get(j);
                     Edge e = getEdge(i, eList);
+                    if (e == null) {
+                        System.out.println("fucked");
+                    }
                     gMax = Math.max(gMax, bounds[j] + reachMetric(j, e));
                     dMax = Math.max(dMax, reachMetric(j, e));
                 }
@@ -71,7 +75,7 @@ public class ReachProcessor {
             traverseTree(leastCostTreeH, connectiveGraph, i, b, maxReachOriginalGraph, g, d);
         }
         for (int i = 0; i < subGraphNodeList.size(); i++) {
-            if (reachLCPT[i] >= b) {
+            if (subGraphNodeList.get(i) != null && reachLCPT[i] >= b) {
                 bounds[i] = Double.MAX_VALUE;
             }
         }
@@ -85,7 +89,7 @@ public class ReachProcessor {
             Iterator<Edge> iterator = smallerGraph.getAdjList().get(i).iterator();
             while (iterator.hasNext()) {
                 Edge e = iterator.next();
-                if (smallerGraph.getNodeList().get(i) == null && smallerGraph.getNodeList().get(e.to) == null)
+                if (smallerGraph.getNodeList().get(i) == null || smallerGraph.getNodeList().get(e.to) == null)
                     iterator.remove();
             }
         }
@@ -110,6 +114,7 @@ public class ReachProcessor {
         double reachMetricLast = reachMetric(parentNode, getEdge(node, graph.getAdjList().get(parentNode)));
         runningMetric += reachMetricLast;
         if (runningMetric >= upperBoundPaths + reachMetricLast || leastCostTreeH.get(node) == null) {
+            runningMetric -= reachMetricLast;
             //This condition is equivalent to leaf being found
             double rt = 0;
             if (graph.getNodeList().get(node) == null) {
@@ -124,9 +129,11 @@ public class ReachProcessor {
                 if (rb > bounds[key]) {
                     bounds[key] = rb;
                 }
+                nodeToLeaf = runningMetric - value;
+                double min = Math.min(g + value, rt + nodeToLeaf);
+                if (min > reachLCPT[key]) reachLCPT[key] = min;
             }
-
-            return runningMetric - reachMetricLast;
+            return runningMetric;
         }
         int subpaths = leastCostTreeH.get(node).size();
         double[] maxPathLengths = new double[leastCostTreeH.get(node).size()];
@@ -138,18 +145,18 @@ public class ReachProcessor {
             maxPathLengths[arrayIndex] = runningPathReachMetric;
             arrayIndex++;
         }
-        double maxPath = 0;
+        /*double maxPath = 0;
         for (double maxPathLength : maxPathLengths) {
             maxPath = Math.max(maxPath, maxPathLength);
         }
         for (Map.Entry<Integer, Double> entry : sourceNodeMap.entrySet()) {
             int key = entry.getKey();
             double value = entry.getValue();
-            double nodeToLeaf = runningMetric - value;
+            double nodeToLeaf = maxPath - value;
             double min = Math.min(value, nodeToLeaf);
             if (min > reachLCPT[key]) reachLCPT[key] = min;
-        }
-        return maxPath;
+        }*/
+        return 0;
     }
 
     private Edge getEdge(int i, List<Edge> eList) {
@@ -187,12 +194,26 @@ public class ReachProcessor {
             for (Edge e : subGraph.getAdjList().get(i)) {
                 if (g.getNodeList().get(e.to) != null) {
                     connectiveGraph.getAdjList().get(i).add(e);
-                    connectiveGraph.getNodeList().set(i, g.getNodeList().get(e.to));
+                    connectiveGraph.getNodeList().set(e.to, g.getNodeList().get(e.to));
                 }
             }
 
         }
         return connectiveGraph;
+        /*Graph connectiveGraph = new Graph(g.getNodeAmount());
+        connectiveGraph.setNodeList(new ArrayList<>(subGraph.getNodeList()));
+        for (int i = 0; i < subGraph.getNodeList().size(); i++) {
+            for (int j = 0; j < g.getNodeList().size(); j++) {
+                if (subGraph.getNodeList().get(i) != null) {
+                    connectiveGraph.getAdjList().get(i).add(new Edge(j, Util.sphericalDistance(subGraph.getNodeList().get(i), subGraph.getNodeList().get(j))));
+                    if (subGraph.getNodeList().get(i) == null)
+                        connectiveGraph.getNodeList().set(i, g.getNodeList().get(i));
+
+                }
+            }
+
+        }*//*
+        return connectiveGraph;*/
     }
 
     private double exclusiveOriginalGraphReachBound(Graph g, Graph subGraph, List<Node> originalNodeList, List<Node> subGraphNodeList) {

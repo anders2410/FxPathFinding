@@ -19,7 +19,7 @@ import static paths.SSSP.*;
 
 public class ReachTest {
     Graph graph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "greenland-latest.osm.pbf";
 
     @Before
     public void setUp() {

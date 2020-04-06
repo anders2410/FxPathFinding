@@ -1,5 +1,6 @@
 package paths.generator;
 
+import javafx.FXMLController;
 import model.Graph;
 import paths.ReachProcessor;
 import paths.SSSP;

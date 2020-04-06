@@ -31,16 +31,16 @@ public class RelaxGenerator {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
             double reachBound = getReachBounds()[edge.to];
-            if (edge.to != getTarget() && (reachBound < newDist && reachBound < getDistanceStrategy().apply(getGraph().getNodeList().get(edge.to), getGraph().getNodeList().get(getTarget())))) {
-                return;
-            }
-            if (newDist < getNodeDist(dir).get(edge.to)) {
-                getNodeDist(dir).set(edge.to, newDist);
-                updatePriority(edge.to, dir);
-                getPathMap(dir).put(edge.to, from);
+            if (edge.to == getTarget() || reachBound >= newDist || reachBound >= getDistanceStrategy().apply(getGraph().getNodeList().get(edge.to), getGraph().getNodeList().get(getTarget()))) {
+
+                if (newDist < getNodeDist(dir).get(edge.to)) {
+                    getNodeDist(dir).set(edge.to, newDist);
+                    updatePriority(edge.to, dir);
+                    getPathMap(dir).put(edge.to, from);
 /*
                 trace(getQueue(dir), dir);
 */
+                }
             }
         };
     }

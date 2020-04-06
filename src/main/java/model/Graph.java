@@ -5,7 +5,6 @@ import java.util.*;
 
 public class Graph implements Serializable {
     // We should define our own ID as different machines could generate different ID's
-    private static final long serialVersionUID = 6529685098267757690L;
 
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
