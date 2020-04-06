@@ -43,12 +43,13 @@ public class GraphUtil {
         return hop;
     }
 
-    boolean trace = true;
+    boolean trace = false;
     private void trace(String msg) {
         if (trace) {
             System.out.print(msg);
         }
     }
+
     public List<Graph> scc() {
         int n = graph.getNodeAmount();
         List<List<Edge>> adjList = graph.getAdjList();
