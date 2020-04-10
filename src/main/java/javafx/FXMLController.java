@@ -74,6 +74,7 @@ public class FXMLController implements Initializable {
     private Stage stage;
     private Graph graph;
     private Landmarks landmarksGenerator;
+    private ReachProcessor reachProcessor;
     private GraphicsContext gc;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
@@ -268,9 +269,6 @@ public class FXMLController implements Initializable {
     private double chooseEdgeWidth(Edge edge) {
         if (edge.inPath) {
             return 2;
-        }
-        if (edge.visited) {
-            return 4;
         }
         return 1;
     }
@@ -964,5 +962,33 @@ public class FXMLController implements Initializable {
         algorithmMode = REACH;
         runAlgorithm();
         setAlgorithmLabels();
+    }
+
+    public void handleSaveReachEvent() {
+        try {
+            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
+            FileOutputStream fos = new FileOutputStream(name + "-reach-bounds.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(SSSP.getReachBounds());
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleLoadReachEvent() {
+        try {
+            double[] bounds = GraphIO.loadReach(fileName);
+            SSSP.setReachBounds(bounds);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleGenerateReachEvent() {
+        reachProcessor = new ReachProcessor();
+        double[] bounds = reachProcessor.computeReachBound(new Graph(graph));
+        SSSP.setReachBounds(bounds);
+        SSSP.setGraph(graph);
     }
 }

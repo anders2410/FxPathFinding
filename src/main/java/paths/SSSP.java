@@ -50,7 +50,7 @@ public class SSSP {
     private static double[] heuristicValuesA;
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
-    private static double[] reachBounds;
+    public static double[] reachBounds;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
