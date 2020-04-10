@@ -34,7 +34,6 @@ public class ReachProcessor {
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
-            System.out.println(i);
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
         return bounds;
@@ -49,9 +48,6 @@ public class ReachProcessor {
         maxReachOriginalGraph = exclusiveOriginalGraphReachBound(mainGraph, subGraph, originalNodeList, subGraphNodeList);
         for (int i = 1; i < subGraphNodeList.size(); i++) {
             if (subGraphNodeList.get(i) != null) {
-                if (i == 94) {
-                    System.out.println("Testing mate");
-                }
                 bounds[i] = 0;
                 reachLCPT[i] = 0;
             }
@@ -59,32 +55,12 @@ public class ReachProcessor {
         Graph connectiveGraph = createConnectiveGraph(mainGraph, subGraph);
         Map<Integer, Set<Integer>> nodesIngoingMap = computeGraphExclusiveIn(mainGraph, subGraph);
         SSSP.setGraph(connectiveGraph);
-        try {
-            String name = GraphIO.tempDir + "connective" + b + "-graph";
-            FileOutputStream fos = new FileOutputStream(name + ".tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(connectiveGraph);
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            String name = GraphIO.tempDir + "sub" + b + "-graph";
-            FileOutputStream fos = new FileOutputStream(name + ".tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(subGraph);
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
         for (int i = 0; i < subGraphNodeList.size(); i++) {
             if (subGraphNodeList.get(i) == null) continue;
             double g = 0, d = 0;
             if (nodesIngoingMap.containsKey(i)) {
                 for (Integer j : nodesIngoingMap.get(i)) {
-                    if (j == 93) {
-                        System.out.println("Testing");
-                    }
                     List<Edge> eList = mainGraph.getAdjList().get(j);
                     Edge e = getEdge(i, eList);
                     g = Math.max(g, bounds[j] + reachMetric(j, e));
@@ -105,9 +81,6 @@ public class ReachProcessor {
             traverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d);
         }
         for (int i = 0; i < subGraphNodeList.size(); i++) {
-            if (i == 94) {
-                System.out.println("Shoot me");
-            }
             if ( (reachLCPT[i] >= b && subGraphNodeList.get(i) != null)) {
                 bounds[i] = Double.MAX_VALUE;
             }
@@ -115,9 +88,6 @@ public class ReachProcessor {
         Graph smallerGraph = new Graph(mainGraph);
         for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
             if (bounds[i] != Double.MAX_VALUE) {
-                if (i == 94) {
-                    System.out.println("wtf");
-                }
                 smallerGraph.getNodeList().set(i, null);
             }
         }
@@ -136,9 +106,6 @@ public class ReachProcessor {
     private void traverseTree(Map<Integer, List<Integer>> leastCostTreeH, Graph graph, int rootNode, int b, double c, double g, double d) {
         double runningMetric = 0.0;
         double metricFirstEdge;
-        if (rootNode == 94) {
-            System.out.println("Test");
-        }
         for (Integer i : leastCostTreeH.get(rootNode)) {
             metricFirstEdge = reachMetric(rootNode, getEdge(i, getOriginalGraph().getAdjList().get(rootNode)));
             double upperBoundPaths = 2 * b + c + d + metricFirstEdge;
@@ -163,10 +130,6 @@ public class ReachProcessor {
             }
             for (Map.Entry<Integer, Double> entry : sourceNodeMap.entrySet()) {
                 int key = entry.getKey();
-
-                if (key == 94 && g != 0) {
-                    System.out.println("yo");
-                }
                 double value = entry.getValue();
                 double nodeToLeaf = runningMetric - value;
                 double rb = Math.min(g + value, rt + nodeToLeaf);
@@ -174,12 +137,6 @@ public class ReachProcessor {
                     bounds[key] = rb;
                 }
                 double min = Math.min(value, nodeToLeaf);
-                if (key == 10 && min != 0) {
-                    System.out.println("yooo");
-                }
-                if (key == 93 && min == 1.9627150797639419){
-                    System.out.println("aaargrhgrhg");
-                }
                 if (min > reachLCPT[key]) reachLCPT[key] = min;
             }
             return runningMetric;

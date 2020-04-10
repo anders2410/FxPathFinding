@@ -21,7 +21,7 @@ import static paths.SSSP.getHeuristicFunction;
 
 public class SSSPPBFTest {
     Graph graph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "greenland-latest.osm.pbf";
 
     @Before
     public void setUp() {
@@ -104,7 +104,7 @@ public class SSSPPBFTest {
 
     @Test
     public void testAlgorithms() {
-        int[] matrix = new int[7];
+        int[] matrix = new int[8];
         List<Graph> graphs = new GraphUtil(graph).scc();
         graph = graphs.get(0);
         SSSP.setGraph(graph);
@@ -112,7 +112,7 @@ public class SSSPPBFTest {
         SSSP.setLandmarks(lm);
         lm.landmarksMaxCover(16, true);
         SSSP.setLandmarks(lm);
-        for (int i = 0; i < 4000; i++) {
+        for (int i = 0; i < 1000; i++) {
             SSSP.seed = i;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = SSSP.randomPath(AlgorithmMode.A_STAR);
@@ -121,6 +121,7 @@ public class SSSPPBFTest {
             ShortestPathResult biAStarSymRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_SYMMETRIC);
             ShortestPathResult landmarksRes = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
             ShortestPathResult biAStarLandRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_LANDMARKS);
+            ShortestPathResult reachRes = SSSP.randomPath(AlgorithmMode.REACH);
 
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
@@ -142,6 +143,10 @@ public class SSSPPBFTest {
 
             double distLandmarks = landmarksRes.d;
             List<Integer> pathLandmarks = landmarksRes.path;
+
+            double distReach = reachRes.d;
+            List<Integer> pathReach = reachRes.path;
+
             if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
                 matrix[1]++;
             }
@@ -160,6 +165,9 @@ public class SSSPPBFTest {
             if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
                 matrix[6]++;
             }
+            if (Math.abs(distDijk - distReach) > 0.00000000001 || !pathReach.equals(pathDijk)) {
+                matrix[7]++;
+            }
             /*if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
                 matrix[1][2]++;
             }
@@ -170,7 +178,7 @@ public class SSSPPBFTest {
                 matrix[2][3]++;
             }*/
         }
-        int[] zeroMatrix = new int[7];
+        int[] zeroMatrix = new int[8];
         assertArrayEquals(zeroMatrix, matrix);
     }
 }
