@@ -13,6 +13,11 @@ public class Node implements Serializable {
         this.longitude = longitude;
     }
 
+    public Node(Node node) {
+        this.index = node.index;
+        this.latitude = node.latitude;
+        this.longitude = node.longitude;
+    }
 
 
     @Override

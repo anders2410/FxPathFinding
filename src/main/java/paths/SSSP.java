@@ -1,6 +1,7 @@
 package paths;
 
 import datastructures.MinPriorityQueue;
+import javafx.FXMLController;
 import model.*;
 import paths.factory.*;
 import paths.strategy.*;

@@ -50,16 +50,26 @@ import static paths.SSSP.seed;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML private Canvas canvas;
-    @FXML private Label algorithm_label;
-    @FXML private Label distance_label;
-    @FXML private Label nodes_visited_label;
-    @FXML private Label nodes_label;
-    @FXML private Label edges_label;
-    @FXML private Label source_label;
-    @FXML private Label target_label;
-    @FXML private Label seed_label;
-    @FXML private ProgressIndicator progress_indicator;
+    @FXML
+    private Canvas canvas;
+    @FXML
+    private Label algorithm_label;
+    @FXML
+    private Label distance_label;
+    @FXML
+    private Label nodes_visited_label;
+    @FXML
+    private Label nodes_label;
+    @FXML
+    private Label edges_label;
+    @FXML
+    private Label source_label;
+    @FXML
+    private Label target_label;
+    @FXML
+    private Label seed_label;
+    @FXML
+    private ProgressIndicator progress_indicator;
 
     private Stage stage;
     private Graph graph;
@@ -259,6 +269,9 @@ public class FXMLController implements Initializable {
         if (edge.inPath) {
             return 2;
         }
+        if (edge.visited) {
+            return 4;
+        }
         return 1;
     }
 
@@ -337,17 +350,21 @@ public class FXMLController implements Initializable {
 
         List<Node> nodeList = graph.getNodeList();
         for (Node n : nodeList) {
-            double x = mercatorX(n.longitude);
-            double y = mercatorY(n.latitude);
-            minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
-            minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
+            if (n != null) {
+                double x = mercatorX(n.longitude);
+                double y = mercatorY(n.latitude);
+                minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
+                minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
+            }
         }
 
         for (Node n : nodeList) {
-            double x = mercatorX(n.longitude);
-            double y = mercatorY(n.latitude);
-            maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
-            maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
+            if (n != null) {
+                double x = mercatorX(n.longitude);
+                double y = mercatorY(n.latitude);
+                maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
+                maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
+            }
         }
         widthMeter = (int) Math.abs(maxXY.x - minXY.x);
         heightMeter = (int) Math.abs(maxXY.y - minXY.y);

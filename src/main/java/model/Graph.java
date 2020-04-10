@@ -5,7 +5,6 @@ import java.util.*;
 
 public class Graph implements Serializable {
     // We should define our own ID as different machines could generate different ID's
-
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
     private List<Integer> parentNodes;
