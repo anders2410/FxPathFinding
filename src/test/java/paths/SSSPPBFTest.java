@@ -21,7 +21,7 @@ import static paths.SSSP.getHeuristicFunction;
 
 public class SSSPPBFTest {
     Graph graph;
-    String fileName = "greenland-latest.osm.pbf";
+    String fileName = "malta-latest.osm.pbf";
 
     @Before
     public void setUp() {
@@ -112,7 +112,7 @@ public class SSSPPBFTest {
         SSSP.setLandmarks(lm);
         lm.landmarksMaxCover(16, true);
         SSSP.setLandmarks(lm);
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 40000; i++) {
             SSSP.seed = i;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = SSSP.randomPath(AlgorithmMode.A_STAR);
