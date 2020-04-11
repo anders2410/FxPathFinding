@@ -17,6 +17,7 @@ public class ReachProcessor {
     private double[] reachLCPT;
 
     double reachMetric(int nodeFrom, Edge e) {
+        //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
         return e.d;
     }
 
