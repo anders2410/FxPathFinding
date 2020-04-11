@@ -45,7 +45,6 @@ public class ReachProcessor {
         double maxReachOriginalGraph;
         List<Node> originalNodeList = mainGraph.getNodeList();
         List<Node> subGraphNodeList = subGraph.getNodeList();
-        //reachSPT is reach of nodes in least-cost path trees. (SPT != least-cost, but close). Least-cost uses reach metric, SPT uses weight metric.
         reachLCPT = new double[bounds.length];
         maxReachOriginalGraph = exclusiveOriginalGraphReachBound(mainGraph, subGraph, originalNodeList, subGraphNodeList);
         for (int i = 1; i < subGraphNodeList.size(); i++) {
@@ -76,9 +75,6 @@ public class ReachProcessor {
                 list.add(e.getKey());
                 leastCostTreeH.replace(e.getValue(), list);
             }
-/*
-            Map<Integer, List<Integer>> leastCostTreeH = SPTH.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
-*/
             if (leastCostTreeH.size() == 0) continue;
             traverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d);
         }
@@ -101,7 +97,6 @@ public class ReachProcessor {
                     iterator.remove();
             }
         }
-        // TODO: 05-04-2020 Validation check remains
         return smallerGraph;
     }
 
@@ -117,7 +112,7 @@ public class ReachProcessor {
         }
     }
 
-    private double updateBoundsSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double runningMetric, double upperBoundPaths, Graph graph, double g, LinkedHashMap<Integer, Double> sourceNodeMap) {
+    private double updateBoundsSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double runningMetric, double upperBoundPaths, Graph subGraph, double g, LinkedHashMap<Integer, Double> sourceNodeMap) {
         double reachMetricLast = reachMetric(parentNode, getEdge(node, getOriginalGraph().getAdjList().get(parentNode)));
         boolean pathTooLong = runningMetric >= upperBoundPaths + reachMetricLast && sourceNodeMap.size() >= 1;
         boolean endOfPossiblePath = leastCostTreeH.get(node) == null && sourceNodeMap.size() >= 1;
@@ -126,7 +121,7 @@ public class ReachProcessor {
             // runningMetric -= reachMetricLast;
             //This condition is equivalent to leaf being found
             double rt = 0;
-            if (graph.getNodeList().get(node) == null) {
+            if (subGraph.getNodeList().get(node) == null) {
                 // leaf is in Supergraph but not subgraph
                 rt = bounds[node];
             }
@@ -147,27 +142,12 @@ public class ReachProcessor {
             return 0;
         }
         runningMetric += reachMetricLast;
-        //int subpaths = leastCostTreeH.get(node).size();
-        //double[] maxPathLengths = new double[leastCostTreeH.get(node).size()];
-        //int arrayIndex = 0;
+
         sourceNodeMap.put(node, runningMetric);
         for (Integer i : leastCostTreeH.get(node)) {
             LinkedHashMap<Integer, Double> newsourceNodeMap = new LinkedHashMap<>(sourceNodeMap);
-            updateBoundsSubTree(leastCostTreeH, node, i, runningMetric, upperBoundPaths, graph, g, newsourceNodeMap);
-            //maxPathLengths[arrayIndex] = runningPathReachMetric;
-            //arrayIndex++;
+            updateBoundsSubTree(leastCostTreeH, node, i, runningMetric, upperBoundPaths, subGraph, g, newsourceNodeMap);
         }
-        /*double maxPath = 0;
-        for (double maxPathLength : maxPathLengths) {
-            maxPath = Math.max(maxPath, maxPathLength);
-        }
-        for (Map.Entry<Integer, Double> entry : sourceNodeMap.entrySet()) {
-            int key = entry.getKey();
-            double value = entry.getValue();
-            double nodeToLeaf = maxPath - value;
-            double min = Math.min(value, nodeToLeaf);
-            if (min > reachLCPT[key]) reachLCPT[key] = min;
-        }*/
         return 0;
     }
 
@@ -213,19 +193,6 @@ public class ReachProcessor {
 
         }
         return connectiveGraph;
-        /*Graph connectiveGraph = new Graph(g.getNodeAmount());
-        connectiveGraph.setNodeList(new ArrayList<>(subGraph.getNodeList()));
-        for (int i = 0; i < subGraph.getNodeList().size(); i++) {
-            for (int j = 0; j < g.getNodeList().size(); j++) {
-                if (subGraph.getNodeList().get(i) != null) {
-                    connectiveGraph.getAdjList().get(i).add(new Edge(j, Util.sphericalDistance(subGraph.getNodeList().get(i), subGraph.getNodeList().get(j))));
-
-                    connectiveGraph.getNodeList().set(i, new Node(g.getNodeList().get(i)));
-                }
-            }
-
-        }
-        return connectiveGraph;*/
     }
 
     private double exclusiveOriginalGraphReachBound(Graph g, Graph subGraph, List<Node> originalNodeList, List<Node> subGraphNodeList) {
