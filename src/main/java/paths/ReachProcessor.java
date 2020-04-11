@@ -36,6 +36,7 @@ public class ReachProcessor {
         for (int i = 0; i < 100; i++) {
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
+        SSSP.setGraph(getOriginalGraph());
         return bounds;
     }
 

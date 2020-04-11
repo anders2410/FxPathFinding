@@ -989,6 +989,5 @@ public class FXMLController implements Initializable {
         reachProcessor = new ReachProcessor();
         double[] bounds = reachProcessor.computeReachBound(new Graph(graph));
         SSSP.setReachBounds(bounds);
-        SSSP.setGraph(graph);
     }
 }
