@@ -50,20 +50,31 @@ import static paths.SSSP.seed;
 public class FXMLController implements Initializable {
 
     // Variables passed from the scene.fxml (instantiated by JavaFX itself)
-    @FXML private Canvas canvas;
-    @FXML private Label algorithm_label;
-    @FXML private Label distance_label;
-    @FXML private Label nodes_visited_label;
-    @FXML private Label nodes_label;
-    @FXML private Label edges_label;
-    @FXML private Label source_label;
-    @FXML private Label target_label;
-    @FXML private Label seed_label;
-    @FXML private ProgressIndicator progress_indicator;
+    @FXML
+    private Canvas canvas;
+    @FXML
+    private Label algorithm_label;
+    @FXML
+    private Label distance_label;
+    @FXML
+    private Label nodes_visited_label;
+    @FXML
+    private Label nodes_label;
+    @FXML
+    private Label edges_label;
+    @FXML
+    private Label source_label;
+    @FXML
+    private Label target_label;
+    @FXML
+    private Label seed_label;
+    @FXML
+    private ProgressIndicator progress_indicator;
 
     private Stage stage;
     private Graph graph;
     private Landmarks landmarksGenerator;
+    private ReachProcessor reachProcessor;
     private GraphicsContext gc;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
@@ -337,17 +348,21 @@ public class FXMLController implements Initializable {
 
         List<Node> nodeList = graph.getNodeList();
         for (Node n : nodeList) {
-            double x = mercatorX(n.longitude);
-            double y = mercatorY(n.latitude);
-            minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
-            minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
+            if (n != null) {
+                double x = mercatorX(n.longitude);
+                double y = mercatorY(n.latitude);
+                minXY.x = (minXY.x == -1) ? x : Math.min(minXY.x, x);
+                minXY.y = (minXY.y == -1) ? y : Math.min(minXY.y, y);
+            }
         }
 
         for (Node n : nodeList) {
-            double x = mercatorX(n.longitude);
-            double y = mercatorY(n.latitude);
-            maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
-            maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
+            if (n != null) {
+                double x = mercatorX(n.longitude);
+                double y = mercatorY(n.latitude);
+                maxXY.x = (maxXY.x == -1) ? x : Math.max(maxXY.x, x);
+                maxXY.y = (maxXY.y == -1) ? y : Math.max(maxXY.y, y);
+            }
         }
         widthMeter = (int) Math.abs(maxXY.x - minXY.x);
         heightMeter = (int) Math.abs(maxXY.y - minXY.y);
@@ -947,5 +962,32 @@ public class FXMLController implements Initializable {
         algorithmMode = REACH;
         runAlgorithm();
         setAlgorithmLabels();
+    }
+
+    public void handleSaveReachEvent() {
+        try {
+            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
+            FileOutputStream fos = new FileOutputStream(name + "-reach-bounds.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(SSSP.getReachBounds());
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleLoadReachEvent() {
+        try {
+            double[] bounds = GraphIO.loadReach(fileName);
+            SSSP.setReachBounds(bounds);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleGenerateReachEvent() {
+        reachProcessor = new ReachProcessor();
+        double[] bounds = reachProcessor.computeReachBound(new Graph(graph));
+        SSSP.setReachBounds(bounds);
     }
 }

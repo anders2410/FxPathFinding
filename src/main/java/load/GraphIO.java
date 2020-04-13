@@ -36,6 +36,30 @@ public class GraphIO {
         bytesRead = 0;
     }
 
+    public static double[] loadReach(String fileName) throws IOException {
+        String fileType = Util.getFileType(fileName);
+        if (fileType.equals("osm")) {
+            fileName = Util.trimFileTypes(fileName);
+        }
+        if (fileType.equals("pbf")) {
+            fileName = Util.trimFileTypes(fileName);
+        }
+        FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-reach-bounds.tmp");
+        ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
+
+        double[] arr = null;
+
+        try {
+            arr = (double[]) landmarksStream.readObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        landmarksStream.close();
+
+        assert arr != null;
+        return arr;
+    }
+
     private void generateFolders() {
         new File(mapsDir).mkdir();
         new File(tempDir).mkdir();

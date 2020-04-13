@@ -44,14 +44,20 @@
                     <MenuItem onAction="#handleGenerateLandmarksFarthest" text="GenFarthest"/>
 
                     <MenuItem onAction="#handleClearLandmarks" text="Clear"/>
-                    <MenuItem onAction="#handleLoadLandmarks" text="LoadMarks"/>
-                    <MenuItem onAction="#handleSaveLandmarks" text="SaveMarks"/>
+                    <MenuItem onAction="#handleLoadLandmarks" text="Load Marks"/>
+                    <MenuItem onAction="#handleSaveLandmarks" text="Save Marks"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
+            <MenuButton alignment="CENTER" text="REACH">
+                <items>
+                    <MenuItem onAction="#handleReachEvent" text="Run Reach"/>
+                    <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
+                    <MenuItem onAction="#handleSaveReachEvent" text="Save Reach Bounds"/>
+                    <MenuItem onAction="#handleLoadReachEvent" text="Load Reach Bounds"/>
+                </items>
+            </MenuButton>
 
-            <Button alignment="CENTER" onAction="#handleReachEvent" styleClass="nav_button" text="Reach"/>
-            <Separator styleClass="nav_separator"/>
 
             <Separator styleClass="nav_separator"/>
 

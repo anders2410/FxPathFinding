@@ -30,16 +30,19 @@ public class RelaxGenerator {
         return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
-            double reachBound = getReachBounds()[edge.to];
-            if (edge.to == getTarget() || reachBound >= newDist || reachBound >= getDistanceStrategy().apply(getGraph().getNodeList().get(edge.to), getGraph().getNodeList().get(getTarget()))) {
+            double[] bounds = getReachBounds();
+            double reachBound = bounds[edge.to];
 
-                if (newDist < getNodeDist(dir).get(edge.to)) {
+            Double projectedDistance = getDistanceStrategy().apply(getGraph().getNodeList().get(edge.to), getGraph().getNodeList().get(getTarget()));
+            if (newDist < getNodeDist(dir).get(edge.to)) {
+                boolean obviousValid = getVisited(dir).contains(edge.to) || getQueue(dir).contains(edge.to) || edge.to == getTarget();
+                boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= 0.000000000000001;
+                boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= 0.000000000000001;
+                boolean shouldNotBePruned = obviousValid || newDistanceValid || projectedDistanceValid;
+                if (shouldNotBePruned) {
                     getNodeDist(dir).set(edge.to, newDist);
                     updatePriority(edge.to, dir);
                     getPathMap(dir).put(edge.to, from);
-/*
-                trace(getQueue(dir), dir);
-*/
                 }
             }
         };
