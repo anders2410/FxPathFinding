@@ -19,6 +19,23 @@ public class ContractionHierarchies {
         this.queue = new PriorityQueue<>();
     }
 
+    public void computeDistance() {
+
+    }
+
+    public Graph createAugmentedGraph() {
+        return null;
+    }
+
+    /**
+     * When contracting a node n, for any pair of edges (u,n) and (n,w), we want to check whether
+     * there is a witness path from u to w bypassing b with length at most l(u,v) + l(v,w). Then there
+     * is no need to add a shortcut from u to w.
+     */
+    public boolean witnessPathExists(Node n) {
+        return false;
+    }
+
     /**
      * The edgeDifference is defined by edgeDifference = s(n) - in(n) - out(n). Where s(n) is the number of
      * added shortcuts, in(n) is incoming degree and out(n) is outgoing degree. We want to contract nodes
@@ -59,6 +76,8 @@ public class ContractionHierarchies {
      * The importance is used when constructing the augmented graph. We want to contract all the
      * nodes with low importance first, and then gradually work our way through the graph using
      * a priorityQueue based on the importance.
+     *
+     * We can optionally experiment with some different weight to all the functions.
      */
     private int getImportance(Node n) {
         return edgeDifference(n) + contractedNeighbours(n) + shortcutCover(n) + nodeLevel(n);
