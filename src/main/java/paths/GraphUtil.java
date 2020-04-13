@@ -120,10 +120,13 @@ public class GraphUtil {
         }
 
         // Collect result of GCC in new graphs sorted by size from largest to smallest
-        trace("{");
-        for (Integer node : sccNodeLists.get(0)) {
-            trace(node + ", ");
-        } trace("}\n");
+        for (List<Integer> sccNodeList : sccNodeLists) {
+            trace("{");
+            for (Integer node : sccNodeList) {
+                trace(node + ", ");
+            } trace("}\n");
+        }
+
         progressListener.accept(66L, 100L);
         Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
         return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
