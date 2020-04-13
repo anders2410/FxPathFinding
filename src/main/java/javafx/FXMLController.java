@@ -978,7 +978,8 @@ public class FXMLController implements Initializable {
 
     public void handleLoadReachEvent() {
         try {
-            double[] bounds = GraphIO.loadReach(fileName);
+            GraphIO graphIO = new GraphIO(distanceStrategy);
+            double[] bounds = graphIO.loadReach(fileName);
             SSSP.setReachBounds(bounds);
         } catch (IOException e) {
             e.printStackTrace();

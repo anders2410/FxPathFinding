@@ -36,7 +36,7 @@ public class GraphIO {
         bytesRead = 0;
     }
 
-    public static double[] loadReach(String fileName) throws IOException {
+    public double[] loadReach(String fileName) throws IOException {
         String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
             fileName = Util.trimFileTypes(fileName);
@@ -186,6 +186,7 @@ public class GraphIO {
     long next_tier = 0;
 
     public void updateProgress() {
+        if (progressListener == null) return;
         if (next_tier <= bytesRead) {
             next_tier += fileSize /100;
             if (bytesRead <= fileSize) {

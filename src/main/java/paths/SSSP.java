@@ -6,6 +6,9 @@ import model.*;
 import paths.factory.*;
 import paths.strategy.*;
 
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -51,6 +54,7 @@ public class SSSP {
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
     public static double[] reachBounds;
+    private static Set<Integer> prunedSet;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -70,6 +74,7 @@ public class SSSP {
         queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B), graph.getNodeAmount());
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
+        prunedSet = new LinkedHashSet<>();
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -85,13 +90,24 @@ public class SSSP {
     }
 
     private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
-        return Comparator.comparingDouble(i -> {
+        return (i, j) -> {
             if (dir == A) {
-                return heuristicValuesA[i];
+                double diff = Math.abs(heuristicValuesA[i] - heuristicValuesA[j]);
+                if (diff <= 0.000000000000001) {
+                    return i.compareTo(j);
+                } else {
+                    return Double.compare(heuristicValuesA[i], heuristicValuesA[j]);
+                }
             } else {
-                return heuristicValuesB[i];
+                double diff = Math.abs(heuristicValuesB[i] - heuristicValuesB[j]);
+                if (diff <= 0.000000000000001) {
+                    return i.compareTo(j);
+                } else {
+                    return Double.compare(heuristicValuesB[i], heuristicValuesB[j]);
+                }
             }
-        });
+
+        };
     }
 
     private static Map<AlgorithmMode, AlgorithmFactory> factoryMap = new HashMap<>();
@@ -140,7 +156,24 @@ public class SSSP {
             takeStep(adjList, A, false);
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        Set<Integer> a = getPrunedSet();
+        /*if (mode == REACH && source == 5087) {
+            PrintWriter pw = null;
+            try {
+                pw = new PrintWriter(
+                        new OutputStreamWriter(new FileOutputStream("test.txt"), "UTF-8"));
+                for (double s : getReachBounds()) {
+                    pw.println(s);
+                }
+                pw.flush();
+            } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } finally {
+                pw.close();
+            }
+        }
+*/
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size(), duration);
     }
@@ -186,7 +219,7 @@ public class SSSP {
             }
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
 
         if (middlePoint == -1) {
             return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0, 0);
@@ -208,7 +241,7 @@ public class SSSP {
             takeStep(adjList, A, false);
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.SECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
         return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA, duration);
     }
@@ -358,5 +391,9 @@ public class SSSP {
 
     public static void setReachBounds(double[] bounds) {
         reachBounds = bounds;
+    }
+
+    public static Set<Integer> getPrunedSet() {
+        return prunedSet;
     }
 }

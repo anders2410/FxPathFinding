@@ -11,6 +11,10 @@ public class JavaMinPriorityQueue extends PriorityQueue<Integer> implements MinP
         super(comparator);
     }
 
+    public JavaMinPriorityQueue(JavaMinPriorityQueue integers) {
+        super(integers);
+    }
+
     @Override
     public boolean contains(Integer toFind) {
         return super.contains(toFind);
@@ -30,5 +34,15 @@ public class JavaMinPriorityQueue extends PriorityQueue<Integer> implements MinP
     public void updatePriority(Integer toUpdate) {
         super.remove(toUpdate);
         super.add(toUpdate);
+    }
+
+    @Override
+    public String toString() {
+        JavaMinPriorityQueue copy = new JavaMinPriorityQueue(this);
+        StringBuilder s = new StringBuilder();
+        while (copy.size() != 0) {
+            s.append(copy.poll() + ", ");
+        }
+        return s.toString();
     }
 }

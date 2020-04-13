@@ -1,5 +1,6 @@
 package paths;
 
+import load.GraphIO;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -10,18 +11,18 @@ import load.pbfparsing.PBFParser;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.function.BiFunction;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static paths.SSSP.*;
 import static paths.SSSP.getHeuristicFunction;
 
 public class SSSPPBFTest {
     Graph graph;
     String fileName = "malta-latest.osm.pbf";
+    GraphIO graphIO;
 
     @Before
     public void setUp() {
@@ -30,13 +31,10 @@ public class SSSPPBFTest {
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
 
         SSSP.setDistanceStrategy(distanceStrategy1);
-        pbfParser.setDistanceStrategy(distanceStrategy2);
-        try {
-            pbfParser.executePBFParser();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        graph = pbfParser.getGraph();
+
+        graphIO = new GraphIO(distanceStrategy1);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
         SSSP.setGraph(graph);
     }
 
@@ -105,15 +103,24 @@ public class SSSPPBFTest {
     @Test
     public void testAlgorithms() {
         int[] matrix = new int[8];
-        List<Graph> graphs = new GraphUtil(graph).scc();
-        graph = graphs.get(0);
+//        List<Graph> graphs = new GraphUtil(graph).scc();
+//        graph = graphs.get(0);
         SSSP.setGraph(graph);
         Landmarks lm = new Landmarks(graph);
         SSSP.setLandmarks(lm);
         lm.landmarksMaxCover(16, true);
         SSSP.setLandmarks(lm);
-        for (int i = 0; i < 40000; i++) {
-            SSSP.seed = i;
+        try {
+            double[] bounds = graphIO.loadReach(fileName);
+            SSSP.setReachBounds(bounds);
+        } catch (IOException e) {
+            System.out.println("Load Failed in Test");
+        }
+        int testCases = 400;
+        double[][] runtimes = new double[8][testCases];
+        int i = 0;
+        while (i < testCases) {
+            seed++;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
             ShortestPathResult aStarRes = SSSP.randomPath(AlgorithmMode.A_STAR);
             ShortestPathResult biDijkRes = SSSP.randomPath(AlgorithmMode.BI_DIJKSTRA);
@@ -122,7 +129,14 @@ public class SSSPPBFTest {
             ShortestPathResult landmarksRes = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
             ShortestPathResult biAStarLandRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_LANDMARKS);
             ShortestPathResult reachRes = SSSP.randomPath(AlgorithmMode.REACH);
-
+            runtimes[0][i] = dijkRes.runTime;
+            runtimes[1][i] = aStarRes.runTime;
+            runtimes[2][i] = biDijkRes.runTime;
+            runtimes[3][i] = biAStarConRes.runTime;
+            runtimes[4][i] = biAStarSymRes.runTime;
+            runtimes[5][i] = landmarksRes.runTime;
+            runtimes[6][i] = biAStarLandRes.runTime;
+            runtimes[7][i] = reachRes.runTime;
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
@@ -165,20 +179,14 @@ public class SSSPPBFTest {
             if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
                 matrix[6]++;
             }
-            if (Math.abs(distDijk - distReach) > 0.00000000001 || !pathReach.equals(pathDijk)) {
+            if (Math.abs(distDijk - distReach) > 0.00000000001 || !pathReach.toString().equals(pathDijk.toString())) {
                 matrix[7]++;
             }
-            /*if (Math.abs(distAstar - distBiDijk) > 0.00000000001 || !pathAstar.equals(pathBiDijk)) {
-                matrix[1][2]++;
-            }
-            if (Math.abs(distAstar - distBiAstarSym) > 0.00000000001 || !pathAstar.equals(pathBiAstarSym)) {
-                matrix[1][3]++;
-            }
-            if (Math.abs(distBiDijk - distBiAstarSym) > 0.00000000001 || !pathBiDijk.equals(pathBiAstarSym)) {
-                matrix[2][3]++;
-            }*/
+            //Only interested in tests where path is atleast 100
+            i++;
         }
-        int[] zeroMatrix = new int[8];
-        assertArrayEquals(zeroMatrix, matrix);
+        if (Arrays.equals(new int[8], matrix)) {
+            System.out.println(runtimes);
+        } else fail();
     }
 }

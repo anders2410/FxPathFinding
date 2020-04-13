@@ -54,7 +54,7 @@ public class Graph implements Serializable {
                 if (e.visited) {
                     for (int j = 0; j < mergeList.get(i).size(); j++) {
                         Edge receiver = mergeList.get(i).get(j);
-                        if (e.to == receiver.to) {
+                        if (e.to == receiver.to && e.d == receiver.d) {
                             if (receiver.inPath) {
                                 e.inPath = true;
                             }
