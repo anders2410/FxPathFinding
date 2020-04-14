@@ -31,7 +31,6 @@ public class SSSPPBFTest {
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
 
         SSSP.setDistanceStrategy(distanceStrategy1);
-
         graphIO = new GraphIO(distanceStrategy1);
         graphIO.loadGraph(fileName);
         graph = graphIO.getGraph();

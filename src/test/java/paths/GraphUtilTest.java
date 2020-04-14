@@ -1,6 +1,7 @@
 package paths;
 
 
+import load.GraphIO;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
 import model.Graph;
@@ -22,6 +23,18 @@ public class GraphUtilTest {
 
     @Before
     public void setUp() {
+        GraphIO graphIO;
+        String fileName = "malta-latest.osm.pbf";
+        SSSP.setDistanceStrategy(Util::sphericalDistance);
+        graphIO = new GraphIO(Util::sphericalDistance);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+    }
+
+    @Test
+    public void testInGoingEdgesMap() {
+        GraphUtil graphUtil = new GraphUtil(graph);
+
     }
 
     @Test
