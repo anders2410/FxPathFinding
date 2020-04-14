@@ -4,18 +4,17 @@ package paths;
 import load.GraphIO;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
+import model.Edge;
 import model.Graph;
 import model.Node;
 import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class GraphUtilTest {
 
@@ -34,7 +33,12 @@ public class GraphUtilTest {
     @Test
     public void testInGoingEdgesMap() {
         GraphUtil graphUtil = new GraphUtil(graph);
-
+        Map<Integer, List<Node>> m = graphUtil.getInDegreeNodeMap();
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            for (Edge e : graph.getAdjList().get(i)) {
+                assertTrue(m.get(e.to).contains(graph.getNodeList().get(i)));
+            }
+        }
     }
 
     @Test
