@@ -36,6 +36,7 @@ public class ContractionHierarchies {
         importance = new ArrayList<>();
         contractedNeighbours = new ArrayList<>();
         initializeLists();
+        setInitialImportance();
     }
 
     private void initializeLists() {
@@ -46,27 +47,29 @@ public class ContractionHierarchies {
         }
     }
 
-    /**
-     * When contracting a node n, for any pair of edges (u,n) and (n,w), we want to check whether
-     * there is a witness path from u to w bypassing n with length at most l(u,n) + l(n,w). Then there
-     * is no need to add a shortcut from u to w.
-     */
-    public boolean witnessPathExists(Node n) {
-        return false;
+    private int[] preProcess() {
+        int[] nodeOrdering = new int[graph.getNodeAmount()];
+        int extractNum = 0;
+
+        while (!importanceQueue.isEmpty()) {
+            int node = importanceQueue.poll();
+        }
+
+        return null;
     }
 
     // Setting the initial importance of all the nodes
     private void setInitialImportance() {
         List<Node> nodeList = graph.getNodeList();
         for (Node n : nodeList) {
-            importance.set(n.index, calculateImportance(n));
+            importance.set(n.index, calculateImportance(n.index));
             importanceQueue.add(n.index);
         }
     }
 
     // Update the importance of a node
-    private void updateImportance(Node n) {
-        importance.set(n.index, calculateImportance(n));
+    private void updateImportance(int n) {
+        importance.set(n, calculateImportance(n));
     }
 
     /**
@@ -74,8 +77,8 @@ public class ContractionHierarchies {
      * added shortcuts, in(n) is in degree and out(n) is out degree. We want to contract nodes
      * with a small edgeDifference.
      */
-    private int edgeDifference(Node n) {
-        int inDegree = inDegreeMap.get(n.index).size();
+    private int edgeDifference(int n) {
+        int inDegree = inDegreeMap.get(n).size();
         int outDegree = graphUtil.getOutDegree(n);
         int numberOfShortcuts = inDegree * outDegree;
         return numberOfShortcuts - inDegree - outDegree;
@@ -86,8 +89,8 @@ public class ContractionHierarchies {
      * do not cluster together. We will contract nodes with a small number of already contracted
      * neighbours.
      */
-    private int contractedNeighbours(Node n) {
-        return contractedNeighbours.get(n.index);
+    private int contractedNeighbours(int n) {
+        return contractedNeighbours.get(n);
     }
 
     /**
@@ -95,8 +98,8 @@ public class ContractionHierarchies {
      * number of neighbours m of n such that we have shortcut to or from m after contracting n.
      * If the sc(n) is big, many nodes depend on n. We will contract a node with small sc(n).
      */
-    private int shortcutCover(Node n) {
-        return graph.getAdjList().get(n.index).size();
+    private int shortcutCover(int n) {
+        return graph.getAdjList().get(n).size();
     }
 
     /**
@@ -104,7 +107,7 @@ public class ContractionHierarchies {
      * s to n in the augmented path. Initially, L(n) is 0. After contracting node n, for neighbours u
      * of n do L(u) <- max(L(u), L(n) + 1). We contract a node with small L(n).
      */
-    private int nodeLevel(Node n) {
+    private int nodeLevel(int n) {
         return 0;
     }
 
@@ -115,18 +118,18 @@ public class ContractionHierarchies {
      *
      * We can optionally experiment with some different weight to all the functions.
      */
-    private int calculateImportance(Node n) {
+    private int calculateImportance(int n) {
         return edgeDifference(n) + contractedNeighbours(n) + shortcutCover(n) + nodeLevel(n);
     }
 
     // Update the neighbours of the contracted node that this node has been contracted.
-    private void updateNeighbours(Node n) {
-        List<Edge> adj = graph.getAdjList().get(n.index);
+    private void updateNeighbours(int n) {
+        List<Edge> adj = graph.getAdjList().get(n);
         for(Edge edge : adj) {
             contractedNeighbours.set(edge.to, contractedNeighbours.get(edge.to + 1));
         }
 
-        List<Node> inDegreeList = inDegreeMap.get(n.index);
+        List<Node> inDegreeList = inDegreeMap.get(n);
         for(Node node : inDegreeList) {
             contractedNeighbours.set(node.index, contractedNeighbours.get(node.index + 1));
         }
