@@ -22,6 +22,10 @@ public class GraphUtilTest {
 
     @Before
     public void setUp() {
+    }
+
+    @Test
+    public void testSubGraph() {
         graph = new Graph(10);
 
         for (int i = 0; i < 10; i++) {
@@ -31,10 +35,6 @@ public class GraphUtilTest {
                 graph.addEdge(i, j, j);
             }
         }
-    }
-
-    @Test
-    public void testSubGraph() {
         GraphUtil graphUtil = new GraphUtil(graph);
         Graph subGraph = graphUtil.subGraph(Arrays.asList(1, 2, 3));
         subGraph.printAdjList();

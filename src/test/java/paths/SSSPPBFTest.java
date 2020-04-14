@@ -116,9 +116,10 @@ public class SSSPPBFTest {
         } catch (IOException e) {
             System.out.println("Load Failed in Test");
         }
-        int testCases = 400;
+        int testCases = 80000;
         double[][] runtimes = new double[8][testCases];
         int i = 0;
+        Map<Integer, Integer> failMap = new HashMap<>();
         while (i < testCases) {
             seed++;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
@@ -163,24 +164,37 @@ public class SSSPPBFTest {
 
             if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
                 matrix[1]++;
+                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
             }
             if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
                 matrix[2]++;
+                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
+
             }
             if (Math.abs(distDijk - distBiAstarSym) > 0.00000000001 || !pathDijk.equals(pathBiAstarSym)) {
                 matrix[3]++;
+                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
+
             }
             if (Math.abs(distDijk - distLandmarks) > 0.00000000001 || !pathLandmarks.equals(pathDijk)) {
                 matrix[4]++;
+                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
+
             }
             if (Math.abs(distDijk - distBiCon) > 0.00000000001 || !pathBiCon.equals(pathDijk)) {
                 matrix[5]++;
+                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
+
             }
             if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
                 matrix[6]++;
+                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
+
             }
             if (Math.abs(distDijk - distReach) > 0.00000000001 || !pathReach.toString().equals(pathDijk.toString())) {
                 matrix[7]++;
+                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
+
             }
             //Only interested in tests where path is atleast 100
             i++;
