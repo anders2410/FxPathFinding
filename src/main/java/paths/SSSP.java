@@ -30,6 +30,7 @@ public class SSSP {
     private static double goalDistance;
     private static int middlePoint;
     private static double[][] landmarkArray;
+    private static double[] reachBounds;
 
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
@@ -53,8 +54,8 @@ public class SSSP {
     private static double[] heuristicValuesA;
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
-    public static double[] reachBounds;
     private static Set<Integer> prunedSet;
+    private static List<ABDir> directionLabels;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -75,6 +76,7 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         prunedSet = new LinkedHashSet<>();
+        directionLabels = new ArrayList<>();
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
