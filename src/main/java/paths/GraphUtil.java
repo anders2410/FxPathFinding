@@ -190,7 +190,7 @@ public class GraphUtil {
     }
 
     // Calculate the outgoing degree
-    public int getOutDegree(Node n) {
-        return graph.getAdjList().get(n.index).size();
+    public int getOutDegree(int n) {
+        return graph.getAdjList().get(n).size();
     }
 }
