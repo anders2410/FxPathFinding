@@ -120,10 +120,13 @@ public class GraphUtil {
         }
 
         // Collect result of GCC in new graphs sorted by size from largest to smallest
-        trace("{");
-        for (Integer node : sccNodeLists.get(0)) {
-            trace(node + ", ");
-        } trace("}\n");
+        for (List<Integer> sccNodeList : sccNodeLists) {
+            trace("{");
+            for (Integer node : sccNodeList) {
+                trace(node + ", ");
+            } trace("}\n");
+        }
+
         progressListener.accept(66L, 100L);
         Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
         return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
@@ -168,5 +171,22 @@ public class GraphUtil {
 
     public void setProgressListener(BiConsumer<Long, Long> progressListener) {
         this.progressListener = progressListener;
+    }
+
+    public Map<Integer, Integer> getInDegreeMap() {
+        Map<Integer, Integer> map = new HashMap<>();
+
+        for (int i = 0; i < graph.getNodeList().size(); i++) {
+            for (Edge e : graph.getAdjList().get(i)) {
+                int a = map.getOrDefault(e.to,0);
+                map.replace(e.to, a + 1);
+            }
+        }
+
+        return map;
+    }
+
+    public int getOutDegree(Node n) {
+        return graph.getAdjList().get(n.index).size();
     }
 }
