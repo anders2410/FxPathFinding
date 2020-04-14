@@ -1,5 +1,6 @@
 package paths;
 
+import datastructures.JavaMinPriorityQueue;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -13,19 +14,36 @@ import java.util.*;
 public class ContractionHierarchies {
     private Graph graph;
     private Graph augmentedGraph;
-    private Queue<Node> queue;
 
-    private Comparator<Node> comp = new ImportanceComparator();
-    private PriorityQueue<Node> importanceQueue = new PriorityQueue<>(comp);
-    private Map<Integer, Integer> inDegreeMap;
+    private JavaMinPriorityQueue importanceQueue;
+    private Map<Integer, List<Node>> inDegreeMap;
 
     private GraphUtil graphUtil;
 
+    private List<Boolean> contracted;
+    private List<Integer> importance;
+    private List<Integer> contractedNeighbours;
+
     public ContractionHierarchies(Graph graph) {
         this.graph = graph;
-        this.queue = new PriorityQueue<>();
+
+        importanceQueue = new JavaMinPriorityQueue(getImportanceComparator(), graph.getNodeAmount());
+
         graphUtil = new GraphUtil(graph);
-        inDegreeMap = graphUtil.getInDegreeMap();
+        inDegreeMap = graphUtil.getInDegreeNodeMap();
+
+        contracted = new ArrayList<>();
+        importance = new ArrayList<>();
+        contractedNeighbours = new ArrayList<>();
+        initializeLists();
+    }
+
+    private void initializeLists() {
+        for (Node ignored : graph.getNodeList()) {
+            contracted.add(false);
+            importance.add(0);
+            contractedNeighbours.add(0);
+        }
     }
 
     /**
@@ -37,15 +55,18 @@ public class ContractionHierarchies {
         return false;
     }
 
-    private void calculateInitialImportance() {
+    // Setting the initial importance of all the nodes
+    private void setInitialImportance() {
         List<Node> nodeList = graph.getNodeList();
         for (Node n : nodeList) {
-            n.setImportance(calculateImportance(n));
+            importance.set(n.index, calculateImportance(n));
+            importanceQueue.add(n.index);
         }
     }
 
+    // Update the importance of a node
     private void updateImportance(Node n) {
-        n.setImportance(calculateImportance(n));
+        importance.set(n.index, calculateImportance(n));
     }
 
     /**
@@ -54,7 +75,7 @@ public class ContractionHierarchies {
      * with a small edgeDifference.
      */
     private int edgeDifference(Node n) {
-        int inDegree = inDegreeMap.get(n.index);
+        int inDegree = inDegreeMap.get(n.index).size();
         int outDegree = graphUtil.getOutDegree(n);
         int numberOfShortcuts = inDegree * outDegree;
         return numberOfShortcuts - inDegree - outDegree;
@@ -66,7 +87,7 @@ public class ContractionHierarchies {
      * neighbours.
      */
     private int contractedNeighbours(Node n) {
-        return n.getContractedNeighbours();
+        return contractedNeighbours.get(n.index);
     }
 
     /**
@@ -102,8 +123,12 @@ public class ContractionHierarchies {
     private void updateNeighbours(Node n) {
         List<Edge> adj = graph.getAdjList().get(n.index);
         for(Edge edge : adj) {
-            int temp = edge.to;
-            graph.getNodeList().get(temp).setContractedNeighbours(n.getContractedNeighbours() + 1);
+            contractedNeighbours.set(edge.to, contractedNeighbours.get(edge.to + 1));
+        }
+
+        List<Node> inDegreeList = inDegreeMap.get(n.index);
+        for(Node node : inDegreeList) {
+            contractedNeighbours.set(node.index, contractedNeighbours.get(node.index + 1));
         }
     }
 
@@ -115,9 +140,8 @@ public class ContractionHierarchies {
         return graph;
     }
 
-    public static class ImportanceComparator implements Comparator<Node> {
-        public int compare(Node n1, Node n2) {
-            return Integer.compare(n1.getImportance(), n2.getImportance());
-        }
+    // Set the queue to compare on Importance
+    private Comparator<Integer> getImportanceComparator() {
+        return Comparator.comparingInt(i -> importance.get(i));
     }
 }

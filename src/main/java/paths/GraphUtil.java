@@ -173,19 +173,23 @@ public class GraphUtil {
         this.progressListener = progressListener;
     }
 
-    public Map<Integer, Integer> getInDegreeMap() {
-        Map<Integer, Integer> map = new HashMap<>();
+    // Calculates the incoming nodes
+    public Map<Integer, List<Node>> getInDegreeNodeMap() {
+        Map<Integer, List<Node>> map = new HashMap<>();
+        List<Node> nodeList = graph.getNodeList();
 
-        for (int i = 0; i < graph.getNodeList().size(); i++) {
+        for (int i = 0; i < nodeList.size(); i++) {
             for (Edge e : graph.getAdjList().get(i)) {
-                int a = map.getOrDefault(e.to,0);
-                map.replace(e.to, a + 1);
+                List<Node> list = map.computeIfAbsent(e.to, k -> new ArrayList<>());
+                list.add(nodeList.get(i));
+                map.replace(e.to, list);
             }
         }
 
         return map;
     }
 
+    // Calculate the outgoing degree
     public int getOutDegree(Node n) {
         return graph.getAdjList().get(n.index).size();
     }
