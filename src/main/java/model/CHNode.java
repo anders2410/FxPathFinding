@@ -1,29 +1,20 @@
 package model;
 
-import java.io.Serializable;
-
-public class Node implements Serializable {
-    public int index;
-    public double longitude;
-    public double latitude;
+public class CHNode extends Node {
 
     private boolean contracted;
     private int importance;
     private int contractedNeighbours;
 
-    public Node(int index, double longitude, double latitude) {
-        this.index = index;
-        this.latitude = latitude;
-        this.longitude = longitude;
+    public CHNode(int index, double longitude, double latitude) {
+        super(index, longitude, latitude);
         contracted = false;
         importance = 0;
         contractedNeighbours = 0;
     }
 
-    public Node(Node node) {
-        this.index = node.index;
-        this.latitude = node.latitude;
-        this.longitude = node.longitude;
+    public CHNode(Node node) {
+        super(node);
         contracted = false;
         importance = 0;
         contractedNeighbours = 0;
@@ -51,14 +42,5 @@ public class Node implements Serializable {
 
     public void setContractedNeighbours(int contractedNeighbours) {
         this.contractedNeighbours = contractedNeighbours;
-    }
-
-    @Override
-    public String toString() {
-        return "Node{" +
-                "index='" + index +
-                ", latitude='" + latitude +
-                ", longitude=" + longitude +
-                "}\n";
     }
 }

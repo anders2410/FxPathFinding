@@ -169,4 +169,21 @@ public class GraphUtil {
     public void setProgressListener(BiConsumer<Long, Long> progressListener) {
         this.progressListener = progressListener;
     }
+
+    public Map<Integer, Integer> getInDegreeMap() {
+        Map<Integer, Integer> map = new HashMap<>();
+
+        for (int i = 0; i < graph.getNodeList().size(); i++) {
+            for (Edge e : graph.getAdjList().get(i)) {
+                int a = map.getOrDefault(e.to,0);
+                map.replace(e.to, a + 1);
+            }
+        }
+
+        return map;
+    }
+
+    public int getOutDegree(Node n) {
+        return graph.getAdjList().get(n.index).size();
+    }
 }
