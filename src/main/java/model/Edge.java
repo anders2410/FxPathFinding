@@ -70,6 +70,6 @@ public class Edge implements Serializable {
         return "Edge{" +
                 "to=" + to +
                 ", d=" + d +
-                "}\n";
+                "}";
     }
 }

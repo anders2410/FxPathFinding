@@ -25,6 +25,6 @@ public class Node implements Serializable {
                 "index='" + index +
                 ", latitude='" + latitude +
                 ", longitude=" + longitude +
-                "}\n";
+                "}";
     }
 }
