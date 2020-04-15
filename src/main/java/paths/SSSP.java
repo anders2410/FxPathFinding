@@ -216,8 +216,7 @@ public class SSSP {
             return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0, 0);
         }
         List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
-        double distance = goalDistance;
-        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size(), duration);
+        return new ShortestPathResult(goalDistance, shortestPath, visitedA.size() + visitedB.size(), duration);
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
