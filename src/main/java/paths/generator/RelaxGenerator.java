@@ -1,16 +1,10 @@
 package paths.generator;
 
-import model.Edge;
-import model.Graph;
 import model.Node;
-import paths.ABDir;
-import paths.SSSP;
 import paths.strategy.RelaxStrategy;
 
 import java.util.List;
 
-import static paths.ABDir.A;
-import static paths.ABDir.B;
 import static paths.SSSP.*;
 import static paths.Util.revDir;
 
@@ -34,8 +28,9 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiDijkstra() {
         return (from, edge, dir) -> {
             getDijkstra().relax(from, edge, dir);
-            if (getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to) < getGoalDistance()) {
-                setGoalDistance(getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to));
+            double newPathDist = getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
+            if (newPathDist < getGoalDistance()) {
+                setGoalDistance(newPathDist);
                 setMiddlePoint(edge.to);
             }
         };
@@ -45,8 +40,8 @@ public class RelaxGenerator {
         return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
-            double[] bounds = getReachBounds();
-            double reachBound = bounds[edge.to];
+            List<Double> bounds = getReachBounds();
+            double reachBound = bounds.get(edge.to);
             List<Node> nodeList = getGraph().getNodeList();
             Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
             if (newDist < getNodeDist(dir).get(edge.to)) {
@@ -65,9 +60,22 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBiReach() {
         return ((from, edge, dir) -> {
-            double[] bounds = getReachBounds();
-
+            List<Double> bounds = getReachBounds();
+            double newDist = getNodeDist(dir).get(from) + edge.d;
+            if (bounds.get(edge.to) < newDist) {
+                return;
+            }
             edge.visited = true;
+            if (newDist < getNodeDist(dir).get(edge.to)) {
+                getNodeDist(dir).set(edge.to, newDist);
+                updatePriority(edge.to, dir);
+                getPathMap(dir).put(edge.to, from);
+                double newPathDist = newDist + getNodeDist(revDir(dir)).get(edge.to);
+                if (getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to) < getGoalDistance()) {
+                    setGoalDistance(getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to));
+                    setMiddlePoint(edge.to);
+                }
+            }
         });
     }
 /*

@@ -28,7 +28,7 @@ public class SSSP {
     private static double goalDistance;
     private static int middlePoint;
     private static double[][] landmarkArray;
-    private static double[] reachBounds;
+    private static List<Double> reachBounds;
 
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
@@ -378,11 +378,11 @@ public class SSSP {
         SSSP.landmarks = landmarks;
     }
 
-    public static double[] getReachBounds() {
+    public static List<Double> getReachBounds() {
         return reachBounds;
     }
 
-    public static void setReachBounds(double[] bounds) {
+    public static void setReachBounds(List<Double> bounds) {
         reachBounds = bounds;
     }
 

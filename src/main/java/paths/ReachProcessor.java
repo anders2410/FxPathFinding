@@ -8,7 +8,7 @@ import java.util.*;
 
 public class ReachProcessor {
     private Graph OriginalGraph;
-    private double[] bounds;
+    private List<Double> bounds;
     private double[] reachLCPT;
 
     double reachMetric(int nodeFrom, Edge e) {
@@ -24,9 +24,9 @@ public class ReachProcessor {
         this.OriginalGraph = originalGraph;
     }
 
-    public double[] computeReachBound(Graph g) {
-        bounds = new double[g.getNodeAmount()];
-        Arrays.fill(bounds, Double.MAX_VALUE);
+    public List<Double> computeReachBound(Graph g) {
+        bounds = Arrays.asList(new Double[g.getNodeAmount()]);
+        Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
@@ -40,11 +40,11 @@ public class ReachProcessor {
         double maxReachOriginalGraph;
         List<Node> originalNodeList = mainGraph.getNodeList();
         List<Node> subGraphNodeList = subGraph.getNodeList();
-        reachLCPT = new double[bounds.length];
+        reachLCPT = new double[bounds.size()];
         maxReachOriginalGraph = exclusiveOriginalGraphReachBound(mainGraph, subGraph, originalNodeList, subGraphNodeList);
         for (int i = 1; i < subGraphNodeList.size(); i++) {
             if (subGraphNodeList.get(i) != null) {
-                bounds[i] = 0;
+                bounds.set(i, 0d);
                 reachLCPT[i] = 0;
             }
         }
@@ -59,7 +59,7 @@ public class ReachProcessor {
                 for (Integer j : nodesIngoingMap.get(i)) {
                     List<Edge> eList = mainGraph.getAdjList().get(j);
                     Edge e = getEdge(i, eList);
-                    g = Math.max(g, bounds[j] + reachMetric(j, e));
+                    g = Math.max(g, bounds.get(j) + reachMetric(j, e));
                     d = Math.max(d, reachMetric(j, e));
                 }
             }
@@ -75,12 +75,12 @@ public class ReachProcessor {
         }
         for (int i = 0; i < subGraphNodeList.size(); i++) {
             if ( (reachLCPT[i] >= b && subGraphNodeList.get(i) != null)) {
-                bounds[i] = Double.MAX_VALUE;
+                bounds.set(i, Double.MAX_VALUE);
             }
         }
         Graph smallerGraph = new Graph(mainGraph);
         for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
-            if (bounds[i] != Double.MAX_VALUE) {
+            if (bounds.get(i) != Double.MAX_VALUE) {
                 smallerGraph.getNodeList().set(i, null);
             }
         }
@@ -118,15 +118,15 @@ public class ReachProcessor {
             double rt = 0;
             if (subGraph.getNodeList().get(node) == null) {
                 // leaf is in Supergraph but not subgraph
-                rt = bounds[node];
+                rt = bounds.get(node);
             }
             for (Map.Entry<Integer, Double> entry : sourceNodeMap.entrySet()) {
                 int key = entry.getKey();
                 double value = entry.getValue();
                 double nodeToLeaf = runningMetric - value;
                 double rb = Math.min(g + value, rt + nodeToLeaf);
-                if (rb > bounds[key]) {
-                    bounds[key] = rb;
+                if (rb > bounds.get(key)) {
+                    bounds.set(key, rb);
                 }
                 double min = Math.min(value, nodeToLeaf);
                 if (min > reachLCPT[key]) reachLCPT[key] = min;
@@ -196,7 +196,7 @@ public class ReachProcessor {
             double maxSoFar = -1;
             for (int i = 0; i < originalNodeList.size(); i++) {
                 if (originalNodeList.get(i) != subGraphNodeList.get(i)) {
-                    maxSoFar = Math.max(bounds[i], maxSoFar);
+                    maxSoFar = Math.max(bounds.get(i), maxSoFar);
                 }
             }
             maxReachOriginalGraph = maxSoFar;
