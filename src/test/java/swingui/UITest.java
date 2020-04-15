@@ -3,7 +3,7 @@ package swingui;
 
 import load.GraphIO;
 import model.Graph;
-import model.Util;
+import paths.Util;
 import org.junit.Before;
 import org.junit.Test;
 import paths.SSSP;

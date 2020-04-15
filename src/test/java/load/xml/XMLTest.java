@@ -1,7 +1,7 @@
 package load.xml;
 
 import model.Node;
-import model.Util;
+import paths.Util;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,26 +1,27 @@
 package paths.factory;
 
+import paths.generator.*;
 import paths.strategy.*;
 
 public class BiReachFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
-        return false;
+        return true;
     }
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return null;
+        return PriorityGenerator.getDijkstra();
     }
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return null;
+        return HeuristicGenerator.getDistance();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return null;
+        return RelaxGenerator.getReach();
     }
 
     @Override
@@ -30,11 +31,11 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return null;
+        return new ReachPreStrategy();
     }
 
     @Override
     public GetPQueueStrategy getPriorityQueue() {
-        return null;
+        return GetPQueueGenerator.getJavaQueue();
     }
 }

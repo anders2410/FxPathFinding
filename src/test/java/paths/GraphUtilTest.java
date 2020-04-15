@@ -2,12 +2,9 @@ package paths;
 
 
 import load.GraphIO;
-import load.xml.XMLFilter;
-import load.xml.XMLGraphExtractor;
 import model.Edge;
 import model.Graph;
 import model.Node;
-import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 

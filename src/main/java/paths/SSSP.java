@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
 import static paths.ABDir.*;
+import static paths.Util.revDir;
 
 public class SSSP {
 
@@ -55,7 +56,6 @@ public class SSSP {
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
     private static Set<Integer> prunedSet;
-    private static List<ABDir> directionLabels;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -76,7 +76,6 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         prunedSet = new LinkedHashSet<>();
-        directionLabels = new ArrayList<>();
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -181,7 +180,6 @@ public class SSSP {
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir, boolean biDirectional) {
-        ABDir revDir = dir == A ? B : A;
         Integer currentNode = getQueue(dir).poll();
         if (currentNode == null) {
             return;
@@ -189,10 +187,10 @@ public class SSSP {
 
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            if (!getVisited(revDir).contains(edge.to)) {
+            if (!getVisited(revDir(dir)).contains(edge.to)) {
                 getRelaxStrategy(dir).relax(currentNode, edge, dir);
-                if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
-                    goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
+                if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir(dir)).get(edge.to) < goalDistance) {
+                    goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
                     middlePoint = edge.to;
                 }
             }
@@ -397,5 +395,17 @@ public class SSSP {
 
     public static Set<Integer> getPrunedSet() {
         return prunedSet;
+    }
+
+    public static double getGoalDistance() {
+        return goalDistance;
+    }
+
+    public static void setGoalDistance(double goalDistance) {
+        SSSP.goalDistance = goalDistance;
+    }
+
+    public static void setMiddlePoint(int middlePoint) {
+        SSSP.middlePoint = middlePoint;
     }
 }

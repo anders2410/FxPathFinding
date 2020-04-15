@@ -3,7 +3,6 @@ package paths;
 import load.pbfparsing.PBFParser;
 import model.Graph;
 import model.Node;
-import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 

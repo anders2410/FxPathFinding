@@ -1,13 +1,18 @@
 package paths.generator;
 
 import model.Edge;
+import model.Graph;
+import model.Node;
 import paths.ABDir;
 import paths.SSSP;
 import paths.strategy.RelaxStrategy;
 
+import java.util.List;
+
 import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.SSSP.*;
+import static paths.Util.revDir;
 
 public class RelaxGenerator {
 
@@ -26,13 +31,24 @@ public class RelaxGenerator {
         };
     }
 
+    public static RelaxStrategy getBiDijkstra() {
+        return (from, edge, dir) -> {
+            getDijkstra().relax(from, edge, dir);
+            if (getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to) < getGoalDistance()) {
+                setGoalDistance(getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to));
+                setMiddlePoint(edge.to);
+            }
+        };
+    }
+
     public static RelaxStrategy getReach() {
         return (from, edge, dir) -> {
             edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
             double[] bounds = getReachBounds();
             double reachBound = bounds[edge.to];
-            Double projectedDistance = getDistanceStrategy().apply(getGraph().getNodeList().get(edge.to), getGraph().getNodeList().get(getTarget()));
+            List<Node> nodeList = getGraph().getNodeList();
+            Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 boolean obviousValid = getVisited(dir).contains(edge.to) || getQueue(dir).contains(edge.to) || edge.to == getTarget();
                 boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= 0.000000000000001;
@@ -45,6 +61,12 @@ public class RelaxGenerator {
                 }
             }
         };
+    }
+
+    public static RelaxStrategy getBiReach() {
+        return ((from, edge, dir) -> {
+            edge.visited = true;
+        });
     }
 /*
     public static RelaxStrategy getAStarNew() {
