@@ -189,10 +189,6 @@ public class SSSP {
         for (Edge edge : adjList.get(currentNode)) {
             if (!getVisited(revDir(dir)).contains(edge.to)) {
                 getRelaxStrategy(dir).relax(currentNode, edge, dir);
-                if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir(dir)).get(edge.to) < goalDistance) {
-                    goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
-                    middlePoint = edge.to;
-                }
             }
         }
     }

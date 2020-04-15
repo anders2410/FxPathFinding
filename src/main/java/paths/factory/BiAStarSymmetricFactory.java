@@ -21,7 +21,7 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getDijkstra();
+        return RelaxGenerator.getBiDijkstra();
     }
 
     @Override
