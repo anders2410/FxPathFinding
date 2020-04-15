@@ -188,20 +188,18 @@ public class SSSP {
         }
     }
 
+    // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
     private static ShortestPathResult biDirectional() {
         long startTime = System.nanoTime();
-        // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
+
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.getReverse(adjList);
-
-        // A-direction
         queueA.insert(source);
-        // B-direction
         queueB.insert(target);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
-        // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
+        // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() && !queueB.isEmpty())) {
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
                 takeStep(adjList, A);
