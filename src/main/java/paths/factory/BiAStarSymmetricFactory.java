@@ -36,7 +36,7 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
     }
 
     @Override
-    public GetPQueueStrategy getPriorityQueue() {
-        return GetPQueueGenerator.getJavaQueue();
+    public AlternationStrategy getAlternationStrategy() {
+        return AlternationGenerator.getAmountSeenStrategy();
     }
 }

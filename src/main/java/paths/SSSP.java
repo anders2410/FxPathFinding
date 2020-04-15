@@ -13,6 +13,7 @@ import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
 import static paths.ABDir.*;
 import static paths.Util.revDir;
+import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
 
@@ -33,6 +34,7 @@ public class SSSP {
     private static BiFunction<Node, Node, Double> distanceStrategy;
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
+    private static AlternationStrategy alternationStrategy;
 
     private static RelaxStrategy relaxStrategyA;
     private static RelaxStrategy relaxStrategyB;
@@ -118,6 +120,7 @@ public class SSSP {
         factoryMap.put(A_STAR_LANDMARKS, new LandmarksFactory());
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
         factoryMap.put(REACH, new ReachFactory());
+        factoryMap.put(BI_REACH, new BiReachFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -129,7 +132,8 @@ public class SSSP {
         relaxStrategyB = factory.getRelaxStrategy();
         priorityStrategyA = factory.getPriorityStrategy();
         priorityStrategyB = factory.getPriorityStrategy();
-        priorityQueueGetter = factory.getPriorityQueue();
+        priorityQueueGetter = getJavaQueue();
+        alternationStrategy = factory.getAlternationStrategy();
     }
 
     // Path finding
@@ -201,7 +205,7 @@ public class SSSP {
         middlePoint = -1;
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() && !queueB.isEmpty())) {
-            if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
+            if (alternationStrategy.check()) {
                 takeStep(adjList, A);
             } else {
                 takeStep(revAdjList, B);
