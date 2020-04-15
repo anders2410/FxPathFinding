@@ -1,14 +1,10 @@
 package paths;
 
 import datastructures.MinPriorityQueue;
-import javafx.FXMLController;
 import model.*;
 import paths.factory.*;
 import paths.strategy.*;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -154,7 +150,7 @@ public class SSSP {
 
         while (!queueA.isEmpty()) {
             if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
-            takeStep(adjList, A, false);
+            takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
@@ -179,7 +175,7 @@ public class SSSP {
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size(), duration);
     }
 
-    private static void takeStep(List<List<Edge>> adjList, ABDir dir, boolean biDirectional) {
+    private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
         Integer currentNode = getQueue(dir).poll();
         if (currentNode == null) {
             return;
@@ -208,9 +204,9 @@ public class SSSP {
         // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() && !queueB.isEmpty())) {
             if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
-                takeStep(adjList, A, true);
+                takeStep(adjList, A);
             } else {
-                takeStep(revAdjList, B, true);
+                takeStep(revAdjList, B);
             }
         }
         long endTime = System.nanoTime();
@@ -233,7 +229,7 @@ public class SSSP {
         queueA.insert(source);
 
         while (!queueA.isEmpty()) {
-            takeStep(adjList, A, false);
+            takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
