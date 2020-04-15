@@ -187,9 +187,8 @@ public class SSSP {
 
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            if (!getVisited(revDir(dir)).contains(edge.to)) {
-                getRelaxStrategy(dir).relax(currentNode, edge, dir);
-            }
+            assert !getVisited(revDir(dir)).contains(edge.to); // By no scan overlap-theorem
+            getRelaxStrategy(dir).relax(currentNode, edge, dir);
         }
     }
 
