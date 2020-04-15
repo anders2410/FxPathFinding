@@ -145,7 +145,7 @@ public class SSSP {
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
         initDataStructures();
-        return biDirectional ? biDirectional() : oneDirectional();
+        return biDirectional ? biDirectional() : oneDirectional(); //TODO: Make one directional ALT work in bidirectional
     }
 
     private static ShortestPathResult oneDirectional() {
@@ -193,7 +193,7 @@ public class SSSP {
         }
     }
 
-    // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
+    // Implementation pseudo code from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
     private static ShortestPathResult biDirectional() {
         long startTime = System.nanoTime();
 

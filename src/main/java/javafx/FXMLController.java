@@ -969,6 +969,13 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+
+    public void handleBiReachEvent() {
+        algorithmMode = BI_REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
     public void handleSaveReachEvent() {
         try {
             String name = GraphIO.tempDir + Util.trimFileTypes(fileName);

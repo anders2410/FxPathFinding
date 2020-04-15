@@ -21,7 +21,7 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getReach();
+        return RelaxGenerator.getBiReach();
     }
 
     @Override

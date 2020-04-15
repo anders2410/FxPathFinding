@@ -65,6 +65,8 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBiReach() {
         return ((from, edge, dir) -> {
+            double[] bounds = getReachBounds();
+
             edge.visited = true;
         });
     }

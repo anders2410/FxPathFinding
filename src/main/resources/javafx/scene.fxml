@@ -53,6 +53,7 @@
             <MenuButton alignment="CENTER" text="REACH">
                 <items>
                     <MenuItem onAction="#handleReachEvent" text="Run Reach"/>
+                    <MenuItem onAction="#handleBiReachEvent" text="Run Bi-Reach"/>
                     <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
                     <MenuItem onAction="#handleSaveReachEvent" text="Save Reach Bounds"/>
                     <MenuItem onAction="#handleLoadReachEvent" text="Load Reach Bounds"/>
