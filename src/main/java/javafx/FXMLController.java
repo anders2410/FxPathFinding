@@ -702,6 +702,13 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+
+    public void handleBiDijkstraSameDistEvent() {
+        algorithmMode = BI_DIJKSTRA_SAME_DIST;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
     public void handleAStarEvent() {
         algorithmMode = A_STAR;
         runAlgorithm();
@@ -990,12 +997,12 @@ public class FXMLController implements Initializable {
         SSSP.setReachBounds(bounds);
     }
 
-    public void handleGenerateCHEvent(ActionEvent actionEvent) {
+    public void handleGenerateCHEvent() {
         ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
         graph = contractionHierarchies.preprocess();
         redrawGraph();
     }
 
-    public void handleCHEvent(ActionEvent actionEvent) {
+    public void handleCHEvent() {
     }
 }

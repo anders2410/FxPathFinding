@@ -20,6 +20,7 @@
                 <items>
                     <MenuItem onAction="#handleDijkstraEvent" text="Dijkstra"/>
                     <MenuItem onAction="#handleBiDijkstraEvent" text="Bi-Dijkstra"/>
+                    <MenuItem onAction="#handleBiDijkstraSameDistEvent" text="Bi-SameBalls"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
