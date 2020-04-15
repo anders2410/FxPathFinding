@@ -991,4 +991,13 @@ public class FXMLController implements Initializable {
         double[] bounds = reachProcessor.computeReachBound(new Graph(graph));
         SSSP.setReachBounds(bounds);
     }
+
+    public void handleGenerateCHEvent(ActionEvent actionEvent) {
+        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
+        graph = contractionHierarchies.preprocess();
+        redrawGraph();
+    }
+
+    public void handleCHEvent(ActionEvent actionEvent) {
+    }
 }
