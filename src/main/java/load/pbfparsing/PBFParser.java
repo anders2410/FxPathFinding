@@ -12,7 +12,7 @@ import load.pbfparsing.delegates.CollapsingStrategyFull;
 import load.pbfparsing.delegates.StandardFilteringStrategy;
 import load.pbfparsing.interfaces.CollapsingStrategy;
 import load.pbfparsing.interfaces.FilteringStrategy;
-import model.Util;
+import paths.Util;
 
 import java.io.*;
 import java.util.*;

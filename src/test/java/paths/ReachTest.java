@@ -1,21 +1,16 @@
 package paths;
 
 import load.pbfparsing.PBFParser;
-import model.Edge;
 import model.Graph;
 import model.Node;
-import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static paths.SSSP.*;
 
 public class ReachTest {
     Graph graph;

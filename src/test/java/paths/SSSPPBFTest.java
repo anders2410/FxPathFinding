@@ -4,14 +4,11 @@ import load.GraphIO;
 import model.Edge;
 import model.Graph;
 import model.Node;
-import model.Util;
 import org.junit.Before;
 import org.junit.Test;
 import load.pbfparsing.PBFParser;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiFunction;
 

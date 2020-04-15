@@ -35,7 +35,7 @@ public class DijkstraFactory implements AlgorithmFactory {
     }
 
     @Override
-    public GetPQueueStrategy getPriorityQueue() {
-        return GetPQueueGenerator.getJavaQueue();
+    public AlternationStrategy getAlternationStrategy() {
+        return AlternationGenerator.getOneDirectional();
     }
 }

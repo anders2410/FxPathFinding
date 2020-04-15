@@ -1,14 +1,10 @@
 package paths;
 
 import datastructures.MinPriorityQueue;
-import javafx.FXMLController;
 import model.*;
 import paths.factory.*;
 import paths.strategy.*;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -16,6 +12,8 @@ import java.util.function.BiFunction;
 import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
 import static paths.ABDir.*;
+import static paths.Util.revDir;
+import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
 
@@ -36,6 +34,7 @@ public class SSSP {
     private static BiFunction<Node, Node, Double> distanceStrategy;
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
+    private static AlternationStrategy alternationStrategy;
 
     private static RelaxStrategy relaxStrategyA;
     private static RelaxStrategy relaxStrategyB;
@@ -55,7 +54,6 @@ public class SSSP {
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
     private static Set<Integer> prunedSet;
-    private static List<ABDir> directionLabels;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -76,7 +74,6 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         prunedSet = new LinkedHashSet<>();
-        directionLabels = new ArrayList<>();
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -123,6 +120,7 @@ public class SSSP {
         factoryMap.put(A_STAR_LANDMARKS, new LandmarksFactory());
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
         factoryMap.put(REACH, new ReachFactory());
+        factoryMap.put(BI_REACH, new BiReachFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -134,7 +132,8 @@ public class SSSP {
         relaxStrategyB = factory.getRelaxStrategy();
         priorityStrategyA = factory.getPriorityStrategy();
         priorityStrategyB = factory.getPriorityStrategy();
-        priorityQueueGetter = factory.getPriorityQueue();
+        priorityQueueGetter = getJavaQueue();
+        alternationStrategy = factory.getAlternationStrategy();
     }
 
     // Path finding
@@ -155,7 +154,7 @@ public class SSSP {
 
         while (!queueA.isEmpty()) {
             if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
-            takeStep(adjList, A, false);
+            takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
@@ -180,8 +179,7 @@ public class SSSP {
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size(), duration);
     }
 
-    private static void takeStep(List<List<Edge>> adjList, ABDir dir, boolean biDirectional) {
-        ABDir revDir = dir == A ? B : A;
+    private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
         Integer currentNode = getQueue(dir).poll();
         if (currentNode == null) {
             return;
@@ -189,35 +187,28 @@ public class SSSP {
 
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            if (!getVisited(revDir).contains(edge.to)) {
-                getRelaxStrategy(dir).relax(currentNode, edge, dir);
-                if (biDirectional && getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to) < goalDistance) {
-                    goalDistance = getNodeDist(dir).get(currentNode) + edge.d + getNodeDist(revDir).get(edge.to);
-                    middlePoint = edge.to;
-                }
-            }
+            assert !getVisited(revDir(dir)).contains(edge.to); // By no scan overlap-theorem
+            getRelaxStrategy(dir).relax(currentNode, edge, dir);
         }
     }
 
+    // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
     private static ShortestPathResult biDirectional() {
         long startTime = System.nanoTime();
-        // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
+
         List<List<Edge>> adjList = graph.getAdjList();
         List<List<Edge>> revAdjList = graph.getReverse(adjList);
-
-        // A-direction
         queueA.insert(source);
-        // B-direction
         queueB.insert(target);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
-        // Both queues need to be empty and an intersection has to be found in order to exit the while loop.
+        // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() && !queueB.isEmpty())) {
-            if (queueA.size() + visitedA.size() < queueB.size() + visitedB.size()) {
-                takeStep(adjList, A, true);
+            if (alternationStrategy.check()) {
+                takeStep(adjList, A);
             } else {
-                takeStep(revAdjList, B, true);
+                takeStep(revAdjList, B);
             }
         }
         long endTime = System.nanoTime();
@@ -227,8 +218,7 @@ public class SSSP {
             return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0, 0);
         }
         List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
-        double distance = goalDistance;
-        return new ShortestPathResult(distance, shortestPath, visitedA.size() + visitedB.size(), duration);
+        return new ShortestPathResult(goalDistance, shortestPath, visitedA.size() + visitedB.size(), duration);
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
@@ -240,7 +230,7 @@ public class SSSP {
         queueA.insert(source);
 
         while (!queueA.isEmpty()) {
-            takeStep(adjList, A, false);
+            takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
@@ -397,5 +387,17 @@ public class SSSP {
 
     public static Set<Integer> getPrunedSet() {
         return prunedSet;
+    }
+
+    public static double getGoalDistance() {
+        return goalDistance;
+    }
+
+    public static void setGoalDistance(double goalDistance) {
+        SSSP.goalDistance = goalDistance;
+    }
+
+    public static void setMiddlePoint(int middlePoint) {
+        SSSP.middlePoint = middlePoint;
     }
 }

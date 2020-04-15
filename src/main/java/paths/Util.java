@@ -1,5 +1,7 @@
-package model;
+package paths;
 
+import model.Node;
+import paths.ABDir;
 import paths.AlgorithmMode;
 
 import java.io.UnsupportedEncodingException;
@@ -10,6 +12,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static paths.ABDir.A;
+import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
 
 public class Util {
@@ -25,7 +29,7 @@ public class Util {
         algorithmNames.put(A_STAR_LANDMARKS, "Landmarks A*");
         algorithmNames.put(BI_A_STAR_LANDMARKS, "Bi Landmarks A*");
         algorithmNames.put(REACH, "Reach");
-
+        algorithmNames.put(BI_REACH, "Bidirectional Reach");
     }
 
     public static double flatEarthDistance(Node node1, Node node2) {
@@ -46,6 +50,10 @@ public class Util {
         double c = 2 * Math.asin(Math.sqrt(a));
         assert R * c >= 0;
         return R * c;
+    }
+
+    public static ABDir revDir(ABDir dir) {
+        return dir == A ? B : A;
     }
 
     public static double cordToInt(String attriVal) {

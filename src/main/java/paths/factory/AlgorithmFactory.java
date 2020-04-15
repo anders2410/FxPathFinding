@@ -15,5 +15,5 @@ public interface AlgorithmFactory {
 
     PreprocessStrategy getPreprocessStrategy();
 
-    GetPQueueStrategy getPriorityQueue();
+    AlternationStrategy getAlternationStrategy();
 }

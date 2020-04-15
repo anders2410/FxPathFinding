@@ -1,6 +1,5 @@
 package paths.factory;
 
-import paths.ReachProcessor;
 import paths.generator.*;
 import paths.strategy.*;
 
@@ -36,7 +35,7 @@ public class ReachFactory implements AlgorithmFactory {
     }
 
     @Override
-    public GetPQueueStrategy getPriorityQueue() {
-        return GetPQueueGenerator.getJavaQueue();
+    public AlternationStrategy getAlternationStrategy() {
+        return AlternationGenerator.getOneDirectional();
     }
 }

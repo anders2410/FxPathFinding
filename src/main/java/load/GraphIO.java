@@ -7,7 +7,7 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
-import model.Util;
+import paths.Util;
 import paths.Landmarks;
 
 import java.io.*;

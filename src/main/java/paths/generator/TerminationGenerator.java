@@ -41,7 +41,7 @@ public class TerminationGenerator {
             if (topA != null && topB != null) {
                 double keyValueForward = getPriorityFunction().apply(topA, A);
                 double keyValueBackwards = getPriorityFunction().apply(topB, B);
-                return keyValueBackwards + keyValueForward >= goalDist;
+                return keyValueBackwards + keyValueForward > goalDist; //Changed to be strictly larger than
             }
             return false;
         };
@@ -79,5 +79,6 @@ public class TerminationGenerator {
             return false;
         };
     }
+
 
 }

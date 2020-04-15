@@ -14,7 +14,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -26,7 +25,7 @@ import load.GraphIO;
 import model.Edge;
 import model.Graph;
 import model.Node;
-import model.Util;
+import paths.Util;
 import paths.*;
 
 import java.io.File;
@@ -38,8 +37,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static javafx.scene.input.KeyCode.*;
-import static model.Util.algorithmNames;
+import static paths.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
 
