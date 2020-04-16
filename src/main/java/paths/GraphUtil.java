@@ -134,7 +134,6 @@ public class GraphUtil {
 
     public Graph subGraph(List<Integer> nodesToKeep) {
         Graph subGraph = new Graph(nodesToKeep.size());
-        subGraph.setParentNodes(nodesToKeep);
         Map<Integer, Integer> indexMap = new HashMap<>();
         List<Node> subNodeList = subGraph.getNodeList();
         List<List<Edge>> subAdjList = subGraph.getAdjList();

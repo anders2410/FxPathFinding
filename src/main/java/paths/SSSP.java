@@ -46,6 +46,8 @@ public class SSSP {
     private static List<Double> nodeDistB;
     private static Set<Integer> visitedA;                   // A set of visited nodes starting from Node: source
     private static Set<Integer> visitedB;                   // A set of visited nodes starting from Node: target
+    private static List<List<Boolean>> visitedEdgesA;
+    private static List<List<Boolean>> visitedEdgesB;
     private static Map<Integer, Integer> pathMapA;
     private static Map<Integer, Integer> pathMapB;
     private static MinPriorityQueue queueA;                 // Queue to hold the paths from Node: source
@@ -140,7 +142,7 @@ public class SSSP {
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
         if (sourceP == targetP) {
-            return new ShortestPathResult(0, singletonList(sourceP), 0, 0);
+            return new ShortestPathResult();
         }
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
@@ -177,7 +179,7 @@ public class SSSP {
         }
 */
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size(), duration);
+        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA, duration);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
@@ -188,7 +190,7 @@ public class SSSP {
 
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            assert !getVisited(revDir(dir)).contains(edge.to); // By no scan overlap-theorem
+            //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(currentNode, edge, dir);
         }
     }
@@ -216,10 +218,10 @@ public class SSSP {
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
 
         if (middlePoint == -1) {
-            return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0, 0);
+            return new ShortestPathResult();
         }
         List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
-        return new ShortestPathResult(goalDistance, shortestPath, visitedA.size() + visitedB.size(), duration);
+        return new ShortestPathResult(goalDistance, shortestPath, visitedA, visitedB, duration);
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
@@ -236,7 +238,7 @@ public class SSSP {
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA, duration);
+        return new ShortestPathResult(0, shortestPath, visitedA, nodeDistA, pathMapA, duration);
     }
 
     private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
@@ -364,6 +366,10 @@ public class SSSP {
 
     public static MinPriorityQueue getQueue(ABDir dir) {
         return dir == A ? queueA : queueB;
+    }
+
+    public static List<List<Boolean>> getVisitedEdges(ABDir dir) {
+        return dir == A ? visitedEdgesA : visitedEdgesB;
     }
 
    /* public static Map<Integer, Double> getEstimatedDist(ABDir dir) {

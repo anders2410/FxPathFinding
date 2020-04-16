@@ -36,6 +36,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static paths.SSSP.getVisited;
 import static paths.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -180,15 +181,22 @@ public class FXMLController implements Initializable {
         return results;
     }
 
+    private ShortestPathResult currentResult = new ShortestPathResult();
+
     private void applyResultsToLabel(List<ShortestPathResult> results) {
         Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
             List<Integer> combinedPath = new ArrayList<>(res1.path);
             combinedPath.addAll(res2.path.subList(1, res2.path.size()));
-            return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes, res1.runTime + res2.runTime);
+            Set<Integer> combinedVisitedA = new HashSet<>(res1.visitedNodesA);
+            combinedVisitedA.addAll(res2.visitedNodesA);
+            Set<Integer> combinedVisitedB = new HashSet<>(res1.visitedNodesB);
+            combinedVisitedA.addAll(res2.visitedNodesB);
+            return new ShortestPathResult(res1.d + res2.d, combinedPath, combinedVisitedA, combinedVisitedB, res1.runTime + res2.runTime);
         });
         if (optCombinedRes.isPresent()) {
             ShortestPathResult combinedRes = optCombinedRes.get();
-            setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodes);
+            currentResult = combinedRes;
+            setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodesA.size() + combinedRes.visitedNodesB.size());
         }
     }
 
@@ -249,7 +257,7 @@ public class FXMLController implements Initializable {
                     PixelPoint pFrom = toScreenPos(from);
                     PixelPoint pTo = toScreenPos(to);
 
-                    gc.setStroke(chooseEdgeColor(edge));
+                    gc.setStroke(chooseEdgeColor(edge, from));
                     gc.setLineWidth(chooseEdgeWidth(edge));
                     if (edge.mouseEdge) {
                         gc.setLineDashes(7);
@@ -270,14 +278,16 @@ public class FXMLController implements Initializable {
         return 1;
     }
 
-    private Color chooseEdgeColor(Edge edge) {
+    private Color chooseEdgeColor(Edge edge, Node from) {
+        boolean visited = currentResult.visitedNodesA.contains(from.index);
+        boolean reverseVisited = currentResult.visitedNodesB.contains(from.index);
         if (edge.inPath) {
             return Color.RED;
         }
-        if (edge.visitedReverse) {
+        if (reverseVisited) {
             return Color.TURQUOISE;
         }
-        if (edge.visited) {
+        if (visited) {
             return Color.BLUE;
         }
         return Color.BLACK;

@@ -11,8 +11,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static paths.SSSP.singleToAllPath;
-
 public class Landmarks {
     private Set<Integer> landmarkSet;
     private Map<Integer, int[]> landmarksDistancesBFS;
@@ -213,7 +211,7 @@ public class Landmarks {
     }
 
     private List<Double> getNodeDistanceLandmark(int lm) {
-        landmarksDistancesActual.computeIfAbsent(lm, k -> SSSP.singleToAllPath(k).nodeDistance);
+        landmarksDistancesActual.computeIfAbsent(lm, k -> SSSP.singleToAllPath(k).nodeDistances);
         return landmarksDistancesActual.get(lm);
     }
 
@@ -273,9 +271,9 @@ public class Landmarks {
         double[] weightedNodes = new double[graph.getNodeAmount()];
         SSSP.applyFactory(new LandmarksFactory());
         HeuristicFunction S = SSSP.getHeuristicFunction();
-        for (int i = 0; i < SPT.nodeDistance.size(); i++) {
+        for (int i = 0; i < SPT.nodeDistances.size(); i++) {
             double heuristicVal = S.apply(rootNode, i);
-            double val = SPT.nodeDistance.get(i) - heuristicVal;
+            double val = SPT.nodeDistances.get(i) - heuristicVal;
             weightedNodes[i] = val;
         }
         Map<Integer, List<Integer>> pathInversed = SPT.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));

@@ -3,13 +3,6 @@ package model;
 import java.io.Serializable;
 
 public class Edge implements Serializable {
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof Edge)) return false;
-        Edge e = (Edge) obj;
-        return Double.compare(e.d, this.d) == 0 && this.to == e.to;
-    }
 
     public int to;
     public double d;
@@ -34,16 +27,6 @@ public class Edge implements Serializable {
         this.visitedReverse = visitedReverse;
     }
 
-   /* public Edge(Edge e) {
-        this.to = e.to;
-        this.d = e.d;
-        this.visited = e.visited;
-        this.inPath = e.inPath;
-        this.isDrawn = e.isDrawn;
-        this.visitedReverse = e.visitedReverse;
-        this.mouseEdge = e.mouseEdge;
-    }*/
-
     public boolean isBetter(Edge than) {
         return compVal(this) >= compVal(than);
     }
@@ -63,6 +46,14 @@ public class Edge implements Serializable {
             compVal++;
         }
         return compVal;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (!(obj instanceof Edge)) return false;
+        Edge e = (Edge) obj;
+        return Double.compare(e.d, this.d) == 0 && this.to == e.to;
     }
 
     @Override

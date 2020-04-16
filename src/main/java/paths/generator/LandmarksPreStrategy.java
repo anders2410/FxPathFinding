@@ -26,10 +26,10 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
             int index = 0;
             List<List<Edge>> originalList = graph.getAdjList();
             for (Integer landmarkIndex : landmarkSet) {
-                List<Double> forwardDistance = singleToAllPath(landmarkIndex).nodeDistance;
+                List<Double> forwardDistance = singleToAllPath(landmarkIndex).nodeDistances;
                 double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
                 graph.setAdjList(graph.getReverse(graph.getAdjList()));
-                List<Double> backDistance = singleToAllPath(landmarkIndex).nodeDistance;
+                List<Double> backDistance = singleToAllPath(landmarkIndex).nodeDistances;
                 double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
                 graph.setAdjList(originalList);
                 landmarkArray[index] = arrForward;

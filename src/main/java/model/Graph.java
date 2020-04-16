@@ -9,8 +9,6 @@ public class Graph implements Serializable {
 
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
-    private List<Integer> parentNodes;
-
     private int nodeAmount;
 
     public Graph(int nodeAmount) {
@@ -164,13 +162,5 @@ public class Graph implements Serializable {
             }
             System.out.println();
         }
-    }
-
-    public List<Integer> getParentNodes() {
-        return parentNodes;
-    }
-
-    public void setParentNodes(List<Integer> parentNodes) {
-        this.parentNodes = parentNodes;
     }
 }
