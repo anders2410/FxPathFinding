@@ -128,6 +128,7 @@ public class FXMLController implements Initializable {
                 return null;
             }
         };
+        attachProgressIndicator(storeGraphTask.progressProperty());
         new Thread(storeGraphTask).start();
     }
 
@@ -158,9 +159,11 @@ public class FXMLController implements Initializable {
             }
         };
         ssspTask.setOnSucceeded(event -> {
+            playIndicatorCompleted();
             applyResultsToLabel(ssspTask.getValue());
             redrawGraph();
         });
+        attachProgressIndicator(ssspTask.progressProperty());
         new Thread(ssspTask).start();
     }
 
@@ -1009,6 +1012,7 @@ public class FXMLController implements Initializable {
             List<Double> bounds = reachGenTask.getValue();
             SSSP.setReachBounds(bounds);
         });
+        attachProgressIndicator(reachGenTask.progressProperty());
         new Thread(reachGenTask).start();
     }
 
