@@ -70,7 +70,6 @@ public class FXMLController implements Initializable {
     private Stage stage;
     private Graph graph;
     private Landmarks landmarksGenerator;
-    private ReachProcessor reachProcessor;
     private GraphicsContext gc;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
@@ -129,7 +128,7 @@ public class FXMLController implements Initializable {
                 return null;
             }
         };
-        storeGraphTask.run();
+        new Thread(storeGraphTask).start();
     }
 
     /**
@@ -162,7 +161,7 @@ public class FXMLController implements Initializable {
             applyResultsToLabel(ssspTask.getValue());
             redrawGraph();
         });
-        ssspTask.run();
+        new Thread(ssspTask).start();
     }
 
     private List<ShortestPathResult> ssspConnectingNodes(Deque<Node> nodeQueue) {
@@ -363,14 +362,13 @@ public class FXMLController implements Initializable {
     }
 
     private PixelPoint minXY = new PixelPoint(-1, -1);
-    private PixelPoint maxXY = new PixelPoint(-1, -1);
 
     private int widthMeter;
     private int heightMeter;
 
     private void setGraphBounds() {
         minXY = new PixelPoint(-1, -1);
-        maxXY = new PixelPoint(-1, -1);
+        PixelPoint maxXY = new PixelPoint(-1, -1);
 
         List<Node> nodeList = graph.getNodeList();
         for (Node n : nodeList) {
@@ -809,24 +807,12 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLoadLandmarks() {
-        try {
-            GraphIO.loadLandmarks(fileName, landmarksGenerator);
-            drawAllLandmarks();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        GraphIO.loadLandmarks(fileName, landmarksGenerator);
+        drawAllLandmarks();
     }
 
     public void handleSaveLandmarks() {
-        try {
-            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
-            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(landmarksGenerator.getLandmarkSet());
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        GraphIO.saveLandmarks(fileName, landmarksGenerator.getLandmarkSet());
     }
 
     public void handleSetParameterEvent() {
@@ -961,9 +947,7 @@ public class FXMLController implements Initializable {
             protected List<Graph> call() {
                 GraphUtil gu = new GraphUtil(graph);
                 gu.setProgressListener(this::updateProgress);
-                List<Graph> graphs = gu.scc();
-                updateProgress(100L, 100L);
-                return graphs;
+                return gu.scc();
             }
         };
         sccTask.setOnSucceeded(e -> {
@@ -975,7 +959,7 @@ public class FXMLController implements Initializable {
             System.out.println("Finished computing SCC");
         });
         attachProgressIndicator(sccTask.progressProperty());
-        sccTask.run();
+        new Thread(sccTask).start();
     }
 
     private void attachProgressIndicator(ReadOnlyDoubleProperty progressProperty) {
@@ -997,7 +981,6 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
-
     public void handleBiReachEvent() {
         algorithmMode = BI_REACH;
         runAlgorithm();
@@ -1015,9 +998,18 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateReachEvent() {
-        reachProcessor = new ReachProcessor();
-        List<Double> bounds = reachProcessor.computeReachBound(new Graph(graph));
-        SSSP.setReachBounds(bounds);
+        Task<List<Double>> reachGenTask = new Task<>() {
+            @Override
+            protected List<Double> call() {
+                return new ReachProcessor().computeReachBound(new Graph(graph));
+            }
+        };
+        reachGenTask.setOnSucceeded(e -> {
+            playIndicatorCompleted();
+            List<Double> bounds = reachGenTask.getValue();
+            SSSP.setReachBounds(bounds);
+        });
+        new Thread(reachGenTask).start();
     }
 
     public void handleGenerateCHEvent() {

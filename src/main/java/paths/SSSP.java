@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
 
 import static paths.AlgorithmMode.*;
 import static paths.ABDir.*;
+import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
@@ -187,7 +188,9 @@ public class SSSP {
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
-            getRelaxStrategy(dir).relax(currentNode, edge, dir);
+            if (!getVisited(revDir(dir)).contains(edge.to) ) {
+                getRelaxStrategy(dir).relax(currentNode, edge, dir);
+            }
         }
     }
 

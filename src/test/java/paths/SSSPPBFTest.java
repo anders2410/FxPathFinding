@@ -165,7 +165,7 @@ public class SSSPPBFTest {
                 matrix[1]++;
                 failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
             }
-            if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
+            /*if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
                 matrix[2]++;
                 failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
             }
@@ -193,8 +193,9 @@ public class SSSPPBFTest {
                 matrix[7]++;
                 failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
 
-            }
+            }*/
             if (Math.abs(distDijk - distBiReach) > 0.00000000001 || !pathBiReach.toString().equals(pathDijk.toString())) {
+                fail();
                 matrix[8]++;
                 failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
 

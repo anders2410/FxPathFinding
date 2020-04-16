@@ -58,7 +58,6 @@ public class Graph implements Serializable {
                 total += sublist.size();
             }
         }
-
         return total;
     }
 

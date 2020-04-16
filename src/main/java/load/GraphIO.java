@@ -38,6 +38,18 @@ public class GraphIO {
         bytesRead = 0;
     }
 
+    public static void saveLandmarks(String fileName, Set<Integer> landmarkSet) {
+        try {
+            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
+            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(landmarkSet);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void generateFolders() {
         new File(mapsDir).mkdir();
         new File(tempDir).mkdir();
@@ -127,7 +139,7 @@ public class GraphIO {
     }
 
     @SuppressWarnings(value = "unchecked")
-    public static void loadLandmarks(String fileName, Landmarks landmarks) throws IOException {
+    public static void loadLandmarks(String fileName, Landmarks landmarks) {
         String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
             fileName = Util.trimFileTypes(fileName);
@@ -135,20 +147,24 @@ public class GraphIO {
         if (fileType.equals("pbf")) {
             fileName = Util.trimFileTypes(fileName);
         }
-        FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-landmarks.tmp");
-        ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
-
-        Set<Integer> landmarksSet = null;
-
         try {
-            landmarksSet = (Set<Integer>) landmarksStream.readObject();
-        } catch (ClassNotFoundException e) {
+            FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-landmarks.tmp");
+            ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
+
+            Set<Integer> landmarksSet = null;
+
+            try {
+                landmarksSet = (Set<Integer>) landmarksStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            landmarksStream.close();
+
+            assert landmarksSet != null;
+            landmarks.setLandmarkSet(landmarksSet);
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        landmarksStream.close();
-
-        assert landmarksSet != null;
-        landmarks.setLandmarkSet(landmarksSet);
     }
 
     public List<Double> loadReach(String fileName) {
