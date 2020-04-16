@@ -976,25 +976,13 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSaveReachEvent() {
-        try {
-            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
-            FileOutputStream fos = new FileOutputStream(name + "-reach-bounds.tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(SSSP.getReachBounds());
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        GraphIO graphIO = new GraphIO(distanceStrategy);
+        graphIO.saveReach(fileName, SSSP.getReachBounds());
     }
 
     public void handleLoadReachEvent() {
-        try {
-            GraphIO graphIO = new GraphIO(distanceStrategy);
-            List<Double> bounds = graphIO.loadReach(fileName);
-            SSSP.setReachBounds(bounds);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        GraphIO graphIO = new GraphIO(distanceStrategy);
+        SSSP.setReachBounds(graphIO.loadReach(fileName));
     }
 
     public void handleGenerateReachEvent() {

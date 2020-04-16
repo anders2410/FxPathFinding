@@ -7,6 +7,7 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
+import paths.SSSP;
 import paths.Util;
 import paths.Landmarks;
 
@@ -35,30 +36,6 @@ public class GraphIO {
         generateFolders();
         progress = 0;
         bytesRead = 0;
-    }
-
-    public List<Double> loadReach(String fileName) throws IOException {
-        String fileType = Util.getFileType(fileName);
-        if (fileType.equals("osm")) {
-            fileName = Util.trimFileTypes(fileName);
-        }
-        if (fileType.equals("pbf")) {
-            fileName = Util.trimFileTypes(fileName);
-        }
-        FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-reach-bounds.tmp");
-        ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
-
-        List<Double> arr = null;
-
-        try {
-            arr = (List<Double>) landmarksStream.readObject();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        landmarksStream.close();
-
-        assert arr != null;
-        return arr;
     }
 
     private void generateFolders() {
@@ -172,6 +149,46 @@ public class GraphIO {
 
         assert landmarksSet != null;
         landmarks.setLandmarkSet(landmarksSet);
+    }
+
+    public List<Double> loadReach(String fileName) {
+        String fileType = Util.getFileType(fileName);
+        if (fileType.equals("osm")) {
+            fileName = Util.trimFileTypes(fileName);
+        }
+        if (fileType.equals("pbf")) {
+            fileName = Util.trimFileTypes(fileName);
+        }
+        try {
+            FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-reach-bounds.tmp");
+            ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
+
+            List<Double> bounds = null;
+
+            try {
+                bounds = (List<Double>) landmarksStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            landmarksStream.close();
+            assert bounds != null;
+            return bounds;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void saveReach(String fileName, List<Double> reachBounds) {
+        try {
+            String name = tempDir + Util.trimFileTypes(fileName);
+            FileOutputStream fos = new FileOutputStream(name + "-reach-bounds.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(reachBounds);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static File selectMapFile(Stage stage) {
