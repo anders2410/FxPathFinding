@@ -24,7 +24,6 @@ import load.GraphIO;
 import model.Edge;
 import model.Graph;
 import model.Node;
-import paths.Util;
 import paths.*;
 
 import java.io.File;
@@ -36,10 +35,9 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static paths.SSSP.getVisited;
-import static paths.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
+import static paths.Util.algorithmNames;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -153,7 +151,7 @@ public class FXMLController implements Initializable {
         if (selectedNodes.size() <= 1) {
             return;
         }
-        graph.resetPathTrace();
+        currentResult = new ShortestPathResult();
         ssspTask = new Task<>() {
             @Override
             protected List<ShortestPathResult> call() {
@@ -240,11 +238,13 @@ public class FXMLController implements Initializable {
         gc.strokeOval(np.x - shift, np.y - shift, radius, radius);
     }
 
+    Set<Edge> mouseEdges = new HashSet<>();
+    Set<Edge> drawnEdges;
+
     private void drawAllEdges() {
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
-        // Resets the 'isDrawn' property inside Edges.
-        resetIsDrawn(adjList);
+        drawnEdges = new HashSet<>();
         // Iterates through all nodes
         for (int i = 0; i < adjList.size(); i++) {
             Node from = nodeList.get(i);
@@ -253,35 +253,62 @@ public class FXMLController implements Initializable {
                 Node to = nodeList.get(edge.to);
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
                 // If the edge doesn't violate these constrains it will be drawn in the Canvas.
-                if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
+                if (oppositeEdge == null || isBetter(from, edge, to, oppositeEdge)) {
                     PixelPoint pFrom = toScreenPos(from);
                     PixelPoint pTo = toScreenPos(to);
 
-                    gc.setStroke(chooseEdgeColor(edge, from));
-                    gc.setLineWidth(chooseEdgeWidth(edge));
-                    if (edge.mouseEdge) {
+                    gc.setStroke(chooseEdgeColor(from, edge));
+                    gc.setLineWidth(chooseEdgeWidth(from, edge));
+                    if (mouseEdges.contains(edge)) {
                         gc.setLineDashes(7);
                     } else {
                         gc.setLineDashes(0);
                     }
                     gc.strokeLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
-                    edge.isDrawn = true;
+                    drawnEdges.add(edge);
                 }
             }
         }
     }
 
-    private double chooseEdgeWidth(Edge edge) {
-        if (edge.inPath) {
+    public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
+        return compVal(from1, e1) >= compVal(from2, e2);
+    }
+
+    private int compVal(Node from, Edge edge) {
+        boolean visited = currentResult.visitedNodesA.contains(from.index);
+        boolean reverseVisited = currentResult.visitedNodesB.contains(from.index);
+        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+        boolean isDrawn = drawnEdges.contains(edge);
+        int compVal = 0;
+        if (isDrawn) {
+            compVal++;
+        }
+        if (inPath) {
+            compVal++;
+        }
+        if (visited) {
+            compVal++;
+        }
+        if (reverseVisited) {
+            compVal++;
+        }
+        return compVal;
+    }
+
+    private double chooseEdgeWidth(Node from, Edge edge) {
+        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+        if (inPath) {
             return 2;
         }
         return 1;
     }
 
-    private Color chooseEdgeColor(Edge edge, Node from) {
+    private Color chooseEdgeColor(Node from, Edge edge) {
         boolean visited = currentResult.visitedNodesA.contains(from.index);
         boolean reverseVisited = currentResult.visitedNodesB.contains(from.index);
-        if (edge.inPath) {
+        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+        if (inPath) {
             return Color.RED;
         }
         if (reverseVisited) {
@@ -323,14 +350,6 @@ public class FXMLController implements Initializable {
         gc.setStroke(Color.HOTPINK);
         gc.fillOval(p.x - shift, p.y - shift, radius, radius);
         gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
-    }
-
-    private void resetIsDrawn(List<List<Edge>> adjList) {
-        for (List<Edge> edgeList : adjList) {
-            for (Edge edge : edgeList) {
-                edge.isDrawn = false;
-            }
-        }
     }
 
     // Graph zoom control
@@ -443,10 +462,10 @@ public class FXMLController implements Initializable {
         double dist = distanceStrategy.apply(mouseNode, closestNode);
         graph.addNode(mouseNode);
         Edge forth = new Edge(closestNode.index, dist);
-        forth.mouseEdge = true;
+        mouseEdges.add(forth);
         graph.addEdge(mouseNode, forth);
         Edge back = new Edge(mouseNode.index, dist);
-        back.mouseEdge = true;
+        mouseEdges.add(back);
         graph.addEdge(closestNode, back);
         closestNode = mouseNode;
         mouseNodes++;
@@ -457,7 +476,7 @@ public class FXMLController implements Initializable {
         selectedNodes = new ArrayDeque<>();
         graph.removeNodesFromEnd(mouseNodes);
         mouseNodes = 0;
-        graph.resetPathTrace();
+        currentResult = new ShortestPathResult();
         redrawGraph();
     }
 
@@ -670,7 +689,7 @@ public class FXMLController implements Initializable {
         if (selectedNodes.size() > 1) {
             runAlgorithm();
         } else {
-            graph.resetPathTrace();
+            currentResult = new ShortestPathResult();
             redrawGraph();
         }
     }

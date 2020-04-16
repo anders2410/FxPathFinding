@@ -37,37 +37,6 @@ public class Graph implements Serializable {
         return new LinkedList<>();
     }
 
-    public void resetPathTrace() {
-        for (List<Edge> edges : adjList) {
-            for (Edge edge : edges) {
-                edge.visitedReverse = false;
-                edge.visited = false;
-                edge.inPath = false;
-            }
-        }
-    }
-
-    public void reversePaintEdges(List<List<Edge>> revAdjList, List<List<Edge>> mergeList) {
-        List<List<Edge>> restoredList = getReverse(revAdjList);
-        for (int i = 0; i < restoredList.size(); i++) {
-            for (Edge e : restoredList.get(i)) {
-                if (e.visited) {
-                    for (int j = 0; j < mergeList.get(i).size(); j++) {
-                        Edge receiver = mergeList.get(i).get(j);
-                        if (e.to == receiver.to && e.d == receiver.d) {
-                            if (receiver.inPath) {
-                                e.inPath = true;
-                            }
-                            e.visitedReverse = true;
-
-                            mergeList.get(i).set(j, e);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     public List<List<Edge>> getReverse(List<List<Edge>> originalList) {
         List<List<Edge>> reversedList = new ArrayList<>(originalList.size());
         for (int i = 0; i < nodeAmount; i++) {
@@ -75,7 +44,7 @@ public class Graph implements Serializable {
         }
         for (int i = 0; i < originalList.size(); i++) {
             for (Edge e : originalList.get(i)) {
-                Edge replacement = new Edge(i, e.d, e.visited, e.inPath, e.isDrawn, e.visitedReverse);
+                Edge replacement = new Edge(i, e.d);
                 reversedList.get(e.to).add(replacement);
             }
         }

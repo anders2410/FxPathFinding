@@ -9,10 +9,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
-import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
 import static paths.ABDir.*;
-import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
@@ -46,8 +44,6 @@ public class SSSP {
     private static List<Double> nodeDistB;
     private static Set<Integer> visitedA;                   // A set of visited nodes starting from Node: source
     private static Set<Integer> visitedB;                   // A set of visited nodes starting from Node: target
-    private static List<List<Boolean>> visitedEdgesA;
-    private static List<List<Boolean>> visitedEdgesB;
     private static Map<Integer, Integer> pathMapA;
     private static Map<Integer, Integer> pathMapB;
     private static MinPriorityQueue queueA;                 // Queue to hold the paths from Node: source
@@ -178,7 +174,7 @@ public class SSSP {
             }
         }
 */
-        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
+        List<Integer> shortestPath = extractPath(pathMapA, source, target);
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA, duration);
     }
 
@@ -237,23 +233,21 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
+        List<Integer> shortestPath = extractPath(pathMapA, source, target);
         return new ShortestPathResult(0, shortestPath, visitedA, nodeDistA, pathMapA, duration);
     }
 
     private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
-        List<Integer> shortestPathA = extractPath(pathMapA, adjList, source, middlePoint);
-        List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
-        graph.reversePaintEdges(revAdjList, adjList);
+        List<Integer> shortestPathA = extractPath(pathMapA, source, middlePoint);
+        List<Integer> shortestPathB = extractPath(pathMapB, target, middlePoint);
         shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
         return shortestPathA;
     }
 
-    private static List<Integer> extractPath(Map<Integer, Integer> pathMap, List<List<Edge>> adjList, int from, int to) {
+    private static List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {
         Integer curNode = to;
-        int prevNode = to;
         List<Integer> path = new ArrayList<>(pathMap.size());
         path.add(to);
         while (curNode != from) {
@@ -263,12 +257,6 @@ public class SSSP {
             }
 
             path.add(curNode);
-            for (Edge edge : adjList.get(curNode)) {
-                if (edge.to == prevNode) {
-                    edge.inPath = true;
-                }
-            }
-            prevNode = curNode;
         }
         Collections.reverse(path);
         return path;
@@ -366,10 +354,6 @@ public class SSSP {
 
     public static MinPriorityQueue getQueue(ABDir dir) {
         return dir == A ? queueA : queueB;
-    }
-
-    public static List<List<Boolean>> getVisitedEdges(ABDir dir) {
-        return dir == A ? visitedEdgesA : visitedEdgesB;
     }
 
    /* public static Map<Integer, Double> getEstimatedDist(ABDir dir) {

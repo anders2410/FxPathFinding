@@ -36,7 +36,6 @@ public class LandmarksPreStrategy implements PreprocessStrategy {
                 landmarkArray[index + 1] = arrBackward;
                 index += 2;
             }
-            graph.resetPathTrace();
             assert originalList == graph.getAdjList();
         }
         setLandmarkArray(landmarkArray);

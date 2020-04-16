@@ -168,7 +168,6 @@ public class SSSPPBFTest {
             if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
                 matrix[2]++;
                 failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-
             }
             if (Math.abs(distDijk - distBiAstarSym) > 0.00000000001 || !pathDijk.equals(pathBiAstarSym)) {
                 matrix[3]++;
