@@ -5,8 +5,7 @@ import paths.strategy.AlternationStrategy;
 import paths.SSSP.*;
 
 import static paths.ABDir.*;
-import static paths.SSSP.getQueue;
-import static paths.SSSP.getVisited;
+import static paths.SSSP.*;
 
 public class AlternationGenerator {
 
@@ -19,6 +18,6 @@ public class AlternationGenerator {
     }
 
     public static AlternationStrategy getSameDistanceStrategy() {
-        return () -> false;
+        return () -> getNodeDist(A).get(getQueue(A).peek()) < getNodeDist(B).get(getQueue(B).peek());
     }
 }

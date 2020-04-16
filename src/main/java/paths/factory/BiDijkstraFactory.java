@@ -31,8 +31,7 @@ public class BiDijkstraFactory implements AlgorithmFactory {
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return () -> {
-        };
+        return () -> {};
     }
 
     @Override

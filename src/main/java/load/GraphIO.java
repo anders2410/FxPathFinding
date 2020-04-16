@@ -13,6 +13,7 @@ import paths.Landmarks;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -36,7 +37,7 @@ public class GraphIO {
         bytesRead = 0;
     }
 
-    public double[] loadReach(String fileName) throws IOException {
+    public List<Double> loadReach(String fileName) throws IOException {
         String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
             fileName = Util.trimFileTypes(fileName);
@@ -47,10 +48,10 @@ public class GraphIO {
         FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-reach-bounds.tmp");
         ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
 
-        double[] arr = null;
+        List<Double> arr = null;
 
         try {
-            arr = (double[]) landmarksStream.readObject();
+            arr = (List<Double>) landmarksStream.readObject();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

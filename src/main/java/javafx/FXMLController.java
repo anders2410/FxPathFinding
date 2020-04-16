@@ -5,7 +5,6 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -702,6 +701,13 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+
+    public void handleBiDijkstraSameDistEvent() {
+        algorithmMode = BI_DIJKSTRA_SAME_DIST;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
     public void handleAStarEvent() {
         algorithmMode = A_STAR;
         runAlgorithm();
@@ -962,6 +968,13 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+
+    public void handleBiReachEvent() {
+        algorithmMode = BI_REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
     public void handleSaveReachEvent() {
         try {
             String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
@@ -977,7 +990,7 @@ public class FXMLController implements Initializable {
     public void handleLoadReachEvent() {
         try {
             GraphIO graphIO = new GraphIO(distanceStrategy);
-            double[] bounds = graphIO.loadReach(fileName);
+            List<Double> bounds = graphIO.loadReach(fileName);
             SSSP.setReachBounds(bounds);
         } catch (IOException e) {
             e.printStackTrace();
@@ -986,16 +999,16 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateReachEvent() {
         reachProcessor = new ReachProcessor();
-        double[] bounds = reachProcessor.computeReachBound(new Graph(graph));
+        List<Double> bounds = reachProcessor.computeReachBound(new Graph(graph));
         SSSP.setReachBounds(bounds);
     }
 
-    public void handleGenerateCHEvent(ActionEvent actionEvent) {
+    public void handleGenerateCHEvent() {
         ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
         graph = contractionHierarchies.preprocess();
         redrawGraph();
     }
 
-    public void handleCHEvent(ActionEvent actionEvent) {
+    public void handleCHEvent() {
     }
 }

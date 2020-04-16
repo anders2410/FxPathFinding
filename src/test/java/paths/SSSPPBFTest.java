@@ -107,7 +107,7 @@ public class SSSPPBFTest {
         lm.landmarksMaxCover(16, true);
         SSSP.setLandmarks(lm);
         try {
-            double[] bounds = graphIO.loadReach(fileName);
+            List<Double> bounds = graphIO.loadReach(fileName);
             SSSP.setReachBounds(bounds);
         } catch (IOException e) {
             System.out.println("Load Failed in Test");

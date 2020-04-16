@@ -28,7 +28,7 @@ public class SSSP {
     private static double goalDistance;
     private static int middlePoint;
     private static double[][] landmarkArray;
-    private static double[] reachBounds;
+    private static List<Double> reachBounds;
 
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
@@ -114,6 +114,7 @@ public class SSSP {
     static {
         factoryMap.put(DIJKSTRA, new DijkstraFactory());
         factoryMap.put(BI_DIJKSTRA, new BiDijkstraFactory());
+        factoryMap.put(BI_DIJKSTRA_SAME_DIST, new BiDijkstraSameDistFactory());
         factoryMap.put(A_STAR, new AStarFactory());
         factoryMap.put(BI_A_STAR_CONSISTENT, new BiAStarMakeConsistentFactory());
         factoryMap.put(BI_A_STAR_SYMMETRIC, new BiAStarSymmetricFactory());
@@ -144,7 +145,7 @@ public class SSSP {
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
         initDataStructures();
-        return biDirectional ? biDirectional() : oneDirectional();
+        return biDirectional ? biDirectional() : oneDirectional(); //TODO: Make one directional ALT work in bidirectional
     }
 
     private static ShortestPathResult oneDirectional() {
@@ -192,7 +193,7 @@ public class SSSP {
         }
     }
 
-    // Implementation pseudocode from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
+    // Implementation pseudo code from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
     private static ShortestPathResult biDirectional() {
         long startTime = System.nanoTime();
 
@@ -377,11 +378,11 @@ public class SSSP {
         SSSP.landmarks = landmarks;
     }
 
-    public static double[] getReachBounds() {
+    public static List<Double> getReachBounds() {
         return reachBounds;
     }
 
-    public static void setReachBounds(double[] bounds) {
+    public static void setReachBounds(List<Double> bounds) {
         reachBounds = bounds;
     }
 

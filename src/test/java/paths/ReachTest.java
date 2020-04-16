@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -37,7 +38,7 @@ public class ReachTest {
     @Test
     public void testReachMainFunction() {
         ReachProcessor reachProcessor = new ReachProcessor();
-        double[] arr = reachProcessor.computeReachBound(graph);
+        List<Double> arr = reachProcessor.computeReachBound(graph);
         System.out.println(arr);
     }
 }
