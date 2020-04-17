@@ -54,7 +54,7 @@ public class GraphUtil {
         progressListener.accept(1L, 100L);
         int counter = 0;
         int n = graph.getNodeAmount();
-        long pn = 2*n;
+        long pn = 4*n;
         List<List<Edge>> adjList = graph.getAdjList();
         int time = 0;
         Map<Integer, Integer> finishingTimes = new HashMap<>();
@@ -86,7 +86,6 @@ public class GraphUtil {
             traceStack("First white nodes: ", whiteNodes);
             traceStack("First recursion stack: ", recursionStack);
         }
-        progressListener.accept(50L, 100L);
 
         List<List<Integer>> sccNodeLists = new ArrayList<>();
         // Reverse edges
@@ -133,8 +132,6 @@ public class GraphUtil {
                 trace(node + ", ");
             } trace("}\n");
         }
-
-        progressListener.accept(100L, 100L);
         Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
         return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
     }

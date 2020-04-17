@@ -128,7 +128,6 @@ public class FXMLController implements Initializable {
                 return null;
             }
         };
-        attachProgressIndicator(storeGraphTask.progressProperty());
         new Thread(storeGraphTask).start();
     }
 
@@ -954,12 +953,12 @@ public class FXMLController implements Initializable {
             }
         };
         sccTask.setOnSucceeded(e -> {
-            playIndicatorCompleted();
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
             storeGraph("-scc");
             setUpGraph();
             System.out.println("Finished computing SCC");
+            playIndicatorCompleted();
         });
         attachProgressIndicator(sccTask.progressProperty());
         new Thread(sccTask).start();
@@ -1023,5 +1022,6 @@ public class FXMLController implements Initializable {
     }
 
     public void handleCHEvent() {
+
     }
 }
