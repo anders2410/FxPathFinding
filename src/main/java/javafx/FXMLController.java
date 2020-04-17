@@ -27,9 +27,6 @@ import model.Node;
 import paths.*;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -837,25 +834,16 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+    public void handleLoadReachEvent() {
+        loadReachBounds();
+    }
+
     public void handleSaveReachEvent() {
         saveReachBounds();
     }
 
     public void handleGenerateReachEvent() {
-        Task<List<Double>> reachGenTask = new Task<>() {
-            @Override
-            protected List<Double> call() {
-                return new ReachProcessor().computeReachBound(new Graph(graph));
-            }
-        };
-        reachGenTask.setOnSucceeded(e -> {
-            playIndicatorCompleted();
-            List<Double> bounds = reachGenTask.getValue();
-            saveReachBounds();
-            SSSP.setReachBounds(bounds);
-        });
-        attachProgressIndicator(reachGenTask.progressProperty());
-        new Thread(reachGenTask).start();
+        generateReachBounds();
     }
 
     public void handleGenerateCHEvent() {
@@ -985,6 +973,40 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
+    private void generateReachBounds() {
+        Task<List<Double>> reachGenTask = new Task<>() {
+            @Override
+            protected List<Double> call() {
+                ReachProcessor reachProcessor = new ReachProcessor();
+                reachProcessor.setProgressListener(this :: updateProgress);
+                return reachProcessor.computeReachBound(new Graph(graph));
+            }
+        };
+        reachGenTask.setOnSucceeded(e -> {
+            playIndicatorCompleted();
+            List<Double> bounds = reachGenTask.getValue();
+            SSSP.setReachBounds(bounds);
+            saveReachBounds();
+        });
+        attachProgressIndicator(reachGenTask.progressProperty());
+        new Thread(reachGenTask).start();
+    }
+
+
+    private void loadReachBounds() {
+        Task<List<Double>> loadTask = new Task<>() {
+            @Override
+            protected List<Double> call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                return graphIO.loadReach(fileName);
+            }
+        };
+        loadTask.setOnSucceeded(e -> {
+            SSSP.setReachBounds(loadTask.getValue());
+        });
+        new Thread(loadTask).start();
+    }
+
     private void saveReachBounds() {
         Task<Void> saveTask = new Task<>() {
             @Override
@@ -995,11 +1017,6 @@ public class FXMLController implements Initializable {
             }
         };
         new Thread(saveTask).start();
-    }
-
-    public void handleLoadReachEvent() {
-        GraphIO graphIO = new GraphIO(distanceStrategy);
-        SSSP.setReachBounds(graphIO.loadReach(fileName));
     }
 
     private void runSCC() {
@@ -1013,6 +1030,8 @@ public class FXMLController implements Initializable {
             }
         };
         sccTask.setOnSucceeded(e -> {
+            progress_indicator.progressProperty().unbind();
+            progress_indicator.setProgress(0.99);
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
             storeGraph("-scc");
@@ -1024,16 +1043,21 @@ public class FXMLController implements Initializable {
         new Thread(sccTask).start();
     }
 
+    private Timeline indicatorTimeline;
+
     private void attachProgressIndicator(ReadOnlyDoubleProperty progressProperty) {
+        if (indicatorTimeline != null) {
+            indicatorTimeline.stop();
+        }
         progress_indicator.setOpacity(1);
         progress_indicator.progressProperty().bind(progressProperty);
     }
 
     private void playIndicatorCompleted() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
+        indicatorTimeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
             progress_indicator.setOpacity(progress_indicator.getOpacity() - 0.005);
         }));
-        timeline.setCycleCount(200);
-        timeline.playFromStart();
+        indicatorTimeline.setCycleCount(200);
+        indicatorTimeline.playFromStart();
     }
 }

@@ -5,11 +5,14 @@ import model.Graph;
 import model.Node;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class ReachProcessor {
     private Graph OriginalGraph;
     private List<Double> bounds;
     private double[] reachLCPT;
+
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {};
 
     double reachMetric(int nodeFrom, Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
@@ -30,6 +33,7 @@ public class ReachProcessor {
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
+            progressListener.accept((long) i, 100L);
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
         SSSP.setGraph(getOriginalGraph());
@@ -204,4 +208,7 @@ public class ReachProcessor {
         return maxReachOriginalGraph;
     }
 
+    public void setProgressListener(BiConsumer<Long, Long> progressListener) {
+        this.progressListener = progressListener;
+    }
 }
