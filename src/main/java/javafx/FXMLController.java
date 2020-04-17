@@ -825,6 +825,49 @@ public class FXMLController implements Initializable {
         runSCC();
     }
 
+    public void handleReachEvent() {
+        algorithmMode = REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
+    public void handleBiReachEvent() {
+        algorithmMode = BI_REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
+    public void handleSaveReachEvent() {
+        saveReachBounds();
+    }
+
+    public void handleGenerateReachEvent() {
+        Task<List<Double>> reachGenTask = new Task<>() {
+            @Override
+            protected List<Double> call() {
+                return new ReachProcessor().computeReachBound(new Graph(graph));
+            }
+        };
+        reachGenTask.setOnSucceeded(e -> {
+            playIndicatorCompleted();
+            List<Double> bounds = reachGenTask.getValue();
+            saveReachBounds();
+            SSSP.setReachBounds(bounds);
+        });
+        attachProgressIndicator(reachGenTask.progressProperty());
+        new Thread(reachGenTask).start();
+    }
+
+    public void handleGenerateCHEvent() {
+        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
+        graph = contractionHierarchies.preprocess();
+        redrawGraph();
+    }
+
+    public void handleCHEvent() {
+
+    }
+
     // UTILITIES
     private void clearCanvas() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -942,6 +985,23 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
+    private void saveReachBounds() {
+        Task<Void> saveTask = new Task<>() {
+            @Override
+            protected Void call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                graphIO.saveReach(fileName, SSSP.getReachBounds());
+                return null;
+            }
+        };
+        new Thread(saveTask).start();
+    }
+
+    public void handleLoadReachEvent() {
+        GraphIO graphIO = new GraphIO(distanceStrategy);
+        SSSP.setReachBounds(graphIO.loadReach(fileName));
+    }
+
     private void runSCC() {
         System.out.println("Computing SCC");
         Task<List<Graph>> sccTask = new Task<>() {
@@ -975,53 +1035,5 @@ public class FXMLController implements Initializable {
         }));
         timeline.setCycleCount(200);
         timeline.playFromStart();
-    }
-
-    public void handleReachEvent() {
-        algorithmMode = REACH;
-        runAlgorithm();
-        setAlgorithmLabels();
-    }
-
-    public void handleBiReachEvent() {
-        algorithmMode = BI_REACH;
-        runAlgorithm();
-        setAlgorithmLabels();
-    }
-
-    public void handleSaveReachEvent() {
-        GraphIO graphIO = new GraphIO(distanceStrategy);
-        graphIO.saveReach(fileName, SSSP.getReachBounds());
-    }
-
-    public void handleLoadReachEvent() {
-        GraphIO graphIO = new GraphIO(distanceStrategy);
-        SSSP.setReachBounds(graphIO.loadReach(fileName));
-    }
-
-    public void handleGenerateReachEvent() {
-        Task<List<Double>> reachGenTask = new Task<>() {
-            @Override
-            protected List<Double> call() {
-                return new ReachProcessor().computeReachBound(new Graph(graph));
-            }
-        };
-        reachGenTask.setOnSucceeded(e -> {
-            playIndicatorCompleted();
-            List<Double> bounds = reachGenTask.getValue();
-            SSSP.setReachBounds(bounds);
-        });
-        attachProgressIndicator(reachGenTask.progressProperty());
-        new Thread(reachGenTask).start();
-    }
-
-    public void handleGenerateCHEvent() {
-        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
-        graph = contractionHierarchies.preprocess();
-        redrawGraph();
-    }
-
-    public void handleCHEvent() {
-
     }
 }
