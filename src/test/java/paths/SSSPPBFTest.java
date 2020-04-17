@@ -96,9 +96,14 @@ public class SSSPPBFTest {
         System.out.println(resA.d);
     }
 
+    int[] matrix;
+    int testCases, i;
+    double[][] runtimes;
+    Map<Integer, Integer> failMap;
+
     @Test
     public void testAlgorithms() {
-        int[] matrix = new int[9];
+        matrix = new int[9];
 //        List<Graph> graphs = new GraphUtil(graph).scc();
 //        graph = graphs.get(0);
         SSSP.setGraph(graph);
@@ -110,101 +115,41 @@ public class SSSPPBFTest {
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 
-        int testCases = 80000;
-        double[][] runtimes = new double[9][testCases];
-        int i = 0;
-        Map<Integer, Integer> failMap = new HashMap<>();
+        testCases = 80000;
+        runtimes = new double[9][testCases];
+        i = 0;
+        failMap = new HashMap<>();
         while (i < testCases) {
             seed++;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
-            ShortestPathResult aStarRes = SSSP.randomPath(AlgorithmMode.A_STAR);
-            ShortestPathResult biDijkRes = SSSP.randomPath(AlgorithmMode.BI_DIJKSTRA);
-            ShortestPathResult biAStarConRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_CONSISTENT);
-            ShortestPathResult biAStarSymRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_SYMMETRIC);
-            ShortestPathResult landmarksRes = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-            ShortestPathResult biAStarLandRes = SSSP.randomPath(AlgorithmMode.BI_A_STAR_LANDMARKS);
-            ShortestPathResult reachRes = SSSP.randomPath(AlgorithmMode.REACH);
-            ShortestPathResult biReachRes = SSSP.randomPath(AlgorithmMode.BI_REACH);
             runtimes[0][i] = dijkRes.runTime;
-            runtimes[1][i] = aStarRes.runTime;
-            runtimes[2][i] = biDijkRes.runTime;
-            runtimes[3][i] = biAStarConRes.runTime;
-            runtimes[4][i] = biAStarSymRes.runTime;
-            runtimes[5][i] = landmarksRes.runTime;
-            runtimes[6][i] = biAStarLandRes.runTime;
-            runtimes[7][i] = reachRes.runTime;
-            runtimes[8][i] = biReachRes.runTime;
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
-            double distBiLand = biAStarLandRes.d;
-            List<Integer> pathBiLand = biAStarConRes.path;
-
-            double distBiCon = biAStarConRes.d;
-            List<Integer> pathBiCon = biAStarConRes.path;
-
-            double distAstar = aStarRes.d;
-            List<Integer> pathAstar = aStarRes.path;
-
-            double distBiDijk = biDijkRes.d;
-            List<Integer> pathBiDijk = biDijkRes.path;
-
-            double distBiAstarSym = biAStarSymRes.d;
-            List<Integer> pathBiAstarSym = biAStarSymRes.path;
-
-            double distLandmarks = landmarksRes.d;
-            List<Integer> pathLandmarks = landmarksRes.path;
-
-            double distReach = reachRes.d;
-            List<Integer> pathReach = reachRes.path;
-
-            double distBiReach = biReachRes.d;
-            List<Integer> pathBiReach = biReachRes.path;
-
-            if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
-                matrix[1]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-            }
-            /*if (Math.abs(distBiDijk - distDijk) > 0.00000000001 || !pathBiDijk.equals(pathDijk)) {
-                matrix[2]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-            }
-            if (Math.abs(distDijk - distBiAstarSym) > 0.00000000001 || !pathDijk.equals(pathBiAstarSym)) {
-                matrix[3]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-
-            }
-            if (Math.abs(distDijk - distLandmarks) > 0.00000000001 || !pathLandmarks.equals(pathDijk)) {
-                matrix[4]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-
-            }
-            if (Math.abs(distDijk - distBiCon) > 0.00000000001 || !pathBiCon.equals(pathDijk)) {
-                matrix[5]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-
-            }
-            if (Math.abs(distDijk - distBiLand) > 0.00000000001 || !pathBiLand.equals(pathDijk)) {
-                matrix[6]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-
-            }
-            if (Math.abs(distDijk - distReach) > 0.00000000001 || !pathReach.toString().equals(pathDijk.toString())) {
-                matrix[7]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-
-            }*/
-            if (Math.abs(distDijk - distBiReach) > 0.00000000001 || !pathBiReach.toString().equals(pathDijk.toString())) {
-                fail();
-                matrix[8]++;
-                failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size()-1));
-
-            }
+            testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
+            testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
+            testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
             //Only interested in tests where path is atleast 100
             i++;
         }
         if (Arrays.equals(new int[9], matrix)) {
             System.out.println(runtimes);
         } else fail();
+    }
+
+    private void testSingle(double distDijk, List<Integer> pathDijk, AlgorithmMode aStar, int i2) {
+        ShortestPathResult aStarRes = SSSP.randomPath(aStar);
+        runtimes[i2][i] = aStarRes.runTime;
+        double distAstar = aStarRes.d;
+        List<Integer> pathAstar = aStarRes.path;
+        if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
+            matrix[i2]++;
+            failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size() - 1));
+        }
     }
 }

@@ -27,13 +27,19 @@ public class ReachProcessor {
         this.OriginalGraph = originalGraph;
     }
 
+    long deletedNodes = 0;
+    long totalNodes = 0;
+
     public List<Double> computeReachBound(Graph g) {
+        totalNodes = g.getNodeAmount();
         bounds = Arrays.asList(new Double[g.getNodeAmount()]);
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
-            progressListener.accept((long) i, 100L);
+            if (deletedNodes == 0) {
+                progressListener.accept((long) 10*i, 100L);
+            }
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
         SSSP.setGraph(getOriginalGraph());
@@ -83,11 +89,14 @@ public class ReachProcessor {
             }
         }
         Graph smallerGraph = new Graph(mainGraph);
+        deletedNodes = 0;
         for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
             if (bounds.get(i) != Double.MAX_VALUE) {
                 smallerGraph.getNodeList().set(i, null);
+                deletedNodes++;
             }
         }
+        progressListener.accept(deletedNodes, totalNodes);
         for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
             Iterator<Edge> iterator = smallerGraph.getAdjList().get(i).iterator();
             while (iterator.hasNext()) {
