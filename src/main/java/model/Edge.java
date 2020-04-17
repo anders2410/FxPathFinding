@@ -13,7 +13,7 @@ public class Edge implements Serializable {
 
     public int to;
     public double d;
-    public boolean visited, inPath, isDrawn, visitedReverse, mouseEdge;
+    public boolean visited, inPath, isDrawn, visitedReverse, mouseEdge, arcFlag;
 
     public Edge(int to, double d) {
         this.to = to;
@@ -23,6 +23,7 @@ public class Edge implements Serializable {
         inPath = false;
         isDrawn = false;
         mouseEdge = false;
+        arcFlag = false;
     }
 
     public Edge(int to, double d, boolean visited, boolean inPath, boolean isDrawn, boolean visitedReverse) {

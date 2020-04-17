@@ -5,6 +5,7 @@ import model.Edge;
 import model.Graph;
 import model.Node;
 
+import javax.print.DocFlavor;
 import java.util.*;
 
 /**
@@ -13,7 +14,6 @@ import java.util.*;
  */
 public class ContractionHierarchies {
     private Graph graph;
-    private Graph augmentedGraph;
 
     private JavaMinPriorityQueue importanceQueue;
     private Map<Integer, List<Node>> inDegreeMap;
@@ -29,8 +29,7 @@ public class ContractionHierarchies {
 
     public ContractionHierarchies(Graph graph) {
         this.graph = graph;
-        // The Graph with augmented edges (added all shortcuts)
-        augmentedGraph = new Graph(graph);
+
 
         importanceQueue = new JavaMinPriorityQueue(getImportanceComparator(), graph.getNodeAmount());
 
@@ -92,26 +91,23 @@ public class ContractionHierarchies {
 
             // Contraction part
             //System.out.println(importance.get(n));
-            contractNode(n, rank - 1);
+            contractNode(n);
             //contractNodeAlt(n);
         }
 
-        return augmentedGraph;
-    }
+        for (Node node : graph.getNodeList()) {
+            for (Edge edge : graph.getAdjList().get(node.index)) {
+                if (ranks.get(node.index) < ranks.get(edge.to)) {
+                    edge.arcFlag = true;
+                }
+            }
+        }
 
-    private List<Integer> getNeighbours(int node) {
-        List<Integer> list = new ArrayList<>();
-        for (Edge e : graph.getAdjList().get(node)) {
-            list.add(e.to);
-        }
-        for (Node n : inDegreeMap.get(node)) {
-            list.add(n.index);
-        }
-        return list;
+        return graph;
     }
 
     // Function to contract a node!
-    private void contractNode(int n, int contractID) {
+    private void contractNode(int n) {
         // Set contracted == true for the current node.
         contracted.set(n, true);
 
@@ -150,8 +146,8 @@ public class ContractionHierarchies {
         double max = inMax + outMax;
 
         // Iterating over all the incoming nodes
-        for (int i = 0; i < inNodeList.size(); i++) {
-            int inNode = inNodeList.get(i).index;
+        for (Node node : inNodeList) {
+            int inNode = node.index;
 
             // If the node has already been contracted we will ignore it.
             if (contracted.get(inNode)) {
@@ -170,7 +166,7 @@ public class ContractionHierarchies {
                 double outCost = outEdge.d;
 
                 // If the node has already been contracted we will ignore it.
-                if (contracted.get(outNode) || inNode == outNode) {
+                if (contracted.get(outNode)) {
                     continue;
                 }
 
@@ -183,32 +179,12 @@ public class ContractionHierarchies {
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
                 if (distanceList.get(outNode) > totalCost) {
                     // TODO: 15/04/2020 Add implementation for one-way streets
-                    augmentedGraph.addEdge(inNode, outNode, totalCost);
-                    augmentedGraph.addEdge(outNode, inNode, totalCost);
+                    graph.addEdge(inNode, outNode, totalCost);
+                    graph.addEdge(outNode, inNode, totalCost);
                     //System.out.println("Shortcut added!");
                 }
             }
         }
-
-        // Update the neighbours
-        for (Edge neighbour : graph.getAdjList().get(n)) {
-            if (!contracted.get(neighbour.to)) {
-                updateImportance(neighbour.to);
-                importanceQueue.updatePriority(neighbour.to);
-            }
-        }
-    }
-
-    // Calculate the cost of a given incoming edge/node. (inNode -> n)
-    private double getInCost(int source, int inNode) {
-        double inCost = 0;
-        for (Edge e : graph.getAdjList().get(inNode)) {
-            if (e.to == source) {
-                inCost = e.d;
-                break;
-            }
-        }
-        return inCost;
     }
 
     private List<Double> dijkstra(int inNode, double maxCost) {
@@ -228,33 +204,52 @@ public class ContractionHierarchies {
         int i = 0;
         while (!queue.isEmpty()) {
             int node = queue.poll();
-            if (i > 3 || distances.get(node).distance > maxCost) {
+
+            if (i > 5 || distanceList.get(node) > maxCost) {
                 break;
             }
-            relaxEdges(node, queue);
+
+            for (Edge edge : graph.getAdjList().get(node)) {
+                int temp = edge.to;
+                double cost = edge.d;
+
+                if (contracted.get(temp)) {
+                    continue;
+                }
+
+                if (!(node == temp) && distanceList.get(temp) > distanceList.get(node) + cost) {
+                    distanceList.set(temp, distanceList.get(node) + cost);
+                    queue.updatePriority(temp);
+                }
+            }
+
             i++;
         }
 
         return distanceList;
     }
 
-    private void relaxEdges(int node, JavaMinPriorityQueue queue) {
-        List<Edge> outEdgeList = graph.getAdjList().get(node);
+    private List<Integer> getNeighbours(int node) {
+        List<Integer> list = new ArrayList<>();
+        for (Edge e : graph.getAdjList().get(node)) {
+            list.add(e.to);
+        }
+        for (Node n : inDegreeMap.get(node)) {
+            list.add(n.index);
+        }
+        return list;
+    }
 
-        for (Edge edge : outEdgeList) {
-            int temp = edge.to;
-            double cost = edge.d;
-
-            if (contracted.get(temp)) {
-                continue;
-            }
-
-            if (!(node == temp) && distances.get(temp).distance > distances.get(node).distance + cost) {
-                distances.get(temp).distance = distances.get(node).distance + cost;
-
-                queue.updatePriority(temp);
+    // Calculate the cost of a given incoming edge/node. (inNode -> n)
+    private double getInCost(int source, int inNode) {
+        double inCost = 0;
+        for (Edge e : graph.getAdjList().get(inNode)) {
+            if (e.to == source) {
+                inCost = e.d;
+                break;
             }
         }
+        return inCost;
     }
 
     /*private void contractNodeAlt(int node) {
@@ -409,6 +404,14 @@ public class ContractionHierarchies {
         for (Node node : inDegreeList) {
             contractedNeighbours.set(node.index, contractedNeighbours.get(node.index) + 1);
         }
+
+        // Update the neighbours
+        for (int neighbour : getNeighbours(n)) {
+            if (!contracted.get(neighbour)) {
+                updateImportance(neighbour);
+                importanceQueue.updatePriority(neighbour);
+            }
+        }
     }
 
     public void setGraph(Graph graph) {
@@ -468,7 +471,7 @@ public class ContractionHierarchies {
                 int nodeForward = forwardQ.poll();
                 processedForward.add(nodeForward);
                 if (forwardDistanceList.get(nodeForward) <= estimate) {
-                    relaxEdgesBi(nodeForward, "f");
+                    relaxEdgesBi(CHGraph, nodeForward, "f");
                 }
                 if (processedReverse.contains(nodeForward)) {
                     if (forwardDistanceList.get(nodeForward) + reverseDistanceList.get(nodeForward) < estimate) {
@@ -481,7 +484,7 @@ public class ContractionHierarchies {
                 int nodeReverse = reverseQ.poll();
                 processedReverse.add(nodeReverse);
                 if (distances.get(nodeReverse).revDistance <= estimate) {
-                    relaxEdgesBi(nodeReverse, "r");
+                    relaxEdgesBi(CHGraph, nodeReverse, "r");
                 }
                 if (processedForward.contains(nodeReverse)) {
                     if (reverseDistanceList.get(nodeReverse) + forwardDistanceList.get(nodeReverse) < estimate) {
@@ -498,15 +501,15 @@ public class ContractionHierarchies {
         return estimate;
     }
 
-    private void relaxEdgesBi(int node, String str) {
+    private void relaxEdgesBi(Graph graph, int node, String str) {
         List<Edge> adjList = graph.getAdjList().get(node);
-        System.out.println(adjList);
+        //System.out.println(adjList);
         if (str.equals("f")) {
             for (Edge edge : adjList) {
                 int temp = edge.to;
                 double cost = edge.d;
-                System.out.println(ranks.get(node) + " " + ranks.get(temp));
-                if (forwardDistanceList.get(node) + cost < forwardDistanceList.get(temp) && ranks.get(node) < ranks.get(temp)) {
+                //System.out.println(ranks.get(node) + " " + ranks.get(temp));
+                if (forwardDistanceList.get(node) + cost < forwardDistanceList.get(temp) && edge.arcFlag) {
                     forwardDistanceList.set(temp, forwardDistanceList.get(node) + cost);
                     forwardQ.updatePriority(temp);
                 }
@@ -515,8 +518,8 @@ public class ContractionHierarchies {
             for (Edge edge : adjList) {
                 int temp = edge.to;
                 double cost = edge.d;
-                System.out.println(ranks.get(node) + " " + ranks.get(temp));
-                if (reverseDistanceList.get(node) + cost < reverseDistanceList.get(temp) && ranks.get(node) < ranks.get(temp)) {
+                //System.out.println(ranks.get(node) + " " + ranks.get(temp));
+                if (reverseDistanceList.get(node) + cost < reverseDistanceList.get(temp) && edge.arcFlag) {
                     reverseDistanceList.set(temp, reverseDistanceList.get(node) + cost);
                     reverseQ.updatePriority(temp);
                 }
