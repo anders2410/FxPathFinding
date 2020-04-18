@@ -27,7 +27,7 @@ public class GraphUtilTest {
         graph = graphIO.getGraph();
     }
 
-    @Test
+    /*@Test
     public void testInGoingEdgesMap() {
         GraphUtil graphUtil = new GraphUtil(graph);
         Map<Integer, List<Node>> m = graphUtil.getInDegreeNodeMap();
@@ -36,7 +36,7 @@ public class GraphUtilTest {
                 assertTrue(m.get(e.to).contains(graph.getNodeList().get(i)));
             }
         }
-    }
+    }*/
 
     @Test
     public void testSubGraph() {

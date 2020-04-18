@@ -110,6 +110,7 @@ public class FXMLController implements Initializable {
             graph = loadGraphTask.getValue();
             landmarksGenerator = new Landmarks(graph);
             setUpGraph();
+            loadReachBounds();
             playIndicatorCompleted();
         });
         attachProgressIndicator(loadGraphTask.progressProperty());
@@ -132,6 +133,8 @@ public class FXMLController implements Initializable {
      * Is called on the GUI thread when a loadGraph thread is finished.
      */
     private void setUpGraph() {
+        mouseNodes = 0;
+        resetSelection();
         if (gc != null) {
             nodes_label.setText("Nodes in Graph: " + graph.getNodeAmount());
             edges_label.setText("Edges in Graph: " + graph.getEdgeAmount());
