@@ -12,7 +12,7 @@ import java.util.function.BiFunction;
 
 public class ContractionHierarchiesTest {
     Graph graph;
-    String fileName = "greenland-latest.osm.pbf";
+    String fileName = "malta-latest.osm.pbf";
 
     @Before
     public void setUp() {
@@ -46,5 +46,9 @@ public class ContractionHierarchiesTest {
 
         double distance = contractionHierarchies.computeDist(CHGraph,24, 256);
         System.out.println("Overall distance: " + distance);
+        double distance1 = contractionHierarchies.computeDist(CHGraph,25, 256);
+        System.out.println("Overall distance: " + distance1);
+        double distance2 = contractionHierarchies.computeDist(CHGraph,26, 256);
+        System.out.println("Overall distance: " + distance2);
     }
 }

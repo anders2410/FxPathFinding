@@ -175,25 +175,4 @@ public class GraphUtil {
     public void setProgressListener(BiConsumer<Long, Long> progressListener) {
         this.progressListener = progressListener;
     }
-
-    // Calculates the incoming nodes
-    public Map<Integer, List<Node>> getInDegreeNodeMap() {
-        Map<Integer, List<Node>> map = new HashMap<>();
-        List<Node> nodeList = graph.getNodeList();
-
-        for (int i = 0; i < nodeList.size(); i++) {
-            for (Edge e : graph.getAdjList().get(i)) {
-                List<Node> list = map.computeIfAbsent(e.to, k -> new ArrayList<>());
-                list.add(nodeList.get(i));
-                map.replace(e.to, list);
-            }
-        }
-
-        return map;
-    }
-
-    // Calculate the outgoing degree
-    public int getOutDegree(int n) {
-        return graph.getAdjList().get(n).size();
-    }
 }

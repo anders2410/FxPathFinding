@@ -5,7 +5,6 @@ import model.Edge;
 import model.Graph;
 import model.Node;
 
-import javax.print.DocFlavor;
 import java.util.*;
 
 /**
@@ -16,27 +15,16 @@ public class ContractionHierarchies {
     private Graph graph;
 
     private JavaMinPriorityQueue importanceQueue;
-    private Map<Integer, List<Node>> inDegreeMap;
-
-    private GraphUtil graphUtil;
 
     // Instead of adding additional fields in Node we store values in internal lists
     private List<Boolean> contracted;
     private List<Integer> importance;
     private List<Integer> contractedNeighbours;
     private List<Integer> ranks;
-    private List<Distance> distances;
 
     public ContractionHierarchies(Graph graph) {
         this.graph = graph;
-
-
         importanceQueue = new JavaMinPriorityQueue(getImportanceComparator(), graph.getNodeAmount());
-
-        graphUtil = new GraphUtil(graph);
-        // A map to find all inNodes for a given node.
-        inDegreeMap = graphUtil.getInDegreeNodeMap();
-
         initializeLists();
         setInitialImportance();
     }
@@ -46,14 +34,12 @@ public class ContractionHierarchies {
         importance = new ArrayList<>();
         contractedNeighbours = new ArrayList<>();
         ranks = new ArrayList<>();
-        distances = new ArrayList<>();
 
         for (Node ignored : graph.getNodeList()) {
             contracted.add(false);
             importance.add(0);
             contractedNeighbours.add(0);
             ranks.add(0);
-            distances.add(new Distance());
         }
     }
 
@@ -94,14 +80,6 @@ public class ContractionHierarchies {
             contractNode(n);
         }
 
-        for (Node node : graph.getNodeList()) {
-            for (Edge edge : graph.getAdjList().get(node.index)) {
-                if (ranks.get(node.index) < ranks.get(edge.to)) {
-                    edge.arcFlag = true;
-                }
-            }
-        }
-
         return graph;
     }
 
@@ -114,7 +92,7 @@ public class ContractionHierarchies {
         updateNeighbours(n);
 
         // Find the lists of incoming and outgoing edges/nodes
-        List<Node> inNodeList = inDegreeMap.get(n);
+        List<Node> inNodeList = getInDegreeNodeMap().get(n);
         List<Edge> outEdgeList = graph.getAdjList().get(n);
 
         // Stores the max distance out of uncontracted inVertices of the given vertex.
@@ -145,16 +123,16 @@ public class ContractionHierarchies {
         double max = inMax + outMax;
 
         // Iterating over all the incoming nodes
-        for (Node node : inNodeList) {
-            int inNode = node.index;
+        for (Node inNode : inNodeList) {
+            int inNodeIndex = inNode.index;
 
             // If the node has already been contracted we will ignore it.
-            if (contracted.get(inNode)) {
+            if (contracted.get(inNodeIndex)) {
                 continue;
             }
 
             // Find the inCost of an edge.
-            double inCost = getInCost(n, inNode);
+            double inCost = getInCost(n, inNodeIndex);
 
             // TODO: 17/04/2020 Fix hack with removing self-referring edges
             for (Node nodeHack : graph.getNodeList()) {
@@ -163,15 +141,15 @@ public class ContractionHierarchies {
             }
 
             // Finds the shortest distances from the inNode to all the outNodes.
-            List<Double> distanceList = dijkstra(inNode, max);
+            List<Double> distanceList = dijkstra(inNodeIndex, max);
 
             // This adds shortcuts if no witness path was found.
             for (Edge outEdge : outEdgeList) {
-                int outNode = outEdge.to;
+                int outNodeIndex = outEdge.to;
                 double outCost = outEdge.d;
 
                 // If the node has already been contracted we will ignore it.
-                if (contracted.get(outNode)) {
+                if (contracted.get(outNodeIndex)) {
                     continue;
                 }
 
@@ -182,17 +160,36 @@ public class ContractionHierarchies {
                 //System.out.println("Length through " + n + ": " + totalCost);
 
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
-                if (!(inNode == outNode) && distanceList.get(outNode) > totalCost) {
+                if (distanceList.get(outNodeIndex) > totalCost) {
                     // TODO: 15/04/2020 Add implementation for one-way streets
-                    graph.addEdge(inNode, outNode, totalCost);
-                    graph.addEdge(outNode, inNode, totalCost);
-                    if (inNode == 0) {
-                        System.out.println("Shortcut between " + inNode + " and " + outNode + "  added!");
+                    graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
+                    if (checkIfOutNodeShortcut(n, inNodeIndex, outNodeIndex)) {
+                        graph.addEdge(outNodeIndex, inNodeIndex, totalCost);
                     }
+
                     // System.out.println("Shortcut between " + inNode + " and " + outNode + "  added!");
                 }
             }
         }
+    }
+
+    private boolean checkIfOutNodeShortcut(int node, int inNode, int outNode) {
+        boolean something = false;
+        for (Edge e : graph.getAdjList().get(node)) {
+            if (e.to == inNode) {
+                something = true;
+                break;
+            }
+        }
+        boolean anything = false;
+        for (Node n : getInDegreeNodeMap().get(node)) {
+            if (n.index == outNode) {
+                anything = true;
+                break;
+            }
+        }
+
+        return something && anything;
     }
 
     private List<Double> dijkstra(int inNode, double maxCost) {
@@ -242,7 +239,7 @@ public class ContractionHierarchies {
         for (Edge e : graph.getAdjList().get(node)) {
             list.add(e.to);
         }
-        for (Node n : inDegreeMap.get(node)) {
+        for (Node n : getInDegreeNodeMap().get(node)) {
             list.add(n.index);
         }
         return list;
@@ -271,8 +268,8 @@ public class ContractionHierarchies {
      * with a small edgeDifference.
      */
     private int edgeDifference(int n) {
-        int inDegree = inDegreeMap.get(n).size();
-        int outDegree = graphUtil.getOutDegree(n);
+        int inDegree = getInDegreeNodeMap().get(n).size();
+        int outDegree = getOutDegree(n);
         int numberOfShortcuts = inDegree * outDegree;
         return numberOfShortcuts - inDegree + outDegree;
     }
@@ -292,7 +289,7 @@ public class ContractionHierarchies {
      * If the sc(n) is big, many nodes depend on n. We will contract a node with small sc(n).
      */
     private int shortcutCover(int n) {
-        return graph.getAdjList().get(n).size() + inDegreeMap.get(n).size();
+        return graph.getAdjList().get(n).size() + getInDegreeNodeMap().get(n).size();
     }
 
     /**
@@ -322,7 +319,7 @@ public class ContractionHierarchies {
             contractedNeighbours.set(edge.to, contractedNeighbours.get(edge.to) + 1);
         }
 
-        List<Node> inDegreeList = inDegreeMap.get(n);
+        List<Node> inDegreeList = getInDegreeNodeMap().get(n);
         for (Node node : inDegreeList) {
             contractedNeighbours.set(node.index, contractedNeighbours.get(node.index) + 1);
         }
@@ -334,6 +331,26 @@ public class ContractionHierarchies {
                 importanceQueue.updatePriority(neighbour);
             }
         }*/
+    }
+
+    // Calculates the incoming nodes
+    public Map<Integer, List<Node>> getInDegreeNodeMap() {
+        Map<Integer, List<Node>> map = new HashMap<>();
+        List<Node> nodeList = graph.getNodeList();
+
+        for (int i = 0; i < nodeList.size(); i++) {
+            for (Edge e : graph.getAdjList().get(i)) {
+                List<Node> list = map.computeIfAbsent(e.to, k -> new ArrayList<>());
+                list.add(nodeList.get(i));
+                map.replace(e.to, list);
+            }
+        }
+
+        return map;
+    }
+
+    private int getOutDegree(int n) {
+        return graph.getAdjList().get(n).size();
     }
 
     public void setGraph(Graph graph) {
@@ -351,7 +368,6 @@ public class ContractionHierarchies {
 
     // --------------------------------------- BIDIRECTIONAL ----------------------------------------
     public double computeDist(Graph CHGraph, int source, int target) {
-        double estimate = Double.MAX_VALUE;
         List<Double> forwardDistanceList = new ArrayList<>();
         List<Double> reverseDistanceList = new ArrayList<>();
 
@@ -383,7 +399,7 @@ public class ContractionHierarchies {
                     int temp = edge.to;
                     double cost = edge.d;
                     //System.out.println(ranks.get(node) + " " + ranks.get(temp));
-                    if (forwardDistanceList.get(nodeForward) + cost < forwardDistanceList.get(temp) && edge.arcFlag) {
+                    if (forwardDistanceList.get(nodeForward) + cost < forwardDistanceList.get(temp) && ranks.get(nodeForward) < ranks.get(temp)) {
                         forwardDistanceList.set(temp, forwardDistanceList.get(nodeForward) + cost);
                         forwardQ.updatePriority(temp);
                     }
@@ -398,7 +414,7 @@ public class ContractionHierarchies {
                     int temp = edge.to;
                     double cost = edge.d;
                     //System.out.println(ranks.get(node) + " " + ranks.get(temp));
-                    if (reverseDistanceList.get(nodeReverse) + cost < reverseDistanceList.get(temp) && edge.arcFlag) {
+                    if (reverseDistanceList.get(nodeReverse) + cost < reverseDistanceList.get(temp) && ranks.get(nodeReverse) < ranks.get(temp)) {
                         reverseDistanceList.set(temp, reverseDistanceList.get(nodeReverse) + cost);
                         reverseQ.updatePriority(temp);
                     }
@@ -411,36 +427,13 @@ public class ContractionHierarchies {
         processedForward.retainAll(processedReverse);
         System.out.println(processedForward.toString());
 
-        return estimate;
-    }
-
-
-    static class Distance {
-        // Ids are made so that we dont have to reinitialize every time the distance value to infinity.
-
-        int contractID;        //id for the vertex that is going to be contracted.
-        int sourceID;           //it contains the id of vertex for which we will apply dijkstra while contracting.
-
-        double distance;        //stores the value of distance while contracting.
-
-        //used in query time for bidirectional dijkstra algorithm
-        int forwardQueryID;    //for forward search.
-        int reverseQueryID;    //for backward search.
-
-        double queryDist;    //for forward distance.
-        double revDistance;    //for backward distance.
-
-        public Distance() {
-            this.contractID = -1;
-            this.sourceID = -1;
-
-            this.forwardQueryID = -1;
-            this.reverseQueryID = -1;
-
-            this.distance = Integer.MAX_VALUE;
-
-            this.revDistance = Integer.MAX_VALUE;
-            this.queryDist = Integer.MAX_VALUE;
+        double estimate = Double.MAX_VALUE;
+        for (int node : processedForward) {
+            if(forwardDistanceList.get(node) + reverseDistanceList.get(node) < estimate) {
+                estimate = forwardDistanceList.get(node) + reverseDistanceList.get(node);
+            }
         }
+
+        return estimate;
     }
 }
