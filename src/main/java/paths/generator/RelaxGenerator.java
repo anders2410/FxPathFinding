@@ -60,7 +60,7 @@ public class RelaxGenerator {
             List<Double> bounds = getReachBounds();
             double newDist = getNodeDist(dir).get(from) + edge.d;
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceValid = Math.abs(reachBound - newDist) <= precision;
+            boolean newDistanceValid = newDist + precision <= reachBound;
             if (newDistanceValid) {
                 getBiDijkstra().relax(from, edge, dir);
             }
