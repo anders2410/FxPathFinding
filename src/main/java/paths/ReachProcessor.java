@@ -5,11 +5,14 @@ import model.Graph;
 import model.Node;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class ReachProcessor {
     private Graph OriginalGraph;
     private List<Double> bounds;
     private double[] reachLCPT;
+
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {};
 
     double reachMetric(int nodeFrom, Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
@@ -24,12 +27,19 @@ public class ReachProcessor {
         this.OriginalGraph = originalGraph;
     }
 
+    long deletedNodes = 0;
+    long totalNodes = 0;
+
     public List<Double> computeReachBound(Graph g) {
+        totalNodes = g.getNodeAmount();
         bounds = Arrays.asList(new Double[g.getNodeAmount()]);
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
+            if (deletedNodes == 0) {
+                progressListener.accept((long) 10*i, 100L);
+            }
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
         SSSP.setGraph(getOriginalGraph());
@@ -79,11 +89,14 @@ public class ReachProcessor {
             }
         }
         Graph smallerGraph = new Graph(mainGraph);
+        deletedNodes = 0;
         for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
             if (bounds.get(i) != Double.MAX_VALUE) {
                 smallerGraph.getNodeList().set(i, null);
+                deletedNodes++;
             }
         }
+        progressListener.accept(deletedNodes, totalNodes);
         for (int i = 0; i < smallerGraph.getNodeList().size(); i++) {
             Iterator<Edge> iterator = smallerGraph.getAdjList().get(i).iterator();
             while (iterator.hasNext()) {
@@ -204,4 +217,7 @@ public class ReachProcessor {
         return maxReachOriginalGraph;
     }
 
+    public void setProgressListener(BiConsumer<Long, Long> progressListener) {
+        this.progressListener = progressListener;
+    }
 }

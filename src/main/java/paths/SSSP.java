@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
-import static java.util.Collections.singletonList;
 import static paths.AlgorithmMode.*;
 import static paths.ABDir.*;
 import static paths.Util.revDir;
@@ -140,7 +139,7 @@ public class SSSP {
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
         if (sourceP == targetP) {
-            return new ShortestPathResult(0, singletonList(sourceP), 0, 0);
+            return new ShortestPathResult();
         }
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
@@ -175,9 +174,9 @@ public class SSSP {
                 pw.close();
             }
         }
-*/
-        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA.size(), duration);
+        */
+        List<Integer> shortestPath = extractPath(pathMapA, source, target);
+        return new ShortestPathResult(nodeDistA.get(target), shortestPath, visitedA, duration);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
@@ -188,8 +187,10 @@ public class SSSP {
 
         getVisited(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            assert !getVisited(revDir(dir)).contains(edge.to); // By no scan overlap-theorem
-            getRelaxStrategy(dir).relax(currentNode, edge, dir);
+            //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
+            if (!getVisited(revDir(dir)).contains(edge.to) ) {
+                getRelaxStrategy(dir).relax(currentNode, edge, dir);
+            }
         }
     }
 
@@ -216,10 +217,10 @@ public class SSSP {
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
 
         if (middlePoint == -1) {
-            return new ShortestPathResult(Double.MAX_VALUE, new LinkedList<>(), 0, 0);
+            return new ShortestPathResult();
         }
         List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
-        return new ShortestPathResult(goalDistance, shortestPath, visitedA.size() + visitedB.size(), duration);
+        return new ShortestPathResult(goalDistance, shortestPath, visitedA, visitedB, duration);
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
@@ -235,23 +236,21 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        List<Integer> shortestPath = extractPath(pathMapA, adjList, source, target);
-        return new ShortestPathResult(0, shortestPath, visitedA.size(), nodeDistA, pathMapA, duration);
+        List<Integer> shortestPath = extractPath(pathMapA, source, target);
+        return new ShortestPathResult(0, shortestPath, visitedA, nodeDistA, pathMapA, duration);
     }
 
     private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
-        List<Integer> shortestPathA = extractPath(pathMapA, adjList, source, middlePoint);
-        List<Integer> shortestPathB = extractPath(pathMapB, revAdjList, target, middlePoint);
-        graph.reversePaintEdges(revAdjList, adjList);
+        List<Integer> shortestPathA = extractPath(pathMapA, source, middlePoint);
+        List<Integer> shortestPathB = extractPath(pathMapB, target, middlePoint);
         shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
         return shortestPathA;
     }
 
-    private static List<Integer> extractPath(Map<Integer, Integer> pathMap, List<List<Edge>> adjList, int from, int to) {
+    private static List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {
         Integer curNode = to;
-        int prevNode = to;
         List<Integer> path = new ArrayList<>(pathMap.size());
         path.add(to);
         while (curNode != from) {
@@ -261,12 +260,6 @@ public class SSSP {
             }
 
             path.add(curNode);
-            for (Edge edge : adjList.get(curNode)) {
-                if (edge.to == prevNode) {
-                    edge.inPath = true;
-                }
-            }
-            prevNode = curNode;
         }
         Collections.reverse(path);
         return path;

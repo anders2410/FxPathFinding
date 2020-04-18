@@ -24,21 +24,17 @@ import load.GraphIO;
 import model.Edge;
 import model.Graph;
 import model.Node;
-import paths.Util;
 import paths.*;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static paths.Util.algorithmNames;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
+import static paths.Util.algorithmNames;
 
 /**
  * The controller class for JavaFX. It handles all functions related to interacting with the GUI. It contain
@@ -71,7 +67,6 @@ public class FXMLController implements Initializable {
     private Stage stage;
     private Graph graph;
     private Landmarks landmarksGenerator;
-    private ReachProcessor reachProcessor;
     private GraphicsContext gc;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
@@ -130,7 +125,7 @@ public class FXMLController implements Initializable {
                 return null;
             }
         };
-        storeGraphTask.run();
+        new Thread(storeGraphTask).start();
     }
 
     /**
@@ -152,7 +147,7 @@ public class FXMLController implements Initializable {
         if (selectedNodes.size() <= 1) {
             return;
         }
-        graph.resetPathTrace();
+        currentResult = new ShortestPathResult();
         ssspTask = new Task<>() {
             @Override
             protected List<ShortestPathResult> call() {
@@ -160,10 +155,12 @@ public class FXMLController implements Initializable {
             }
         };
         ssspTask.setOnSucceeded(event -> {
+            playIndicatorCompleted();
             applyResultsToLabel(ssspTask.getValue());
             redrawGraph();
         });
-        ssspTask.run();
+        attachProgressIndicator(ssspTask.progressProperty());
+        new Thread(ssspTask).start();
     }
 
     private List<ShortestPathResult> ssspConnectingNodes(Deque<Node> nodeQueue) {
@@ -180,15 +177,22 @@ public class FXMLController implements Initializable {
         return results;
     }
 
+    private ShortestPathResult currentResult = new ShortestPathResult();
+
     private void applyResultsToLabel(List<ShortestPathResult> results) {
         Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
             List<Integer> combinedPath = new ArrayList<>(res1.path);
             combinedPath.addAll(res2.path.subList(1, res2.path.size()));
-            return new ShortestPathResult(res1.d + res2.d, combinedPath, res1.visitedNodes + res2.visitedNodes, res1.runTime + res2.runTime);
+            Set<Integer> combinedVisitedA = new HashSet<>(res1.visitedNodesA);
+            combinedVisitedA.addAll(res2.visitedNodesA);
+            Set<Integer> combinedVisitedB = new HashSet<>(res1.visitedNodesB);
+            combinedVisitedA.addAll(res2.visitedNodesB);
+            return new ShortestPathResult(res1.d + res2.d, combinedPath, combinedVisitedA, combinedVisitedB, res1.runTime + res2.runTime);
         });
         if (optCombinedRes.isPresent()) {
             ShortestPathResult combinedRes = optCombinedRes.get();
-            setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodes);
+            currentResult = combinedRes;
+            setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodesA.size() + combinedRes.visitedNodesB.size());
         }
     }
 
@@ -232,11 +236,13 @@ public class FXMLController implements Initializable {
         gc.strokeOval(np.x - shift, np.y - shift, radius, radius);
     }
 
+    Set<Edge> mouseEdges = new HashSet<>();
+    Set<Edge> drawnEdges;
+
     private void drawAllEdges() {
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
-        // Resets the 'isDrawn' property inside Edges.
-        resetIsDrawn(adjList);
+        drawnEdges = new HashSet<>();
         // Iterates through all nodes
         for (int i = 0; i < adjList.size(); i++) {
             Node from = nodeList.get(i);
@@ -245,39 +251,68 @@ public class FXMLController implements Initializable {
                 Node to = nodeList.get(edge.to);
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
                 // If the edge doesn't violate these constrains it will be drawn in the Canvas.
-                if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
+                if (oppositeEdge == null || isBetter(from, edge, to, oppositeEdge)) {
                     PixelPoint pFrom = toScreenPos(from);
                     PixelPoint pTo = toScreenPos(to);
 
-                    gc.setStroke(chooseEdgeColor(edge));
-                    gc.setLineWidth(chooseEdgeWidth(edge));
-                    if (edge.mouseEdge) {
+                    gc.setStroke(chooseEdgeColor(from, edge));
+                    gc.setLineWidth(chooseEdgeWidth(from, edge));
+                    if (mouseEdges.contains(edge)) {
                         gc.setLineDashes(7);
                     } else {
                         gc.setLineDashes(0);
                     }
                     gc.strokeLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
-                    edge.isDrawn = true;
+                    drawnEdges.add(edge);
                 }
             }
         }
     }
 
-    private double chooseEdgeWidth(Edge edge) {
-        if (edge.inPath) {
+    public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
+        return compVal(from1, e1) >= compVal(from2, e2);
+    }
+
+    private int compVal(Node from, Edge edge) {
+        boolean visited = currentResult.visitedNodesA.contains(from.index);
+        boolean reverseVisited = currentResult.visitedNodesB.contains(from.index);
+        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+        boolean isDrawn = drawnEdges.contains(edge);
+        int compVal = 0;
+        if (isDrawn) {
+            compVal++;
+        }
+        if (inPath) {
+            compVal++;
+        }
+        if (visited) {
+            compVal++;
+        }
+        if (reverseVisited) {
+            compVal++;
+        }
+        return compVal;
+    }
+
+    private double chooseEdgeWidth(Node from, Edge edge) {
+        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+        if (inPath) {
             return 2;
         }
         return 1;
     }
 
-    private Color chooseEdgeColor(Edge edge) {
-        if (edge.inPath) {
+    private Color chooseEdgeColor(Node from, Edge edge) {
+        boolean visited = currentResult.visitedNodesA.contains(from.index);
+        boolean reverseVisited = currentResult.visitedNodesB.contains(from.index);
+        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+        if (inPath) {
             return Color.RED;
         }
-        if (edge.visitedReverse) {
+        if (reverseVisited) {
             return Color.TURQUOISE;
         }
-        if (edge.visited) {
+        if (visited) {
             return Color.BLUE;
         }
         return Color.BLACK;
@@ -315,14 +350,6 @@ public class FXMLController implements Initializable {
         gc.strokeOval(p.x - shift, p.y - shift, radius, radius);
     }
 
-    private void resetIsDrawn(List<List<Edge>> adjList) {
-        for (List<Edge> edgeList : adjList) {
-            for (Edge edge : edgeList) {
-                edge.isDrawn = false;
-            }
-        }
-    }
-
     // Graph zoom control
     private float zoomFactor;
 
@@ -334,14 +361,13 @@ public class FXMLController implements Initializable {
     }
 
     private PixelPoint minXY = new PixelPoint(-1, -1);
-    private PixelPoint maxXY = new PixelPoint(-1, -1);
 
     private int widthMeter;
     private int heightMeter;
 
     private void setGraphBounds() {
         minXY = new PixelPoint(-1, -1);
-        maxXY = new PixelPoint(-1, -1);
+        PixelPoint maxXY = new PixelPoint(-1, -1);
 
         List<Node> nodeList = graph.getNodeList();
         for (Node n : nodeList) {
@@ -433,10 +459,10 @@ public class FXMLController implements Initializable {
         double dist = distanceStrategy.apply(mouseNode, closestNode);
         graph.addNode(mouseNode);
         Edge forth = new Edge(closestNode.index, dist);
-        forth.mouseEdge = true;
+        mouseEdges.add(forth);
         graph.addEdge(mouseNode, forth);
         Edge back = new Edge(mouseNode.index, dist);
-        back.mouseEdge = true;
+        mouseEdges.add(back);
         graph.addEdge(closestNode, back);
         closestNode = mouseNode;
         mouseNodes++;
@@ -447,7 +473,7 @@ public class FXMLController implements Initializable {
         selectedNodes = new ArrayDeque<>();
         graph.removeNodesFromEnd(mouseNodes);
         mouseNodes = 0;
-        graph.resetPathTrace();
+        currentResult = new ShortestPathResult();
         redrawGraph();
     }
 
@@ -660,7 +686,7 @@ public class FXMLController implements Initializable {
         if (selectedNodes.size() > 1) {
             runAlgorithm();
         } else {
-            graph.resetPathTrace();
+            currentResult = new ShortestPathResult();
             redrawGraph();
         }
     }
@@ -780,24 +806,12 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLoadLandmarks() {
-        try {
-            GraphIO.loadLandmarks(fileName, landmarksGenerator);
-            drawAllLandmarks();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        GraphIO.loadLandmarks(fileName, landmarksGenerator);
+        drawAllLandmarks();
     }
 
     public void handleSaveLandmarks() {
-        try {
-            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
-            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(landmarksGenerator.getLandmarkSet());
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        GraphIO.saveLandmarks(fileName, landmarksGenerator.getLandmarkSet());
     }
 
     public void handleSetParameterEvent() {
@@ -806,6 +820,40 @@ public class FXMLController implements Initializable {
 
     public void handleSCCEvent() {
         runSCC();
+    }
+
+    public void handleReachEvent() {
+        algorithmMode = REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
+    public void handleBiReachEvent() {
+        algorithmMode = BI_REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
+    public void handleLoadReachEvent() {
+        loadReachBounds();
+    }
+
+    public void handleSaveReachEvent() {
+        saveReachBounds();
+    }
+
+    public void handleGenerateReachEvent() {
+        generateReachBounds();
+    }
+
+    public void handleGenerateCHEvent() {
+        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
+        graph = contractionHierarchies.preprocess();
+        redrawGraph();
+    }
+
+    public void handleCHEvent() {
+
     }
 
     // UTILITIES
@@ -925,6 +973,52 @@ public class FXMLController implements Initializable {
         redrawGraph();
     }
 
+    private void generateReachBounds() {
+        Task<List<Double>> reachGenTask = new Task<>() {
+            @Override
+            protected List<Double> call() {
+                ReachProcessor reachProcessor = new ReachProcessor();
+                reachProcessor.setProgressListener(this :: updateProgress);
+                return reachProcessor.computeReachBound(new Graph(graph));
+            }
+        };
+        reachGenTask.setOnSucceeded(e -> {
+            playIndicatorCompleted();
+            List<Double> bounds = reachGenTask.getValue();
+            SSSP.setReachBounds(bounds);
+            saveReachBounds();
+        });
+        attachProgressIndicator(reachGenTask.progressProperty());
+        new Thread(reachGenTask).start();
+    }
+
+
+    private void loadReachBounds() {
+        Task<List<Double>> loadTask = new Task<>() {
+            @Override
+            protected List<Double> call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                return graphIO.loadReach(fileName);
+            }
+        };
+        loadTask.setOnSucceeded(e -> {
+            SSSP.setReachBounds(loadTask.getValue());
+        });
+        new Thread(loadTask).start();
+    }
+
+    private void saveReachBounds() {
+        Task<Void> saveTask = new Task<>() {
+            @Override
+            protected Void call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy);
+                graphIO.saveReach(fileName, SSSP.getReachBounds());
+                return null;
+            }
+        };
+        new Thread(saveTask).start();
+    }
+
     private void runSCC() {
         System.out.println("Computing SCC");
         Task<List<Graph>> sccTask = new Task<>() {
@@ -932,83 +1026,38 @@ public class FXMLController implements Initializable {
             protected List<Graph> call() {
                 GraphUtil gu = new GraphUtil(graph);
                 gu.setProgressListener(this::updateProgress);
-                List<Graph> graphs = gu.scc();
-                updateProgress(100L, 100L);
-                return graphs;
+                return gu.scc();
             }
         };
         sccTask.setOnSucceeded(e -> {
-            playIndicatorCompleted();
+            progress_indicator.progressProperty().unbind();
+            progress_indicator.setProgress(0.99);
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
             storeGraph("-scc");
             setUpGraph();
             System.out.println("Finished computing SCC");
+            playIndicatorCompleted();
         });
         attachProgressIndicator(sccTask.progressProperty());
-        sccTask.run();
+        new Thread(sccTask).start();
     }
 
+    private Timeline indicatorTimeline;
+
     private void attachProgressIndicator(ReadOnlyDoubleProperty progressProperty) {
+        if (indicatorTimeline != null) {
+            indicatorTimeline.stop();
+        }
         progress_indicator.setOpacity(1);
         progress_indicator.progressProperty().bind(progressProperty);
     }
 
     private void playIndicatorCompleted() {
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
+        indicatorTimeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> {
             progress_indicator.setOpacity(progress_indicator.getOpacity() - 0.005);
         }));
-        timeline.setCycleCount(200);
-        timeline.playFromStart();
-    }
-
-    public void handleReachEvent() {
-        algorithmMode = REACH;
-        runAlgorithm();
-        setAlgorithmLabels();
-    }
-
-
-    public void handleBiReachEvent() {
-        algorithmMode = BI_REACH;
-        runAlgorithm();
-        setAlgorithmLabels();
-    }
-
-    public void handleSaveReachEvent() {
-        try {
-            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
-            FileOutputStream fos = new FileOutputStream(name + "-reach-bounds.tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(SSSP.getReachBounds());
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void handleLoadReachEvent() {
-        try {
-            GraphIO graphIO = new GraphIO(distanceStrategy);
-            List<Double> bounds = graphIO.loadReach(fileName);
-            SSSP.setReachBounds(bounds);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void handleGenerateReachEvent() {
-        reachProcessor = new ReachProcessor();
-        List<Double> bounds = reachProcessor.computeReachBound(new Graph(graph));
-        SSSP.setReachBounds(bounds);
-    }
-
-    public void handleGenerateCHEvent() {
-        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
-        graph = contractionHierarchies.preprocess();
-        redrawGraph();
-    }
-
-    public void handleCHEvent() {
+        indicatorTimeline.setCycleCount(200);
+        indicatorTimeline.playFromStart();
     }
 }

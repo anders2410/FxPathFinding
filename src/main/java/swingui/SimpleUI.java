@@ -14,6 +14,7 @@ public class SimpleUI extends JFrame {
     private Graph graph;
     private int xoffset = -3700;
     private int yoffset = 7800;
+    private ShortestPathResult currentResult = new ShortestPathResult();
 
     public SimpleUI(Graph graph) {
         this.graph = graph;
@@ -82,14 +83,14 @@ public class SimpleUI extends JFrame {
 
         JButton dPath = new JButton("d path");
         dPath.addActionListener(e -> {
-            SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            currentResult = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
             repaint();
         });
         panel.add(dPath);
 
         JButton aPath = new JButton("a path");
         aPath.addActionListener(e -> {
-            SSSP.randomPath(AlgorithmMode.A_STAR);
+            currentResult = SSSP.randomPath(AlgorithmMode.A_STAR);
             repaint();
         });
         panel.add(aPath);
@@ -136,15 +137,12 @@ public class SimpleUI extends JFrame {
         g2d.setColor(Color.RED);
         List<Node> nodeList = graph.getNodeList();
         List<List<Edge>> adjList = graph.getAdjList();
-        resetIsDrawn(adjList);
         for (int i = 0; i < adjList.size(); i++) {
             Node nx = nodeList.get(i);
             for (Edge edge : adjList.get(i)) {
                 Node ny = nodeList.get(edge.to);
                 Edge oppositeEdge = findOppositeEdge(adjList, i, edge);
-                if (oppositeEdge == null || edge.isBetter(oppositeEdge)) {
-                    drawEdge(g2d, nx, ny, edge);
-                }
+                drawEdge(g2d, nx, ny, edge);
             }
         }
     }
@@ -159,14 +157,6 @@ public class SimpleUI extends JFrame {
         return oppositeEdge;
     }
 
-    private void resetIsDrawn(List<List<Edge>> adjList) {
-        for (List<Edge> edgeList : adjList) {
-            for (Edge edge : edgeList) {
-                edge.isDrawn = false;
-            }
-        }
-    }
-
     private void drawEdge(Graphics2D g2d, Node nx, Node ny, Edge edge) {
         double x1 = projectCord(nx.longitude, xoffset);
         double y1 = projectCord(-nx.latitude, yoffset);
@@ -176,15 +166,14 @@ public class SimpleUI extends JFrame {
         Line2D line = new Line2D.Double(x1, y1, x2, y2);
         g2d.setStroke(new BasicStroke(1));
         g2d.setColor(Color.BLACK);
-        if (edge.visited) {
+        if (currentResult.visitedNodesA.contains(nx.index)) {
             g2d.setColor(Color.BLUE);
         }
-        if (edge.inPath) {
+        if (currentResult.path.contains(nx.index) && currentResult.path.contains(ny.index)) {
             g2d.setStroke(new BasicStroke(2));
             g2d.setColor(Color.RED);
         }
         g2d.draw(line);
-        edge.isDrawn = true;
         //g2d.drawString("" + Math.round(edge.d), (x1 + x2) * 0.5f, (y1 + y2) * 0.5f);
     }
 

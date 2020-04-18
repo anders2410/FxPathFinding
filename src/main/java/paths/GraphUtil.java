@@ -51,7 +51,10 @@ public class GraphUtil {
     }
 
     public List<Graph> scc() {
+        progressListener.accept(1L, 100L);
+        int counter = 0;
         int n = graph.getNodeAmount();
+        long pn = 4*n;
         List<List<Edge>> adjList = graph.getAdjList();
         int time = 0;
         Map<Integer, Integer> finishingTimes = new HashMap<>();
@@ -62,6 +65,8 @@ public class GraphUtil {
         Stack<Integer> recursionStack = new Stack<>();
         // First DFS
         while (!whiteNodes.isEmpty()) {
+            counter++;
+            progressListener.accept((long) counter, pn);
             Integer node = whiteNodes.peek();
             if (!recursionStack.isEmpty() && node.equals(recursionStack.peek())) {
                 time++;
@@ -81,7 +86,6 @@ public class GraphUtil {
             traceStack("First white nodes: ", whiteNodes);
             traceStack("First recursion stack: ", recursionStack);
         }
-        progressListener.accept(33L, 100L);
 
         List<List<Integer>> sccNodeLists = new ArrayList<>();
         // Reverse edges
@@ -96,6 +100,8 @@ public class GraphUtil {
         recursionStack = new Stack<>();
         // Second DFS
         while (!whiteNodes.isEmpty()) {
+            counter++;
+            progressListener.accept((long) counter, pn);
             Integer node = whiteNodes.peek();
             if (recursionStack.isEmpty()) {
                 sccNodeLists.add(new ArrayList<>());
@@ -126,15 +132,12 @@ public class GraphUtil {
                 trace(node + ", ");
             } trace("}\n");
         }
-
-        progressListener.accept(66L, 100L);
         Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
         return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
     }
 
     public Graph subGraph(List<Integer> nodesToKeep) {
         Graph subGraph = new Graph(nodesToKeep.size());
-        subGraph.setParentNodes(nodesToKeep);
         Map<Integer, Integer> indexMap = new HashMap<>();
         List<Node> subNodeList = subGraph.getNodeList();
         List<List<Edge>> subAdjList = subGraph.getAdjList();

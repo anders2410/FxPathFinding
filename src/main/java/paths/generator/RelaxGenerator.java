@@ -12,7 +12,6 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getDijkstra() {
         return (from, edge, dir) -> {
-            edge.visited = true;
             double newDist = getNodeDist(dir).get(from) + edge.d;
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
@@ -33,6 +32,8 @@ public class RelaxGenerator {
         };
     }
 
+    private static double precision = 0.000000000000001;
+
     public static RelaxStrategy getReach() {
         return (from, edge, dir) -> {
             double newDist = getNodeDist(dir).get(from) + edge.d;
@@ -41,12 +42,10 @@ public class RelaxGenerator {
                 double reachBound = bounds.get(edge.to);
                 List<Node> nodeList = getGraph().getNodeList();
                 Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
-                boolean obviousValid = getVisited(dir).contains(edge.to) || getQueue(dir).contains(edge.to) || edge.to == getTarget();
-                boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= 0.000000000000001;
-                boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= 0.000000000000001;
-                boolean shouldNotBePruned = /*obviousValid ||*/ newDistanceValid || projectedDistanceValid;
+                boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+                boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
+                boolean shouldNotBePruned = newDistanceValid || projectedDistanceValid;
                 if (shouldNotBePruned) {
-                    edge.visited = true;
                     getNodeDist(dir).set(edge.to, newDist);
                     updatePriority(edge.to, dir);
                     getPathMap(dir).put(edge.to, from);
@@ -55,21 +54,15 @@ public class RelaxGenerator {
         };
     }
 
+    // 6925 -> 5331
     public static RelaxStrategy getBiReach() {
         return ((from, edge, dir) -> {
             List<Double> bounds = getReachBounds();
             double newDist = getNodeDist(dir).get(from) + edge.d;
-            boolean pruned = bounds.get(edge.to) < newDist;
-            if (!pruned && newDist < getNodeDist(dir).get(edge.to)) {
-                edge.visited = true;
-                getNodeDist(dir).set(edge.to, newDist);
-                updatePriority(edge.to, dir);
-                getPathMap(dir).put(edge.to, from);
-                double newPathDist = newDist + getNodeDist(revDir(dir)).get(edge.to);
-                if (newPathDist < getGoalDistance()) {
-                    setGoalDistance(newPathDist);
-                    setMiddlePoint(edge.to);
-                }
+            double reachBound = bounds.get(edge.to);
+            boolean newDistanceValid = Math.abs(reachBound - newDist) <= precision;
+            if (newDistanceValid) {
+                getBiDijkstra().relax(from, edge, dir);
             }
         });
     }

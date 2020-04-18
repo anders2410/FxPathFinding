@@ -1,5 +1,7 @@
 package paths;
 
+import javafx.FXMLController;
+import load.GraphIO;
 import load.pbfparsing.PBFParser;
 import model.Graph;
 import model.Node;
@@ -40,5 +42,13 @@ public class ReachTest {
         ReachProcessor reachProcessor = new ReachProcessor();
         List<Double> arr = reachProcessor.computeReachBound(graph);
         System.out.println(arr);
+    }
+
+    @Test
+    public void testBiReach() {
+        GraphIO graphIO = new GraphIO(Util :: sphericalDistance);
+        List<Double> bounds = graphIO.loadReach(fileName);
+        SSSP.setReachBounds(bounds);
+
     }
 }
