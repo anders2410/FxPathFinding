@@ -110,6 +110,7 @@ public class FXMLController implements Initializable {
             graph = loadGraphTask.getValue();
             landmarksGenerator = new Landmarks(graph);
             setUpGraph();
+            loadReachBounds();
             playIndicatorCompleted();
         });
         attachProgressIndicator(loadGraphTask.progressProperty());
