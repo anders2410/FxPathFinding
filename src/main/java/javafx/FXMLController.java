@@ -134,7 +134,6 @@ public class FXMLController implements Initializable {
      */
     private void setUpGraph() {
         mouseNodes = 0;
-        resetSelection();
         if (gc != null) {
             nodes_label.setText("Nodes in Graph: " + graph.getNodeAmount());
             edges_label.setText("Edges in Graph: " + graph.getEdgeAmount());
@@ -142,6 +141,7 @@ public class FXMLController implements Initializable {
         fitGraph();
         SSSP.setGraph(graph);
         SSSP.setLandmarks(landmarksGenerator);
+        resetSelection();
     }
 
     private Task<List<ShortestPathResult>> ssspTask;

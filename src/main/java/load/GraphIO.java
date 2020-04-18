@@ -176,17 +176,21 @@ public class GraphIO {
             fileName = Util.trimFileTypes(fileName);
         }
         try {
-            FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-reach-bounds.tmp");
-            ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
+            String reachFile = tempDir + fileName + "-reach-bounds.tmp";
+            if (!new File(reachFile).exists()) {
+                return null;
+            }
+            FileInputStream reachInput = new FileInputStream(reachFile);
+            ObjectInputStream reachStream = new ObjectInputStream(reachInput);
 
             List<Double> bounds = null;
 
             try {
-                bounds = (List<Double>) landmarksStream.readObject();
+                bounds = (List<Double>) reachStream.readObject();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            landmarksStream.close();
+            reachStream.close();
             assert bounds != null;
             return bounds;
         } catch (IOException e) {
