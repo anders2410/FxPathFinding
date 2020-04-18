@@ -28,7 +28,8 @@ public class ContractionHierarchies {
 
     public ContractionHierarchies(Graph graph) {
         this.graph = graph;
-        importanceQueue = new JavaMinPriorityQueue(getImportanceComparator(), graph.getNodeAmount());
+        Comparator<Integer> comp = Comparator.comparingInt(i -> importance.get(i));
+        importanceQueue = new JavaMinPriorityQueue(comp, graph.getNodeAmount());
         initializeLists();
         setInitialImportance();
     }
@@ -62,7 +63,7 @@ public class ContractionHierarchies {
     }
 
     // Calculates the incoming nodes
-    public Map<Integer, List<Integer>> getInNodeMap() {
+    private Map<Integer, List<Integer>> getInNodeMap() {
         Map<Integer, List<Integer>> map = new HashMap<>();
         List<Node> nodeList = graph.getNodeList();
 
@@ -176,10 +177,6 @@ public class ContractionHierarchies {
                 }
 
                 double totalCost = inCost + outCost;
-                //System.out.println(inNodeList);
-                //System.out.println(outEdgeList);
-                //System.out.println("Length from " + inNode + " to " + outNode + ": " + distances.get(outNode).distance);
-                //System.out.println("Length through " + n + ": " + totalCost);
 
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
                 if (distanceList.get(outNodeIndex) > totalCost) {
@@ -197,8 +194,6 @@ public class ContractionHierarchies {
                         temp2.add(outNodeIndex);
                         inNodeMap.replace(inNodeIndex, temp2);
                     }
-
-                    // System.out.println("Shortcut between " + inNode + " and " + outNode + "  added!");
                 }
             }
         }
@@ -212,6 +207,7 @@ public class ContractionHierarchies {
                 break;
             }
         }
+
         boolean anything = false;
         for (Integer n : inNodeMap.get(node)) {
             if (n == outNode) {
@@ -224,11 +220,6 @@ public class ContractionHierarchies {
     }
 
     private List<Double> dijkstra(int inNode, double maxCost) {
-
-        /*for (int i = 0; i < graph.getNodeAmount(); i++) {
-            distanceList.add(Double.MAX_VALUE);
-        }*/
-
         for (Integer i : dijkstraVisited) {
             dijkstraDistanceList.set(i, Double.MAX_VALUE);
         }
@@ -268,20 +259,9 @@ public class ContractionHierarchies {
                     dijkstraVisited.add(temp);
                 }
             }
-
             i++;
         }
-
         return distanceList;
-    }
-
-    private List<Integer> getNeighbours(int node) {
-        List<Integer> list = new ArrayList<>();
-        for (Edge e : graph.getAdjList().get(node)) {
-            list.add(e.to);
-        }
-        list.addAll(inNodeMap.get(node));
-        return list;
     }
 
     // Calculate the cost of a given incoming edge/node. (inNode -> n)
@@ -308,7 +288,7 @@ public class ContractionHierarchies {
      */
     private int edgeDifference(int n) {
         int inDegree = inNodeMap.get(n).size();
-        int outDegree = getOutDegree(n);
+        int outDegree = graph.getAdjList().get(n).size();
         int numberOfShortcuts = inDegree * outDegree;
         return numberOfShortcuts - inDegree + outDegree;
     }
@@ -320,15 +300,6 @@ public class ContractionHierarchies {
      */
     private int contractedNeighbours(int n) {
         return contractedNeighbours.get(n);
-    }
-
-    /**
-     * The idea is that we want to contract important nodes later. The shortcutCover sc(n) is the
-     * number of neighbours m of n such that we could have a shortcut to or from m after contracting n.
-     * If the sc(n) is big, many nodes depend on n. We will contract a node with small sc(n).
-     */
-    private int shortcutCover(int n) {
-        return graph.getAdjList().get(n).size() + inNodeMap.get(n).size();
     }
 
     /**
@@ -363,30 +334,13 @@ public class ContractionHierarchies {
             contractedNeighbours.set(node, contractedNeighbours.get(node) + 1);
         }
 
-        /*// Update the neighbours
+        // Update the neighbours
         for (int neighbour : getNeighbours(n)) {
             if (!contracted.get(neighbour)) {
                 updateImportance(neighbour);
                 importanceQueue.updatePriority(neighbour);
             }
-        }*/
-    }
-
-    private int getOutDegree(int n) {
-        return graph.getAdjList().get(n).size();
-    }
-
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-    }
-
-    public Graph getGraph() {
-        return graph;
-    }
-
-    // Set the queue to compare on Importance
-    private Comparator<Integer> getImportanceComparator() {
-        return Comparator.comparingInt(i -> importance.get(i));
+        }
     }
 
     // --------------------------------------- BIDIRECTIONAL ----------------------------------------
@@ -456,5 +410,25 @@ public class ContractionHierarchies {
         }
 
         return estimate;
+    }
+
+    // ----------------------------- UTILITIES ------------------------------------------
+
+    // Find the neighbours of a given node.
+    private List<Integer> getNeighbours(int node) {
+        List<Integer> list = new ArrayList<>();
+        for (Edge e : graph.getAdjList().get(node)) {
+            list.add(e.to);
+        }
+        list.addAll(inNodeMap.get(node));
+        return list;
+    }
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+    }
+
+    public Graph getGraph() {
+        return graph;
     }
 }

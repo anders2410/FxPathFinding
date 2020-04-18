@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 
 public class ContractionHierarchiesTest {
     Graph graph;
-    String fileName = "greenland-latest.osm.pbf";
+    String fileName = "malta-latest.osm.pbf";
 
     @Before
     public void setUp() {
