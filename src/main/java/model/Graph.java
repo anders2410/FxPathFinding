@@ -120,6 +120,10 @@ public class Graph implements Serializable {
     }
 
     public void addEdge(int from, int to, double d) {
+        Edge newEdge = new Edge(to, d);
+        for (Edge e : adjList.get(from)) {
+            if (e.equals(newEdge)) { return; }
+        }
         adjList.get(from).add(new Edge(to, d));
     }
 
