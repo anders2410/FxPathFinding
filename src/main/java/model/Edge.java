@@ -1,8 +1,11 @@
 package model;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Edge implements Serializable {
+    // We should define our own ID as different machines could generate different ID's
+    private static final long serialVersionUID = 6529685098267757690L;
 
     public int to;
     public double d;
