@@ -6,13 +6,12 @@ import model.Node;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.crypto.spec.PSource;
 import java.io.IOException;
 import java.util.function.BiFunction;
 
 public class ContractionHierarchiesTest {
     Graph graph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "greenland-latest.osm.pbf";
 
     @Before
     public void setUp() {
