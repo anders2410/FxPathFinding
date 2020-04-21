@@ -99,7 +99,6 @@ public class ContractionHierarchies {
             rank++;
 
             // Contraction part
-            // System.out.println(importance.get(n));
             contractNode(n);
         }
 
@@ -179,7 +178,7 @@ public class ContractionHierarchies {
                 double totalCost = inCost + outCost;
 
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
-                if (distanceList.get(outNodeIndex) > totalCost) {
+                if (!(inNodeIndex == outNodeIndex) && distanceList.get(outNodeIndex) > totalCost) {
                     // TODO: 15/04/2020 Add implementation for one-way streets
                     graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
 
@@ -236,12 +235,11 @@ public class ContractionHierarchies {
         queue.clear();
         queue.add(inNode);
 
-        int i = 0;
         while (!queue.isEmpty()) {
             int node = queue.poll();
             dijkstraVisited.add(node);
 
-            if (i > 3 || distanceList.get(node) > maxCost) {
+            if (distanceList.get(node) > maxCost) {
                 return distanceList;
             }
 
@@ -259,7 +257,6 @@ public class ContractionHierarchies {
                     dijkstraVisited.add(temp);
                 }
             }
-            i++;
         }
         return distanceList;
     }
