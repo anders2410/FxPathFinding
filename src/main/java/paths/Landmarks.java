@@ -47,6 +47,7 @@ public class Landmarks {
         if (landmarkSet.size() == goalAmount) {
             return landmarkSet;
         }
+        int edgesInGraph = sumEdgesInGraph(graph);
         landmarksAvoid(goalAmount, false);
         Set<Integer> candidateSet = new HashSet<>(landmarkSet);
         int avoidCall = 1;
@@ -67,6 +68,7 @@ public class Landmarks {
         // Approximate log2(goal+1)
         int flooredLog = (int) (Math.log(goalAmount + 1) / Math.log(2));
         if (progressListener != null) progressListener.accept(1.0, 100.0);
+        HashMap<Set<Integer>, Integer> setCoverMap = new HashMap<>();
         for (int i = 0; i < flooredLog; i++) {
             List<Integer> candidateSubSetList = new ArrayList<>(candidateSet);
             while (candidateSubSetList.size() > goalAmount) {
@@ -74,18 +76,19 @@ public class Landmarks {
                 candidateSubSetList.remove(0);
             }
             Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
+            if (i == 0) candidateSubSet = landmarkSet;
             boolean improveFound = true;
             double approximateProgress = i;
-            Map<Edge, Set<Integer>> coveredEdges = calculateCoveredEdges(landmarkSet);
-            int currentProfit = coveredEdges.size();
+            Map<Edge, Set<Integer>> coveredEdges = calculateCoveredEdges(candidateSubSet);
+            int currentProfit = coveredEdges.size() - edgesInGraph;
             while (improveFound) {
                 if (progressListener != null)
                     progressListener.accept(Math.min((double) i + 1, approximateProgress), (double) flooredLog);
                 improveFound = false;
                 int bestSwapCandidateIn = -1;
                 int bestSwapCandidateOut = -1;
-                for (Integer outCandidate : landmarkSet) {
-                    for (Integer swapCandidate : candidateSubSet) {
+                for (Integer outCandidate : candidateSubSet) {
+                    for (Integer swapCandidate : candidateSet) {
                         /*Set<Integer> copySet = new HashSet<>(landmarkSet);
                         copySet.remove(outCandidate);
                         copySet.add(swapCandidate);*/
@@ -94,7 +97,7 @@ public class Landmarks {
                         Map<Edge, Set<Integer>> coveredEdgesWithIn = coveredEdgesWithLandmark(coveredEdgesWithoutOut, swapCandidate);
                         int withInSize = coveredEdgesWithIn.size();
                         assert withInSize >= withoutSize;
-                        int newValue = coveredEdgesWithIn.size();
+                        int newValue = coveredEdgesWithIn.size() - edgesInGraph;
                         if (newValue > currentProfit) {
                             bestSwapCandidateOut = outCandidate;
                             bestSwapCandidateIn = swapCandidate;
@@ -104,18 +107,36 @@ public class Landmarks {
                     }
                 }
                 if (bestSwapCandidateIn != -1) {
-                    landmarkSet.remove(bestSwapCandidateOut);
-                    landmarkSet.add(bestSwapCandidateIn);
-                    candidateSubSet.remove(bestSwapCandidateIn);
-                    candidateSubSet.add(bestSwapCandidateOut);
+                    candidateSubSet.remove(bestSwapCandidateOut);
+                    candidateSubSet.add(bestSwapCandidateIn);
+                    candidateSet.remove(bestSwapCandidateIn);
+                    candidateSet.add(bestSwapCandidateOut);
                 }
                 approximateProgress += 0.1;
             }
+            setCoverMap.put(candidateSubSet, currentProfit);
             if (progressListener != null) progressListener.accept((double) i, (double) flooredLog);
         }
         if (progressListener != null) progressListener.accept(1.00, 1.00);
         landmarksDistancesActual.clear();
+        int best = 0;
+        for (Map.Entry<Set<Integer>, Integer> ent : setCoverMap.entrySet()) {
+            if (ent.getValue() > best) {
+                landmarkSet = ent.getKey();
+                best = ent.getValue();
+            }
+        }
         return landmarkSet;
+    }
+
+    private int sumEdgesInGraph(Graph graph) {
+        int counter = 0;
+        for (int i = 0; i < graph.getNodeList().size(); i++) {
+            for (Edge e : graph.getAdjList().get(i)) {
+                counter++;
+            }
+        }
+        return counter;
     }
 
     private Map<Edge, Set<Integer>> coveredEdgesWithout(Map<Edge, Set<Integer>> edgeCoveredMap, Integer outCandidate) {
@@ -140,7 +161,7 @@ public class Landmarks {
                 if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
                     continue;
                 }
-                if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
+                if (distances[e.to] > distances[i]) {
                     Set<Integer> edgedCoveredSet = edgeCoveredMap.computeIfAbsent(e, k -> new HashSet<>());
                     edgedCoveredSet.add(inCandidate);
                     edgeCoveredMap.replace(e, edgedCoveredSet);
