@@ -21,6 +21,7 @@ public class SSSP {
     public static int seed = 0;
 
     private static Graph graph;
+    private static Graph CHGraph;
     private static Landmarks landmarks;
     private static int source, target;
     private static AlgorithmMode mode;
@@ -28,6 +29,7 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
+    private static List<Integer> nodeRankCH;
 
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
@@ -121,6 +123,7 @@ public class SSSP {
         factoryMap.put(BI_A_STAR_LANDMARKS, new BiLandmarksFactory());
         factoryMap.put(REACH, new ReachFactory());
         factoryMap.put(BI_REACH, new BiReachFactory());
+        factoryMap.put(CONTRACTION_HIERARCHIES, new ContractionHierarchiesFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -393,5 +396,21 @@ public class SSSP {
 
     public static void setMiddlePoint(int middlePoint) {
         SSSP.middlePoint = middlePoint;
+    }
+
+    public static void setNodeRankCH(List<Integer> nodeRank) {
+        nodeRankCH = nodeRank;
+    }
+
+    public static List<Integer> getNodeRankCH() {
+        return nodeRankCH;
+    }
+
+    public static void setCHGraph(Graph graph) {
+        CHGraph = graph;
+    }
+
+    public static Graph getCHGraph() {
+        return CHGraph;
     }
 }

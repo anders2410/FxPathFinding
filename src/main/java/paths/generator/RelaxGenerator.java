@@ -66,6 +66,15 @@ public class RelaxGenerator {
             }
         });
     }
+
+    public static RelaxStrategy getCH() {
+        return (from, edge, dir) -> {
+            List<Integer> ranks = getNodeRankCH();
+            if (ranks.get(from) < ranks.get(edge.to)) {
+                getDijkstra().relax(from, edge, dir);
+            }
+        };
+    }
 /*
     public static RelaxStrategy getAStarNew() {
         return (from, edge, dir) -> {

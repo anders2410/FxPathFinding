@@ -20,6 +20,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.Pair;
 import load.GraphIO;
 import model.Edge;
 import model.Graph;
@@ -29,6 +30,7 @@ import paths.*;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -849,14 +851,29 @@ public class FXMLController implements Initializable {
         generateReachBounds();
     }
 
-    public void handleGenerateCHEvent() {
-        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
-        graph = contractionHierarchies.preprocess();
-        redrawGraph();
+    public void handleCHEvent() {
+        algorithmMode = CONTRACTION_HIERARCHIES;
+        runAlgorithm();
+        setAlgorithmLabels();
     }
 
-    public void handleCHEvent() {
-
+    public void handleGenerateCHEvent() {
+        Task<Pair<Graph, List<Integer>>> CHTask = new Task<>() {
+            @Override
+            protected Pair<Graph, List<Integer>> call() {
+                ContractionHierarchies contractionHierarchies = new ContractionHierarchies(new Graph(graph));
+                return contractionHierarchies.preprocess();
+            }
+        };
+        CHTask.setOnSucceeded(e -> {
+            try {
+                SSSP.setNodeRankCH(CHTask.get().getValue());
+                SSSP.setCHGraph(CHTask.get().getKey());
+            } catch (InterruptedException | ExecutionException ex) {
+                ex.printStackTrace();
+            }
+        });
+        new Thread(CHTask).start();
     }
 
     // UTILITIES

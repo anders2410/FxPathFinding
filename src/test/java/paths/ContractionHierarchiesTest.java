@@ -1,13 +1,14 @@
 package paths;
 
+import javafx.util.Pair;
 import load.pbfparsing.PBFParser;
 import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.crypto.spec.PSource;
 import java.io.IOException;
+import java.util.List;
 import java.util.function.BiFunction;
 
 public class ContractionHierarchiesTest {
@@ -39,7 +40,8 @@ public class ContractionHierarchiesTest {
     @Test
     public void testContractionHierarchiesMainFunction() {
         ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
-        Graph CHGraph = contractionHierarchies.preprocess();
+        Pair<Graph, List<Integer>> pair = contractionHierarchies.preprocess();
+        Graph CHGraph = pair.getKey();
         System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
         System.out.println("Number of nodes: " + CHGraph.getNodeAmount());
         System.out.println("Number of edges: " + CHGraph.getEdgeAmount());
