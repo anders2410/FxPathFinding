@@ -1,6 +1,7 @@
 package paths;
 
 import datastructures.JavaMinPriorityQueue;
+import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -80,7 +81,7 @@ public class ContractionHierarchies {
 
     // We iterate the nodes one by one in the order of importance and add 'Shortcuts'
     // whenever no witness path has been found.
-    public Graph preprocess() {
+    public Pair<Graph, List<Integer>> preprocess() {
         // Stores the number of nodes that are contracted
         int rank = 0;
 
@@ -108,7 +109,7 @@ public class ContractionHierarchies {
             edgeList.removeIf(edge -> nodeHack.index == edge.to);
         }
 
-        return graph;
+        return new Pair<Graph, List<Integer>>(graph, ranks);
     }
 
     // Function to contract a node!
