@@ -186,16 +186,16 @@ public class FXMLController implements Initializable {
         Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
             List<Integer> combinedPath = new ArrayList<>(res1.path);
             combinedPath.addAll(res2.path.subList(1, res2.path.size()));
-            Set<Integer> combinedVisitedA = new HashSet<>(res1.visitedNodesA);
-            combinedVisitedA.addAll(res2.visitedNodesA);
-            Set<Integer> combinedVisitedB = new HashSet<>(res1.visitedNodesB);
-            combinedVisitedA.addAll(res2.visitedNodesB);
+            Set<Integer> combinedVisitedA = new HashSet<>(res1.scannedNodesA);
+            combinedVisitedA.addAll(res2.scannedNodesA);
+            Set<Integer> combinedVisitedB = new HashSet<>(res1.scannedNodesB);
+            combinedVisitedA.addAll(res2.scannedNodesB);
             return new ShortestPathResult(res1.d + res2.d, combinedPath, combinedVisitedA, combinedVisitedB, res1.runTime + res2.runTime);
         });
         if (optCombinedRes.isPresent()) {
             ShortestPathResult combinedRes = optCombinedRes.get();
             currentResult = combinedRes;
-            setLabels(Util.roundDouble(combinedRes.d), combinedRes.visitedNodesA.size() + combinedRes.visitedNodesB.size());
+            setLabels(Util.roundDouble(combinedRes.d), combinedRes.scannedNodesA.size() + combinedRes.scannedNodesB.size());
         }
     }
 
@@ -277,8 +277,8 @@ public class FXMLController implements Initializable {
     }
 
     private int compVal(Node from, Edge edge) {
-        boolean visited = currentResult.visitedNodesA.contains(from.index);
-        boolean reverseVisited = currentResult.visitedNodesB.contains(from.index);
+        boolean visited = currentResult.scannedNodesA.contains(from.index);
+        boolean reverseVisited = currentResult.scannedNodesB.contains(from.index);
         boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
         boolean isDrawn = drawnEdges.contains(edge);
         int compVal = 0;
@@ -306,8 +306,8 @@ public class FXMLController implements Initializable {
     }
 
     private Color chooseEdgeColor(Node from, Edge edge) {
-        boolean visited = currentResult.visitedNodesA.contains(from.index);
-        boolean reverseVisited = currentResult.visitedNodesB.contains(from.index);
+        boolean visited = currentResult.scannedNodesA.contains(from.index);
+        boolean reverseVisited = currentResult.scannedNodesB.contains(from.index);
         boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
         if (inPath) {
             return Color.RED;
@@ -973,6 +973,7 @@ public class FXMLController implements Initializable {
 
     public void handleClearLandmarks() {
         landmarksGenerator.clearLandmarks();
+        SSSP.setLandmarkArray(null);
         redrawGraph();
     }
 
@@ -981,7 +982,7 @@ public class FXMLController implements Initializable {
             @Override
             protected List<Double> call() {
                 ReachProcessor reachProcessor = new ReachProcessor();
-                reachProcessor.setProgressListener(this :: updateProgress);
+                reachProcessor.setProgressListener(this::updateProgress);
                 return reachProcessor.computeReachBound(new Graph(graph));
             }
         };

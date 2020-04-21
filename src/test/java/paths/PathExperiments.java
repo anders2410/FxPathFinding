@@ -1,20 +1,15 @@
 package paths;
 
 import load.GraphIO;
-import model.Edge;
 import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
-import load.pbfparsing.PBFParser;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.*;
-import static paths.SSSP.*;
-import static paths.SSSP.getHeuristicFunction;
 
 public class PathExperiments {
     Graph graph;
@@ -50,17 +45,19 @@ public class PathExperiments {
         lm.landmarksRandom(16, true);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
+        Set<Integer> test = lm.getLandmarkSet();
         SSSP.setLandmarkArray(null);
         for (int j = 0; j < testSize; j++) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
             /*resultArray[0][j] = res;*/
             runtimes[0][j] = res.runTime;
-            randomData.addVisit(res.visitedNodesA.size());
+            randomData.addVisit(res.calculateAllUniqueVisits(graph));
             randomData.addRuntime(res.runTime);
         }
         lm.clearLandmarks();
         lm.landmarksFarthest(16, true);
+        test = lm.getLandmarkSet();
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
@@ -69,13 +66,14 @@ public class PathExperiments {
             ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
             /*resultArray[1][j] = res;*/
             runtimes[1][j] = res.runTime;
-            farthestData.addVisit(res.visitedNodesA.size());
+            farthestData.addVisit(res.calculateAllUniqueVisits(graph));
             farthestData.addRuntime(res.runTime);
         }
         lm.clearLandmarks();
         lm.landmarksAvoid(16, true);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
+        test = lm.getLandmarkSet();
         SSSP.setLandmarkArray(null);
         for (int j = 0; j < testSize; j++) {
             SSSP.seed++;
@@ -84,7 +82,7 @@ public class PathExperiments {
             resultArray[2][j] = res;
 */
             runtimes[2][j] = res.runTime;
-            avoidData.addVisit(res.visitedNodesA.size());
+            avoidData.addVisit(res.calculateAllUniqueVisits(graph));
             avoidData.addRuntime(res.runTime);
         }
 
@@ -92,6 +90,7 @@ public class PathExperiments {
         lm.landmarksMaxCover(16, true);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
+        test = lm.getLandmarkSet();
         SSSP.setLandmarkArray(null);
         for (int j = 0; j < testSize; j++) {
             SSSP.seed++;
@@ -100,7 +99,7 @@ public class PathExperiments {
             resultArray[3][j] = res;
 */
             runtimes[3][j] = res.runTime;
-            maxData.addVisit(res.visitedNodesA.size());
+            maxData.addVisit(res.calculateAllUniqueVisits(graph));
             maxData.addRuntime(res.runTime);
         }
         long max = 0;
@@ -121,12 +120,14 @@ public class PathExperiments {
 class TestData {
     protected int minVisits, maxVisits, acumVisits;
     protected long acumRuntime;
+    protected List<Integer> pathStartList;
 
     public TestData() {
         minVisits = Integer.MAX_VALUE;
         maxVisits = 0;
         acumVisits = 0;
         acumRuntime = 0;
+        pathStartList = new ArrayList<>();
     }
 
     public void addVisit(int size) {
@@ -137,6 +138,10 @@ class TestData {
 
     public void addRuntime(long runTime) {
         acumRuntime += runTime;
+    }
+
+    public void addStartingPoint(Integer integer) {
+        pathStartList.add(integer);
     }
 }
 

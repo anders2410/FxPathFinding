@@ -1,8 +1,6 @@
 package paths.generator;
 
-import paths.SSSP;
 import paths.strategy.AlternationStrategy;
-import paths.SSSP.*;
 
 import static paths.ABDir.*;
 import static paths.SSSP.*;
@@ -14,7 +12,7 @@ public class AlternationGenerator {
     }
 
     public static AlternationStrategy getAmountSeenStrategy() {
-        return () -> getQueue(A).size() + getVisited(A).size() < getQueue(B).size() + getVisited(B).size();
+        return () -> getQueue(A).size() + getScanned(A).size() < getQueue(B).size() + getScanned(B).size();
     }
 
     public static AlternationStrategy getSameDistanceStrategy() {

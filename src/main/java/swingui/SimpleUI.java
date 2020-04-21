@@ -166,7 +166,7 @@ public class SimpleUI extends JFrame {
         Line2D line = new Line2D.Double(x1, y1, x2, y2);
         g2d.setStroke(new BasicStroke(1));
         g2d.setColor(Color.BLACK);
-        if (currentResult.visitedNodesA.contains(nx.index)) {
+        if (currentResult.scannedNodesA.contains(nx.index)) {
             g2d.setColor(Color.BLUE);
         }
         if (currentResult.path.contains(nx.index) && currentResult.path.contains(ny.index)) {

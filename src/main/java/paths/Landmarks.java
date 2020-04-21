@@ -42,7 +42,6 @@ public class Landmarks {
         this.progressListener = progressListener;
     }
 
-
     public Set<Integer> landmarksMaxCover(int goalAmount, boolean calledAsSubRoutine) {
         if (landmarkSet.size() == goalAmount) {
             return landmarkSet;
@@ -66,7 +65,7 @@ public class Landmarks {
             candidateSet.addAll(landmarkSet);
         }
         // Approximate log2(goal+1)
-        int flooredLog = (int) (Math.log(goalAmount + 1) / Math.log(2));
+        int flooredLog = (int) (Math.log(goalAmount) / Math.log(2)) + 1;
         if (progressListener != null) progressListener.accept(1.0, 100.0);
         HashMap<Set<Integer>, Integer> setCoverMap = new HashMap<>();
         for (int i = 0; i < flooredLog; i++) {
@@ -76,45 +75,67 @@ public class Landmarks {
                 candidateSubSetList.remove(0);
             }
             Set<Integer> candidateSubSet = new HashSet<>(candidateSubSetList);
-            if (i == 0) candidateSubSet = landmarkSet;
             boolean improveFound = true;
             double approximateProgress = i;
-            Map<Edge, Set<Integer>> coveredEdges = calculateCoveredEdges(candidateSubSet);
-            int currentProfit = coveredEdges.size() - edgesInGraph;
+            Map<Edge, Set<Integer>> coveredEdges = calculateCoveredEdges(landmarkSet);
+            int currentProfit = coveredEdges.size();
             while (improveFound) {
+                List<int[]> profitStore = new ArrayList<>();
                 if (progressListener != null)
                     progressListener.accept(Math.min((double) i + 1, approximateProgress), (double) flooredLog);
                 improveFound = false;
-                int bestSwapCandidateIn = -1;
-                int bestSwapCandidateOut = -1;
-                for (Integer outCandidate : candidateSubSet) {
-                    for (Integer swapCandidate : candidateSet) {
-                        /*Set<Integer> copySet = new HashSet<>(landmarkSet);
-                        copySet.remove(outCandidate);
-                        copySet.add(swapCandidate);*/
+            /*    int bestSwapCandidateIn = -1;
+                int bestSwapCandidateOut = -1;*/
+                for (Integer outCandidate : landmarkSet) {
+                    for (Integer swapCandidate : candidateSubSet) {
                         Map<Edge, Set<Integer>> coveredEdgesWithoutOut = coveredEdgesWithout(coveredEdges, outCandidate);
                         int withoutSize = coveredEdgesWithoutOut.size();
                         Map<Edge, Set<Integer>> coveredEdgesWithIn = coveredEdgesWithLandmark(coveredEdgesWithoutOut, swapCandidate);
                         int withInSize = coveredEdgesWithIn.size();
                         assert withInSize >= withoutSize;
-                        int newValue = coveredEdgesWithIn.size() - edgesInGraph;
+                        int newValue = coveredEdgesWithIn.size();
                         if (newValue > currentProfit) {
-                            bestSwapCandidateOut = outCandidate;
+                            int[] store = new int[3];
+                            store[0] = outCandidate;
+                            store[1] = swapCandidate;
+                            store[2] = newValue;
+                            profitStore.add(store);
+                           /* bestSwapCandidateOut = outCandidate;
                             bestSwapCandidateIn = swapCandidate;
-                            currentProfit = newValue;
+                            currentProfit = newValue;*/
                             improveFound = true;
                         }
                     }
                 }
-                if (bestSwapCandidateIn != -1) {
+               /* if (bestSwapCandidateIn != -1) {
                     candidateSubSet.remove(bestSwapCandidateOut);
                     candidateSubSet.add(bestSwapCandidateIn);
                     candidateSet.remove(bestSwapCandidateIn);
                     candidateSet.add(bestSwapCandidateOut);
+                }*/
+                if (profitStore.size() > 0) {
+                    int[] probabilitySum = new int[profitStore.size()];
+                    probabilitySum[0] = profitStore.get(0)[2] - currentProfit;
+                    for (int j = 1; j < probabilitySum.length; j++) {
+                        probabilitySum[j] = profitStore.get(j)[2] + probabilitySum[j - 1] - currentProfit;
+                    }
+                    Random r = new Random();
+                    int lottoWinner = r.nextInt(probabilitySum[probabilitySum.length - 1]);
+                    int winningSwap = -1;
+                    if (0 <= lottoWinner && lottoWinner < probabilitySum[0]) winningSwap = 0;
+                    for (int j = 1; j < probabilitySum.length; j++) {
+                        if (probabilitySum[j - 1] <= lottoWinner && lottoWinner < probabilitySum[j]) winningSwap = j;
+                    }
+                    currentProfit = profitStore.get(winningSwap)[2];
+                    landmarkSet.remove(profitStore.get(winningSwap)[0]);
+                    landmarkSet.add(profitStore.get(winningSwap)[1]);
+                    candidateSet.remove(profitStore.get(winningSwap)[1]);
+                    candidateSet.add(profitStore.get(winningSwap)[0]);
+                    coveredEdges = calculateCoveredEdges(candidateSubSet);
                 }
                 approximateProgress += 0.1;
             }
-            setCoverMap.put(candidateSubSet, currentProfit);
+            setCoverMap.put(new HashSet<>(landmarkSet), currentProfit);
             if (progressListener != null) progressListener.accept((double) i, (double) flooredLog);
         }
         if (progressListener != null) progressListener.accept(1.00, 1.00);
@@ -161,7 +182,9 @@ public class Landmarks {
                 if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
                     continue;
                 }
-                if (distances[e.to] > distances[i]) {
+                double a = distances[e.to] - distances[i];
+                double abs = Math.abs((distances[i] - distances[e.to]) - e.d);
+                if (abs <= 0.000000000000001 && e.d != 0) {
                     Set<Integer> edgedCoveredSet = edgeCoveredMap.computeIfAbsent(e, k -> new HashSet<>());
                     edgedCoveredSet.add(inCandidate);
                     edgeCoveredMap.replace(e, edgedCoveredSet);
@@ -187,6 +210,7 @@ public class Landmarks {
                     if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
                         continue;
                     }
+                    double a = distances[e.to] - distances[i];
                     if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
                         covers++;
 /*
@@ -216,14 +240,15 @@ public class Landmarks {
                     if (distances[e.to] == Double.MAX_VALUE || distances[i] == Double.MAX_VALUE) {
                         continue;
                     }
-                    if (Math.abs((e.d - distances[e.to] + distances[i]) - 0.0) <= Math.ulp(0.0)) {
+                    double a = distances[i] - distances[e.to];
+                    double abs = Math.abs((distances[e.to] - distances[i]) - e.d);
+                    if (abs <= 0.000000000000001 && e.d != 0) {
                         Set<Integer> edgedCoveredSet = coveredEdges.computeIfAbsent(e, k -> new HashSet<>());
                         edgedCoveredSet.add(lMarkIndex);
                         coveredEdges.replace(e, edgedCoveredSet);
                         /*
                         System.out.println("Edge from: " + i + " to: " + lMarkIndex + " is covered");
 */
-                        break;
                     }
                 }
             }
@@ -267,13 +292,14 @@ public class Landmarks {
 
 
     public Set<Integer> landmarksAvoid(int goalAmount, boolean calledAsSubroutine) {
+        SSSP.setLandmarkArray(null);
         if (landmarkSet == null || landmarkSet.isEmpty()) {
             Random random = new Random();
-            random.setSeed(664757);
             int randomInitialLandmark = random.nextInt(graph.getNodeAmount());
             landmarkSet.add(randomInitialLandmark);
             landmarksDistancesBFS.put(randomInitialLandmark, new GraphUtil(graph).bfsMaxDistance(randomInitialLandmark));
             avoidGetLeaf();
+            SSSP.setLandmarkArray(null);
             landmarkSet.remove(randomInitialLandmark);
         }
 
@@ -295,6 +321,9 @@ public class Landmarks {
         for (int i = 0; i < SPT.nodeDistances.size(); i++) {
             double heuristicVal = S.apply(rootNode, i);
             double val = SPT.nodeDistances.get(i) - heuristicVal;
+            if (val < 0.000000000000001) {
+                val = 0;
+            }
             weightedNodes[i] = val;
         }
         Map<Integer, List<Integer>> pathInversed = SPT.pathMap.entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
@@ -306,6 +335,9 @@ public class Landmarks {
                 continue;
             }
             double weighSumNode = findSumInTree(i, pathInversed, weightedNodes);
+            if (weighSumNode == -1.0) {
+                weighSumNode = 0.0;
+            } ;
             sizeNodes[i] = weighSumNode;
             if (maxWeight <= weighSumNode) {
                 bestCandidate = i;
