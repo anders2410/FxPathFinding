@@ -36,7 +36,7 @@ public class SSSPTest {
         SSSP.traceResult = true;
         ShortestPathResult dijk_res = SSSP.findShortestPath(2590, 1897, AlgorithmMode.DIJKSTRA);
         ShortestPathResult astar_res = SSSP.findShortestPath(2590, 1897, AlgorithmMode.A_STAR);
-        assertTrue(dijk_res.visitedNodesA.size() > astar_res.visitedNodesA.size());
+        assertTrue(dijk_res.scannedNodesA.size() > astar_res.scannedNodesA.size());
         assertEquals(dijk_res.d, astar_res.d, 0);
         SSSP.traceResult = false;
     }

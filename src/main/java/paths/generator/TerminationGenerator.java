@@ -28,7 +28,7 @@ public class TerminationGenerator {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
             if (topA != null && topB != null) {
-                return getVisited(B).contains(topA) || getVisited(A).contains(topB);
+                return getScanned(B).contains(topA) || getScanned(A).contains(topB);
             }
             return false;
         };
