@@ -1,5 +1,6 @@
 package paths;
 
+import javafx.concurrent.Task;
 import load.GraphIO;
 import model.Graph;
 import model.Node;
@@ -8,12 +9,13 @@ import org.junit.Test;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 public class PathExperiments {
     Graph graph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "poland-latest.osm.pbf";
     GraphIO graphIO;
 
     @Before
@@ -21,9 +23,22 @@ public class PathExperiments {
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         SSSP.setDistanceStrategy(distanceStrategy1);
         graphIO = new GraphIO(distanceStrategy1);
-        graphIO.loadGraph(fileName);
+        /*graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);*/
+    }
+
+    @Test
+    public void sccPoland() {
+        graphIO.loadGraph("poland-latest.osm.pbf");
         graph = graphIO.getGraph();
         SSSP.setGraph(graph);
+        GraphUtil gu = new GraphUtil(graph);
+        List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
+        graph = subGraphs.get(0);
+        GraphIO graphIO = new GraphIO(Util::sphericalDistance);
+        graphIO.storeTMP(Util.trimFileTypes(fileName).concat("-scc"), graph);
+        System.out.println("Finished computing SCC");
     }
 
     @Test

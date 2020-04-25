@@ -53,7 +53,8 @@ public class SSSPPBFTest {
     public void testSingleSourceAll() {
         SSSP.seed = 1;
         ShortestPathResult res = SSSP.singleToAllPath(300);
-        System.out.println("Finito");
+        ShortestPathResult res2 = SSSP.findShortestPath(300, 100, AlgorithmMode.SINGLE_TO_ALL);
+        System.out.println("Ahaha");
     }
 
     @Test
@@ -133,7 +134,9 @@ public class SSSPPBFTest {
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
+/*
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
+*/
             //Only interested in tests where path is atleast 100
             i++;
         }

@@ -1,6 +1,7 @@
 package paths.generator;
 
 import model.Node;
+import paths.SSSP;
 import paths.strategy.RelaxStrategy;
 
 import java.util.List;
@@ -72,6 +73,18 @@ public class RelaxGenerator {
             List<Integer> ranks = getNodeRankCH();
             if (ranks.get(from) < ranks.get(edge.to)) {
                 getDijkstra().relax(from, edge, dir);
+            }
+        };
+    }
+
+    public static RelaxStrategy getBoundedDijstra() {
+        return (from, edge, dir) -> {
+            double newDist = getNodeDist(dir).get(from) + edge.d;
+            if (getNodeDist(dir).get(from) > SSSP.getSingleToAllBound()) return;
+            if (newDist < getNodeDist(dir).get(edge.to)) {
+                getNodeDist(dir).set(edge.to, newDist);
+                updatePriority(edge.to, dir);
+                getPathMap(dir).put(edge.to, from);
             }
         };
     }

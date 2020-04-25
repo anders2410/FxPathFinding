@@ -14,7 +14,8 @@ public class GraphUtil {
 
     private Graph graph;
 
-    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {};
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
+    };
 
     public GraphUtil(Graph graph) {
         this.graph = graph;
@@ -44,6 +45,7 @@ public class GraphUtil {
     }
 
     boolean trace = false;
+
     private void trace(String msg) {
         if (trace) {
             System.out.print(msg);
@@ -51,10 +53,10 @@ public class GraphUtil {
     }
 
     public List<Graph> scc() {
-        progressListener.accept(1L, 100L);
+        if (progressListener != null) progressListener.accept(1L, 100L);
         int counter = 0;
         int n = graph.getNodeAmount();
-        long pn = 4*n;
+        long pn = 4 * n;
         List<List<Edge>> adjList = graph.getAdjList();
         int time = 0;
         Map<Integer, Integer> finishingTimes = new HashMap<>();
@@ -66,7 +68,7 @@ public class GraphUtil {
         // First DFS
         while (!whiteNodes.isEmpty()) {
             counter++;
-            progressListener.accept((long) counter, pn);
+            if (progressListener != null) progressListener.accept((long) counter, pn);
             Integer node = whiteNodes.peek();
             if (!recursionStack.isEmpty() && node.equals(recursionStack.peek())) {
                 time++;
@@ -96,12 +98,13 @@ public class GraphUtil {
         for (Node node : nodeList) {
             whiteNodes.add(node.index);
             trace(node.index + " -> " + finishingTimes.get(node.index) + "     ");
-        } trace("\n");
+        }
+        trace("\n");
         recursionStack = new Stack<>();
         // Second DFS
         while (!whiteNodes.isEmpty()) {
             counter++;
-            progressListener.accept((long) counter, pn);
+            if (progressListener != null) progressListener.accept((long) counter, pn);
             Integer node = whiteNodes.peek();
             if (recursionStack.isEmpty()) {
                 sccNodeLists.add(new ArrayList<>());
@@ -130,7 +133,8 @@ public class GraphUtil {
             trace("{");
             for (Integer node : sccNodeList) {
                 trace(node + ", ");
-            } trace("}\n");
+            }
+            trace("}\n");
         }
         Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
         return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
@@ -161,6 +165,7 @@ public class GraphUtil {
     }
 
     boolean traceStack = false;
+
     private void traceStack(String s, Stack<Integer> recursionStack) {
         if (!traceStack) {
             return;

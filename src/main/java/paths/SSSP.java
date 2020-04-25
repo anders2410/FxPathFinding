@@ -55,6 +55,7 @@ public class SSSP {
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
     private static Set<Integer> prunedSet;
+    private static double singleToAllBound;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -124,6 +125,9 @@ public class SSSP {
         factoryMap.put(REACH, new ReachFactory());
         factoryMap.put(BI_REACH, new BiReachFactory());
         factoryMap.put(CONTRACTION_HIERARCHIES, new ContractionHierarchiesFactory());
+        factoryMap.put(SINGLE_TO_ALL, new OneToAllDijkstra());
+        factoryMap.put(BOUNDED_SINGLE_TO_ALL, new BoundedOneToAll());
+
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -141,7 +145,7 @@ public class SSSP {
 
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
-        if (sourceP == targetP) {
+        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL) {
             return new ShortestPathResult();
         }
         applyFactory(factoryMap.get(modeP));
@@ -156,7 +160,7 @@ public class SSSP {
         queueA.insert(source);
 
         while (!queueA.isEmpty()) {
-            if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
+            /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
@@ -179,6 +183,9 @@ public class SSSP {
         }
         */
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
+        // TODO: 25-04-2020 Strategy pattern this
+        if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
+            return new ShortestPathResult(0, shortestPath, scannedA, nodeDistA, pathMapA, duration);
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, scannedA, duration);
     }
 
@@ -191,7 +198,7 @@ public class SSSP {
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
-            if (!getScanned(revDir(dir)).contains(edge.to) ) {
+            if (!getScanned(revDir(dir)).contains(edge.to)) {
                 getRelaxStrategy(dir).relax(currentNode, edge, dir);
             }
         }
@@ -233,7 +240,6 @@ public class SSSP {
         long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
-
         while (!queueA.isEmpty()) {
             takeStep(adjList, A);
         }
@@ -412,5 +418,13 @@ public class SSSP {
 
     public static Graph getCHGraph() {
         return CHGraph;
+    }
+
+    public static double getSingleToAllBound() {
+        return singleToAllBound;
+    }
+
+    public static void setSingleToAllBound(double singleToAllBound) {
+        SSSP.singleToAllBound = singleToAllBound;
     }
 }

@@ -12,7 +12,8 @@ public class ReachProcessor {
     private List<Double> bounds;
     private double[] reachLCPT;
 
-    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {};
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
+    };
 
     double reachMetric(int nodeFrom, Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
@@ -38,7 +39,7 @@ public class ReachProcessor {
         Graph subGraph = new Graph(g);
         for (int i = 0; i < 100; i++) {
             if (deletedNodes == 0) {
-                progressListener.accept((long) 10*i, 100L);
+                progressListener.accept((long) 10 * i, 100L);
             }
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
         }
@@ -73,7 +74,12 @@ public class ReachProcessor {
                     d = Math.max(d, reachMetric(j, e));
                 }
             }
-            ShortestPathResult SPTH = SSSP.singleToAllPath(i);
+            double maxFirst = 0;
+            for (Edge e : subGraph.getAdjList().get(i)) {
+                maxFirst = Math.max(maxFirst, e.d);
+            }
+            SSSP.setSingleToAllBound(2 * b + maxReachOriginalGraph + d + maxFirst);
+            ShortestPathResult SPTH = SSSP.findShortestPath(i, 300, AlgorithmMode.BOUNDED_SINGLE_TO_ALL);
             Map<Integer, List<Integer>> leastCostTreeH = new HashMap<>();
             for (Map.Entry<Integer, Integer> e : SPTH.pathMap.entrySet()) {
                 List<Integer> list = leastCostTreeH.computeIfAbsent(e.getValue(), k -> new ArrayList<>());
@@ -84,7 +90,7 @@ public class ReachProcessor {
             traverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d);
         }
         for (int i = 0; i < subGraphNodeList.size(); i++) {
-            if ( (reachLCPT[i] >= b && subGraphNodeList.get(i) != null)) {
+            if ((reachLCPT[i] >= b && subGraphNodeList.get(i) != null)) {
                 bounds.set(i, Double.MAX_VALUE);
             }
         }
