@@ -76,6 +76,7 @@ public class FXMLController implements Initializable {
     private Deque<Node> selectedNodes = new ArrayDeque<>();
     private int mouseNodes = 0;
     private String fileName;
+    private LandmarkMode landmarksGenMode;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -788,35 +789,71 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateLandmarksAvoid() {
         Landmarks lm = new Landmarks(graph);
+        landmarksGenMode = LandmarkMode.AVOID;
         Task<Void> genLandmarkTask = generateLandmarksTask(lm.getAvoidFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksMaxCover() {
         Landmarks lm = new Landmarks(graph);
+        landmarksGenMode = LandmarkMode.MAXCOVER;
         Task<Void> genLandmarkTask = generateLandmarksTask(lm.getMaxCover(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleGenerateLandmarksRandom() {
         Landmarks lm = new Landmarks(graph);
+        landmarksGenMode = LandmarkMode.RANDOM;
         Task<Void> genLandmarkTask = generateLandmarksTask(lm.getRandomFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
+
     }
 
     public void handleGenerateLandmarksFarthest() {
         Landmarks lm = new Landmarks(graph);
+        landmarksGenMode = LandmarkMode.FARTHEST;
         Task<Void> genLandmarkTask = generateLandmarksTask(lm.getFarthestFunction(lm), lm, 16);
         startLandmarksMonitorThread(genLandmarkTask);
     }
 
     public void handleLoadLandmarks() {
-        GraphIO.loadLandmarks(fileName, landmarksGenerator);
+        pickLandMarkModeGUI();
+        GraphIO.loadLandmarks(fileName, landmarksGenMode, landmarksGenerator);
         drawAllLandmarks();
     }
 
+    private void pickLandMarkModeGUI() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Landmark Generation");
+        alert.setHeaderText("Pick a Mode of Landmark Generation");
+        alert.setContentText("Choose your option.");
+
+        ButtonType buttonTypeOne = new ButtonType("Avoid");
+        ButtonType buttonTypeTwo = new ButtonType("MaxCover");
+        ButtonType buttonTypeThree = new ButtonType("Farthest");
+        ButtonType buttonTypeFour = new ButtonType("Random");
+
+
+        alert.getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo, buttonTypeThree, buttonTypeFour);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == buttonTypeOne) {
+            // ... user chose "One"
+            landmarksGenMode = LandmarkMode.AVOID;
+        } else if (result.get() == buttonTypeTwo) {
+            // ... user chose "Two"
+            landmarksGenMode = LandmarkMode.MAXCOVER;
+        } else if (result.get() == buttonTypeThree) {
+            // ... user chose "Three"
+            landmarksGenMode = LandmarkMode.FARTHEST;
+        } else {
+            landmarksGenMode = LandmarkMode.RANDOM;
+            // ... user chose CANCEL or closed the dialog
+        }
+    }
+
     public void handleSaveLandmarks() {
-        GraphIO.saveLandmarks(fileName, landmarksGenerator.getLandmarkSet());
+        GraphIO.saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
     }
 
     public void handleSetParameterEvent() {
@@ -920,6 +957,7 @@ public class FXMLController implements Initializable {
         monitorTask.setOnSucceeded(event -> {
             drawAllLandmarks();
             SSSP.setLandmarks(landmarksGenerator);
+            GraphIO.saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
             playIndicatorCompleted();
         });
         attachProgressIndicator(monitorTask.progressProperty());

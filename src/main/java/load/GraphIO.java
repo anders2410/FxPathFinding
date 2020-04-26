@@ -7,6 +7,7 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
+import paths.LandmarkMode;
 import paths.SSSP;
 import paths.Util;
 import paths.Landmarks;
@@ -38,10 +39,10 @@ public class GraphIO {
         bytesRead = 0;
     }
 
-    public static void saveLandmarks(String fileName, Set<Integer> landmarkSet) {
+    public static void saveLandmarks(String fileName, LandmarkMode generationMode, Set<Integer> landmarkSet) {
         try {
             String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
-            FileOutputStream fos = new FileOutputStream(name + "-landmarks.tmp");
+            FileOutputStream fos = new FileOutputStream(name + "-" + generationMode.toString() + "landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(landmarkSet);
             oos.close();
@@ -139,7 +140,7 @@ public class GraphIO {
     }
 
     @SuppressWarnings(value = "unchecked")
-    public static void loadLandmarks(String fileName, Landmarks landmarks) {
+    public static void loadLandmarks(String fileName, LandmarkMode mode, Landmarks landmarks) {
         String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
             fileName = Util.trimFileTypes(fileName);
@@ -148,7 +149,8 @@ public class GraphIO {
             fileName = Util.trimFileTypes(fileName);
         }
         try {
-            FileInputStream landmarksInput = new FileInputStream(tempDir + fileName + "-landmarks.tmp");
+            String name = tempDir + fileName + "-" + mode.toString() + "landmarks.tmp";
+            FileInputStream landmarksInput = new FileInputStream(name);
             ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
 
             Set<Integer> landmarksSet = null;
@@ -226,7 +228,7 @@ public class GraphIO {
     public void updateProgress() {
         if (progressListener == null) return;
         if (next_tier <= bytesRead) {
-            next_tier += fileSize /100;
+            next_tier += fileSize / 100;
             if (bytesRead <= fileSize) {
                 progressListener.accept(next_tier, fileSize);
             }
@@ -267,7 +269,6 @@ class CountingInputStream extends FileInputStream implements AutoCloseable {
         graphIO.updateProgress();
         return amountBytesRead;
     }
-
 
 
     @Override

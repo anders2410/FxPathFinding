@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 
 public class PathExperiments {
     Graph graph;
-    String fileName = "poland-latest.osm.pbf";
+    String fileName = "malta-latest.osm.pbf";
     GraphIO graphIO;
 
     @Before
@@ -23,9 +23,9 @@ public class PathExperiments {
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         SSSP.setDistanceStrategy(distanceStrategy1);
         graphIO = new GraphIO(distanceStrategy1);
-        /*graphIO.loadGraph(fileName);
+        graphIO.loadGraph(fileName);
         graph = graphIO.getGraph();
-        SSSP.setGraph(graph);*/
+        SSSP.setGraph(graph);
     }
 
     @Test
@@ -56,8 +56,10 @@ public class PathExperiments {
 
         long[][] runtimes = new long[4][testSize];
         Landmarks lm = new Landmarks(graph);
-        SSSP.setLandmarks(lm);
+        GraphIO.loadLandmarks(fileName, LandmarkMode.RANDOM, lm);
+        /*SSSP.setLandmarks(lm);
         lm.landmarksRandom(16, true);
+        SSSP.setLandmarks(lm);*/
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         Set<Integer> test = lm.getLandmarkSet();
@@ -71,7 +73,7 @@ public class PathExperiments {
             randomData.addRuntime(res.runTime);
         }
         lm.clearLandmarks();
-        lm.landmarksFarthest(16, true);
+        GraphIO.loadLandmarks(fileName, LandmarkMode.FARTHEST, lm);
         test = lm.getLandmarkSet();
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
@@ -85,7 +87,7 @@ public class PathExperiments {
             farthestData.addRuntime(res.runTime);
         }
         lm.clearLandmarks();
-        lm.landmarksAvoid(16, true);
+        GraphIO.loadLandmarks(fileName, LandmarkMode.AVOID, lm);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         test = lm.getLandmarkSet();
@@ -102,7 +104,7 @@ public class PathExperiments {
         }
 
         lm.clearLandmarks();
-        lm.landmarksMaxCover(16, true);
+        GraphIO.loadLandmarks(fileName, LandmarkMode.MAXCOVER, lm);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         test = lm.getLandmarkSet();
