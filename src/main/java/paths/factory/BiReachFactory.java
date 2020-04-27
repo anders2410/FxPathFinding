@@ -26,7 +26,7 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getKeyOverGoalStrategy();
+        return TerminationGenerator.getKeyAboveGoalStrategy();
     }
 
     @Override

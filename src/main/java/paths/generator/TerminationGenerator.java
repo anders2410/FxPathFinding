@@ -34,14 +34,14 @@ public class TerminationGenerator {
         };
     }
 
-    public static TerminationStrategy getKeyOverGoalStrategy() {
+    public static TerminationStrategy getKeyAboveGoalStrategy() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
             if (topA != null && topB != null) {
                 double keyValueForward = getPriorityFunction().apply(topA, A);
                 double keyValueBackwards = getPriorityFunction().apply(topB, B);
-                return keyValueBackwards + keyValueForward > goalDist; //Changed to be strictly larger than
+                return keyValueBackwards + keyValueForward > goalDist;
             }
             return false;
         };

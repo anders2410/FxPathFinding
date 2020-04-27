@@ -3,25 +3,26 @@ package paths.factory;
 import paths.generator.*;
 import paths.strategy.*;
 
-public class BiDijkstraFactory implements AlgorithmFactory {
+public class ReachLandmarksFactory implements AlgorithmFactory {
+
     @Override
     public boolean isBiDirectional() {
-        return true;
+        return false;
     }
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getDijkstra();
+        return PriorityGenerator.getAStar();
     }
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return HeuristicGenerator.getDistance();
+        return HeuristicGenerator.landmarksTriangulate();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getBiDijkstra();
+        return RelaxGenerator.getReach();
     }
 
     @Override
@@ -31,11 +32,11 @@ public class BiDijkstraFactory implements AlgorithmFactory {
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return () -> {};
+        return new ReachPreStrategy();
     }
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getAmountSeenStrategy();
+        return AlternationGenerator.getOneDirectional();
     }
 }
