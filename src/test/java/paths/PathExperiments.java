@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 
 public class PathExperiments {
     Graph graph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "denmark-latest.osm.pbf";
     GraphIO graphIO;
 
     @Before
@@ -42,95 +42,70 @@ public class PathExperiments {
     }
 
     @Test
+    public void sccDenmark() {
+        graphIO.loadGraph("denmark-latest.osm.pbf");
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        GraphUtil gu = new GraphUtil(graph);
+        List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
+        graph = subGraphs.get(0);
+        GraphIO graphIO = new GraphIO(Util::sphericalDistance);
+        graphIO.storeTMP(Util.trimFileTypes("denmark-latest.osm.pbf").concat("-scc"), graph);
+        System.out.println("Finished computing SCC");
+    }
+
+    @Test
     public void landmarksComparisonTest() {
-        int testSize = 4000;
+        int testSize = 10000;
 
         SSSP.setGraph(graph);
-
-        ShortestPathResult[][] resultArray = new ShortestPathResult[4][testSize];
 
         TestData maxData = new TestData();
         TestData avoidData = new TestData();
         TestData farthestData = new TestData();
         TestData randomData = new TestData();
 
-        long[][] runtimes = new long[4][testSize];
         Landmarks lm = new Landmarks(graph);
-        GraphIO.loadLandmarks(fileName, LandmarkMode.RANDOM, lm);
-        /*SSSP.setLandmarks(lm);
-        lm.landmarksRandom(16, true);
-        SSSP.setLandmarks(lm);*/
+        initTestParameters(lm, LandmarkMode.RANDOM);
+        testGenerationMethod(testSize, randomData);
+
+        initTestParameters(lm, LandmarkMode.FARTHEST);
+        testGenerationMethod(testSize, farthestData);
+
+        initTestParameters(lm, LandmarkMode.AVOID);
+        testGenerationMethod(testSize, avoidData);
+
+        initTestParameters(lm, LandmarkMode.MAXCOVER);
+        testGenerationMethod(testSize, maxData);
+        System.out.println(maxData.acumVisits);
+        System.out.println(avoidData.acumVisits);
+        System.out.println(randomData.acumVisits);
+        System.out.println(farthestData.acumVisits);
+    }
+
+    private void initTestParameters(Landmarks lm, LandmarkMode maxcover) {
+        lm.clearLandmarks();
+        GraphIO.loadLandmarks(fileName, maxcover, lm);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
-        Set<Integer> test = lm.getLandmarkSet();
         SSSP.setLandmarkArray(null);
-        for (int j = 0; j < testSize; j++) {
+    }
+
+    private void testGenerationMethod(int testSize, TestData data) {
+        int j = 0;
+        while (j < testSize) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
             /*resultArray[0][j] = res;*/
-            runtimes[0][j] = res.runTime;
-            randomData.addVisit(res.calculateAllUniqueVisits(graph));
-            randomData.addRuntime(res.runTime);
+            if (res.path.size() > 20) {
+                if (j % 1000 == 0) {
+                    System.out.println("Runtime for case " + j + "(seed = " + SSSP.seed + ") = " + res.runTime);
+                }
+                data.addVisit(res.calculateAllUniqueVisits(graph));
+                data.addRuntime(res.runTime);
+                j++;
+            }
         }
-        lm.clearLandmarks();
-        GraphIO.loadLandmarks(fileName, LandmarkMode.FARTHEST, lm);
-        test = lm.getLandmarkSet();
-        SSSP.setLandmarks(lm);
-        SSSP.seed = 0;
-        SSSP.setLandmarkArray(null);
-        for (int j = 0; j < testSize; j++) {
-            SSSP.seed++;
-            ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-            /*resultArray[1][j] = res;*/
-            runtimes[1][j] = res.runTime;
-            farthestData.addVisit(res.calculateAllUniqueVisits(graph));
-            farthestData.addRuntime(res.runTime);
-        }
-        lm.clearLandmarks();
-        GraphIO.loadLandmarks(fileName, LandmarkMode.AVOID, lm);
-        SSSP.setLandmarks(lm);
-        SSSP.seed = 0;
-        test = lm.getLandmarkSet();
-        SSSP.setLandmarkArray(null);
-        for (int j = 0; j < testSize; j++) {
-            SSSP.seed++;
-            ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-/*
-            resultArray[2][j] = res;
-*/
-            runtimes[2][j] = res.runTime;
-            avoidData.addVisit(res.calculateAllUniqueVisits(graph));
-            avoidData.addRuntime(res.runTime);
-        }
-
-        lm.clearLandmarks();
-        GraphIO.loadLandmarks(fileName, LandmarkMode.MAXCOVER, lm);
-        SSSP.setLandmarks(lm);
-        SSSP.seed = 0;
-        test = lm.getLandmarkSet();
-        SSSP.setLandmarkArray(null);
-        for (int j = 0; j < testSize; j++) {
-            SSSP.seed++;
-            ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-/*
-            resultArray[3][j] = res;
-*/
-            runtimes[3][j] = res.runTime;
-            maxData.addVisit(res.calculateAllUniqueVisits(graph));
-            maxData.addRuntime(res.runTime);
-        }
-        long max = 0;
-        long random = 0;
-        long avoid = 0;
-        long farthest = 0;
-
-        for (int i = 0; i < testSize; i++) {
-            random += runtimes[0][i];
-            farthest += runtimes[1][i];
-            avoid += runtimes[2][i];
-            max += runtimes[3][i];
-        }
-        assertTrue(max < random);
     }
 }
 
