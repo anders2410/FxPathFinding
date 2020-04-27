@@ -22,7 +22,7 @@ public class ReachAStarFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getReachHeuristic();
+        return RelaxGenerator.getReach();
     }
 
     @Override

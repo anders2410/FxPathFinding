@@ -42,23 +42,15 @@ public class RelaxGenerator {
                 List<Double> bounds = getReachBounds();
                 double reachBound = bounds.get(edge.to);
                 List<Node> nodeList = getGraph().getNodeList();
-                Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
+                double piDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
                 boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
-                boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
-                boolean shouldNotBePruned = newDistanceValid || projectedDistanceValid;
+                boolean piDistanceValid = reachBound > piDistance || Math.abs(reachBound - piDistance) <= precision;
+                boolean shouldNotBePruned = newDistanceValid || piDistanceValid;
                 if (shouldNotBePruned) {
                     getNodeDist(dir).set(edge.to, newDist);
                     updatePriority(edge.to, dir);
                     getPathMap(dir).put(edge.to, from);
                 }
-            }
-        };
-    }
-
-    public static RelaxStrategy getReachHeuristic() {
-        return (from, edge, dir) -> {
-            if (getHeuristicFunction().apply(from, edge.to) <= getReachBounds().get(edge.to) + precision) {
-                getReach().relax(from, edge, dir);
             }
         };
     }
