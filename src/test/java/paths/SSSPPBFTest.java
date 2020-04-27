@@ -104,7 +104,8 @@ public class SSSPPBFTest {
 
     @Test
     public void testAlgorithms() {
-        matrix = new int[9];
+        int algorithms = 10;
+        matrix = new int[algorithms];
 //        List<Graph> graphs = new GraphUtil(graph).scc();
 //        graph = graphs.get(0);
         SSSP.setGraph(graph);
@@ -117,7 +118,7 @@ public class SSSPPBFTest {
         SSSP.setReachBounds(bounds);
 
         testCases = 80000;
-        runtimes = new double[9][testCases];
+        runtimes = new double[algorithms][testCases];
         i = 0;
         failMap = new HashMap<>();
         while (i < testCases) {
@@ -135,10 +136,11 @@ public class SSSPPBFTest {
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
+            testSingle(distDijk, pathDijk, AlgorithmMode.REACH_A_STAR, 9);
             //Only interested in tests where path is atleast 100
             i++;
         }
-        if (Arrays.equals(new int[9], matrix)) {
+        if (Arrays.equals(new int[algorithms], matrix)) {
             System.out.println(runtimes);
         } else fail();
     }
