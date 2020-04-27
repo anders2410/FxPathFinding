@@ -55,13 +55,21 @@ public class RelaxGenerator {
         };
     }
 
+    public static RelaxStrategy getReachHeuristic() {
+        return (from, edge, dir) -> {
+            if (getHeuristicFunction().apply(from, edge.to) <= getReachBounds().get(edge.to) + precision) {
+                getReach().relax(from, edge, dir);
+            }
+        };
+    }
+
     // 6925 -> 5331
     public static RelaxStrategy getBiReach() {
         return ((from, edge, dir) -> {
             List<Double> bounds = getReachBounds();
             double newDist = getNodeDist(dir).get(from) + edge.d;
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceValid = newDist + precision <= reachBound;
+            boolean newDistanceValid = newDist <= reachBound + precision;
             if (newDistanceValid) {
                 getBiDijkstra().relax(from, edge, dir);
             }

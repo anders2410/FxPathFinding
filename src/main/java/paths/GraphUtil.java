@@ -157,7 +157,7 @@ public class GraphUtil {
                 if (nodesToKeep.contains(edge.to)) {
                     int newFrom = indexMap.get(from);
                     int newTo = indexMap.get(edge.to);
-                    subAdjList.get(newFrom).add(new Edge(newTo, edge.d));
+                    subAdjList.get(newFrom).add(new Edge(newFrom, newTo, edge.d));
                 }
             }
         }

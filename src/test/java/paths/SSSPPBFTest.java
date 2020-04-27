@@ -134,9 +134,7 @@ public class SSSPPBFTest {
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
-/*
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
-*/
             //Only interested in tests where path is atleast 100
             i++;
         }

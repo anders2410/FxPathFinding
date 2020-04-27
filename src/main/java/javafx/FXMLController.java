@@ -5,6 +5,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -87,7 +88,7 @@ public class FXMLController implements Initializable {
         canvas.setOnScroll(onMouseScrolled());
         gc = canvas.getGraphicsContext2D();
         gc.setLineWidth(1.0);
-        loadNewGraph("denmark-latest.osm.pbf");
+        loadNewGraph("malta-latest.osm.pbf");
         setWindowChangeListener();
         SSSP.setDistanceStrategy(distanceStrategy);
         setSeedLabel();
@@ -464,10 +465,10 @@ public class FXMLController implements Initializable {
         Node mouseNode = toNode(mousePos);
         double dist = distanceStrategy.apply(mouseNode, closestNode);
         graph.addNode(mouseNode);
-        Edge forth = new Edge(closestNode.index, dist);
+        Edge forth = new Edge(mouseNode.index, closestNode.index, dist);
         mouseEdges.add(forth);
         graph.addEdge(mouseNode, forth);
-        Edge back = new Edge(mouseNode.index, dist);
+        Edge back = new Edge(closestNode.index, mouseNode.index, dist);
         mouseEdges.add(back);
         graph.addEdge(closestNode, back);
         closestNode = mouseNode;
@@ -872,6 +873,12 @@ public class FXMLController implements Initializable {
 
     public void handleBiReachEvent() {
         algorithmMode = BI_REACH;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
+    public void handleReachAStarEvent() {
+        algorithmMode = REACH_A_STAR;
         runAlgorithm();
         setAlgorithmLabels();
     }

@@ -44,7 +44,7 @@ public class Graph implements Serializable {
         }
         for (int i = 0; i < originalList.size(); i++) {
             for (Edge e : originalList.get(i)) {
-                Edge replacement = new Edge(i, e.d);
+                Edge replacement = new Edge(e.to, i, e.d);
                 reversedList.get(e.to).add(replacement);
             }
         }
@@ -82,15 +82,15 @@ public class Graph implements Serializable {
     }
 
     public void addEdge(Node from, Node to, double d) {
-        adjList.get(from.index).add(new Edge(to.index, d));
+        adjList.get(from.index).add(new Edge(from.index, to.index, d));
     }
 
     public void addEdge(int from, int to, double d) {
-        Edge newEdge = new Edge(to, d);
+        Edge newEdge = new Edge(from, to, d);
         for (Edge e : adjList.get(from)) {
             if (e.equals(newEdge)) { return; }
         }
-        adjList.get(from).add(new Edge(to, d));
+        adjList.get(from).add(newEdge);
     }
 
     public void addEdge(Node from, Edge edge) {

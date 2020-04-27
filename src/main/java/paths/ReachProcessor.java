@@ -15,7 +15,7 @@ public class ReachProcessor {
     private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
     };
 
-    double reachMetric(int nodeFrom, Edge e) {
+    double reachMetric(Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
         return e.d;
     }
@@ -70,8 +70,8 @@ public class ReachProcessor {
                 for (Integer j : nodesIngoingMap.get(i)) {
                     List<Edge> eList = mainGraph.getAdjList().get(j);
                     Edge e = getEdge(i, eList);
-                    g = Math.max(g, bounds.get(j) + reachMetric(j, e));
-                    d = Math.max(d, reachMetric(j, e));
+                    g = Math.max(g, bounds.get(j) + reachMetric(e));
+                    d = Math.max(d, reachMetric(e));
                 }
             }
             double maxFirst = 0;
@@ -118,7 +118,7 @@ public class ReachProcessor {
         double runningMetric = 0.0;
         double metricFirstEdge;
         for (Integer i : leastCostTreeH.get(rootNode)) {
-            metricFirstEdge = reachMetric(rootNode, getEdge(i, getOriginalGraph().getAdjList().get(rootNode)));
+            metricFirstEdge = reachMetric(getEdge(i, getOriginalGraph().getAdjList().get(rootNode)));
             double upperBoundPaths = 2 * b + c + d + metricFirstEdge;
             LinkedHashMap<Integer, Double> sourceNodeMap = new LinkedHashMap<>();
             sourceNodeMap.put(rootNode, 0.0);
@@ -127,7 +127,7 @@ public class ReachProcessor {
     }
 
     private double updateBoundsSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double runningMetric, double upperBoundPaths, Graph subGraph, double g, LinkedHashMap<Integer, Double> sourceNodeMap) {
-        double reachMetricLast = reachMetric(parentNode, getEdge(node, getOriginalGraph().getAdjList().get(parentNode)));
+        double reachMetricLast = reachMetric(getEdge(node, getOriginalGraph().getAdjList().get(parentNode)));
         boolean pathTooLong = runningMetric >= upperBoundPaths + reachMetricLast && sourceNodeMap.size() >= 1;
         boolean endOfPossiblePath = leastCostTreeH.get(node) == null && sourceNodeMap.size() >= 1;
         if (pathTooLong || endOfPossiblePath) {
