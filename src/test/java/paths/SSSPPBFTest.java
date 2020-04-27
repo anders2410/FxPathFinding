@@ -128,20 +128,20 @@ public class SSSPPBFTest {
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
-            /*testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
+            testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
             testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);*/
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH_A_STAR, 9);
 
             i++;
         }
         if (Arrays.equals(new int[algorithms], matrix)) {
-            System.out.println(runtimes);
+            System.out.println(Arrays.deepToString(runtimes));
         } else fail();
     }
 
