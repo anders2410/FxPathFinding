@@ -883,6 +883,12 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+    public void handleReachLandmarksEvent() {
+        algorithmMode = REACH_LANDMARKS;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
     public void handleLoadReachEvent() {
         loadReachBounds();
     }

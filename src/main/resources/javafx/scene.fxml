@@ -54,7 +54,8 @@
                 <items>
                     <MenuItem onAction="#handleReachEvent" text="Reach"/>
                     <MenuItem onAction="#handleBiReachEvent" text="Bi-Reach"/>
-                    <MenuItem onAction="#handleReachAStarEvent" text="Reach-A*"/>
+                    <MenuItem onAction="#handleReachAStarEvent" text="ReA*"/>
+                    <MenuItem onAction="#handleReachLandmarksEvent" text="ReAL"/>
                     <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
                     <MenuItem onAction="#handleSaveReachEvent" text="Save Reach Bounds"/>
                     <MenuItem onAction="#handleLoadReachEvent" text="Load Reach Bounds"/>
