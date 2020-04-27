@@ -161,7 +161,7 @@ public class SSSP {
 
         while (!queueA.isEmpty()) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
-            if (queueA.peek() == target) break;
+            if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();

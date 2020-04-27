@@ -108,15 +108,15 @@ public class SSSPPBFTest {
 //        List<Graph> graphs = new GraphUtil(graph).scc();
 //        graph = graphs.get(0);
         SSSP.setGraph(graph);
-        Landmarks lm = new Landmarks(graph);
+       /* Landmarks lm = new Landmarks(graph);
         SSSP.setLandmarks(lm);
         lm.landmarksMaxCover(16, true);
-        SSSP.setLandmarks(lm);
+        SSSP.setLandmarks(lm);*/
 
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 
-        testCases = 80000;
+        testCases = 10000;
         runtimes = new double[9][testCases];
         i = 0;
         failMap = new HashMap<>();
@@ -129,10 +129,10 @@ public class SSSPPBFTest {
 
             testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
+          /*  testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
             testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);*/
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
 /*
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
@@ -141,7 +141,7 @@ public class SSSPPBFTest {
             i++;
         }
         if (Arrays.equals(new int[9], matrix)) {
-            System.out.println(runtimes);
+            System.out.println(Arrays.deepToString(runtimes));
         } else fail();
     }
 
