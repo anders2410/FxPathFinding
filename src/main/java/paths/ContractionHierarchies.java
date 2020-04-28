@@ -28,11 +28,28 @@ public class ContractionHierarchies {
     private Map<Pair<Integer, Integer>, List<Integer>> shortcuts;
 
     public ContractionHierarchies(Graph graph) {
-        this.graph = graph;
+        this.graph = new Graph(graph);
+        removeDuplicateEdges(this.graph);
         Comparator<Integer> comp = Comparator.comparingInt(i -> importance.get(i));
         importanceQueue = new JavaMinPriorityQueue(comp, graph.getNodeAmount());
         initializeLists();
         setInitialImportance();
+    }
+
+    private void removeDuplicateEdges(Graph graph) {
+        for (int i = 0; i < graph.getNodeList().size(); i++) {
+            Iterator<Edge> iterator = graph.getAdjList().get(i).iterator();
+            List<Edge> copyEdges = new ArrayList<>(graph.getAdjList().get(i));
+            while (iterator.hasNext()) {
+                Edge e = iterator.next();
+                for (Edge copyEdge : copyEdges) {
+                    if (copyEdge.d < e.d && copyEdge.to == e.to) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     // Initialize all the relevant lists, maps and sets.
@@ -160,7 +177,9 @@ public class ContractionHierarchies {
                 }
 
                 double totalCost = Double.sum(inCost, outCost);
-
+                if (n == 41) {
+                    System.out.println("aguahugh");
+                }
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
                 if (distanceList.get(outNodeIndex) > totalCost) {
                     // TODO: 15/04/2020 Add implementation for one-way streets (still not working optimal..)
@@ -241,6 +260,7 @@ public class ContractionHierarchies {
     }
 
     // --------------------------------------------- IMPORTANCE ------------------------------------------
+
     /**
      * The edgeDifference is defined by edgeDifference = s(n) - in(n) - out(n). Where s(n) is the number of
      * added shortcuts, in(n) is in degree and out(n) is out degree. We want to contract nodes
@@ -325,7 +345,6 @@ public class ContractionHierarchies {
                 for (Edge edge : adjList.get(nodeForward)) {
                     int temp = edge.to;
                     double cost = edge.d;
-
                     if (forwardDistanceList.get(nodeForward) + cost < forwardDistanceList.get(temp) && ranks.get(nodeForward) < ranks.get(temp)) {
                         forwardDistanceList.set(temp, forwardDistanceList.get(nodeForward) + cost);
                         forwardQ.updatePriority(temp);
