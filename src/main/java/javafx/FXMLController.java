@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import load.GraphIO;
+import load.LoadType;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -71,6 +72,7 @@ public class FXMLController implements Initializable {
     private Graph graph;
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
+    private boolean sccGraph = false;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
@@ -106,7 +108,8 @@ public class FXMLController implements Initializable {
             protected Graph call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy);
                 graphIO.setProgressListener(this::updateProgress);
-                graphIO.loadGraph(fileName);
+                LoadType lt = graphIO.loadGraph(fileName);
+                sccGraph = lt == LoadType.SCC;
                 return graphIO.getGraph();
             }
         };
@@ -163,11 +166,28 @@ public class FXMLController implements Initializable {
         };
         ssspTask.setOnSucceeded(event -> {
             playIndicatorCompleted();
-            applyResultsToLabel(ssspTask.getValue());
+            currentResult = combineResults(ssspTask.getValue());
+            setLabels(Util.roundDouble(currentResult.d), currentResult.scannedNodesA.size() + currentResult.scannedNodesB.size());
             redrawGraph();
         });
         attachProgressIndicator(ssspTask.progressProperty());
         new Thread(ssspTask).start();
+    }
+
+    private ShortestPathResult combineResults(List<ShortestPathResult> results) {
+        return results.stream().reduce((res1, res2) -> {
+            List<Integer> combinedPath = new ArrayList<>(res1.path);
+            combinedPath.addAll(res2.path.subList(1, res2.path.size()));
+            Set<Integer> combinedScannedA = new HashSet<>(res1.scannedNodesA);
+            combinedScannedA.addAll(res2.scannedNodesA);
+            Set<Integer> combinedScannedB = new HashSet<>(res1.scannedNodesB);
+            combinedScannedA.addAll(res2.scannedNodesB);
+            Set<Edge> combinedRelaxedA = new HashSet<>(res1.relaxedEdgesA);
+            combinedRelaxedA.addAll(res2.relaxedEdgesA);
+            Set<Edge> combinedRelaxedB = new HashSet<>(res1.relaxedEdgesB);
+            combinedRelaxedA.addAll(res2.relaxedEdgesB);
+            return new ShortestPathResult(res1.d + res2.d, combinedPath, combinedScannedA, combinedScannedB, combinedRelaxedA, combinedRelaxedB, res1.runTime + res2.runTime);
+        }).orElseGet(ShortestPathResult::new);
     }
 
     private List<ShortestPathResult> ssspConnectingNodes(Deque<Node> nodeQueue) {
@@ -185,23 +205,6 @@ public class FXMLController implements Initializable {
     }
 
     private ShortestPathResult currentResult = new ShortestPathResult();
-
-    private void applyResultsToLabel(List<ShortestPathResult> results) {
-        Optional<ShortestPathResult> optCombinedRes = results.stream().reduce((res1, res2) -> {
-            List<Integer> combinedPath = new ArrayList<>(res1.path);
-            combinedPath.addAll(res2.path.subList(1, res2.path.size()));
-            Set<Integer> combinedVisitedA = new HashSet<>(res1.scannedNodesA);
-            combinedVisitedA.addAll(res2.scannedNodesA);
-            Set<Integer> combinedVisitedB = new HashSet<>(res1.scannedNodesB);
-            combinedVisitedA.addAll(res2.scannedNodesB);
-            return new ShortestPathResult(res1.d + res2.d, combinedPath, combinedVisitedA, combinedVisitedB, res1.runTime + res2.runTime);
-        });
-        if (optCombinedRes.isPresent()) {
-            ShortestPathResult combinedRes = optCombinedRes.get();
-            currentResult = combinedRes;
-            setLabels(Util.roundDouble(combinedRes.d), combinedRes.scannedNodesA.size() + combinedRes.scannedNodesB.size());
-        }
-    }
 
     private void cancelAlgorithm() {
         if (ssspTask != null) {
@@ -281,8 +284,8 @@ public class FXMLController implements Initializable {
     }
 
     private int compVal(Node from, Edge edge) {
-        boolean visited = currentResult.scannedNodesA.contains(from.index);
-        boolean reverseVisited = currentResult.scannedNodesB.contains(from.index);
+        boolean visited = currentResult.relaxedEdgesA.contains(edge);
+        boolean reverseVisited = currentResult.relaxedEdgesB.contains(edge.getReverse());
         boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
         boolean isDrawn = drawnEdges.contains(edge);
         int compVal = 0;
@@ -862,7 +865,11 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSCCEvent() {
-        runSCC();
+        if (!sccGraph) {
+            runSCC();
+        } else {
+            System.out.println("SCC already found");
+        }
     }
 
     public void handleReachEvent() {
@@ -883,12 +890,20 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
-    public void handleLoadReachEvent() {
-        loadReachBounds();
+    public void handleBiReachAStarEvent() {
+        algorithmMode = BI_REACH_A_STAR;
+        runAlgorithm();
+        setAlgorithmLabels();
     }
 
-    public void handleSaveReachEvent() {
-        saveReachBounds();
+    public void handleReachLandmarksEvent() {
+        algorithmMode = REACH_LANDMARKS;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
+    public void handleLoadReachEvent() {
+        loadReachBounds();
     }
 
     public void handleGenerateReachEvent() {
@@ -929,11 +944,11 @@ public class FXMLController implements Initializable {
         this.stage = stage;
     }
 
-    private void setLabels(String distance, int visitedNodes) {
+    private void setLabels(String distance, int totalVisitedNodes) {
         setAlgorithmLabels();
 
         distance_label.setText("Distance (km): " + distance);
-        nodes_visited_label.setText("Nodes Visited: " + visitedNodes);
+        nodes_visited_label.setText("Nodes Visited: " + totalVisitedNodes);
     }
 
     private void setAlgorithmLabels() {
@@ -1100,6 +1115,7 @@ public class FXMLController implements Initializable {
             progress_indicator.setProgress(0.99);
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
+            sccGraph = true;
             storeGraph("-scc");
             setUpGraph();
             System.out.println("Finished computing SCC");

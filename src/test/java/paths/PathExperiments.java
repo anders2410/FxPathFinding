@@ -15,11 +15,12 @@ import static org.junit.Assert.*;
 
 public class PathExperiments {
     Graph graph;
-    String fileName = "denmark-latest.osm.pbf";
+    String fileName;
     GraphIO graphIO;
 
     @Before
     public void setUp() {
+        fileName = "denmark-latest.osm.pbf";
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         SSSP.setDistanceStrategy(distanceStrategy1);
         graphIO = new GraphIO(distanceStrategy1);
@@ -37,7 +38,7 @@ public class PathExperiments {
         List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
         graph = subGraphs.get(0);
         GraphIO graphIO = new GraphIO(Util::sphericalDistance);
-        graphIO.storeTMP(Util.trimFileTypes(fileName).concat("-scc"), graph);
+        graphIO.storeTMP(Util.trimFileTypes("poland-latest.osm.pbf").concat("-scc"), graph);
         System.out.println("Finished computing SCC");
     }
 

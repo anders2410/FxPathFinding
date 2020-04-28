@@ -31,7 +31,9 @@ public class Util {
         algorithmNames.put(BI_A_STAR_LANDMARKS, "Bi Landmarks A*");
         algorithmNames.put(REACH, "Reach");
         algorithmNames.put(BI_REACH, "Bidirectional Reach");
-        algorithmNames.put(REACH_A_STAR, "Reach-A*");
+        algorithmNames.put(REACH_A_STAR, "Reach A*");
+        algorithmNames.put(BI_REACH_A_STAR, "Bidirectional Reach A*");
+        algorithmNames.put(REACH_LANDMARKS, "Reach Landmarks");
     }
 
     public static double flatEarthDistance(Node node1, Node node2) {

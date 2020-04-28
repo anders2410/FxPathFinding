@@ -3,10 +3,10 @@ package paths.factory;
 import paths.generator.*;
 import paths.strategy.*;
 
-public class LandmarksFactory implements AlgorithmFactory {
+public class BiReachAStarFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
-        return false;
+        return true;
     }
 
     @Override
@@ -16,26 +16,26 @@ public class LandmarksFactory implements AlgorithmFactory {
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return HeuristicGenerator.landmarksTriangulate();
+        return HeuristicGenerator.getDistance();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getDijkstra();
+        return RelaxGenerator.getBiReachAStar();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getKeyAboveGoalStrategy();
     }
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return new LandmarksPreStrategy();
+        return new ReachPreStrategy();
     }
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getOneDirectional();
+        return AlternationGenerator.getAmountSeenStrategy();
     }
 }

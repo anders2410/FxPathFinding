@@ -16,12 +16,16 @@ public class Edge implements Serializable {
         this.d = d;
     }
 
+    public Edge getReverse() {
+        return new Edge(to, from, d);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (!(obj instanceof Edge)) return false;
         Edge e = (Edge) obj;
-        return Double.compare(e.d, this.d) == 0 && this.to == e.to;
+        return Double.compare(e.d, this.d) == 0 && this.to == e.to && this.from == e.from;
     }
 
     @Override

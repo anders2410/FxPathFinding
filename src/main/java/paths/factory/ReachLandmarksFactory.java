@@ -1,8 +1,10 @@
 package paths.factory;
 
+import paths.generator.*;
 import paths.strategy.*;
 
 public class ReachLandmarksFactory implements AlgorithmFactory {
+
     @Override
     public boolean isBiDirectional() {
         return false;
@@ -10,31 +12,31 @@ public class ReachLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return null;
+        return PriorityGenerator.getAStar();
     }
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return null;
+        return HeuristicGenerator.landmarksTriangulate();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return null;
+        return RelaxGenerator.getReach();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return null;
+        return TerminationGenerator.getSearchMeetTermination();
     }
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return null;
+        return new ReachPreStrategy();
     }
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return null;
+        return AlternationGenerator.getOneDirectional();
     }
 }
