@@ -1,6 +1,7 @@
 package paths;
 
 import datastructures.MinPriorityQueue;
+import javafx.util.Pair;
 import model.*;
 import paths.factory.*;
 import paths.strategy.*;
@@ -15,13 +16,11 @@ import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
-
     public static boolean trace = false;
     public static boolean traceResult = false;
     public static int seed = 0;
 
     private static Graph graph;
-    private static Graph CHGraph;
     private static Landmarks landmarks;
     private static int source, target;
     private static AlgorithmMode mode;
@@ -29,7 +28,6 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
-    private static List<Integer> nodeRankCH;
 
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
@@ -58,6 +56,7 @@ public class SSSP {
     private static GetPQueueStrategy priorityQueueGetter;
     private static Set<Integer> prunedSet;
     private static double singleToAllBound;
+    private static ContractionHierarchiesResult contractionHierarchiesResult;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -239,6 +238,21 @@ public class SSSP {
             return new ShortestPathResult();
         }
         List<Integer> shortestPath = extractPathBi();
+
+        if (mode == CONTRACTION_HIERARCHIES) {
+            Set<Integer> result = new LinkedHashSet<>();
+            for (int i = 0; i < shortestPath.size() - 1; i++) {
+                List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPath.get(i), shortestPath.get(i + 1)));
+                result.add(shortestPath.get(i));
+                if (contractedNodes != null) {
+                    result.addAll(contractedNodes);
+                }
+                result.add(shortestPath.get(i + 1));
+            }
+            System.out.println("Do I go in here?");
+            return new ShortestPathResult(goalDistance, new ArrayList<>(result), new HashSet<>(), new HashSet<>(), duration);
+        }
+
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
 
@@ -414,22 +428,6 @@ public class SSSP {
         SSSP.middlePoint = middlePoint;
     }
 
-    public static void setNodeRankCH(List<Integer> nodeRank) {
-        nodeRankCH = nodeRank;
-    }
-
-    public static List<Integer> getNodeRankCH() {
-        return nodeRankCH;
-    }
-
-    public static void setCHGraph(Graph graph) {
-        CHGraph = graph;
-    }
-
-    public static Graph getCHGraph() {
-        return CHGraph;
-    }
-
     public static double getSingleToAllBound() {
         return singleToAllBound;
     }
@@ -440,5 +438,13 @@ public class SSSP {
 
     public static void putRelaxedEdge(ABDir dir, Edge edge) {
         (dir == A ? relaxedA : relaxedB).add(edge);
+    }
+
+    public static ContractionHierarchiesResult getContractionHierarchiesResult() {
+        return contractionHierarchiesResult;
+    }
+
+    public static void setContractionHierarchiesResult(ContractionHierarchiesResult contractionHierarchiesResult) {
+        SSSP.contractionHierarchiesResult = contractionHierarchiesResult;
     }
 }
