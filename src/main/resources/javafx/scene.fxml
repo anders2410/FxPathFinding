@@ -36,6 +36,26 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
+            <MenuButton alignment="CENTER" text="RE">
+                <items>
+                    <MenuItem onAction="#handleReachEvent" text="Reach"/>
+                    <MenuItem onAction="#handleBiReachEvent" text="Bi-Reach"/>
+                    <MenuItem onAction="#handleReachAStarEvent" text="ReA*"/>
+                    <MenuItem onAction="#handleBiReachAStarEvent" text="BiReA*"/>
+                    <MenuItem onAction="#handleReachLandmarksEvent" text="ReAL"/>
+                    <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
+                </items>
+            </MenuButton>
+            <Separator styleClass="nav_separator"/>
+
+            <MenuButton alignment="CENTER" text="PRE">
+                <items>
+                    <MenuItem onAction="#handleSCCEvent" text="SCC"/>
+                    <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
+                </items>
+            </MenuButton>
+            <Separator styleClass="nav_separator"/>
+
             <MenuButton alignment="CENTER" text="LANDMARKS">
                 <items>
                     <MenuItem onAction="#handleGenerateLandmarksAvoid" text="GenAvoid"/>
@@ -50,25 +70,10 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
-            <MenuButton alignment="CENTER" text="REACH">
-                <items>
-                    <MenuItem onAction="#handleReachEvent" text="Reach"/>
-                    <MenuItem onAction="#handleBiReachEvent" text="Bi-Reach"/>
-                    <MenuItem onAction="#handleReachAStarEvent" text="ReA*"/>
-                    <MenuItem onAction="#handleReachLandmarksEvent" text="ReAL"/>
-                    <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
-                    <MenuItem onAction="#handleSaveReachEvent" text="Save Reach Bounds"/>
-                    <MenuItem onAction="#handleLoadReachEvent" text="Load Reach Bounds"/>
-                </items>
-            </MenuButton>
-            <Separator styleClass="nav_separator"/>
-
             <MenuButton alignment="CENTER" text="CH">
                 <items>
                     <MenuItem onAction="#handleCHEvent" text="Run CH"/>
                     <MenuItem onAction="#handleGenerateCHEvent" text="Generate CH Graph"/>
-                    <MenuItem onAction="#handleSaveReachEvent" text="Save Reach Bounds"/>
-                    <MenuItem onAction="#handleLoadReachEvent" text="Load Reach Bounds"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
@@ -80,9 +85,6 @@
             <Separator styleClass="nav_separator"/>
 
             <Button alignment="CENTER" onAction="#handleChooseFileEvent" styleClass="nav_button" text="FILE"/>
-            <Separator styleClass="nav_separator"/>
-
-            <Button alignment="CENTER" onAction="#handleSCCEvent" styleClass="nav_button" text="SCC"/>
             <Separator styleClass="nav_separator"/>
         </VBox>
     </AnchorPane>

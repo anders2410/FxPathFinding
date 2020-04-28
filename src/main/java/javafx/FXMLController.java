@@ -888,6 +888,12 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+    public void handleBiReachAStarEvent() {
+        algorithmMode = BI_REACH_A_STAR;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
     public void handleReachLandmarksEvent() {
         algorithmMode = REACH_LANDMARKS;
         runAlgorithm();
@@ -896,10 +902,6 @@ public class FXMLController implements Initializable {
 
     public void handleLoadReachEvent() {
         loadReachBounds();
-    }
-
-    public void handleSaveReachEvent() {
-        saveReachBounds();
     }
 
     public void handleGenerateReachEvent() {

@@ -129,6 +129,7 @@ public class SSSP {
         factoryMap.put(REACH, new ReachFactory());
         factoryMap.put(BI_REACH, new BiReachFactory());
         factoryMap.put(REACH_A_STAR, new ReachAStarFactory());
+        factoryMap.put(BI_REACH_A_STAR, new BiReachAStarFactory());
         factoryMap.put(REACH_LANDMARKS, new ReachLandmarksFactory());
         factoryMap.put(CONTRACTION_HIERARCHIES, new ContractionHierarchiesFactory());
         factoryMap.put(SINGLE_TO_ALL, new OneToAllDijkstra());

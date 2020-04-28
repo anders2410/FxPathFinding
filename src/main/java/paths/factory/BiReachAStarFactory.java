@@ -3,7 +3,7 @@ package paths.factory;
 import paths.generator.*;
 import paths.strategy.*;
 
-public class BiReachFactory implements AlgorithmFactory {
+public class BiReachAStarFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
         return true;
@@ -11,7 +11,7 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getDijkstra();
+        return PriorityGenerator.getAStar();
     }
 
     @Override
@@ -21,12 +21,12 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getBiReach();
+        return RelaxGenerator.getBiReachAStar();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getKeyAboveGoalStrategy();
     }
 
     @Override
@@ -36,6 +36,6 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getSameDistanceStrategy();
+        return AlternationGenerator.getAmountSeenStrategy();
     }
 }

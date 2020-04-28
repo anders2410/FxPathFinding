@@ -73,6 +73,22 @@ public class RelaxGenerator {
         };
     }
 
+    public static RelaxStrategy getBiReachAStar() {
+        return (edge, dir) -> {
+            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
+            List<Double> bounds = getReachBounds();
+            double reachBound = bounds.get(edge.to);
+            List<Node> nodeList = getGraph().getNodeList();
+            Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
+            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+            boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
+            boolean shouldNotBePruned = newDistanceValid || projectedDistanceValid;
+            if (shouldNotBePruned) {
+                getBiDijkstra().relax(edge, dir);
+            }
+        };
+    }
+
     // 13137 -> 550
     public static RelaxStrategy getBiReach() {
         return ((edge, dir) -> {
