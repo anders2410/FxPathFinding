@@ -81,8 +81,10 @@ public class ContractionHierarchiesTest {
             int target = random.nextInt(originalGraph.getNodeAmount());
 
             SSSP.setGraph(originalGraph);
+            System.out.println(SSSP.getGraph());
             dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
             SSSP.setGraph(contractionHierarchiesResult.getGraph());
+            System.out.println(SSSP.getGraph());
             CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
             double CHTest = contractionHierarchies.computeDist(contractionHierarchiesResult.getGraph(), source, target);
 

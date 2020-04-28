@@ -246,7 +246,7 @@ public class SSSP {
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
-                        middlePoint = node;
+                        setMiddlePoint(node);
                     }
                 }
             }
