@@ -14,7 +14,6 @@ import java.util.*;
  */
 public class ContractionHierarchies {
     private Graph graph;
-
     private JavaMinPriorityQueue importanceQueue;
 
     // Instead of adding additional fields in Node we store values in internal lists
@@ -108,47 +107,36 @@ public class ContractionHierarchies {
         updateNeighbours(n);
 
         // Find the lists of incoming and outgoing edges/nodes
-        List<Integer> inNodeList = inNodeMap.get(n);
+        List<Edge> inEdgeList = getInEdgeList(inNodeMap.get(n), n);
         List<Edge> outEdgeList = graph.getAdjList().get(n);
 
-        // Stores the max distance out of uncontracted inVertices of the given vertex.
+        // Stores the max distance out of uncontracted in- & outNodes of the given Node.
         double inMax = 0;
-        // Stores the max distance out of uncontracted outVertices of the given vertex.
         double outMax = 0;
 
         // Find inMax;
-        for (int i = 0; i < inNodeList.size(); i++) {
-            if (contracted.get(inNodeList.get(i))) {
-                continue;
-            }
-            if (inMax < getInCost(n, i)) {
-                inMax = getInCost(n, i);
-            }
+        for (Edge inEdge : inEdgeList) {
+            if (contracted.get(inEdge.from)) { continue; }
+            if (inMax < inEdge.d) { inMax = inEdge.d; }
         }
 
         // Find outMax
-        for (Edge edge : outEdgeList) {
-            if (contracted.get(edge.to)) {
-                continue;
-            }
-            if (outMax < edge.d) {
-                outMax = edge.d;
-            }
+        for (Edge outEdge : outEdgeList) {
+            if (contracted.get(outEdge.to)) { continue; }
+            if (outMax < outEdge.d) { outMax = outEdge.d; }
         }
 
         double max = inMax + outMax;
 
         // Iterating over all the incoming nodes
-        for (Integer inNode : inNodeList) {
-            int inNodeIndex = inNode;
+        for (Edge inEdge : inEdgeList) {
+            int inNodeIndex = inEdge.from;
+            double inCost = inEdge.d;
 
             // If the node has already been contracted we will ignore it.
             if (contracted.get(inNodeIndex)) {
                 continue;
             }
-
-            // Find the inCost of an edge.
-            double inCost = getInCost(n, inNodeIndex);
 
             // Finds the shortest distances from the inNode to all the outNodes.
             List<Double> distanceList = dijkstra(inNodeIndex, max);
@@ -191,7 +179,7 @@ public class ContractionHierarchies {
     }
 
     // Is used in the witness search. It is a standard Dijkstra implementation where, the node we are about to
-    // contract, is excluded from the search. As we want to find the shortest path without this.
+    // contract, is excluded from the search. As we want to find the shortest path bypassing it.
     private List<Double> dijkstra(int inNode, double maxCost) {
         for (Integer i : dijkstraVisited) {
             dijkstraDistanceList.set(i, Double.MAX_VALUE);
@@ -369,24 +357,17 @@ public class ContractionHierarchies {
 
         System.out.println(shortestPathA);
 
-        /*if (middlepoint != -1) {
-            int pred = backpointersForward.get(middlepoint);
-            int currentNode = middlepoint;
-
-            while (isValidPredecessor(pred)) {
-                int node = addEdgeAsFirst(pred, currentNode);
-                pred = backpointersForward.get(node);
-                currentNode = node;
+            Set<Integer> result = new LinkedHashSet<>();
+            for (int i = 0; i < shortestPathA.size() - 1; i++) {
+                Integer contractedNode = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i+1)));
+                result.add(shortestPathA.get(i));
+                if (contractedNode != null) {
+                    result.add(contractedNode);
+                }
+                result.add(shortestPathA.get(i+1));
             }
 
-            pred = backpointersReverse.get(middlepoint);
-            currentNode = middlepoint;
-            while (isValidPredecessor(pred)) {
-                int node = addEdgeAsLast(pred, currentNode);
-                pred = backpointersReverse.get(node);
-                currentNode = node;
-            }
-        }*/
+        System.out.println(result);
 
         return finalDistance;
     }
@@ -435,6 +416,19 @@ public class ContractionHierarchies {
             }
         }
         return inCost;
+    }
+
+    private List<Edge> getInEdgeList(List<Integer> inNodeList, int nodeToContract) {
+        List<Edge> inEdgeList = new ArrayList<>();
+        for(int node : inNodeList) {
+            for(Edge e : graph.getAdjList().get(node)) {
+                if (e.to == nodeToContract) {
+                    inEdgeList.add(e);
+                    break;
+                }
+            }
+        }
+        return inEdgeList;
     }
 
     // Find the neighbours of a given node.
