@@ -235,22 +235,39 @@ public class SSSP {
         if (middlePoint == -1) {
             return new ShortestPathResult();
         }
-        List<Integer> shortestPath = extractPathBi();
 
         // TODO: 28/04/2020 Do something about this. Maybe strategy pattern?
         if (mode == CONTRACTION_HIERARCHIES) {
+            // Goes through all overlapping nodes and find the one with the smallest distance.
+            double finalDistance = Double.MAX_VALUE;
+            for (int node : scannedA) {
+                if (scannedA.contains(node) && scannedB.contains(node)) {
+                    // Replace if lower than actual
+                    double distance = nodeDistA.get(node) + nodeDistB.get(node);
+                    if (0 <= distance && distance < finalDistance) {
+                        finalDistance = distance;
+                        middlePoint = node;
+                    }
+                }
+            }
+
+            System.out.println("Another MiddlePoint: " + middlePoint);
+            List<Integer> shortestPathCH = extractPathBi();
+
             Set<Integer> result = new LinkedHashSet<>();
-            for (int i = 0; i < shortestPath.size() - 1; i++) {
-                List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPath.get(i), shortestPath.get(i + 1)));
-                result.add(shortestPath.get(i));
+            for (int i = 0; i < shortestPathCH.size() - 1; i++) {
+                List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
+                result.add(shortestPathCH.get(i));
                 if (contractedNodes != null) {
                     result.addAll(contractedNodes);
                 }
-                result.add(shortestPath.get(i + 1));
+                result.add(shortestPathCH.get(i + 1));
             }
+
             return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
 
+        List<Integer> shortestPath = extractPathBi();
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
 

@@ -6,6 +6,7 @@ import model.Node;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Random;
 import java.util.function.BiFunction;
 
 public class ContractionHierarchiesTest {
@@ -55,6 +56,43 @@ public class ContractionHierarchiesTest {
             System.out.println("CH distance: " + CHResult.d);
 
             SSSP.seed++;
+        }
+    }
+
+    @Test
+    public void testContractionHierarchiesIntegrated() {
+        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(originalGraph);
+        ContractionHierarchiesResult contractionHierarchiesResult = contractionHierarchies.preprocess();
+        SSSP.setContractionHierarchiesResult(contractionHierarchiesResult);
+
+        System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
+        System.out.println("Number of nodes: " + contractionHierarchiesResult.getGraph().getNodeAmount());
+        System.out.println("Number of edges: " + contractionHierarchiesResult.getGraph().getEdgeAmount());
+
+
+        System.out.println("------------------------------ TESTING VS. DIJKSTRA -----------------------------------------------");
+        ShortestPathResult dijkstraResult;
+        ShortestPathResult CHResult;
+
+        int seed = 0;
+        for (int i = 0; i < 10; i++) {
+            Random random = new Random(seed);
+            int source = random.nextInt(originalGraph.getNodeAmount());
+            int target = random.nextInt(originalGraph.getNodeAmount());
+
+            SSSP.setGraph(originalGraph);
+            dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
+            SSSP.setGraph(contractionHierarchiesResult.getGraph());
+            CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
+            double CHTest = contractionHierarchies.computeDist(contractionHierarchiesResult.getGraph(), source, target);
+
+            System.out.println(dijkstraResult.path);
+            System.out.println(CHResult.path);
+            System.out.println("Dijkstra distance: " + dijkstraResult.d);
+            System.out.println("CH distance: " + CHResult.d);
+            System.out.println("CH test distance: " + CHTest);
+
+            seed++;
         }
     }
 }

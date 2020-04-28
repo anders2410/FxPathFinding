@@ -372,7 +372,7 @@ public class ContractionHierarchies {
             }
         }
 
-        System.out.println(middlepoint);
+        System.out.println("MiddlePoint of: " + middlepoint);
 
         List<Integer> shortestPathA = extractPath(backpointersForward, source, middlepoint);
         List<Integer> shortestPathB = extractPath(backpointersReverse, target, middlepoint);
