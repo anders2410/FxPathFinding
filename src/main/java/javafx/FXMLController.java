@@ -867,6 +867,8 @@ public class FXMLController implements Initializable {
     public void handleSCCEvent() {
         if (!sccGraph) {
             runSCC();
+        } else {
+            System.out.println("SCC already found");
         }
     }
 

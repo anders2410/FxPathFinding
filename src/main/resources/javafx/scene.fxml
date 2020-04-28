@@ -43,7 +43,6 @@
                     <MenuItem onAction="#handleReachAStarEvent" text="ReA*"/>
                     <MenuItem onAction="#handleBiReachAStarEvent" text="BiReA*"/>
                     <MenuItem onAction="#handleReachLandmarksEvent" text="ReAL"/>
-                    <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
