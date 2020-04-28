@@ -185,7 +185,6 @@ public class SSSP {
         }
         */
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
-        System.out.println(shortestPath);
         // TODO: 25-04-2020 Strategy pattern this
         if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
             return new ShortestPathResult(0, shortestPath, scannedA, nodeDistA, pathMapA, duration);

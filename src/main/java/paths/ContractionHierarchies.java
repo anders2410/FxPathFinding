@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class ContractionHierarchies {
     private Graph graph;
-    private JavaMinPriorityQueue importanceQueue;
+    private final JavaMinPriorityQueue importanceQueue;
 
     // Instead of adding additional fields in Node we store values in internal lists
     private List<Boolean> contracted;
@@ -25,7 +25,7 @@ public class ContractionHierarchies {
     private Set<Integer> dijkstraVisited;
 
     private Map<Integer, List<Integer>> inNodeMap;
-    private Map<Pair<Integer, Integer>, Integer> shortcuts;
+    private Map<Pair<Integer, Integer>, List<Integer>> shortcuts;
 
     public ContractionHierarchies(Graph graph) {
         this.graph = graph;
@@ -166,21 +166,32 @@ public class ContractionHierarchies {
                     // TODO: 15/04/2020 Add implementation for one-way streets (still not working optimal..)
                     graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
 
-                    List<Integer> temp1 = inNodeMap.get(outNodeIndex);
-                    temp1.add(inNodeIndex);
-                    inNodeMap.replace(outNodeIndex, temp1);
+                    List<Integer> temp11 = inNodeMap.get(outNodeIndex);
+                    temp11.add(inNodeIndex);
+                    inNodeMap.replace(outNodeIndex, temp11);
 
-                    shortcuts.put(new Pair<>(inNodeIndex, outNodeIndex), n);
+                    Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
+                    Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
+                    Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
+                    List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
+                    List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
+                    List<Integer> temp3 = shortcuts.computeIfAbsent(pair3, k -> new ArrayList<>());
+                    temp3.addAll(temp1);
+                    temp3.add(n);
+                    temp3.addAll(temp2);
+                    shortcuts.replace(pair3, temp3);
 
-                    if (checkIfOutNodeShortcut(n, inNodeIndex, outNodeIndex)) {
+                    //shortcuts.put(new Pair<>(inNodeIndex, outNodeIndex), n);
+
+                    /*if (checkIfOutNodeShortcut(n, inNodeIndex, outNodeIndex)) {
                         graph.addEdge(outNodeIndex, inNodeIndex, totalCost);
 
-                        List<Integer> temp2 = inNodeMap.get(inNodeIndex);
-                        temp2.add(outNodeIndex);
-                        inNodeMap.replace(inNodeIndex, temp2);
+                        List<Integer> temp22 = inNodeMap.get(inNodeIndex);
+                        temp22.add(outNodeIndex);
+                        inNodeMap.replace(inNodeIndex, temp22);
 
                         shortcuts.put(new Pair<>(outNodeIndex, inNodeIndex), n);
-                    }
+                    }*/
                 }
             }
         }
@@ -366,15 +377,16 @@ public class ContractionHierarchies {
 
         Set<Integer> result = new LinkedHashSet<>();
         for (int i = 0; i < shortestPathA.size() - 1; i++) {
-            Integer contractedNode = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i + 1)));
+            List<Integer> contractedNodes = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i + 1)));
             result.add(shortestPathA.get(i));
-            if (contractedNode != null) {
-                result.add(contractedNode);
+            if (contractedNodes != null) {
+                result.addAll(contractedNodes);
             }
             result.add(shortestPathA.get(i + 1));
         }
 
         System.out.println(result);
+        System.out.println(result.size());
 
         return finalDistance;
     }
