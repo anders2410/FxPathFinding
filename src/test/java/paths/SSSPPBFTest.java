@@ -104,20 +104,21 @@ public class SSSPPBFTest {
 
     @Test
     public void testAlgorithms() {
-        matrix = new int[9];
+        int algorithms = 10;
+        matrix = new int[algorithms];
 //        List<Graph> graphs = new GraphUtil(graph).scc();
 //        graph = graphs.get(0);
         SSSP.setGraph(graph);
-       /* Landmarks lm = new Landmarks(graph);
+        Landmarks lm = new Landmarks(graph);
         SSSP.setLandmarks(lm);
         lm.landmarksMaxCover(16, true);
-        SSSP.setLandmarks(lm);*/
+        SSSP.setLandmarks(lm);
 
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 
         testCases = 10000;
-        runtimes = new double[9][testCases];
+        runtimes = new double[algorithms][testCases];
         i = 0;
         failMap = new HashMap<>();
         while (i < testCases) {
@@ -129,18 +130,17 @@ public class SSSPPBFTest {
 
             testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
-          /*  testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
             testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);*/
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
-/*
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
-*/
+            testSingle(distDijk, pathDijk, AlgorithmMode.REACH_A_STAR, 9);
             //Only interested in tests where path is atleast 100
             i++;
         }
-        if (Arrays.equals(new int[9], matrix)) {
+        if (Arrays.equals(new int[algorithms], matrix)) {
             System.out.println(Arrays.deepToString(runtimes));
         } else fail();
     }
