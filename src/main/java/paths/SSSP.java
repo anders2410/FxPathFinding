@@ -189,8 +189,6 @@ public class SSSP {
         }
         */
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
-        System.out.println("Huhuhuhuh");
-        System.out.println(shortestPath);
         // TODO: 25-04-2020 Strategy pattern this
         if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
             return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
@@ -239,6 +237,7 @@ public class SSSP {
         }
         List<Integer> shortestPath = extractPathBi();
 
+        // TODO: 28/04/2020 Do something about this. Maybe strategy pattern?
         if (mode == CONTRACTION_HIERARCHIES) {
             Set<Integer> result = new LinkedHashSet<>();
             for (int i = 0; i < shortestPath.size() - 1; i++) {
@@ -249,8 +248,7 @@ public class SSSP {
                 }
                 result.add(shortestPath.get(i + 1));
             }
-            System.out.println("Do I go in here?");
-            return new ShortestPathResult(goalDistance, new ArrayList<>(result), new HashSet<>(), new HashSet<>(), duration);
+            return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
 
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);

@@ -486,13 +486,5 @@ public class ContractionHierarchies {
             }
         }
     }
-
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-    }
-
-    public Graph getGraph() {
-        return graph;
-    }
 }
 
