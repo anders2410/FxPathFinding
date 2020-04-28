@@ -116,14 +116,22 @@ public class ContractionHierarchies {
 
         // Find inMax;
         for (Edge inEdge : inEdgeList) {
-            if (contracted.get(inEdge.from)) { continue; }
-            if (inMax < inEdge.d) { inMax = inEdge.d; }
+            if (contracted.get(inEdge.from)) {
+                continue;
+            }
+            if (inMax < inEdge.d) {
+                inMax = inEdge.d;
+            }
         }
 
         // Find outMax
         for (Edge outEdge : outEdgeList) {
-            if (contracted.get(outEdge.to)) { continue; }
-            if (outMax < outEdge.d) { outMax = outEdge.d; }
+            if (contracted.get(outEdge.to)) {
+                continue;
+            }
+            if (outMax < outEdge.d) {
+                outMax = outEdge.d;
+            }
         }
 
         double max = inMax + outMax;
@@ -147,7 +155,7 @@ public class ContractionHierarchies {
                 double outCost = outEdge.d;
 
                 // If the node has already been contracted we will ignore it.
-                if (contracted.get(outNodeIndex)  || inNodeIndex == outNodeIndex) {
+                if (contracted.get(outNodeIndex) || inNodeIndex == outNodeIndex) {
                     continue;
                 }
 
@@ -222,7 +230,6 @@ public class ContractionHierarchies {
     }
 
     // --------------------------------------------- IMPORTANCE ------------------------------------------
-
     /**
      * The edgeDifference is defined by edgeDifference = s(n) - in(n) - out(n). Where s(n) is the number of
      * added shortcuts, in(n) is in degree and out(n) is out degree. We want to contract nodes
@@ -357,22 +364,22 @@ public class ContractionHierarchies {
 
         System.out.println(shortestPathA);
 
-            Set<Integer> result = new LinkedHashSet<>();
-            for (int i = 0; i < shortestPathA.size() - 1; i++) {
-                Integer contractedNode = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i+1)));
-                result.add(shortestPathA.get(i));
-                if (contractedNode != null) {
-                    result.add(contractedNode);
-                }
-                result.add(shortestPathA.get(i+1));
+        Set<Integer> result = new LinkedHashSet<>();
+        for (int i = 0; i < shortestPathA.size() - 1; i++) {
+            Integer contractedNode = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i + 1)));
+            result.add(shortestPathA.get(i));
+            if (contractedNode != null) {
+                result.add(contractedNode);
             }
+            result.add(shortestPathA.get(i + 1));
+        }
 
         System.out.println(result);
 
         return finalDistance;
     }
 
-    private static List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {
+    private List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {
         Integer curNode = to;
         List<Integer> path = new ArrayList<>(pathMap.size());
         path.add(to);
@@ -389,7 +396,6 @@ public class ContractionHierarchies {
     }
 
     // ----------------------------- UTILITIES ------------------------------------------
-
     // Calculates the incoming nodes
     private Map<Integer, List<Integer>> getInNodeMap() {
         Map<Integer, List<Integer>> map = new HashMap<>();
@@ -420,8 +426,8 @@ public class ContractionHierarchies {
 
     private List<Edge> getInEdgeList(List<Integer> inNodeList, int nodeToContract) {
         List<Edge> inEdgeList = new ArrayList<>();
-        for(int node : inNodeList) {
-            for(Edge e : graph.getAdjList().get(node)) {
+        for (int node : inNodeList) {
+            for (Edge e : graph.getAdjList().get(node)) {
                 if (e.to == nodeToContract) {
                     inEdgeList.add(e);
                     break;
