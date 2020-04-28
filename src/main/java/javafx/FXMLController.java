@@ -165,12 +165,10 @@ public class FXMLController implements Initializable {
             }
         };
         ssspTask.setOnSucceeded(event -> {
-            playIndicatorCompleted();
             currentResult = combineResults(ssspTask.getValue());
             setLabels(Util.roundDouble(currentResult.d), currentResult.scannedNodesA.size() + currentResult.scannedNodesB.size());
             redrawGraph();
         });
-        attachProgressIndicator(ssspTask.progressProperty());
         new Thread(ssspTask).start();
     }
 
@@ -873,37 +871,53 @@ public class FXMLController implements Initializable {
     }
 
     public void handleReachEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = REACH;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleBiReachEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = BI_REACH;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleReachAStarEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = REACH_A_STAR;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleBiReachAStarEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = BI_REACH_A_STAR;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleReachLandmarksEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = REACH_LANDMARKS;
         runAlgorithm();
         setAlgorithmLabels();
-    }
-
-    public void handleLoadReachEvent() {
-        loadReachBounds();
     }
 
     public void handleGenerateReachEvent() {
