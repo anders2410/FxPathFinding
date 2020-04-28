@@ -47,10 +47,18 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
+            <MenuButton alignment="CENTER" text="CH">
+                <items>
+                    <MenuItem onAction="#handleCHEvent" text="Uni CH"/>
+                </items>
+            </MenuButton>
+            <Separator styleClass="nav_separator"/>
+
             <MenuButton alignment="CENTER" text="PRE">
                 <items>
                     <MenuItem onAction="#handleSCCEvent" text="SCC"/>
                     <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
+                    <MenuItem onAction="#handleGenerateCHEvent" text="Generate CH Graph"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
@@ -65,14 +73,6 @@
                     <MenuItem onAction="#handleClearLandmarks" text="Clear"/>
                     <MenuItem onAction="#handleLoadLandmarks" text="Load Marks"/>
                     <MenuItem onAction="#handleSaveLandmarks" text="Save Marks"/>
-                </items>
-            </MenuButton>
-            <Separator styleClass="nav_separator"/>
-
-            <MenuButton alignment="CENTER" text="CH">
-                <items>
-                    <MenuItem onAction="#handleCHEvent" text="Run CH"/>
-                    <MenuItem onAction="#handleGenerateCHEvent" text="Generate CH Graph"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
