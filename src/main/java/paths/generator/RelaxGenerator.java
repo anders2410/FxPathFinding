@@ -35,7 +35,6 @@ public class RelaxGenerator {
 
     private static double precision = 0.000000000000001;
 
-    // 8569 -> 1206
     public static RelaxStrategy getReach() {
         return (edge, dir) -> {
             double newDist = getNodeDist(dir).get(edge.from) + edge.d;
@@ -56,7 +55,7 @@ public class RelaxGenerator {
         };
     }
 
-    // 6925 -> 5331
+    // 13137 -> 550
     public static RelaxStrategy getBiReach() {
         return ((edge, dir) -> {
             List<Double> bounds = getReachBounds();

@@ -27,7 +27,7 @@ public class ReachAStarFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getKeyAboveGoalStrategy();
+        return TerminationGenerator.getSearchMeetTermination();
     }
 
     @Override
