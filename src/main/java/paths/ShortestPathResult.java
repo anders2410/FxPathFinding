@@ -10,6 +10,8 @@ public class ShortestPathResult {
     public List<Double> nodeDistances;
     public Set<Integer> scannedNodesA;
     public Set<Integer> scannedNodesB;
+    public Set<Edge> relaxedEdgesA;
+    public Set<Edge> relaxedEdgesB;
     public double d;
     public List<Integer> path;
     public long runTime;
@@ -19,29 +21,36 @@ public class ShortestPathResult {
         this.path = new ArrayList<>();
         this.scannedNodesA = new HashSet<>();
         this.scannedNodesB = new HashSet<>();
+        this.relaxedEdgesA = new HashSet<>();
+        this.relaxedEdgesB = new HashSet<>();
         this.runTime = 0;
     }
 
-    public ShortestPathResult(double d, List<Integer> path, Set<Integer> visitedNodes, long runTime) {
+    public ShortestPathResult(double d, List<Integer> path, Set<Integer> scannedNodes, Set<Edge> relaxedEdges, long runTime) {
         this.d = d;
         this.path = path;
-        this.scannedNodesA = visitedNodes;
+        this.scannedNodesA = scannedNodes;
         this.scannedNodesB = new HashSet<>();
+        this.relaxedEdgesA = relaxedEdges;
+        this.relaxedEdgesB = new HashSet<>();
         this.runTime = runTime;
     }
 
-    public ShortestPathResult(double d, List<Integer> path, Set<Integer> scannedNodesA, Set<Integer> scannedNodesB, long runTime) {
+    public ShortestPathResult(double d, List<Integer> path, Set<Integer> scannedNodesA, Set<Integer> scannedNodesB, Set<Edge> relaxedEdgesA, Set<Edge> relaxedEdgesB, long runTime) {
         this.d = d;
         this.path = path;
         this.scannedNodesA = scannedNodesA;
         this.scannedNodesB = scannedNodesB;
+        this.relaxedEdgesA = relaxedEdgesA;
+        this.relaxedEdgesB = relaxedEdgesB;
         this.runTime = runTime;
     }
 
-    public ShortestPathResult(double d, List<Integer> path, Set<Integer> visitedNodes, List<Double> nodeDistances, Map<Integer, Integer> pathMap, long runTime) {
+    public ShortestPathResult(double d, List<Integer> path, Set<Integer> scannedNodes, Set<Edge> relaxedEdges, List<Double> nodeDistances, Map<Integer, Integer> pathMap, long runTime) {
         this.d = d;
         this.path = path;
-        this.scannedNodesA = visitedNodes;
+        this.scannedNodesA = scannedNodes;
+        this.relaxedEdgesA = relaxedEdges;
         this.nodeDistances = nodeDistances;
         this.pathMap = pathMap;
         this.runTime = runTime;

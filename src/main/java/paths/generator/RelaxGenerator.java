@@ -18,6 +18,7 @@ public class RelaxGenerator {
                 getNodeDist(dir).set(edge.to, newDist);
                 updatePriority(edge.to, dir);
                 getPathMap(dir).put(edge.to, edge.from);
+                putRelaxedEdge(dir, edge);
             }
         };
     }
@@ -50,7 +51,24 @@ public class RelaxGenerator {
                     getNodeDist(dir).set(edge.to, newDist);
                     updatePriority(edge.to, dir);
                     getPathMap(dir).put(edge.to, edge.from);
+                    putRelaxedEdge(dir, edge);
                 }
+            }
+        };
+    }
+
+    public static RelaxStrategy getReach2() {
+        return (edge, dir) -> {
+            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
+            List<Double> bounds = getReachBounds();
+            double reachBound = bounds.get(edge.to);
+            List<Node> nodeList = getGraph().getNodeList();
+            Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
+            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+            boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
+            boolean shouldNotBePruned = newDistanceValid || projectedDistanceValid;
+            if (shouldNotBePruned) {
+                getDijkstra().relax(edge, dir);
             }
         };
     }
@@ -85,6 +103,7 @@ public class RelaxGenerator {
                 getNodeDist(dir).set(edge.to, newDist);
                 updatePriority(edge.to, dir);
                 getPathMap(dir).put(edge.to, edge.from);
+                putRelaxedEdge(dir, edge);
             }
         };
     }

@@ -47,6 +47,8 @@ public class SSSP {
     private static List<Double> nodeDistB;
     private static Set<Integer> scannedA;                   // A set of visited nodes starting from Node: source
     private static Set<Integer> scannedB;                   // A set of visited nodes starting from Node: target
+    private static Set<Edge> relaxedA;
+    private static Set<Edge> relaxedB;
     private static Map<Integer, Integer> pathMapA;
     private static Map<Integer, Integer> pathMapB;
     private static MinPriorityQueue queueA;                 // Queue to hold the paths from Node: source
@@ -69,6 +71,8 @@ public class SSSP {
         nodeDistB = initNodeDist(target, graph.getNodeAmount());
         scannedA = new HashSet<>();
         scannedB = new HashSet<>();
+        relaxedA = new HashSet<>();
+        relaxedB = new HashSet<>();
         pathMapA = new HashMap<>();
         pathMapB = new HashMap<>();
         queueA = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyA, A), graph.getNodeAmount());
@@ -187,8 +191,8 @@ public class SSSP {
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
         // TODO: 25-04-2020 Strategy pattern this
         if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
-            return new ShortestPathResult(0, shortestPath, scannedA, nodeDistA, pathMapA, duration);
-        return new ShortestPathResult(nodeDistA.get(target), shortestPath, scannedA, duration);
+            return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
+        return new ShortestPathResult(nodeDistA.get(target), shortestPath, scannedA, relaxedA, duration);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
@@ -232,7 +236,7 @@ public class SSSP {
             return new ShortestPathResult();
         }
         List<Integer> shortestPath = extractPathBi();
-        return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, duration);
+        return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
@@ -248,7 +252,7 @@ public class SSSP {
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
-        return new ShortestPathResult(0, shortestPath, scannedA, nodeDistA, pathMapA, duration);
+        return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
     }
 
     private static List<Integer> extractPathBi() {
@@ -370,6 +374,7 @@ public class SSSP {
         return dir == A ? queueA : queueB;
     }
 
+
    /* public static Map<Integer, Double> getEstimatedDist(ABDir dir) {
         return dir == A ? estimatedDistA : estimatedDistB;
     }*/
@@ -428,5 +433,9 @@ public class SSSP {
 
     public static void setSingleToAllBound(double singleToAllBound) {
         SSSP.singleToAllBound = singleToAllBound;
+    }
+
+    public static void putRelaxedEdge(ABDir dir, Edge edge) {
+        (dir == A ? relaxedA : relaxedB).add(edge);
     }
 }
