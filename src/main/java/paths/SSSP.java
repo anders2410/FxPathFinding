@@ -201,7 +201,7 @@ public class SSSP {
         for (Edge edge : adjList.get(currentNode)) {
             //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
             if (!getScanned(revDir(dir)).contains(edge.to)) {
-                getRelaxStrategy(dir).relax(currentNode, edge, dir);
+                getRelaxStrategy(dir).relax(edge, dir);
             }
         }
     }
@@ -231,7 +231,7 @@ public class SSSP {
         if (middlePoint == -1) {
             return new ShortestPathResult();
         }
-        List<Integer> shortestPath = extractPathBi(adjList, revAdjList);
+        List<Integer> shortestPath = extractPathBi();
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, duration);
     }
 
@@ -251,7 +251,7 @@ public class SSSP {
         return new ShortestPathResult(0, shortestPath, scannedA, nodeDistA, pathMapA, duration);
     }
 
-    private static List<Integer> extractPathBi(List<List<Edge>> adjList, List<List<Edge>> revAdjList) {
+    private static List<Integer> extractPathBi() {
         List<Integer> shortestPathA = extractPath(pathMapA, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, target, middlePoint);
         shortestPathB.remove(shortestPathB.size() - 1);

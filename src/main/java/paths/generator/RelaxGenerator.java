@@ -12,20 +12,20 @@ import static paths.Util.revDir;
 public class RelaxGenerator {
 
     public static RelaxStrategy getDijkstra() {
-        return (from, edge, dir) -> {
-            double newDist = getNodeDist(dir).get(from) + edge.d;
+        return (edge, dir) -> {
+            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
                 updatePriority(edge.to, dir);
-                getPathMap(dir).put(edge.to, from);
+                getPathMap(dir).put(edge.to, edge.from);
             }
         };
     }
 
     public static RelaxStrategy getBiDijkstra() {
-        return (from, edge, dir) -> {
-            getDijkstra().relax(from, edge, dir);
-            double newPathDist = getNodeDist(dir).get(from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
+        return (edge, dir) -> {
+            getDijkstra().relax(edge, dir);
+            double newPathDist = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
             if (newPathDist < getGoalDistance()) {
                 setGoalDistance(newPathDist);
                 setMiddlePoint(edge.to);
@@ -37,8 +37,8 @@ public class RelaxGenerator {
 
     // 8569 -> 1206
     public static RelaxStrategy getReach() {
-        return (from, edge, dir) -> {
-            double newDist = getNodeDist(dir).get(from) + edge.d;
+        return (edge, dir) -> {
+            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 List<Double> bounds = getReachBounds();
                 double reachBound = bounds.get(edge.to);
@@ -50,7 +50,7 @@ public class RelaxGenerator {
                 if (shouldNotBePruned) {
                     getNodeDist(dir).set(edge.to, newDist);
                     updatePriority(edge.to, dir);
-                    getPathMap(dir).put(edge.to, from);
+                    getPathMap(dir).put(edge.to, edge.from);
                 }
             }
         };
@@ -58,34 +58,34 @@ public class RelaxGenerator {
 
     // 6925 -> 5331
     public static RelaxStrategy getBiReach() {
-        return ((from, edge, dir) -> {
+        return ((edge, dir) -> {
             List<Double> bounds = getReachBounds();
-            double newDist = getNodeDist(dir).get(from) + edge.d;
+            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceValid = newDist <= reachBound + precision;
+            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
             if (newDistanceValid) {
-                getBiDijkstra().relax(from, edge, dir);
+                getBiDijkstra().relax(edge, dir);
             }
         });
     }
 
     public static RelaxStrategy getCH() {
-        return (from, edge, dir) -> {
+        return (edge, dir) -> {
             List<Integer> ranks = getNodeRankCH();
-            if (ranks.get(from) < ranks.get(edge.to)) {
-                getDijkstra().relax(from, edge, dir);
+            if (ranks.get(edge.from) < ranks.get(edge.to)) {
+                getDijkstra().relax(edge, dir);
             }
         };
     }
 
     public static RelaxStrategy getBoundedDijstra() {
-        return (from, edge, dir) -> {
-            double newDist = getNodeDist(dir).get(from) + edge.d;
-            if (getNodeDist(dir).get(from) > SSSP.getSingleToAllBound()) return;
+        return (edge, dir) -> {
+            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
+            if (getNodeDist(dir).get(edge.from) > SSSP.getSingleToAllBound()) return;
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
                 updatePriority(edge.to, dir);
-                getPathMap(dir).put(edge.to, from);
+                getPathMap(dir).put(edge.to, edge.from);
             }
         };
     }

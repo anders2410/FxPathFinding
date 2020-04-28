@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import load.GraphIO;
+import load.LoadType;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -71,6 +72,7 @@ public class FXMLController implements Initializable {
     private Graph graph;
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
+    private boolean sccGraph = false;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
@@ -106,7 +108,8 @@ public class FXMLController implements Initializable {
             protected Graph call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy);
                 graphIO.setProgressListener(this::updateProgress);
-                graphIO.loadGraph(fileName);
+                LoadType lt = graphIO.loadGraph(fileName);
+                sccGraph = lt == LoadType.SCC;
                 return graphIO.getGraph();
             }
         };
@@ -862,7 +865,9 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSCCEvent() {
-        runSCC();
+        if (!sccGraph) {
+            runSCC();
+        }
     }
 
     public void handleReachEvent() {
@@ -1106,6 +1111,7 @@ public class FXMLController implements Initializable {
             progress_indicator.setProgress(0.99);
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
+            sccGraph = true;
             storeGraph("-scc");
             setUpGraph();
             System.out.println("Finished computing SCC");

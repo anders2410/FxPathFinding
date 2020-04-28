@@ -117,7 +117,7 @@ public class SSSPPBFTest {
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 
-        testCases = 10000;
+        testCases = 1000;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failMap = new HashMap<>();

@@ -56,29 +56,34 @@ public class GraphIO {
         new File(tempDir).mkdir();
     }
 
-    public void loadGraph(String fileName) {
+    public LoadType loadGraph(String fileName) {
         // Check for temp file to load instead
         String tmpName = tempDir + Util.trimFileTypes(fileName);
         File sccFile = new File(tmpName + "-scc-graph.tmp");
         if (sccFile.exists()) {
             loadTMP(tmpName + "-scc", "SCC graph loaded from storage");
-            return;
+            return LoadType.SCC;
         }
         File tmpFile = new File(tmpName + "-graph.tmp");
         if (tmpFile.exists()) {
             loadTMP(tmpName, "Graph loaded from storage");
-            return;
+            return LoadType.TEMP;
         }
         // Load actual file
         System.out.println("No tmp files were found");
         String fileType = Util.getFileType(fileName);
         if (fileType.equals("osm")) {
             loadOSM(Util.trimFileTypes(fileName));
+            System.out.println("Pre-processing completed");
+            return LoadType.OSM;
         }
         if (fileType.equals("pbf")) {
             loadPBF(fileName);
+            System.out.println("Pre-processing completed");
+            return LoadType.PBF;
         }
-        System.out.println("Pre-processing completed");
+        System.out.println("Error in loading");
+        return LoadType.NONE;
     }
 
     private void loadOSM(String fileName) {
