@@ -205,6 +205,7 @@ public class SSSP {
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
+            // TODO: 29/04/2020 Put this into RelaxStrategy. Need to be able to have overlap.
             if (!getScanned(revDir(dir)).contains(edge.to)) {
                 getRelaxStrategy(dir).relax(edge, dir);
             }
@@ -233,25 +234,24 @@ public class SSSP {
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
 
-        if (middlePoint == -1) {
-            return new ShortestPathResult();
-        }
-
         // TODO: 28/04/2020 Do something about this. Maybe strategy pattern?
         if (mode == CONTRACTION_HIERARCHIES) {
             // Goes through all overlapping nodes and find the one with the smallest distance.
+            int middlepoint = -1;
             double finalDistance = Double.MAX_VALUE;
             for (int node : scannedA) {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
+                    System.out.println("There is an overlap..");
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
-                        setMiddlePoint(node);
+                        middlepoint = node;
                     }
                 }
             }
 
+            setMiddlePoint(middlepoint);
             System.out.println("Another MiddlePoint: " + middlePoint);
             List<Integer> shortestPathCH = extractPathBi();
 
@@ -266,6 +266,10 @@ public class SSSP {
             }
 
             return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
+        }
+
+        if (middlePoint == -1) {
+            return new ShortestPathResult();
         }
 
         List<Integer> shortestPath = extractPathBi();
