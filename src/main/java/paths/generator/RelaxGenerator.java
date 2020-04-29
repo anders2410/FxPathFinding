@@ -75,10 +75,9 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiReach() {
         return ((edge, dir) -> {
             List<Double> bounds = getReachBounds();
-            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceValid = reachBound > newDist /*|| Math.abs(reachBound - newDist) <= precision*/;
-            if (newDistanceValid) {
+            boolean newDistanceInValid = getNodeDist(dir).get(edge.from) > reachBound /*|| Math.abs(reachBound - newDist) <= precision*/;
+            if (!newDistanceInValid) {
                 getBiDijkstra().relax(edge, dir);
             } else if (getScanned(Util.revDir(dir)).contains(edge.to)) {
                 updateGoalDist(edge, dir);

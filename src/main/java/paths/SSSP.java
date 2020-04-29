@@ -206,14 +206,10 @@ public class SSSP {
         if (currentNode == null) {
             return;
         }
-
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
-/*
-            if (!getScanned(revDir(dir)).contains(edge.to)) {
-*/
-                getRelaxStrategy(dir).relax(edge, dir);
+            /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
+            getRelaxStrategy(dir).relax(edge, dir);
             /*}*/
         }
     }
@@ -230,7 +226,7 @@ public class SSSP {
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
-        while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() && !queueB.isEmpty())) {
+        while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {
                 takeStep(adjList, A);
             } else {
@@ -325,6 +321,9 @@ public class SSSP {
         Random random = new Random(seed);
         int sourceR = random.nextInt(n);
         int targetR = random.nextInt(n);
+        if (sourceR == 61) {
+            System.out.println();
+        }
         ShortestPathResult res = findShortestPath(sourceR, targetR, modeP);
         if (traceResult) {
             System.out.println("Distance from " + source + " to " + target + " is " + res.d);

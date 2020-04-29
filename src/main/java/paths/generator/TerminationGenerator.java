@@ -38,21 +38,29 @@ public class TerminationGenerator {
 
     public static TerminationStrategy getBiReachTermination() {
         return (goalDist) -> {
-                    Integer topA = getQueue(A).peek();
-                    Integer topB = getQueue(B).peek();
-                    if (topA != null && topB != null) {
-                        double forwardKeyVal = getPriorityStrategy().apply(topA, A);
-                        double backwardKeyVal = getPriorityStrategy().apply(topB, B);
-                        boolean backwardsShouldStop = backwardKeyVal > goalDist / 2;
-                        if (backwardsShouldStop)
-                            SSSP.setAlternationStrategy(AlternationGenerator.getOneDirectional());
-                        boolean forwardShouldStop = forwardKeyVal > goalDist / 2;
-                        if (forwardShouldStop)
-                            SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
+            Integer topA = getQueue(A).peek();
+            Integer topB = getQueue(B).peek();
+            if (topA == null && topB == null) return false;
+            if (topA == null) {
+                SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
+                return false;
+            } else if (topB == null) {
+                SSSP.setAlternationStrategy(AlternationGenerator.getOneDirectional());
+                return false;
+            } else {
+                double forwardKeyVal = getPriorityStrategy().apply(topA, A);
+                double backwardKeyVal = getPriorityStrategy().apply(topB, B);
+                boolean backwardsShouldStop = backwardKeyVal > goalDist / 2;
+                if (backwardsShouldStop)
+                    SSSP.setAlternationStrategy(AlternationGenerator.getOneDirectional());
+                boolean forwardShouldStop = forwardKeyVal > goalDist / 2;
+                if (forwardShouldStop)
+                    SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
                 return backwardsShouldStop && forwardShouldStop;
             }
-            return false;
-        };
+        }
+
+                ;
     }
 
     public static TerminationStrategy getKeyAboveGoalStrategy() {
