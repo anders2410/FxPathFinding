@@ -28,12 +28,16 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiDijkstra() {
         return (edge, dir) -> {
             getDijkstra().relax(edge, dir);
-            double newPathDist = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
-            if (newPathDist < getGoalDistance()) {
-                setGoalDistance(newPathDist);
-                setMiddlePoint(edge.to);
-            }
+            updateGoalDist(edge, dir);
         };
+    }
+
+    private static void updateGoalDist(Edge edge, ABDir dir) {
+        double newPathDist = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
+        if (newPathDist < getGoalDistance()) {
+            setGoalDistance(newPathDist);
+            setMiddlePoint(edge.to);
+        }
     }
 
     public static RelaxStrategy getReach() {
@@ -47,8 +51,9 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiReachAStar() {
         return (edge, dir) -> {
             if (reachValid(edge, dir)) {
-                getBiDijkstra().relax(edge, dir);
+                getDijkstra().relax(edge, dir);
             }
+            updateGoalDist(edge, dir);
         };
     }
 

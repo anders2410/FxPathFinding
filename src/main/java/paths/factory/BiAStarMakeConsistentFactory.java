@@ -26,7 +26,7 @@ public class BiAStarMakeConsistentFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.strongNonConHeuristicTermination();
+        return TerminationGenerator.getStrongNonConHeuristicTermination();
     }
 
     @Override

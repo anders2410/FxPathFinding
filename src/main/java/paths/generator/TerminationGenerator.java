@@ -7,7 +7,7 @@ import static paths.ABDir.B;
 import static paths.SSSP.*;
 
 public class TerminationGenerator {
-    public static TerminationStrategy strongNonConHeuristicTermination() {
+    public static TerminationStrategy getStrongNonConHeuristicTermination() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
@@ -64,7 +64,7 @@ public class TerminationGenerator {
         return (goalDist) -> false;
     }
 
-    public static TerminationStrategy strongConHeuristicTermination() {
+    public static TerminationStrategy getStrongConHeuristicTermination() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();
@@ -79,6 +79,4 @@ public class TerminationGenerator {
             return false;
         };
     }
-
-
 }
