@@ -80,12 +80,8 @@ public class RelaxGenerator {
             boolean newDistanceValid = reachBound > newDist /*|| Math.abs(reachBound - newDist) <= precision*/;
             if (newDistanceValid) {
                 getBiDijkstra().relax(edge, dir);
-            } else {
-                if (getScanned(Util.revDir(dir)).contains(edge.to)) {
-                    if (newDist + getNodeDist(Util.revDir(dir)).get(edge.to) < getGoalDistance()) {
-                        setGoalDistance(newDist + getNodeDist(Util.revDir(dir)).get(edge.to));
-                    }
-                }
+            } else if (getScanned(Util.revDir(dir)).contains(edge.to)) {
+                updateGoalDist(edge, dir);
             }
         });
     }
