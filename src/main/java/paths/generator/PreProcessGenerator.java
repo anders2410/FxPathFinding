@@ -12,6 +12,17 @@ import static paths.SSSP.*;
 
 public class PreProcessGenerator {
 
+    public static PreProcessStrategy getCHPreStrategy() {
+        return () -> {
+            List<Integer> ranks = SSSP.getContractionHierarchiesResult().getRanks();
+            Graph graph = SSSP.getContractionHierarchiesResult().getGraph();
+            SSSP.setGraph(graph);
+            if (ranks == null || graph == null) {
+                System.out.println("Something wrong with CH preprocess..");
+            }
+        };
+    }
+
     public static PreProcessStrategy getReachPreStrategy() {
         return () -> {
             if (SSSP.getReachBounds() == null) {

@@ -31,7 +31,7 @@ public class ContractionHierarchiesFactory implements AlgorithmFactory {
 
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
-        return new ContractionHierarchyPreStrategy();
+        return PreProcessGenerator.getCHPreStrategy();
     }
 
     @Override
