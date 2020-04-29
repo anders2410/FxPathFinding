@@ -5,7 +5,6 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -21,7 +20,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.Pair;
 import load.GraphIO;
 import load.LoadType;
 import model.Edge;
@@ -263,8 +261,11 @@ public class FXMLController implements Initializable {
                 if (oppositeEdge == null || isBetter(from, edge, to, oppositeEdge)) {
                     PixelPoint pFrom = toScreenPos(from);
                     PixelPoint pTo = toScreenPos(to);
-
-                    gc.setStroke(chooseEdgeColor(from, edge));
+                    Color color = chooseEdgeColor(from, edge);
+                    if (SSSP.getReachBounds() != null && isReach()) {
+                        color = graduateColorSaturation(color, SSSP.getReachBounds().get(from.index), maxReach);
+                    }
+                    gc.setStroke(color);
                     gc.setLineWidth(chooseEdgeWidth(from, edge));
                     if (mouseEdges.contains(edge)) {
                         gc.setLineDashes(7);
@@ -276,6 +277,24 @@ public class FXMLController implements Initializable {
                 }
             }
         }
+    }
+
+    private boolean isReach() {
+        return algorithmMode == REACH || algorithmMode == REACH_A_STAR || algorithmMode == REACH_LANDMARKS || algorithmMode == BI_REACH || algorithmMode == BI_REACH_A_STAR || algorithmMode == BI_REACH_LANDMARKS;
+    }
+
+    private double maxReach = 0;
+
+    private void findMaxReach() {
+        double maxSoFar = 0;
+        for (double reachBound : SSSP.getReachBounds()) {
+            if (maxSoFar < reachBound && reachBound < 100000) {
+                maxSoFar = reachBound;
+                System.out.println(reachBound);
+            }
+        }
+        maxReach = maxSoFar;
+        System.out.println(maxSoFar);
     }
 
     public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
@@ -327,9 +346,8 @@ public class FXMLController implements Initializable {
         return Color.BLACK;
     }
 
-    private Color shiftColorByRound(Color color, int roundVisit, int totalrounds) {
-        double scaleFactor = Math.max(((double) roundVisit / (double) totalrounds), 0.3);
-        return Color.hsb(color.getHue(), color.getSaturation(), color.getBrightness() * scaleFactor, color.getOpacity());
+    private Color graduateColorSaturation(Color color, double amount, double max) {
+        return color.deriveColor(0, 1,1,1 - 0.8 + amount/(1.25*max));
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
@@ -1094,6 +1112,7 @@ public class FXMLController implements Initializable {
             playIndicatorCompleted();
             List<Double> bounds = reachGenTask.getValue();
             SSSP.setReachBounds(bounds);
+            findMaxReach();
             saveReachBounds();
         });
         attachProgressIndicator(reachGenTask.progressProperty());
@@ -1111,6 +1130,7 @@ public class FXMLController implements Initializable {
         };
         loadTask.setOnSucceeded(e -> {
             SSSP.setReachBounds(loadTask.getValue());
+            findMaxReach();
         });
         new Thread(loadTask).start();
     }
