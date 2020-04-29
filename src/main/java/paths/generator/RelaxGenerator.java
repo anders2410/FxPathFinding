@@ -4,6 +4,7 @@ import model.Edge;
 import model.Node;
 import paths.ABDir;
 import paths.SSSP;
+import paths.Util;
 import paths.strategy.RelaxStrategy;
 
 import java.util.List;
@@ -71,9 +72,15 @@ public class RelaxGenerator {
             List<Double> bounds = getReachBounds();
             double newDist = getNodeDist(dir).get(edge.from) + edge.d;
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+            boolean newDistanceValid = reachBound > newDist /*|| Math.abs(reachBound - newDist) <= precision*/;
             if (newDistanceValid) {
                 getBiDijkstra().relax(edge, dir);
+            } else {
+                if (getScanned(Util.revDir(dir)).contains(edge.to)) {
+                    if (newDist + getNodeDist(Util.revDir(dir)).get(edge.to) < getGoalDistance()) {
+                        setGoalDistance(newDist + getNodeDist(Util.revDir(dir)).get(edge.to));
+                    }
+                }
             }
         });
     }

@@ -26,7 +26,7 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getBiReachTermination();
     }
 
     @Override
@@ -36,6 +36,6 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getSameDistanceStrategy();
+        return AlternationGenerator.getAmountSeenStrategy();
     }
 }
