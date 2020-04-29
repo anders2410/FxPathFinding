@@ -931,17 +931,17 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateCHEvent() {
-        Task<Pair<Graph, List<Integer>>> CHTask = new Task<>() {
+        Task<ContractionHierarchiesResult> CHTask = new Task<>() {
             @Override
-            protected Pair<Graph, List<Integer>> call() {
-                ContractionHierarchies contractionHierarchies = new ContractionHierarchies(new Graph(graph));
+            protected ContractionHierarchiesResult call() {
+                ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
                 return contractionHierarchies.preprocess();
             }
         };
         CHTask.setOnSucceeded(e -> {
             try {
-                SSSP.setNodeRankCH(CHTask.get().getValue());
-                SSSP.setCHGraph(CHTask.get().getKey());
+                SSSP.setContractionHierarchiesResult(CHTask.get());
+                System.out.println("CH is generated successfully!");
             } catch (InterruptedException | ExecutionException ex) {
                 ex.printStackTrace();
             }

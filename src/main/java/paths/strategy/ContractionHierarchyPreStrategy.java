@@ -8,8 +8,8 @@ import java.util.List;
 public class ContractionHierarchyPreStrategy implements PreProcessStrategy {
     @Override
     public void process() {
-        List<Integer> ranks = SSSP.getNodeRankCH();
-        Graph graph = SSSP.getCHGraph();
+        List<Integer> ranks = SSSP.getContractionHierarchiesResult().getRanks();
+        Graph graph = SSSP.getContractionHierarchiesResult().getGraph();
         SSSP.setGraph(graph);
         if (ranks == null || graph == null) {
             System.out.println("Something wrong with CH preprocess..");

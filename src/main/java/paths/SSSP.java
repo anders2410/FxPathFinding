@@ -1,6 +1,7 @@
 package paths;
 
 import datastructures.MinPriorityQueue;
+import javafx.util.Pair;
 import model.*;
 import paths.factory.*;
 import paths.strategy.*;
@@ -15,13 +16,11 @@ import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
-
     public static boolean trace = false;
     public static boolean traceResult = false;
     public static int seed = 0;
 
     private static Graph graph;
-    private static Graph CHGraph;
     private static Landmarks landmarks;
     private static int source, target;
     private static AlgorithmMode mode;
@@ -29,7 +28,6 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
-    private static List<Integer> nodeRankCH;
 
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
@@ -58,6 +56,7 @@ public class SSSP {
     private static GetPQueueStrategy priorityQueueGetter;
     private static Set<Integer> prunedSet;
     private static double singleToAllBound;
+    private static ContractionHierarchiesResult contractionHierarchiesResult;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -190,8 +189,6 @@ public class SSSP {
         }
         */
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
-        /*System.out.println("Huhuhuhuh");
-        System.out.println(shortestPath);*/
         // TODO: 25-04-2020 Strategy pattern this
         if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
             return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
@@ -238,6 +235,38 @@ public class SSSP {
         if (middlePoint == -1) {
             return new ShortestPathResult();
         }
+
+        // TODO: 28/04/2020 Do something about this. Maybe strategy pattern?
+        if (mode == CONTRACTION_HIERARCHIES) {
+            // Goes through all overlapping nodes and find the one with the smallest distance.
+            double finalDistance = Double.MAX_VALUE;
+            for (int node : scannedA) {
+                if (scannedA.contains(node) && scannedB.contains(node)) {
+                    // Replace if lower than actual
+                    double distance = nodeDistA.get(node) + nodeDistB.get(node);
+                    if (0 <= distance && distance < finalDistance) {
+                        finalDistance = distance;
+                        setMiddlePoint(node);
+                    }
+                }
+            }
+
+            System.out.println("Another MiddlePoint: " + middlePoint);
+            List<Integer> shortestPathCH = extractPathBi();
+
+            Set<Integer> result = new LinkedHashSet<>();
+            for (int i = 0; i < shortestPathCH.size() - 1; i++) {
+                List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
+                result.add(shortestPathCH.get(i));
+                if (contractedNodes != null) {
+                    result.addAll(contractedNodes);
+                }
+                result.add(shortestPathCH.get(i + 1));
+            }
+
+            return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
+        }
+
         List<Integer> shortestPath = extractPathBi();
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
@@ -414,22 +443,6 @@ public class SSSP {
         SSSP.middlePoint = middlePoint;
     }
 
-    public static void setNodeRankCH(List<Integer> nodeRank) {
-        nodeRankCH = nodeRank;
-    }
-
-    public static List<Integer> getNodeRankCH() {
-        return nodeRankCH;
-    }
-
-    public static void setCHGraph(Graph graph) {
-        CHGraph = graph;
-    }
-
-    public static Graph getCHGraph() {
-        return CHGraph;
-    }
-
     public static double getSingleToAllBound() {
         return singleToAllBound;
     }
@@ -440,5 +453,13 @@ public class SSSP {
 
     public static void putRelaxedEdge(ABDir dir, Edge edge) {
         (dir == A ? relaxedA : relaxedB).add(edge);
+    }
+
+    public static ContractionHierarchiesResult getContractionHierarchiesResult() {
+        return contractionHierarchiesResult;
+    }
+
+    public static void setContractionHierarchiesResult(ContractionHierarchiesResult contractionHierarchiesResult) {
+        SSSP.contractionHierarchiesResult = contractionHierarchiesResult;
     }
 }

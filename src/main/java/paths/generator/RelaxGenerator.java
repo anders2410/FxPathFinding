@@ -80,14 +80,14 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getCH() {
         return (edge, dir) -> {
-            List<Integer> ranks = getNodeRankCH();
+            List<Integer> ranks = getContractionHierarchiesResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
-                getDijkstra().relax(edge, dir);
+                getBiDijkstra().relax(edge, dir);
             }
         };
     }
 
-    public static RelaxStrategy getBoundedDijstra() {
+    public static RelaxStrategy getBoundedDijkstra() {
         return (edge, dir) -> {
             double newDist = getNodeDist(dir).get(edge.from) + edge.d;
             if (getNodeDist(dir).get(edge.from) > SSSP.getSingleToAllBound()) return;

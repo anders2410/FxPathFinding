@@ -36,6 +36,8 @@ public class ContractionHierarchies {
         setInitialImportance();
     }
 
+    // Remove duplicate edges. Always select the one with lowest cost.
+    // TODO: 28/04/2020 Consider if this should be done in collapsing?
     private void removeDuplicateEdges(Graph graph) {
         for (int i = 0; i < graph.getNodeList().size(); i++) {
             Iterator<Edge> iterator = graph.getAdjList().get(i).iterator();
@@ -84,7 +86,7 @@ public class ContractionHierarchies {
 
     // The idea in the pre-processing step: We iterate the nodes one by one in the order of importance
     // and add 'shortcuts' whenever no witness path, for a given 'shortcut', has been found.
-    public Pair<Graph, List<Integer>> preprocess() {
+    public ContractionHierarchiesResult preprocess() {
         // Stores the number of nodes that are contracted
         int rank = 0;
 
@@ -112,7 +114,7 @@ public class ContractionHierarchies {
             edgeList.removeIf(edge -> nodeHack.index == edge.to);
         }
 
-        return new Pair<>(graph, ranks);
+        return new ContractionHierarchiesResult(graph, ranks, shortcuts);
     }
 
     // Function to contract a node!
@@ -177,9 +179,7 @@ public class ContractionHierarchies {
                 }
 
                 double totalCost = Double.sum(inCost, outCost);
-                if (n == 41) {
-                    System.out.println("aguahugh");
-                }
+
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
                 if (distanceList.get(outNodeIndex) > totalCost) {
                     // TODO: 15/04/2020 Add implementation for one-way streets (still not working optimal..)
@@ -199,18 +199,6 @@ public class ContractionHierarchies {
                     temp3.add(n);
                     temp3.addAll(temp2);
                     shortcuts.replace(pair3, temp3);
-
-                    //shortcuts.put(new Pair<>(inNodeIndex, outNodeIndex), n);
-
-                    /*if (checkIfOutNodeShortcut(n, inNodeIndex, outNodeIndex)) {
-                        graph.addEdge(outNodeIndex, inNodeIndex, totalCost);
-
-                        List<Integer> temp22 = inNodeMap.get(inNodeIndex);
-                        temp22.add(outNodeIndex);
-                        inNodeMap.replace(inNodeIndex, temp22);
-
-                        shortcuts.put(new Pair<>(outNodeIndex, inNodeIndex), n);
-                    }*/
                 }
             }
         }
@@ -384,7 +372,7 @@ public class ContractionHierarchies {
             }
         }
 
-        System.out.println(middlepoint);
+        System.out.println("MiddlePoint of: " + middlepoint);
 
         List<Integer> shortestPathA = extractPath(backpointersForward, source, middlepoint);
         List<Integer> shortestPathB = extractPath(backpointersReverse, target, middlepoint);
@@ -498,32 +486,5 @@ public class ContractionHierarchies {
             }
         }
     }
-
-    private boolean checkIfOutNodeShortcut(int node, int inNode, int outNode) {
-        boolean something = false;
-        for (Edge e : graph.getAdjList().get(node)) {
-            if (e.to == inNode) {
-                something = true;
-                break;
-            }
-        }
-
-        boolean anything = false;
-        for (Integer n : inNodeMap.get(node)) {
-            if (n == outNode) {
-                anything = true;
-                break;
-            }
-        }
-
-        return something && anything;
-    }
-
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-    }
-
-    public Graph getGraph() {
-        return graph;
-    }
 }
+
