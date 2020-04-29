@@ -17,24 +17,33 @@ import static org.junit.Assert.assertEquals;
 
 public class ReachTest {
     Graph graph;
-    String fileName = "greenland-latest.osm.pbf";
+    String fileName;
+    private GraphIO graphIO;
 
     @Before
     public void setUp() {
-        PBFParser pbfParser = new PBFParser(fileName);
+     /*   fileName = "denmark-latest.osm.pbf";
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
-        BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
-
         SSSP.setDistanceStrategy(distanceStrategy1);
-        pbfParser.setDistanceStrategy(distanceStrategy2);
-        try {
-            pbfParser.executePBFParser();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        graph = pbfParser.getGraph();
-        GraphUtil g = new GraphUtil(graph);
-        graph = g.scc().get(0);
+        graphIO = new GraphIO(distanceStrategy1);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);*/
+    }
+
+    @Test
+    public void denmarkReachSave() {
+        fileName = "denmark-latest.osm.pbf";
+        BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
+        SSSP.setDistanceStrategy(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        ReachProcessor reachProcessor = new ReachProcessor();
+        List<Double> arr = reachProcessor.computeReachBound(graph);
+        graphIO.saveReach(fileName, arr);
+        System.out.println(arr);
     }
 
     @Test
@@ -46,7 +55,7 @@ public class ReachTest {
 
     @Test
     public void testBiReach() {
-        GraphIO graphIO = new GraphIO(Util :: sphericalDistance);
+        GraphIO graphIO = new GraphIO(Util::sphericalDistance);
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 

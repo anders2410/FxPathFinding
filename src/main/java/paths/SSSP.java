@@ -33,6 +33,11 @@ public class SSSP {
     private static BiFunction<Node, Node, Double> distanceStrategy;
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
+
+    public static void setAlternationStrategy(AlternationStrategy alternationStrategy) {
+        SSSP.alternationStrategy = alternationStrategy;
+    }
+
     private static AlternationStrategy alternationStrategy;
 
     private static RelaxStrategy relaxStrategyA;

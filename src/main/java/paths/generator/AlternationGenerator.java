@@ -11,6 +11,10 @@ public class AlternationGenerator {
         return () -> true;
     }
 
+    public static AlternationStrategy getReverseOneDirectional() {
+        return () -> false;
+    }
+
     public static AlternationStrategy getAmountSeenStrategy() {
         return () -> getQueue(A).size() + getScanned(A).size() < getQueue(B).size() + getScanned(B).size();
     }

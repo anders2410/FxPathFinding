@@ -4,6 +4,7 @@ import model.Edge;
 import model.Node;
 import paths.ABDir;
 import paths.SSSP;
+import paths.Util;
 import paths.strategy.RelaxStrategy;
 
 import java.util.List;
@@ -28,12 +29,16 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiDijkstra() {
         return (edge, dir) -> {
             getDijkstra().relax(edge, dir);
-            double newPathDist = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
-            if (newPathDist < getGoalDistance()) {
-                setGoalDistance(newPathDist);
-                setMiddlePoint(edge.to);
-            }
+            updateGoalDist(edge, dir);
         };
+    }
+
+    private static void updateGoalDist(Edge edge, ABDir dir) {
+        double newPathDist = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
+        if (newPathDist < getGoalDistance()) {
+            setGoalDistance(newPathDist);
+            setMiddlePoint(edge.to);
+        }
     }
 
     public static RelaxStrategy getReach() {
@@ -47,8 +52,9 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiReachAStar() {
         return (edge, dir) -> {
             if (reachValid(edge, dir)) {
-                getBiDijkstra().relax(edge, dir);
+                getDijkstra().relax(edge, dir);
             }
+            updateGoalDist(edge, dir);
         };
     }
 
@@ -71,9 +77,11 @@ public class RelaxGenerator {
             List<Double> bounds = getReachBounds();
             double newDist = getNodeDist(dir).get(edge.from) + edge.d;
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+            boolean newDistanceValid = reachBound > newDist /*|| Math.abs(reachBound - newDist) <= precision*/;
             if (newDistanceValid) {
                 getBiDijkstra().relax(edge, dir);
+            } else if (getScanned(Util.revDir(dir)).contains(edge.to)) {
+                updateGoalDist(edge, dir);
             }
         });
     }
