@@ -34,6 +34,7 @@ public class Util {
         algorithmNames.put(REACH_A_STAR, "Reach A*");
         algorithmNames.put(BI_REACH_A_STAR, "Bidirectional Reach A*");
         algorithmNames.put(REACH_LANDMARKS, "Reach Landmarks");
+        algorithmNames.put(BI_REACH_LANDMARKS, "Bidirectional Reach Landmarks");
         algorithmNames.put(CONTRACTION_HIERARCHIES, "Contraction Hierarchies");
     }
 

@@ -920,6 +920,16 @@ public class FXMLController implements Initializable {
         setAlgorithmLabels();
     }
 
+    public void handleBiReachLandmarksEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
+        algorithmMode = BI_REACH_LANDMARKS;
+        runAlgorithm();
+        setAlgorithmLabels();
+    }
+
     public void handleGenerateReachEvent() {
         generateReachBounds();
     }

@@ -1,6 +1,6 @@
 package paths.factory;
 
-import paths.generator.PreProcessGenerator;
+import paths.generator.*;
 import paths.strategy.*;
 
 public class BiReachLandmarksFactory implements AlgorithmFactory {
@@ -11,22 +11,22 @@ public class BiReachLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return null;
+        return PriorityGenerator.getNonConHeuristic();
     }
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return null;
+        return HeuristicGenerator.landmarksTriangulate();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return null;
+        return RelaxGenerator.getBiReachAStar();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return null;
+        return TerminationGenerator.getKeyAboveGoalStrategy();
     }
 
     @Override
@@ -36,6 +36,6 @@ public class BiReachLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return null;
+        return AlternationGenerator.getAmountSeenStrategy();
     }
 }
