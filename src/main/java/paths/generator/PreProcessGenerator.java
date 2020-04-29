@@ -2,17 +2,47 @@ package paths.generator;
 
 import model.Edge;
 import model.Graph;
-import paths.strategy.PreprocessStrategy;
+import paths.SSSP;
+import paths.strategy.PreProcessStrategy;
 
 import java.util.List;
 import java.util.Set;
 
 import static paths.SSSP.*;
 
-public class LandmarksPreStrategy implements PreprocessStrategy {
+public class PreProcessGenerator {
 
-    public void process() {
-        generateLandmarks();
+    public static PreProcessStrategy getCHPreStrategy() {
+        return () -> {
+            List<Integer> ranks = SSSP.getContractionHierarchiesResult().getRanks();
+            Graph graph = SSSP.getContractionHierarchiesResult().getGraph();
+            SSSP.setGraph(graph);
+            if (ranks == null || graph == null) {
+                System.out.println("Something wrong with CH preprocess..");
+            }
+        };
+    }
+
+    public static PreProcessStrategy getReachPreStrategy() {
+        return () -> {
+            if (SSSP.getReachBounds() == null) {
+                System.out.println("No reach bounds found for graph");
+            }
+        };
+    }
+
+    public static PreProcessStrategy getRealPreStrategy() {
+        return () -> {
+            if (SSSP.getReachBounds() == null) {
+                System.out.println("No reach bounds found for graph");
+                return;
+            }
+            getLandmarksPreStrategy().process();
+        };
+    }
+
+    public static PreProcessStrategy getLandmarksPreStrategy() {
+        return PreProcessGenerator::generateLandmarks;
     }
 
     private static void generateLandmarks() {

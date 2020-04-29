@@ -30,7 +30,7 @@ public class BiDijkstraFactory implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
+    public PreProcessStrategy getPreProcessStrategy() {
         return () -> {};
     }
 

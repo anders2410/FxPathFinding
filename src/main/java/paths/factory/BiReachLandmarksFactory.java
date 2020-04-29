@@ -3,39 +3,39 @@ package paths.factory;
 import paths.generator.*;
 import paths.strategy.*;
 
-public class AStarFactory implements AlgorithmFactory {
+public class BiReachLandmarksFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
-        return false;
+        return true;
     }
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getAStar();
+        return PriorityGenerator.getNonConHeuristic();
     }
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return HeuristicGenerator.getDistance();
+        return HeuristicGenerator.landmarksTriangulate();
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getDijkstra();
+        return RelaxGenerator.getBiReachAStar();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getKeyAboveGoalStrategy();
     }
 
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
-        return () -> {};
+        return PreProcessGenerator.getRealPreStrategy();
     }
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getOneDirectional();
+        return AlternationGenerator.getAmountSeenStrategy();
     }
 }

@@ -21,7 +21,7 @@ public class BoundedOneToAll implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getBoundedDijstra();
+        return RelaxGenerator.getBoundedDijkstra();
     }
 
     @Override
@@ -30,7 +30,7 @@ public class BoundedOneToAll implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
+    public PreProcessStrategy getPreProcessStrategy() {
         return () -> {};
     }
 

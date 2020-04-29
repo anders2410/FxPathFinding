@@ -116,6 +116,7 @@ public class FXMLController implements Initializable {
         loadGraphTask.setOnSucceeded(event -> {
             graph = loadGraphTask.getValue();
             landmarksGenerator = new Landmarks(graph);
+            GraphIO.loadBestLandmarks(fileName, landmarksGenerator);
             setUpGraph();
             loadReachBounds();
             playIndicatorCompleted();
@@ -165,12 +166,10 @@ public class FXMLController implements Initializable {
             }
         };
         ssspTask.setOnSucceeded(event -> {
-            playIndicatorCompleted();
             currentResult = combineResults(ssspTask.getValue());
             setLabels(Util.roundDouble(currentResult.d), currentResult.scannedNodesA.size() + currentResult.scannedNodesB.size());
             redrawGraph();
         });
-        attachProgressIndicator(ssspTask.progressProperty());
         new Thread(ssspTask).start();
     }
 
@@ -823,7 +822,7 @@ public class FXMLController implements Initializable {
     public void handleLoadLandmarks() {
         pickLandMarkModeGUI();
         GraphIO.loadLandmarks(fileName, landmarksGenMode, landmarksGenerator);
-        drawAllLandmarks();
+        redrawGraph();
     }
 
     private void pickLandMarkModeGUI() {
@@ -873,37 +872,63 @@ public class FXMLController implements Initializable {
     }
 
     public void handleReachEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = REACH;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleBiReachEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = BI_REACH;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleReachAStarEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = REACH_A_STAR;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleBiReachAStarEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = BI_REACH_A_STAR;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
     public void handleReachLandmarksEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
         algorithmMode = REACH_LANDMARKS;
         runAlgorithm();
         setAlgorithmLabels();
     }
 
-    public void handleLoadReachEvent() {
-        loadReachBounds();
+    public void handleBiReachLandmarksEvent() {
+        if (SSSP.getReachBounds() == null) {
+            System.out.println("No reach bounds found");
+            return;
+        }
+        algorithmMode = BI_REACH_LANDMARKS;
+        runAlgorithm();
+        setAlgorithmLabels();
     }
 
     public void handleGenerateReachEvent() {
@@ -917,17 +942,17 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateCHEvent() {
-        Task<Pair<Graph, List<Integer>>> CHTask = new Task<>() {
+        Task<ContractionHierarchiesResult> CHTask = new Task<>() {
             @Override
-            protected Pair<Graph, List<Integer>> call() {
-                ContractionHierarchies contractionHierarchies = new ContractionHierarchies(new Graph(graph));
+            protected ContractionHierarchiesResult call() {
+                ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
                 return contractionHierarchies.preprocess();
             }
         };
         CHTask.setOnSucceeded(e -> {
             try {
-                SSSP.setNodeRankCH(CHTask.get().getValue());
-                SSSP.setCHGraph(CHTask.get().getKey());
+                SSSP.setContractionHierarchiesResult(CHTask.get());
+                System.out.println("CH is generated successfully!");
             } catch (InterruptedException | ExecutionException ex) {
                 ex.printStackTrace();
             }
@@ -977,7 +1002,7 @@ public class FXMLController implements Initializable {
 
     private void startLandmarksMonitorThread(Task<Void> monitorTask) {
         monitorTask.setOnSucceeded(event -> {
-            drawAllLandmarks();
+            redrawGraph();
             SSSP.setLandmarks(landmarksGenerator);
             GraphIO.saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
             playIndicatorCompleted();

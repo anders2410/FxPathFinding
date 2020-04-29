@@ -31,8 +31,8 @@ public class ReachLandmarksFactory implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
-        return new ReachPreStrategy();
+    public PreProcessStrategy getPreProcessStrategy() {
+        return PreProcessGenerator.getRealPreStrategy();
     }
 
     @Override

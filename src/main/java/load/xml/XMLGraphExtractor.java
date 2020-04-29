@@ -31,7 +31,6 @@ public class XMLGraphExtractor extends DefaultHandler {
     public XMLGraphExtractor(String fileName, Set<String> validNodes) {
         this.fileName = fileName;
         this.validNodes = validNodes;
-        // TODO: 04-02-2020 Possibly replace nodeMap. Otherwise too much memory consumption
         nodeMap = new HashMap<>();
         nodeList = new ArrayList<>();
         graph = new Graph(validNodes.size());

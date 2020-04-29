@@ -120,7 +120,6 @@ public class XMLFilter extends DefaultHandler {
             }
 
             // Handle &amp; &gt;
-            // TODO: 30-01-2020 Fix hack by parsing differently using characters method
             attriVal = replaceSpecialCharacters(attriVal);
             processText += ' ' + attriKey + "=\"" + attriVal + '"';
         }
@@ -153,7 +152,6 @@ public class XMLFilter extends DefaultHandler {
     }
 
     public String replaceSpecialCharacters(String attriVal) {
-        // TODO: 30-01-2020 Add more special character fixes
         attriVal = attriVal.replace("\"", "&quot;");
         attriVal = attriVal.replace("'", "&apos");
         attriVal = attriVal.replace("<", "&lt;");
