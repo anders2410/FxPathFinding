@@ -2,6 +2,7 @@ package paths.generator;
 
 import model.Edge;
 import model.Graph;
+import paths.SSSP;
 import paths.strategy.PreprocessStrategy;
 
 import java.util.List;
@@ -9,10 +10,28 @@ import java.util.Set;
 
 import static paths.SSSP.*;
 
-public class LandmarksPreStrategy implements PreprocessStrategy {
+public class PreProcessGenerator {
 
-    public void process() {
-        generateLandmarks();
+    public static PreprocessStrategy getReachPreStrategy() {
+        return () -> {
+            if (SSSP.getReachBounds() == null) {
+                System.out.println("No reach bounds found for graph");
+            }
+        };
+    }
+
+    public static PreprocessStrategy getRealPreStrategy() {
+        return () -> {
+            if (SSSP.getReachBounds() == null) {
+                System.out.println("No reach bounds found for graph");
+                return;
+            }
+            getLandmarksPreStrategy().process();
+        };
+    }
+
+    public static PreprocessStrategy getLandmarksPreStrategy() {
+        return PreProcessGenerator::generateLandmarks;
     }
 
     private static void generateLandmarks() {

@@ -31,7 +31,7 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return new LandmarksPreStrategy();
+        return PreProcessGenerator.getLandmarksPreStrategy();
     }
 
     @Override

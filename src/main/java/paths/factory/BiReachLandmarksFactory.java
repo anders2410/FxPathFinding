@@ -1,9 +1,9 @@
 package paths.factory;
 
-import paths.generator.*;
+import paths.generator.PreProcessGenerator;
 import paths.strategy.*;
 
-public class BiReachFactory implements AlgorithmFactory {
+public class BiReachLandmarksFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
         return true;
@@ -11,31 +11,31 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getDijkstra();
+        return null;
     }
 
     @Override
     public HeuristicFunction getHeuristicFunction() {
-        return HeuristicGenerator.getDistance();
+        return null;
     }
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getBiReach();
+        return null;
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return null;
     }
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return PreProcessGenerator.getReachPreStrategy();
+        return PreProcessGenerator.getRealPreStrategy();
     }
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getSameDistanceStrategy();
+        return null;
     }
 }

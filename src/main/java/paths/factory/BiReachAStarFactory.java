@@ -31,7 +31,7 @@ public class BiReachAStarFactory implements AlgorithmFactory {
 
     @Override
     public PreprocessStrategy getPreprocessStrategy() {
-        return new ReachPreStrategy();
+        return PreProcessGenerator.getReachPreStrategy();
     }
 
     @Override
