@@ -210,9 +210,11 @@ public class SSSP {
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             //assert !getVisited(revDir(dir)).contains(edge.to) || currentNode == target || currentNode == source; // By no scan overlap-theorem
+/*
             if (!getScanned(revDir(dir)).contains(edge.to)) {
+*/
                 getRelaxStrategy(dir).relax(edge, dir);
-            }
+            /*}*/
         }
     }
 

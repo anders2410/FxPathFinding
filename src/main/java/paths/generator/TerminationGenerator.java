@@ -38,17 +38,17 @@ public class TerminationGenerator {
 
     public static TerminationStrategy getBiReachTermination() {
         return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
-            if (topA != null && topB != null) {
-                double forwardKeyVal = getPriorityStrategy().apply(topA, A);
-                double backwardKeyVal = getPriorityStrategy().apply(topB, B);
-                boolean backwardsShouldStop = backwardKeyVal > goalDist / 2;
-                if (backwardsShouldStop)
-                    SSSP.setAlternationStrategy(AlternationGenerator.getOneDirectional());
-                boolean forwardShouldStop = forwardKeyVal > goalDist / 2;
-                if (forwardShouldStop)
-                    SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
+                    Integer topA = getQueue(A).peek();
+                    Integer topB = getQueue(B).peek();
+                    if (topA != null && topB != null) {
+                        double forwardKeyVal = getPriorityStrategy().apply(topA, A);
+                        double backwardKeyVal = getPriorityStrategy().apply(topB, B);
+                        boolean backwardsShouldStop = backwardKeyVal > goalDist / 2;
+                        if (backwardsShouldStop)
+                            SSSP.setAlternationStrategy(AlternationGenerator.getOneDirectional());
+                        boolean forwardShouldStop = forwardKeyVal > goalDist / 2;
+                        if (forwardShouldStop)
+                            SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
                 return backwardsShouldStop && forwardShouldStop;
             }
             return false;
