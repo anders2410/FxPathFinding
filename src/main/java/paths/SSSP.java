@@ -137,7 +137,7 @@ public class SSSP {
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
-        factory.getPreprocessStrategy().process();
+        factory.getPreProcessStrategy().process();
         biDirectional = factory.isBiDirectional();
         heuristicFunction = factory.getHeuristicFunction();
         terminationStrategy = factory.getTerminationStrategy();

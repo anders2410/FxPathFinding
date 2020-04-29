@@ -30,7 +30,7 @@ public class OneToAllDijkstra implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
+    public PreProcessStrategy getPreProcessStrategy() {
         return () -> {};
     }
 

@@ -13,7 +13,7 @@ public interface AlgorithmFactory {
 
     TerminationStrategy getTerminationStrategy();
 
-    PreprocessStrategy getPreprocessStrategy();
+    PreProcessStrategy getPreProcessStrategy();
 
     AlternationStrategy getAlternationStrategy();
 }

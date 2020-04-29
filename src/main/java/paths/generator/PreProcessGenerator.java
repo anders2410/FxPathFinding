@@ -3,7 +3,7 @@ package paths.generator;
 import model.Edge;
 import model.Graph;
 import paths.SSSP;
-import paths.strategy.PreprocessStrategy;
+import paths.strategy.PreProcessStrategy;
 
 import java.util.List;
 import java.util.Set;
@@ -12,7 +12,7 @@ import static paths.SSSP.*;
 
 public class PreProcessGenerator {
 
-    public static PreprocessStrategy getReachPreStrategy() {
+    public static PreProcessStrategy getReachPreStrategy() {
         return () -> {
             if (SSSP.getReachBounds() == null) {
                 System.out.println("No reach bounds found for graph");
@@ -20,7 +20,7 @@ public class PreProcessGenerator {
         };
     }
 
-    public static PreprocessStrategy getRealPreStrategy() {
+    public static PreProcessStrategy getRealPreStrategy() {
         return () -> {
             if (SSSP.getReachBounds() == null) {
                 System.out.println("No reach bounds found for graph");
@@ -30,7 +30,7 @@ public class PreProcessGenerator {
         };
     }
 
-    public static PreprocessStrategy getLandmarksPreStrategy() {
+    public static PreProcessStrategy getLandmarksPreStrategy() {
         return PreProcessGenerator::generateLandmarks;
     }
 

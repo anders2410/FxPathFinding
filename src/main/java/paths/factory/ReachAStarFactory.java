@@ -31,7 +31,7 @@ public class ReachAStarFactory implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
+    public PreProcessStrategy getPreProcessStrategy() {
         return PreProcessGenerator.getReachPreStrategy();
     }
 

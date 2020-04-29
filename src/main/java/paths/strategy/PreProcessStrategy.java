@@ -1,5 +1,5 @@
 package paths.strategy;
 
-public interface PreprocessStrategy {
+public interface PreProcessStrategy {
     void process();
 }

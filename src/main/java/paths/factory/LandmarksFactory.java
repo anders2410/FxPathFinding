@@ -30,7 +30,7 @@ public class LandmarksFactory implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
+    public PreProcessStrategy getPreProcessStrategy() {
         return PreProcessGenerator.getLandmarksPreStrategy();
     }
 

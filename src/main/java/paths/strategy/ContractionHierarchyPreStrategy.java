@@ -5,7 +5,7 @@ import paths.SSSP;
 
 import java.util.List;
 
-public class ContractionHierarchyPreStrategy implements PreprocessStrategy {
+public class ContractionHierarchyPreStrategy implements PreProcessStrategy {
     @Override
     public void process() {
         List<Integer> ranks = SSSP.getNodeRankCH();

@@ -30,7 +30,7 @@ public class ContractionHierarchiesFactory implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
+    public PreProcessStrategy getPreProcessStrategy() {
         return new ContractionHierarchyPreStrategy();
     }
 

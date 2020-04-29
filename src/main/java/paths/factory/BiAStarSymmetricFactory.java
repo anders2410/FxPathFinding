@@ -30,7 +30,7 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
     }
 
     @Override
-    public PreprocessStrategy getPreprocessStrategy() {
+    public PreProcessStrategy getPreProcessStrategy() {
         return () -> {
         };
     }
