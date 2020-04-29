@@ -37,12 +37,19 @@ public class ReachProcessor {
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
-        for (int i = 0; i < 100; i++) {
+        int[] bIterations = {0, 3, 6, 10, 15, 30, 40, 60, 90, 110, 130, 170, 210};
+        for (int i = 0; i < bIterations.length; i++) {
+            if (deletedNodes == 0) {
+                progressListener.accept((long) 10 * i, 100L);
+            }
+            subGraph = computeReachBoundsSubgraph(g, subGraph, bIterations[i]);
+        }
+        /*for (int i = 0; i < 100; i++) {
             if (deletedNodes == 0) {
                 progressListener.accept((long) 10 * i, 100L);
             }
             subGraph = computeReachBoundsSubgraph(g, subGraph, i);
-        }
+        }*/
         SSSP.setGraph(getOriginalGraph());
         return bounds;
     }
