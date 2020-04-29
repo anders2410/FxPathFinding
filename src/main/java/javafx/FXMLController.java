@@ -822,7 +822,7 @@ public class FXMLController implements Initializable {
     public void handleLoadLandmarks() {
         pickLandMarkModeGUI();
         GraphIO.loadLandmarks(fileName, landmarksGenMode, landmarksGenerator);
-        drawAllLandmarks();
+        redrawGraph();
     }
 
     private void pickLandMarkModeGUI() {
@@ -1002,7 +1002,7 @@ public class FXMLController implements Initializable {
 
     private void startLandmarksMonitorThread(Task<Void> monitorTask) {
         monitorTask.setOnSucceeded(event -> {
-            drawAllLandmarks();
+            redrawGraph();
             SSSP.setLandmarks(landmarksGenerator);
             GraphIO.saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
             playIndicatorCompleted();
