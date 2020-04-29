@@ -116,6 +116,7 @@ public class FXMLController implements Initializable {
         loadGraphTask.setOnSucceeded(event -> {
             graph = loadGraphTask.getValue();
             landmarksGenerator = new Landmarks(graph);
+            GraphIO.loadBestLandmarks(fileName, landmarksGenerator);
             setUpGraph();
             loadReachBounds();
             playIndicatorCompleted();

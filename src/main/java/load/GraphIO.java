@@ -8,7 +8,6 @@ import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
 import paths.LandmarkMode;
-import paths.SSSP;
 import paths.Util;
 import paths.Landmarks;
 
@@ -19,6 +18,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+
+import static paths.LandmarkMode.*;
 
 public class GraphIO {
 
@@ -144,17 +145,26 @@ public class GraphIO {
         }
     }
 
+    public static void loadBestLandmarks(String fileName, Landmarks landmarks) {
+        if (tryMode(fileName, landmarks, MAXCOVER)) return;
+        if (tryMode(fileName, landmarks, AVOID)) return;
+        if (tryMode(fileName, landmarks, FARTHEST)) return;
+        tryMode(fileName, landmarks, RANDOM);
+    }
+
+    private static boolean tryMode(String fileName, Landmarks landmarks, LandmarkMode mode) {
+        String maxCoverFileName = getLandmarksFilePathName(fileName, mode);
+        if (new File(maxCoverFileName).exists()) {
+            loadLandmarks(fileName, mode, landmarks);
+            return true;
+        }
+        return false;
+    }
+
     @SuppressWarnings(value = "unchecked")
     public static void loadLandmarks(String fileName, LandmarkMode mode, Landmarks landmarks) {
-        String fileType = Util.getFileType(fileName);
-        if (fileType.equals("osm")) {
-            fileName = Util.trimFileTypes(fileName);
-        }
-        if (fileType.equals("pbf")) {
-            fileName = Util.trimFileTypes(fileName);
-        }
         try {
-            String name = tempDir + fileName + "-" + mode.toString() + "landmarks.tmp";
+            String name = getLandmarksFilePathName(fileName, mode);
             FileInputStream landmarksInput = new FileInputStream(name);
             ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
 
@@ -172,6 +182,10 @@ public class GraphIO {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String getLandmarksFilePathName(String fileName, LandmarkMode mode) {
+        return tempDir + Util.trimFileTypes(fileName) + "-" + mode.toString() + "landmarks.tmp";
     }
 
     public List<Double> loadReach(String fileName) {
