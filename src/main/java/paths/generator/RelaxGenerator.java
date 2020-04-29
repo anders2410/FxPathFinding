@@ -1,6 +1,8 @@
 package paths.generator;
 
+import model.Edge;
 import model.Node;
+import paths.ABDir;
 import paths.SSSP;
 import paths.strategy.RelaxStrategy;
 
@@ -34,40 +36,9 @@ public class RelaxGenerator {
         };
     }
 
-    private static double precision = 0.000000000000001;
-
     public static RelaxStrategy getReach() {
         return (edge, dir) -> {
-            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
-            if (newDist < getNodeDist(dir).get(edge.to)) {
-                List<Double> bounds = getReachBounds();
-                double reachBound = bounds.get(edge.to);
-                List<Node> nodeList = getGraph().getNodeList();
-                Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
-                boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
-                boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
-                boolean shouldNotBePruned = newDistanceValid || projectedDistanceValid;
-                if (shouldNotBePruned) {
-                    getNodeDist(dir).set(edge.to, newDist);
-                    updatePriority(edge.to, dir);
-                    getPathMap(dir).put(edge.to, edge.from);
-                    putRelaxedEdge(dir, edge);
-                }
-            }
-        };
-    }
-
-    public static RelaxStrategy getReach2() {
-        return (edge, dir) -> {
-            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
-            List<Double> bounds = getReachBounds();
-            double reachBound = bounds.get(edge.to);
-            List<Node> nodeList = getGraph().getNodeList();
-            Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
-            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
-            boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
-            boolean shouldNotBePruned = newDistanceValid || projectedDistanceValid;
-            if (shouldNotBePruned) {
+            if (reachValid(edge, dir)) {
                 getDijkstra().relax(edge, dir);
             }
         };
@@ -75,18 +46,23 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBiReachAStar() {
         return (edge, dir) -> {
-            double newDist = getNodeDist(dir).get(edge.from) + edge.d;
-            List<Double> bounds = getReachBounds();
-            double reachBound = bounds.get(edge.to);
-            List<Node> nodeList = getGraph().getNodeList();
-            Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
-            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
-            boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
-            boolean shouldNotBePruned = newDistanceValid || projectedDistanceValid;
-            if (shouldNotBePruned) {
+            if (reachValid(edge, dir)) {
                 getBiDijkstra().relax(edge, dir);
             }
         };
+    }
+
+    private static double precision = 0.000000000000001;
+
+    private static boolean reachValid(Edge edge, ABDir dir) {
+        double newDist = getNodeDist(dir).get(edge.from) + edge.d;
+        List<Double> bounds = getReachBounds();
+        double reachBound = bounds.get(edge.to);
+        List<Node> nodeList = getGraph().getNodeList();
+        Double projectedDistance = getDistanceStrategy().apply(nodeList.get(edge.to), nodeList.get(getTarget()));
+        boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+        boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
+        return newDistanceValid || projectedDistanceValid;
     }
 
     // 13137 -> 550

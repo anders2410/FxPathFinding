@@ -172,8 +172,8 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        Set<Integer> a = getPrunedSet();
-        /*if (mode == REACH && source == 5087) {
+        /*Set<Integer> a = getPrunedSet();
+        if (mode == REACH && source == 5087) {
             PrintWriter pw = null;
             try {
                 pw = new PrintWriter(
@@ -190,8 +190,8 @@ public class SSSP {
         }
         */
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
-        System.out.println("Huhuhuhuh");
-        System.out.println(shortestPath);
+        /*System.out.println("Huhuhuhuh");
+        System.out.println(shortestPath);*/
         // TODO: 25-04-2020 Strategy pattern this
         if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
             return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
@@ -329,7 +329,7 @@ public class SSSP {
         return heuristicFunction;
     }
 
-    public static PriorityStrategy getPriorityFunction() {
+    public static PriorityStrategy getPriorityStrategy() {
         return priorityStrategyA;
     }
 
