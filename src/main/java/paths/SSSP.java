@@ -298,7 +298,9 @@ public class SSSP {
     private static List<Integer> extractPathBi() {
         List<Integer> shortestPathA = extractPath(pathMapA, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, target, middlePoint);
-        shortestPathB.remove(shortestPathB.size() - 1);
+        if (!shortestPathB.isEmpty()) {
+            shortestPathB.remove(shortestPathB.size() - 1);
+        }
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
         return shortestPathA;

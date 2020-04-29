@@ -138,9 +138,9 @@ public class SSSPPBFTest {
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH_A_STAR, 9);
-            /*testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_A_STAR, 10);*/
-          /*  testSingle(distDijk, pathDijk, AlgorithmMode.REACH_LANDMARKS, 11);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_LANDMARKS, 12);*/
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_A_STAR, 10);
+            testSingle(distDijk, pathDijk, AlgorithmMode.REACH_LANDMARKS, 11);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_LANDMARKS, 12);
             //Only interested in tests where path is atleast 100
             i++;
         }
