@@ -236,25 +236,25 @@ public class SSSP {
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
 
-        if (middlePoint == -1) {
-            return new ShortestPathResult();
-        }
 
         // TODO: 28/04/2020 Do something about this. Maybe strategy pattern?
         if (mode == CONTRACTION_HIERARCHIES) {
             // Goes through all overlapping nodes and find the one with the smallest distance.
+            int middlepoint = -1;
             double finalDistance = Double.MAX_VALUE;
             for (int node : scannedA) {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
+                    System.out.println("There is an overlap..");
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
-                        setMiddlePoint(node);
+                        middlepoint = node;
                     }
                 }
             }
 
+            setMiddlePoint(middlepoint);
             System.out.println("Another MiddlePoint: " + middlePoint);
             List<Integer> shortestPathCH = extractPathBi();
 
@@ -269,6 +269,10 @@ public class SSSP {
             }
 
             return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
+        }
+
+        if (middlePoint == -1) {
+            return new ShortestPathResult();
         }
 
         List<Integer> shortestPath = extractPathBi();
@@ -321,9 +325,6 @@ public class SSSP {
         Random random = new Random(seed);
         int sourceR = random.nextInt(n);
         int targetR = random.nextInt(n);
-        if (sourceR == 61) {
-            System.out.println();
-        }
         ShortestPathResult res = findShortestPath(sourceR, targetR, modeP);
         if (traceResult) {
             System.out.println("Distance from " + source + " to " + target + " is " + res.d);

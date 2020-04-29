@@ -296,7 +296,7 @@ public class ContractionHierarchies {
     }
 
     // --------------------------------------- BIDIRECTIONAL ----------------------------------------
-    public double computeDist(Graph CHGraph, int source, int target) {
+    public Pair<Double, Set<Integer>> computeDist(Graph CHGraph, int source, int target) {
         List<Double> forwardDistanceList = new ArrayList<>();
         List<Double> reverseDistanceList = new ArrayList<>();
 
@@ -372,15 +372,11 @@ public class ContractionHierarchies {
             }
         }
 
-        System.out.println("MiddlePoint of: " + middlepoint);
-
         List<Integer> shortestPathA = extractPath(backpointersForward, source, middlepoint);
         List<Integer> shortestPathB = extractPath(backpointersReverse, target, middlepoint);
         shortestPathB.remove(shortestPathB.size() - 1);
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
-
-        System.out.println(shortestPathA);
 
         Set<Integer> result = new LinkedHashSet<>();
         for (int i = 0; i < shortestPathA.size() - 1; i++) {
@@ -392,10 +388,7 @@ public class ContractionHierarchies {
             result.add(shortestPathA.get(i + 1));
         }
 
-        System.out.println(result);
-        System.out.println(result.size());
-
-        return finalDistance;
+        return new Pair<>(finalDistance, result);
     }
 
     private List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {
