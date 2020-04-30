@@ -36,6 +36,6 @@ public class ContractionHierarchiesFactory implements AlgorithmFactory {
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getAmountSeenStrategy();
+        return AlternationGenerator.getBiggestQueueStrategy();
     }
 }

@@ -29,20 +29,14 @@ public class SSSP {
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
 
+    // All the different strategies!
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
-
-    public static void setAlternationStrategy(AlternationStrategy alternationStrategy) {
-        SSSP.alternationStrategy = alternationStrategy;
-    }
-
     private static AlternationStrategy alternationStrategy;
-
     private static RelaxStrategy relaxStrategyA;
     private static RelaxStrategy relaxStrategyB;
-
     private static PriorityStrategy priorityStrategyA;
     private static PriorityStrategy priorityStrategyB;
 
@@ -162,7 +156,8 @@ public class SSSP {
         applyFactory(factoryMap.get(modeP));
         initFields(modeP, sourceP, targetP);
         initDataStructures();
-        return biDirectional ? biDirectional() : oneDirectional(); //TODO: Make one directional ALT work in bidirectional
+        // TODO: Make one directional ALT work in bidirectional
+        return biDirectional ? biDirectional() : oneDirectional();
     }
 
     private static ShortestPathResult oneDirectional() {
@@ -177,6 +172,7 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        // TODO: 30/04/2020 Cleanup: Is this used or can it be deleted?
         /*Set<Integer> a = getPrunedSet();
         if (mode == REACH && source == 5087) {
             PrintWriter pw = null;
@@ -210,7 +206,6 @@ public class SSSP {
         for (Edge edge : adjList.get(currentNode)) {
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);
-            /*}*/
         }
     }
 
@@ -225,6 +220,7 @@ public class SSSP {
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
+
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {
@@ -244,7 +240,6 @@ public class SSSP {
             double finalDistance = Double.MAX_VALUE;
             for (int node : scannedA) {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
-                    System.out.println("There is an overlap..");
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
                     if (0 <= distance && distance < finalDistance) {
@@ -315,7 +310,6 @@ public class SSSP {
             if (curNode == null) {
                 return new ArrayList<>(0);
             }
-
             path.add(curNode);
         }
         Collections.reverse(path);
@@ -398,6 +392,10 @@ public class SSSP {
 
     public static RelaxStrategy getRelaxStrategy(ABDir dir) {
         return dir == A ? relaxStrategyA : relaxStrategyB;
+    }
+
+    public static void setAlternationStrategy(AlternationStrategy alternationStrategy) {
+        SSSP.alternationStrategy = alternationStrategy;
     }
 
     public static Set<Integer> getScanned(ABDir dir) {
