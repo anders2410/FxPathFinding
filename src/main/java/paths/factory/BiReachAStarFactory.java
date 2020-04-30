@@ -11,7 +11,7 @@ public class BiReachAStarFactory implements AlgorithmFactory {
 
     @Override
     public PriorityStrategy getPriorityStrategy() {
-        return PriorityGenerator.getAStar();
+        return PriorityGenerator.getNonConHeuristic();
     }
 
     @Override
@@ -26,7 +26,7 @@ public class BiReachAStarFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSymmetricStrategy();
+        return TerminationGenerator.getStrongNonConHeuristicTermination();
     }
 
     @Override
