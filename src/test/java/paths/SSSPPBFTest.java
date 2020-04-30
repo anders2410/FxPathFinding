@@ -60,41 +60,32 @@ public class SSSPPBFTest {
     @Test
     public void testDifferenceInPath() {
         SSSP.seed = 1;
-        ShortestPathResult resD = SSSP.findShortestPath(9109, 1756, AlgorithmMode.DIJKSTRA);
-        ShortestPathResult resA = SSSP.findShortestPath(9109, 1756, AlgorithmMode.BI_DIJKSTRA);
+        SSSP.setGraph(graph);
+        Landmarks lm = new Landmarks(graph);
+        SSSP.setLandmarks(lm);
+/*
+        lm.landmarksMaxCover(16, true);
+*/
+        GraphIO.loadLandmarks(fileName, LandmarkMode.MAXCOVER, lm);
+        SSSP.setLandmarks(lm);
+        List<Double> bounds = graphIO.loadReach(fileName);
+        SSSP.setReachBounds(bounds);
+        ShortestPathResult resD = SSSP.findShortestPath(8702, 11049, AlgorithmMode.DIJKSTRA);
+        ShortestPathResult resA = SSSP.findShortestPath(8702, 11049, AlgorithmMode.BI_A_STAR_CONSISTENT);
+        ShortestPathResult resB = SSSP.findShortestPath(8702, 11049, AlgorithmMode.BI_REACH_A_STAR);
+        ShortestPathResult resC = SSSP.findShortestPath(8702, 11049, AlgorithmMode.BI_REACH_LANDMARKS);
 
-        List<Double> cum_distancesD = new ArrayList<>();
-        List<Double> cum_distancesA = new ArrayList<>();
 
-        for (int i = 0; i < resD.path.size() - 1; i++) {
-            int nodeIndex1 = resD.path.get(i);
-            int nodeIndex2 = resD.path.get(i + 1);
-            Node n1 = graph.getNodeList().get(nodeIndex1);
-            Node n2 = graph.getNodeList().get(nodeIndex2);
-            if (i == 0) {
-                cum_distancesD.add(Util.sphericalDistance(n1, n2));
-            } else {
-                cum_distancesD.add(Util.sphericalDistance(n1, n2) + cum_distancesD.get(i - 1));
-            }
-        }
-        for (int i = 0; i < resA.path.size() - 1; i++) {
-            int nodeIndex1 = resA.path.get(i);
-            int nodeIndex2 = resA.path.get(i + 1);
-            Node n1 = graph.getNodeList().get(nodeIndex1);
-            Node n2 = graph.getNodeList().get(nodeIndex2);
-            if (i == 0) {
-                cum_distancesA.add(Util.sphericalDistance(n1, n2));
-            } else {
-                cum_distancesA.add(Util.sphericalDistance(n1, n2) + cum_distancesA.get(i - 1));
-            }
-        }
-        System.out.println();
         System.out.println(resD.path);
         System.out.println(resA.path);
-        System.out.println(cum_distancesD);
-        System.out.println(cum_distancesA);
+        System.out.println(resB.path);
+        System.out.println(resC.path);
+
         System.out.println(resD.d);
         System.out.println(resA.d);
+        System.out.println(resB.d);
+        System.out.println(resC.d);
+
     }
 
     int[] matrix;
@@ -117,8 +108,9 @@ public class SSSPPBFTest {
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 
-        testCases = 10000;
+        testCases = 100000;
         runtimes = new double[algorithms][testCases];
+
         i = 0;
         failMap = new HashMap<>();
         seed = 0;
@@ -129,12 +121,12 @@ public class SSSPPBFTest {
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
-/*            testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
+            testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
             testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);*/
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH_A_STAR, 9);
