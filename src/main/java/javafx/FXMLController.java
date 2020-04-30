@@ -115,8 +115,9 @@ public class FXMLController implements Initializable {
             graph = loadGraphTask.getValue();
             landmarksGenerator = new Landmarks(graph);
             GraphIO.loadBestLandmarks(fileName, landmarksGenerator);
-            setUpGraph();
+            SSSP.setReachBounds(null);
             loadReachBounds();
+            setUpGraph();
             playIndicatorCompleted();
         });
         attachProgressIndicator(loadGraphTask.progressProperty());
@@ -290,11 +291,9 @@ public class FXMLController implements Initializable {
         for (double reachBound : SSSP.getReachBounds()) {
             if (maxSoFar < reachBound && reachBound < 100000) {
                 maxSoFar = reachBound;
-                System.out.println(reachBound);
             }
         }
         maxReach = maxSoFar;
-        System.out.println(maxSoFar);
     }
 
     public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
@@ -369,7 +368,7 @@ public class FXMLController implements Initializable {
 
     private void drawLandMark(Node n) {
         PixelPoint p = toScreenPos(n);
-        double radius = 10;
+        double radius = 6;
         double shift = radius / 2;
         gc.setFill(Color.HOTPINK);
         gc.setStroke(Color.HOTPINK);
@@ -1109,11 +1108,11 @@ public class FXMLController implements Initializable {
             }
         };
         reachGenTask.setOnSucceeded(e -> {
-            playIndicatorCompleted();
             List<Double> bounds = reachGenTask.getValue();
             SSSP.setReachBounds(bounds);
             findMaxReach();
             saveReachBounds();
+            playIndicatorCompleted();
         });
         attachProgressIndicator(reachGenTask.progressProperty());
         new Thread(reachGenTask).start();
