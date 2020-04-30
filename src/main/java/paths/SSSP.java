@@ -25,6 +25,11 @@ public class SSSP {
     private static int source, target;
     private static AlgorithmMode mode;
     private static double goalDistance;
+
+    public static int getMiddlePoint() {
+        return middlePoint;
+    }
+
     private static int middlePoint;
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;

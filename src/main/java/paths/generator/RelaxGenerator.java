@@ -33,12 +33,14 @@ public class RelaxGenerator {
         };
     }
 
-    private static void updateGoalDist(Edge edge, ABDir dir) {
+    private static boolean updateGoalDist(Edge edge, ABDir dir) {
         double newPathDist = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
         if (newPathDist < getGoalDistance()) {
             setGoalDistance(newPathDist);
             setMiddlePoint(edge.to);
+            return true;
         }
+        return false;
     }
 
     public static RelaxStrategy getReach() {
@@ -53,11 +55,14 @@ public class RelaxGenerator {
         return (edge, dir) -> {
             List<Double> bounds = getReachBounds();
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceInValid = getNodeDist(dir).get(edge.from) > reachBound && getPriorityStrategy().apply(edge.from, dir) - getNodeDist(dir).get(edge.from) > reachBound;
+            boolean newDistanceInValid = (getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(edge.from)) <= precision)) && (getPriorityStrategy().apply(edge.from, dir) - getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getPriorityStrategy().apply(edge.from, dir) - getNodeDist(dir).get(edge.from)) <= precision));
             if (!newDistanceInValid) {
                 getDijkstra().relax(edge, dir);
+                updateGoalDist(edge, dir);
             }
+/*
             updateGoalDist(edge, dir);
+*/
         };
     }
 
@@ -79,11 +84,14 @@ public class RelaxGenerator {
         return ((edge, dir) -> {
             List<Double> bounds = getReachBounds();
             double reachBound = bounds.get(edge.to);
+            // Precision should not be checked here. Equality is okay.
             boolean newDistanceInValid = getNodeDist(dir).get(edge.from) > reachBound /*|| Math.abs(reachBound - newDist) <= precision*/;
             if (!newDistanceInValid) {
                 getBiDijkstra().relax(edge, dir);
             } else if (getScanned(Util.revDir(dir)).contains(edge.to)) {
+                int mp = getMiddlePoint();
                 updateGoalDist(edge, dir);
+                setMiddlePoint(mp);
             }
         });
     }
