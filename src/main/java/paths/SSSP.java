@@ -250,7 +250,6 @@ public class SSSP {
             }
 
             setMiddlePoint(middlepoint);
-            System.out.println("Another MiddlePoint: " + middlePoint);
             List<Integer> shortestPathCH = extractPathBi();
 
             Set<Integer> result = new LinkedHashSet<>();
