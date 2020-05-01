@@ -95,7 +95,7 @@ public class ContractionHierarchies {
             updateImportance(n);
 
             // If the vertex's recomputed importance is still minimum then contract it.
-            // This is called 'Lazy Update'
+            // This is called a 'Lazy Update'.
             if (importanceQueue.size() != 0 && importance.get(n) > importance.get(importanceQueue.peek())) {
                 importanceQueue.updatePriority(n);
                 continue;
@@ -248,7 +248,6 @@ public class ContractionHierarchies {
     }
 
     // --------------------------------------------- IMPORTANCE ------------------------------------------
-
     /**
      * The edgeDifference is defined by edgeDifference = s(n) - in(n) - out(n). Where s(n) is the number of
      * added shortcuts, in(n) is in degree and out(n) is out degree. We want to contract nodes
@@ -295,7 +294,9 @@ public class ContractionHierarchies {
         importance.set(n, calculateImportance(n));
     }
 
+
     // --------------------------------------- BIDIRECTIONAL ----------------------------------------
+    // This is now all obsolete as it has been integrated into SSSP!
     public Pair<Double, Set<Integer>> computeDist(Graph CHGraph, int source, int target) {
         List<Double> forwardDistanceList = new ArrayList<>();
         List<Double> reverseDistanceList = new ArrayList<>();
@@ -412,7 +413,6 @@ public class ContractionHierarchies {
     private Map<Integer, List<Integer>> getInNodeMap() {
         Map<Integer, List<Integer>> map = new HashMap<>();
         List<Node> nodeList = graph.getNodeList();
-
         for (int i = 0; i < nodeList.size(); i++) {
             for (Edge e : graph.getAdjList().get(i)) {
                 List<Integer> list = map.computeIfAbsent(e.to, k -> new ArrayList<>());
@@ -420,27 +420,15 @@ public class ContractionHierarchies {
                 map.replace(e.to, list);
             }
         }
-
         return map;
     }
 
-    // Calculate the cost of a given incoming edge/node. (inNode -> n)
-    private double getInCost(int source, int inNode) {
-        double inCost = 0;
-        for (Edge e : graph.getAdjList().get(inNode)) {
-            if (e.to == source) {
-                inCost = e.d;
-                break;
-            }
-        }
-        return inCost;
-    }
-
-    private List<Edge> getInEdgeList(List<Integer> inNodeList, int nodeToContract) {
+    // Get all incoming edges for a given node.
+    private List<Edge> getInEdgeList(List<Integer> inNodeList, int node) {
         List<Edge> inEdgeList = new ArrayList<>();
-        for (int node : inNodeList) {
-            for (Edge e : graph.getAdjList().get(node)) {
-                if (e.to == nodeToContract) {
+        for (int inNode : inNodeList) {
+            for (Edge e : graph.getAdjList().get(inNode)) {
+                if (e.to == node) {
                     inEdgeList.add(e);
                     break;
                 }
@@ -449,7 +437,7 @@ public class ContractionHierarchies {
         return inEdgeList;
     }
 
-    // Find the neighbours of a given node.
+    // Find all neighbours of a given node.
     private List<Integer> getNeighbours(int node) {
         List<Integer> list = new ArrayList<>();
         for (Edge e : graph.getAdjList().get(node)) {
@@ -471,7 +459,8 @@ public class ContractionHierarchies {
             contractedNeighbours.set(node, contractedNeighbours.get(node) + 1);
         }
 
-        // Update the neighbours
+        // Update the neighbours in Priority Queue.
+        // Another update heuristic to ensure that the priority queue is correct!
         for (int neighbour : getNeighbours(n)) {
             if (!contracted.get(neighbour)) {
                 updateImportance(neighbour);
