@@ -287,6 +287,9 @@ public class FXMLController implements Initializable {
     private double maxReach = 0;
 
     private void findMaxReach() {
+        if (SSSP.getReachBounds() == null) {
+            return;
+        }
         double maxSoFar = 0;
         for (double reachBound : SSSP.getReachBounds()) {
             if (maxSoFar < reachBound && reachBound < 100000) {
