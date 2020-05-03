@@ -2,7 +2,10 @@ package paths;
 
 import datastructures.MinPriorityQueue;
 import javafx.util.Pair;
-import model.*;
+import model.Edge;
+import model.Graph;
+import info_model.GraphInfo;
+import model.Node;
 import paths.factory.*;
 import paths.strategy.*;
 
@@ -10,9 +13,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
+import static paths.ABDir.A;
+import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
-import static paths.ABDir.*;
-import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
@@ -22,6 +25,7 @@ public class SSSP {
 
     private static Graph graph;
     private static Graph CHGraph;
+    private static GraphInfo graphInfo;
     private static Landmarks landmarks;
     private static int source, target;
     private static AlgorithmMode mode;
@@ -397,6 +401,10 @@ public class SSSP {
 
     public static Graph getGraph() {
         return graph;
+    }
+
+    public static GraphInfo getGraphInfo() {
+        return graphInfo;
     }
 
     public static void setGraph(Graph graph) {
