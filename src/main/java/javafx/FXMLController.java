@@ -128,12 +128,12 @@ public class FXMLController implements Initializable {
         new Thread(loadGraphTask).start();
     }
 
-    private void storeGraph(String prefix) {
+    private void storeGraph(String prefix, Graph inputGraph) {
         Task<Void> storeGraphTask = new Task<>() {
             @Override
             protected Void call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy);
-                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
+                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), inputGraph);
                 return null;
             }
         };
@@ -970,6 +970,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateCHEvent() {
+        System.out.println("Generating CH graph!");
         Task<ContractionHierarchiesResult> CHTask = new Task<>() {
             @Override
             protected ContractionHierarchiesResult call() {
@@ -1185,7 +1186,7 @@ public class FXMLController implements Initializable {
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
             sccGraph = true;
-            storeGraph("-scc");
+            storeGraph("-scc", graph);
             setUpGraph();
             System.out.println("Finished computing SCC");
             playIndicatorCompleted();
