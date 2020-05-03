@@ -164,9 +164,14 @@ public class GraphIO {
         }
     }
 
-    private void loadGraphInfo(String fileName, String msg) {
+    public void loadGraphInfo(String fileName, String msg) {
+        String infoName = infoDir + fileName;
+        File infoFile = new File(infoName + "-info.tmp");
+        if (!infoFile.exists()) {
+            return;
+        }
         try {
-            String graphFileName = fileName + "-info.tmp";
+            String graphFileName = infoDir + fileName + "-info.tmp";
             fileSize = Files.size(Paths.get(graphFileName));
             CountingInputStream input = new CountingInputStream(graphFileName, this);
             ObjectInputStream objectStream = new ObjectInputStream(input);
