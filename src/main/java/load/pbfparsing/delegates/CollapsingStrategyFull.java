@@ -2,7 +2,9 @@ package load.pbfparsing.delegates;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
+import info_model.EdgeInfo;
 import model.Graph;
+import info_model.GraphInfo;
 import model.Node;
 import load.pbfparsing.interfaces.CollapsingStrategy;
 
@@ -13,9 +15,25 @@ import java.util.function.BiFunction;
 public class CollapsingStrategyFull implements CollapsingStrategy {
     boolean oneWayFlag = true;
 
+    BiFunction<Node, Node, Double> distanceStrategy;
+
+    Graph graph;
+    GraphInfo graphInfo;
+    Map<String, Integer> validNodesMap;
+
+    public CollapsingStrategyFull(BiFunction<Node, Node, Double> distanceStrategy) {
+        this.distanceStrategy = distanceStrategy;
+    }
+
     @Override
-    public void addEdgesGraph(OsmWay way, BiFunction<Node, Node, Double> distanceStrategy,
-                              Graph graph, Map<String, Node> nodeMap, Map<String, Integer> validNodesMap) {
+    public void initSecondPass(Graph graph, GraphInfo graphInfo, Map<String, Integer> validNodes) {
+        this.graph = graph;
+        this.graphInfo = graphInfo;
+        this.validNodesMap = validNodes;
+    }
+
+    @Override
+    public void addEdgesGraph(OsmWay way, Map<String, Node> nodeMap) {
         int numNodes = way.getNumberOfNodes();
         boolean finished = false;
         boolean first = true;
@@ -42,25 +60,46 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                     continue;
                 }
 
+                Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                 Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
                 Node intermediate = nodeMap.get(lastNodeId);
                 Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
                 graph.addEdge(node2, node1, cum_Dist);
+                String maxSpeedString = tags.get("maxspeed");
+
+                int maxSpeed = -1;
+                if (maxSpeedString != null) {
+                    if (maxSpeedString.contains("rural")) {
+                        maxSpeed = 80;
+                    } else if (maxSpeedString.contains("urban")) {
+                        maxSpeed = 50;
+                    } else if (maxSpeedString.equals("none")) {
+                        maxSpeed = 140;
+                    } else {
+                        try {
+                            maxSpeed = Integer.parseInt(maxSpeedString);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Couldn't parse: " + maxSpeedString + " to integer.");
+                        }
+                    }
+                }
+                graphInfo.addEdge(new EdgeInfo(node2.index, node1.index, maxSpeed));
 
                 // Flag to decide whether to use oneWay roads.
                 if (oneWayFlag) {
-                    Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
                     String roadValue = tags.get("oneway");
                     String roundabout = tags.get("junction");
                     if (roadValue == null || !roadValue.equals("yes")) {
                         if (roundabout == null || !roundabout.equals("roundabout")) {
                             graph.addEdge(node1, node2, cum_Dist);
+                            graphInfo.addEdge(new EdgeInfo(node1.index, node2.index, maxSpeed));
                         }
                     }
                 } else {
                     graph.addEdge(node1, node2, cum_Dist);
+                    graphInfo.addEdge(new EdgeInfo(node1.index, node2.index, maxSpeed));
                 }
 
                 cum_Dist = 0;

@@ -2,7 +2,10 @@ package paths;
 
 import datastructures.MinPriorityQueue;
 import javafx.util.Pair;
-import model.*;
+import model.Edge;
+import model.Graph;
+import info_model.GraphInfo;
+import model.Node;
 import paths.factory.*;
 import paths.strategy.*;
 
@@ -10,9 +13,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 
+import static paths.ABDir.A;
+import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
-import static paths.ABDir.*;
-import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
@@ -22,6 +25,7 @@ public class SSSP {
 
     private static Graph graph;
     private static Graph CHGraph;
+    private static GraphInfo graphInfo;
     private static Landmarks landmarks;
     private static int source, target;
     private static AlgorithmMode mode;
@@ -62,6 +66,7 @@ public class SSSP {
     private static Set<Integer> prunedSet;
     private static double singleToAllBound;
     private static ContractionHierarchiesResult contractionHierarchiesResult;
+    private static double bestDistSoFarCH;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -84,6 +89,7 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         prunedSet = new LinkedHashSet<>();
+        bestDistSoFarCH = Double.MAX_VALUE;
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -257,6 +263,9 @@ public class SSSP {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
+                    /*System.out.println("Candidate: " + node + " with distance: " + distance);
+                    System.out.println(nodeDistB.get(5147));
+                    System.out.println(nodeDistA.get(5147));*/
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
                         middlepoint = node;
@@ -266,6 +275,8 @@ public class SSSP {
 
             setMiddlePoint(middlepoint);
             List<Integer> shortestPathCH = extractPathBi();
+            /*System.out.println(middlepoint);
+            System.out.println(shortestPathCH);*/
 
             Set<Integer> result = new LinkedHashSet<>();
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {
@@ -392,8 +403,16 @@ public class SSSP {
         return graph;
     }
 
+    public static GraphInfo getGraphInfo() {
+        return graphInfo;
+    }
+
     public static void setGraph(Graph graph) {
         SSSP.graph = graph;
+    }
+
+    public static void setGraphInfo(GraphInfo graphInfo) {
+        SSSP.graphInfo = graphInfo;
     }
 
     public static double[][] getLandmarkArray() {
@@ -487,5 +506,13 @@ public class SSSP {
 
     public static void setCHGraph(Graph CHGraph) {
         SSSP.CHGraph = CHGraph;
+    }
+
+    public static double getBestDistSoFarCH() {
+        return bestDistSoFarCH;
+    }
+
+    public static void setBestDistSoFarCH(double bestDistSoFarCH) {
+        SSSP.bestDistSoFarCH = bestDistSoFarCH;
     }
 }

@@ -6,7 +6,9 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
+import info_model.NodeInfo;
 import model.Graph;
+import info_model.GraphInfo;
 import model.Node;
 import load.pbfparsing.delegates.CollapsingStrategyFull;
 import load.pbfparsing.delegates.StandardFilteringStrategy;
@@ -30,14 +32,16 @@ import static load.GraphIO.mapsDir;
 public class PBFParser {
 
     private Graph graph;
+    private GraphInfo graphInfo;
     private String fileName;
     private ArrayList<Node> nodeList;
+    private ArrayList<NodeInfo> nodeListInfo;
     private Map<String, Node> nodeMap;
     private int indexCounter;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
     private FilteringStrategy filteringStrategy = new StandardFilteringStrategy();
-    private CollapsingStrategy collapsingStrategy = new CollapsingStrategyFull();
+    private CollapsingStrategy collapsingStrategy;
     private BiConsumer<String, Graph> storeTMPListener = null;
 
     /**
@@ -48,6 +52,7 @@ public class PBFParser {
     public PBFParser(String fileName) {
         this.fileName = fileName;
         nodeList = new ArrayList<>();
+        nodeListInfo = new ArrayList<>();
         nodeMap = new HashMap<>();
         indexCounter = 0;
     }
@@ -60,10 +65,13 @@ public class PBFParser {
      */
     public void executePBFParser() throws IOException {
         System.out.print("Started PBFParsing\n");
+        collapsingStrategy = new CollapsingStrategyFull(distanceStrategy);
         Map<String, Integer> validNodes = findValidNodes();
         int sumOfValid = collapsingStrategy.getSumOfValid(validNodes);
-
         graph = new Graph(sumOfValid);
+        graphInfo = new GraphInfo(sumOfValid);
+
+        collapsingStrategy.initSecondPass(graph, graphInfo, validNodes);
         buildGraph(validNodes);
 
         if (storeTMPListener != null) {
@@ -95,6 +103,7 @@ public class PBFParser {
                     nodeMap.put(id, n);
                     if (validNodesMap.get(id) > 1) {
                         nodeList.add(n);
+                        nodeListInfo.add(new NodeInfo(n.index));
                         indexCounter++;
                     }
                 }
@@ -110,12 +119,13 @@ public class PBFParser {
                 }
                 // If a valid Way is found, we iterate through it and add all the edges.
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
-                    collapsingStrategy.addEdgesGraph(way, distanceStrategy, graph, nodeMap, validNodesMap);
+                    collapsingStrategy.addEdgesGraph(way, nodeMap);
                 }
             }
         }
 
         graph.setNodeList(nodeList);
+        graphInfo.setNodeList(nodeListInfo);
     }
 
     /**
@@ -156,6 +166,10 @@ public class PBFParser {
 
     public Graph getGraph() {
         return graph;
+    }
+
+    public GraphInfo getGraphInfo() {
+        return graphInfo;
     }
 
     public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {

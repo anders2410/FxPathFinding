@@ -1,10 +1,14 @@
 package javafx;
 
+import info_model.EdgeInfo;
+import info_model.GraphInfo;
+import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -66,8 +70,11 @@ public class FXMLController implements Initializable {
     @FXML
     private ProgressIndicator progress_indicator;
 
+    private final boolean usingInfo = false;
+
     private Stage stage;
     private Graph graph;
+    private GraphInfo graphInfo;
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
     private boolean sccGraph = false;
@@ -108,6 +115,12 @@ public class FXMLController implements Initializable {
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType lt = graphIO.loadGraph(fileName);
                 sccGraph = lt == LoadType.SCC;
+                if (usingInfo) {
+                    if (lt != LoadType.PBF) {
+                        graphIO.loadGraphInfo(Util.trimFileTypes(fileName), "Loaded graph info");
+                    }
+                    graphInfo = graphIO.getGraphInfo();
+                }
                 return graphIO.getGraph();
             }
         };
@@ -122,7 +135,7 @@ public class FXMLController implements Initializable {
         });
         loadGraphTask.setOnFailed(event -> {
             playIndicatorCompleted();
-            displayFailedDialog("load graph " + Util.trimFileTypes(fileName));
+            displayFailedDialog("load graph " + Util.trimFileTypes(fileName), event);
         });
         attachProgressIndicator(loadGraphTask.progressProperty());
         new Thread(loadGraphTask).start();
@@ -133,11 +146,13 @@ public class FXMLController implements Initializable {
             @Override
             protected Void call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy);
-                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
+                String name = Util.trimFileTypes(fileName).concat(prefix);
+                graphIO.storeTMP(name, graph);
+                graphIO.storeGraphInfo(name, null);
                 return null;
             }
         };
-        storeGraphTask.setOnFailed(e -> displayFailedDialog("store graph"));
+        storeGraphTask.setOnFailed(e -> displayFailedDialog("store graph", e));
         new Thread(storeGraphTask).start();
     }
 
@@ -152,6 +167,7 @@ public class FXMLController implements Initializable {
         }
         fitGraph();
         SSSP.setGraph(graph);
+        SSSP.setGraphInfo(graphInfo);
         SSSP.setLandmarks(landmarksGenerator);
         resetSelection();
     }
@@ -174,7 +190,7 @@ public class FXMLController implements Initializable {
             setLabels(Util.roundDouble(currentResult.d), currentResult.scannedNodesA.size() + currentResult.scannedNodesB.size());
             redrawGraph();
         });
-        ssspTask.setOnFailed(e -> displayFailedDialog("run algorithm"));
+        ssspTask.setOnFailed(e -> displayFailedDialog("run algorithm", e));
         new Thread(ssspTask).start();
     }
 
@@ -272,6 +288,12 @@ public class FXMLController implements Initializable {
                     if (SSSP.getReachBounds() != null && isReach()) {
                         color = graduateColorSaturation(color, SSSP.getReachBounds().get(from.index), maxReach);
                     }
+                    /*if (graphInfo != null) {
+                        EdgeInfo info = graphInfo.getEdge(edge);
+                        if (info.getMaxSpeed() == -1) {
+                            color = Color.WHITE;
+                        }
+                    }*/
                     gc.setStroke(color);
                     gc.setLineWidth(chooseEdgeWidth(from, edge));
                     if (mouseEdges.contains(edge)) {
@@ -280,6 +302,8 @@ public class FXMLController implements Initializable {
                         gc.setLineDashes(0);
                     }
                     gc.strokeLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
+
+
                     drawnEdges.add(edge);
                 }
             }
@@ -974,6 +998,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateCHEvent() {
+        System.out.println("Generating CH graph!");
         Task<ContractionHierarchiesResult> CHTask = new Task<>() {
             @Override
             protected ContractionHierarchiesResult call() {
@@ -1105,7 +1130,12 @@ public class FXMLController implements Initializable {
         dialog.show();
     }
 
-    private void displayFailedDialog(String taskName) {
+    private void displayFailedDialog(String taskName, WorkerStateEvent event) {
+        try {
+            throw event.getSource().getException();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Task failed");
         dialog.setContentText("Task: " + taskName + " failed to finish");
@@ -1137,7 +1167,7 @@ public class FXMLController implements Initializable {
         });
         reachGenTask.setOnFailed(e -> {
             playIndicatorCompleted();
-            displayFailedDialog("generate reach bounds");
+            displayFailedDialog("generate reach bounds", e);
         });
         attachProgressIndicator(reachGenTask.progressProperty());
         new Thread(reachGenTask).start();
@@ -1156,7 +1186,7 @@ public class FXMLController implements Initializable {
             SSSP.setReachBounds(loadTask.getValue());
             findMaxReach();
         });
-        loadTask.setOnFailed(e -> displayFailedDialog("load reach bounds"));
+        loadTask.setOnFailed(e -> displayFailedDialog("load reach bounds", e));
         new Thread(loadTask).start();
     }
 
@@ -1169,7 +1199,7 @@ public class FXMLController implements Initializable {
                 return null;
             }
         };
-        saveTask.setOnFailed(e -> displayFailedDialog("save reach bounds"));
+        saveTask.setOnFailed(e -> displayFailedDialog("save reach bounds", e));
         new Thread(saveTask).start();
     }
 
@@ -1196,7 +1226,7 @@ public class FXMLController implements Initializable {
         });
         sccTask.setOnFailed(e -> {
             playIndicatorCompleted();
-            displayFailedDialog("compute SCC");
+            displayFailedDialog("compute SCC", e);
         });
         attachProgressIndicator(sccTask.progressProperty());
         new Thread(sccTask).start();

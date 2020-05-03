@@ -114,8 +114,8 @@ public class ContractionHierarchiesTest {
         System.out.println("------------------------------ NOT-INTEGRATED VS. DIJKSTRA ----------------------------------------");
         ShortestPathResult dijkstraResult;
 
-        int source = 5640;
-        int target = 4779;
+        int source = 5339;
+        int target = 5147;
 
         SSSP.setGraph(originalGraph);
         dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
@@ -138,19 +138,21 @@ public class ContractionHierarchiesTest {
         ShortestPathResult dijkstraResult;
         ShortestPathResult CHResult;
 
-        int source = 5892;
-        int target = 7854;
+        int source = 10605;
+        int target = 5340;
 
         System.out.println("Original Graph");
-        originalGraph.getAdjList().get(5892).forEach(System.out::println);
+        originalGraph.getAdjList().get(5339).forEach(System.out::println);
         System.out.println("Augmented Graph");
-        contractionHierarchiesResult.getGraph().getAdjList().get(5892).forEach(System.out::println);
+        contractionHierarchiesResult.getGraph().getAdjList().get(5339).forEach(System.out::println);
 
         SSSP.setGraph(originalGraph);
         dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
 
         System.out.println(SSSP.getGraph());
         CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
+
+        // CHResult.path.forEach(i -> contractionHierarchiesResult.getGraph().getAdjList().get(i).forEach(System.out::println));
 
         System.out.println(dijkstraResult.path);
         System.out.println(CHResult.path);
@@ -168,7 +170,7 @@ public class ContractionHierarchiesTest {
         int algorithms = 1;
         matrix = new int[algorithms];
 
-        testCases = 10000;
+        testCases = 100;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failList = new ArrayList<>();
@@ -178,6 +180,9 @@ public class ContractionHierarchiesTest {
             seed++;
             SSSP.setGraph(originalGraph);
             ShortestPathResult dijkstraResult = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            if (dijkstraResult.path.size() > 20) {
+                continue;
+            }
             runtimes[0][i] = dijkstraResult.runTime;
             double dijkstraDist = dijkstraResult.d;
             List<Integer> dijkstraPath = dijkstraResult.path;
@@ -199,7 +204,7 @@ public class ContractionHierarchiesTest {
         runtimes[algoNumber][i] = algoResult.runTime;
         double algoDist = algoResult.d;
         List<Integer> algoPath = algoResult.path;
-        if (Math.abs(algoDist - dijkstraDist) > 0.00000000001 || !algoPath.equals(dijkstraPath)) {
+        if (!algoPath.equals(dijkstraPath)) {
             matrix[algoNumber]++;
             failList.add(new TestResult(dijkstraPath.get(0), dijkstraPath.get(dijkstraPath.size() - 1), dijkstraPath, algoPath, dijkstraDist, algoDist));
         }

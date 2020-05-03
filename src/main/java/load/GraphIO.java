@@ -3,6 +3,7 @@ package load;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Graph;
+import info_model.GraphInfo;
 import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
@@ -21,11 +22,15 @@ import java.util.function.BiFunction;
 
 import static paths.LandmarkMode.*;
 
+//TODO: Autogenerate folders
 public class GraphIO {
 
     public static String mapsDir = "maps\\";
     public static String tempDir = mapsDir + "temp\\";
+    public static String reachDir = mapsDir + "reach\\";
+    public static String infoDir = mapsDir + "info\\";
     private Graph graph;
+    private GraphInfo graphInfo;
     private long fileSize;
     private BiFunction<Node, Node, Double> distanceStrategy;
     private BiConsumer<Long, Long> progressListener;
@@ -113,6 +118,8 @@ public class GraphIO {
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
+            graphInfo = pbfParser.getGraphInfo();
+            storeGraphInfo(Util.trimFileTypes(fileName), graphInfo);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -137,6 +144,38 @@ public class GraphIO {
             CountingInputStream input = new CountingInputStream(graphFileName, this);
             ObjectInputStream objectStream = new ObjectInputStream(input);
             graph = (Graph) objectStream.readObject();
+            objectStream.close();
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println(msg);
+        }
+    }
+
+    public void storeGraphInfo(String fileName, GraphInfo graphInfo) {
+        try {
+            String name = infoDir + fileName;
+            FileOutputStream fos = new FileOutputStream(name + "-info.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(graphInfo);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadGraphInfo(String fileName, String msg) {
+        String infoName = infoDir + fileName;
+        File infoFile = new File(infoName + "-info.tmp");
+        if (!infoFile.exists()) {
+            return;
+        }
+        try {
+            String graphFileName = infoDir + fileName + "-info.tmp";
+            fileSize = Files.size(Paths.get(graphFileName));
+            CountingInputStream input = new CountingInputStream(graphFileName, this);
+            ObjectInputStream objectStream = new ObjectInputStream(input);
+            graphInfo = (GraphInfo) objectStream.readObject();
             objectStream.close();
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
@@ -260,6 +299,10 @@ public class GraphIO {
 
     public Graph getGraph() {
         return graph;
+    }
+
+    public GraphInfo getGraphInfo() {
+        return graphInfo;
     }
 }
 

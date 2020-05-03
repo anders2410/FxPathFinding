@@ -1,5 +1,5 @@
 package load.pbfparsing.interfaces;
 
 public interface FilteringStrategy {
-    public boolean shouldFilter(String roadValue);
+    boolean shouldFilter(String roadValue);
 }
