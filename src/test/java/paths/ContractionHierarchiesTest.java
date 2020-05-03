@@ -138,13 +138,13 @@ public class ContractionHierarchiesTest {
         ShortestPathResult dijkstraResult;
         ShortestPathResult CHResult;
 
-        int source = 5892;
-        int target = 7854;
+        int source = 5339;
+        int target = 5147;
 
         System.out.println("Original Graph");
-        originalGraph.getAdjList().get(5892).forEach(System.out::println);
+        originalGraph.getAdjList().get(5339).forEach(System.out::println);
         System.out.println("Augmented Graph");
-        contractionHierarchiesResult.getGraph().getAdjList().get(5892).forEach(System.out::println);
+        contractionHierarchiesResult.getGraph().getAdjList().get(5339).forEach(System.out::println);
 
         SSSP.setGraph(originalGraph);
         dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
@@ -199,7 +199,7 @@ public class ContractionHierarchiesTest {
         runtimes[algoNumber][i] = algoResult.runTime;
         double algoDist = algoResult.d;
         List<Integer> algoPath = algoResult.path;
-        if (Math.abs(algoDist - dijkstraDist) > 0.00000000001 || !algoPath.equals(dijkstraPath)) {
+        if (!algoPath.equals(dijkstraPath)) {
             matrix[algoNumber]++;
             failList.add(new TestResult(dijkstraPath.get(0), dijkstraPath.get(dijkstraPath.size() - 1), dijkstraPath, algoPath, dijkstraDist, algoDist));
         }

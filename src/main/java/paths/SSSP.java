@@ -62,6 +62,7 @@ public class SSSP {
     private static Set<Integer> prunedSet;
     private static double singleToAllBound;
     private static ContractionHierarchiesResult contractionHierarchiesResult;
+    private static double bestDistSoFarCH;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -84,6 +85,7 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         prunedSet = new LinkedHashSet<>();
+        bestDistSoFarCH = Double.MAX_VALUE;
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -257,6 +259,7 @@ public class SSSP {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
+                    System.out.println("Candidate: " + node + " with distance: " + distance);
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
                         middlepoint = node;
@@ -266,6 +269,8 @@ public class SSSP {
 
             setMiddlePoint(middlepoint);
             List<Integer> shortestPathCH = extractPathBi();
+            System.out.println(middlepoint);
+            System.out.println(shortestPathCH);
 
             Set<Integer> result = new LinkedHashSet<>();
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {
@@ -487,5 +492,13 @@ public class SSSP {
 
     public static void setCHGraph(Graph CHGraph) {
         SSSP.CHGraph = CHGraph;
+    }
+
+    public static double getBestDistSoFarCH() {
+        return bestDistSoFarCH;
+    }
+
+    public static void setBestDistSoFarCH(double bestDistSoFarCH) {
+        SSSP.bestDistSoFarCH = bestDistSoFarCH;
     }
 }
