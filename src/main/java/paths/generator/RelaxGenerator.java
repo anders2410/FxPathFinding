@@ -103,15 +103,18 @@ public class RelaxGenerator {
         return (edge, dir) -> {
             List<Integer> ranks = getContractionHierarchiesResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
-                if (getScanned(revDir(dir)).contains(edge.to)) {
+                getBiDijkstra().relax(edge, dir);
+                /*if (getScanned(revDir(dir)).contains(edge.to)) {
                     double pathLength = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
                     if (pathLength < SSSP.getBestDistSoFarCH()) {
                         SSSP.setBestDistSoFarCH(pathLength);
                         getBiDijkstra().relax(edge, dir);
+                        *//*getDijkstra().relax(edge, dir);
+                        setGoalDistance(pathLength);*//*
                     }
                 } else {
                     getBiDijkstra().relax(edge, dir);
-                }
+                }*/
             }
         };
     }

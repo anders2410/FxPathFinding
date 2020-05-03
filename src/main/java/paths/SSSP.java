@@ -263,7 +263,9 @@ public class SSSP {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
-                    System.out.println("Candidate: " + node + " with distance: " + distance);
+                    /*System.out.println("Candidate: " + node + " with distance: " + distance);
+                    System.out.println(nodeDistB.get(5147));
+                    System.out.println(nodeDistA.get(5147));*/
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
                         middlepoint = node;
@@ -273,8 +275,8 @@ public class SSSP {
 
             setMiddlePoint(middlepoint);
             List<Integer> shortestPathCH = extractPathBi();
-            System.out.println(middlepoint);
-            System.out.println(shortestPathCH);
+            /*System.out.println(middlepoint);
+            System.out.println(shortestPathCH);*/
 
             Set<Integer> result = new LinkedHashSet<>();
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {

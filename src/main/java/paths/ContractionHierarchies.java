@@ -20,6 +20,7 @@ public class ContractionHierarchies {
     private List<Boolean> contracted;
     private List<Integer> importance;
     private List<Integer> contractedNeighbours;
+    private List<Integer> nodeLevel;
     private List<Integer> ranks;
     private List<Double> dijkstraDistanceList;
     private Set<Integer> dijkstraVisited;
@@ -59,6 +60,7 @@ public class ContractionHierarchies {
         contracted = new ArrayList<>();
         importance = new ArrayList<>();
         contractedNeighbours = new ArrayList<>();
+        nodeLevel = new ArrayList<>();
         ranks = new ArrayList<>();
         shortcuts = new HashMap<>();
         dijkstraDistanceList = new ArrayList<>();
@@ -70,6 +72,7 @@ public class ContractionHierarchies {
             contracted.add(false);
             importance.add(0);
             contractedNeighbours.add(0);
+            nodeLevel.add(0);
             ranks.add(0);
             dijkstraDistanceList.add(Double.MAX_VALUE);
         }
@@ -199,6 +202,25 @@ public class ContractionHierarchies {
                     temp3.add(n);
                     temp3.addAll(temp2);
                     shortcuts.replace(pair3, temp3);
+
+                    /*if (checkIfOutNodeShortcut(n, inNodeIndex, outNodeIndex)) {
+                        graph.addEdge(outNodeIndex, inNodeIndex, totalCost);
+
+                        List<Integer> temp21 = inNodeMap.get(inNodeIndex);
+                        temp21.add(outNodeIndex);
+                        inNodeMap.replace(inNodeIndex, temp21);
+
+                        Pair<Integer, Integer> pair12 = new Pair<>(outNodeIndex, n);
+                        Pair<Integer, Integer> pair22 = new Pair<>(n, inNodeIndex);
+                        Pair<Integer, Integer> pair32 = new Pair<>(outNodeIndex, inNodeIndex);
+                        List<Integer> temp12 = shortcuts.computeIfAbsent(pair12, k -> new ArrayList<>());
+                        List<Integer> temp22 = shortcuts.computeIfAbsent(pair22, k -> new ArrayList<>());
+                        List<Integer> temp32 = shortcuts.computeIfAbsent(pair32, k -> new ArrayList<>());
+                        temp32.addAll(temp12);
+                        temp32.add(n);
+                        temp32.addAll(temp22);
+                        shortcuts.replace(pair32, temp32);
+                    }*/
                 }
             }
         }
@@ -248,6 +270,7 @@ public class ContractionHierarchies {
     }
 
     // --------------------------------------------- IMPORTANCE ------------------------------------------
+
     /**
      * The edgeDifference is defined by edgeDifference = s(n) - in(n) - out(n). Where s(n) is the number of
      * added shortcuts, in(n) is in degree and out(n) is out degree. We want to contract nodes
@@ -275,18 +298,17 @@ public class ContractionHierarchies {
      * of n do L(u) <- max(L(u), L(n) + 1). We contract a node with small L(n).
      */
     private int nodeLevel(int n) {
-        return 0;
+        return nodeLevel.get(n);
     }
 
     /**
      * The importance is used when constructing the augmented graph. We want to contract all the
      * nodes with low importance first, and then gradually work our way through the graph using
      * a priorityQueue based on the importance.
-     * <p>
      * We can optionally experiment with some different weight to all the functions.
      */
     private int calculateImportance(int n) {
-        return edgeDifference(n) + contractedNeighbours(n);
+        return edgeDifference(n)*9 + contractedNeighbours(n)*14 + nodeLevel(n)*7;
     }
 
     // Update the importance of a node
@@ -444,29 +466,45 @@ public class ContractionHierarchies {
             list.add(e.to);
         }
         list.addAll(inNodeMap.get(node));
-        return list;
+        return new ArrayList<>(new HashSet<>(list));
     }
 
     // Update the neighbours of the contracted node that this node has been contracted.
     private void updateNeighbours(int n) {
-        List<Edge> adj = graph.getAdjList().get(n);
-        for (Edge edge : adj) {
-            contractedNeighbours.set(edge.to, contractedNeighbours.get(edge.to) + 1);
-        }
-
-        List<Integer> inDegreeList = inNodeMap.get(n);
-        for (Integer node : inDegreeList) {
-            contractedNeighbours.set(node, contractedNeighbours.get(node) + 1);
+        for (Integer neighbour : getNeighbours(n)) {
+            contractedNeighbours.set(neighbour, contractedNeighbours.get(neighbour) + 1);
+            nodeLevel.set(neighbour, Math.max(nodeLevel.get(neighbour), nodeLevel.get(n) + 1));
         }
 
         // Update the neighbours in Priority Queue.
         // Another update heuristic to ensure that the priority queue is correct!
-        for (int neighbour : getNeighbours(n)) {
+        for (Integer neighbour : getNeighbours(n)) {
             if (!contracted.get(neighbour)) {
                 updateImportance(neighbour);
                 importanceQueue.updatePriority(neighbour);
             }
         }
     }
+
+    private boolean checkIfOutNodeShortcut(int node, int inNode, int outNode) {
+        boolean something = false;
+        for (Edge e : graph.getAdjList().get(node)) {
+            if (e.to == inNode) {
+                something = true;
+                break;
+            }
+        }
+
+        boolean anything = false;
+        for (Integer n : inNodeMap.get(node)) {
+            if (n == outNode) {
+                anything = true;
+                break;
+            }
+        }
+
+        return something && anything;
+    }
+
 }
 
