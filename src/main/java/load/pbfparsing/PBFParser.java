@@ -7,7 +7,6 @@ import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
 import model.Graph;
-import model.GraphInfo;
 import model.Node;
 import load.pbfparsing.delegates.CollapsingStrategyFull;
 import load.pbfparsing.delegates.StandardFilteringStrategy;
@@ -31,7 +30,6 @@ import static load.GraphIO.mapsDir;
 public class PBFParser {
 
     private Graph graph;
-    private GraphInfo graphInfo;
     private String fileName;
     private ArrayList<Node> nodeList;
     private Map<String, Node> nodeMap;
@@ -39,7 +37,7 @@ public class PBFParser {
 
     private BiFunction<Node, Node, Double> distanceStrategy;
     private FilteringStrategy filteringStrategy = new StandardFilteringStrategy();
-    private CollapsingStrategy collapsingStrategy;
+    private CollapsingStrategy collapsingStrategy = new CollapsingStrategyFull();
     private BiConsumer<String, Graph> storeTMPListener = null;
 
     /**
@@ -62,13 +60,10 @@ public class PBFParser {
      */
     public void executePBFParser() throws IOException {
         System.out.print("Started PBFParsing\n");
-        collapsingStrategy = new CollapsingStrategyFull(distanceStrategy);
         Map<String, Integer> validNodes = findValidNodes();
-        int amountOfValid = collapsingStrategy.getSumOfValid();
+        int sumOfValid = collapsingStrategy.getSumOfValid(validNodes);
 
-        graph = new Graph(amountOfValid);
-        graphInfo = new GraphInfo(amountOfValid);
-        collapsingStrategy.init(graph, graphInfo, validNodes);
+        graph = new Graph(sumOfValid);
         buildGraph(validNodes);
 
         if (storeTMPListener != null) {
@@ -115,7 +110,7 @@ public class PBFParser {
                 }
                 // If a valid Way is found, we iterate through it and add all the edges.
                 if (way.getNumberOfNodes() > 0 && way.getNumberOfTags() > 0) {
-                    collapsingStrategy.addEdgesGraph(way, nodeMap);
+                    collapsingStrategy.addEdgesGraph(way, distanceStrategy, graph, nodeMap, validNodesMap);
                 }
             }
         }
@@ -161,10 +156,6 @@ public class PBFParser {
 
     public Graph getGraph() {
         return graph;
-    }
-
-    public GraphInfo getGraphInfo() {
-        return graphInfo;
     }
 
     public void setDistanceStrategy(BiFunction<Node, Node, Double> distanceStrategy) {

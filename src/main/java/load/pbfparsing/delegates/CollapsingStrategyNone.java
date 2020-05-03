@@ -2,7 +2,6 @@ package load.pbfparsing.delegates;
 
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import model.Graph;
-import model.GraphInfo;
 import model.Node;
 import load.pbfparsing.interfaces.CollapsingStrategy;
 
@@ -12,22 +11,11 @@ import java.util.function.BiFunction;
 
 public class CollapsingStrategyNone implements CollapsingStrategy {
 
-    private BiFunction<Node, Node, Double> distanceStrategy;
-    private Graph graph;
-    private Map<String, Integer> validNodes;
-
-    public CollapsingStrategyNone(BiFunction<Node, Node, Double> distanceStrategy) {
-        this.distanceStrategy = distanceStrategy;
-    }
-
     @Override
-    public void init(Graph graph, GraphInfo graphInfo, Map<String, Integer> validNodes) {
-        this.graph = graph;
-        this.validNodes = validNodes;
-    }
-
-    @Override
-    public void addEdgesGraph(OsmWay way, Map<String, Node> nodeMap) {
+    public void addEdgesGraph(OsmWay way,
+                              BiFunction<Node, Node, Double> distanceStrategy,
+                              Graph graph,
+                              Map<String, Node> nodeMap, Map<String, Integer> validNodesMap) {
 
         for (int i = 0; i < way.getNumberOfNodes() - 1; i++) {
             Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
@@ -46,7 +34,7 @@ public class CollapsingStrategyNone implements CollapsingStrategy {
     }
 
     @Override
-    public int getSumOfValid() {
+    public int getSumOfValid(Map<String, Integer> validNodes) {
         return validNodes.size();
     }
 }
