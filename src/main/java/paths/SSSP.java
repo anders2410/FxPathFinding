@@ -21,6 +21,7 @@ public class SSSP {
     public static int seed = 0;
 
     private static Graph graph;
+    private static Graph CHGraph;
     private static Landmarks landmarks;
     private static int source, target;
     private static AlgorithmMode mode;
@@ -218,8 +219,17 @@ public class SSSP {
     private static ShortestPathResult biDirectional() {
         long startTime = System.nanoTime();
 
-        List<List<Edge>> adjList = graph.getAdjList();
-        List<List<Edge>> revAdjList = graph.getReverse(adjList);
+        List<List<Edge>> adjList;
+        List<List<Edge>> revAdjList;
+
+        if (mode == CONTRACTION_HIERARCHIES) {
+            adjList = CHGraph.getAdjList();
+            revAdjList = CHGraph.getReverse(adjList);
+        } else {
+            adjList = graph.getAdjList();
+            revAdjList = graph.getReverse(adjList);
+        }
+
         queueA.insert(source);
         queueB.insert(target);
 
@@ -473,5 +483,9 @@ public class SSSP {
 
     public static void setContractionHierarchiesResult(ContractionHierarchiesResult contractionHierarchiesResult) {
         SSSP.contractionHierarchiesResult = contractionHierarchiesResult;
+    }
+
+    public static void setCHGraph(Graph CHGraph) {
+        SSSP.CHGraph = CHGraph;
     }
 }

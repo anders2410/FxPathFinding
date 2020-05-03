@@ -16,7 +16,7 @@ public class PreProcessGenerator {
         return () -> {
             List<Integer> ranks = SSSP.getContractionHierarchiesResult().getRanks();
             Graph graph = SSSP.getContractionHierarchiesResult().getGraph();
-            SSSP.setGraph(graph);
+            SSSP.setCHGraph(graph);
             if (ranks == null || graph == null) {
                 System.out.println("Something wrong with CH preprocess..");
             }

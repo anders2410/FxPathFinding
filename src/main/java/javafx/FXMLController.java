@@ -120,6 +120,10 @@ public class FXMLController implements Initializable {
             setUpGraph();
             playIndicatorCompleted();
         });
+        loadGraphTask.setOnFailed(event -> {
+            playIndicatorCompleted();
+            displayFailedDialog("load graph " + Util.trimFileTypes(fileName));
+        });
         attachProgressIndicator(loadGraphTask.progressProperty());
         new Thread(loadGraphTask).start();
     }
@@ -133,6 +137,7 @@ public class FXMLController implements Initializable {
                 return null;
             }
         };
+        storeGraphTask.setOnFailed(e -> displayFailedDialog("store graph"));
         new Thread(storeGraphTask).start();
     }
 
@@ -169,6 +174,7 @@ public class FXMLController implements Initializable {
             setLabels(Util.roundDouble(currentResult.d), currentResult.scannedNodesA.size() + currentResult.scannedNodesB.size());
             redrawGraph();
         });
+        ssspTask.setOnFailed(e -> displayFailedDialog("run algorithm"));
         new Thread(ssspTask).start();
     }
 
@@ -287,6 +293,9 @@ public class FXMLController implements Initializable {
     private double maxReach = 0;
 
     private void findMaxReach() {
+        if (SSSP.getReachBounds() == null) {
+            return;
+        }
         double maxSoFar = 0;
         for (double reachBound : SSSP.getReachBounds()) {
             if (maxSoFar < reachBound && reachBound < 100000) {
@@ -1092,6 +1101,14 @@ public class FXMLController implements Initializable {
         dialog.show();
     }
 
+    private void displayFailedDialog(String taskName) {
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Task failed");
+        dialog.setContentText("Task: " + taskName + " failed to finish");
+        dialog.getDialogPane().getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.OK_DONE));
+        dialog.show();
+    }
+
     public void handleClearLandmarks() {
         landmarksGenerator.clearLandmarks();
         SSSP.setLandmarkArray(null);
@@ -1114,6 +1131,10 @@ public class FXMLController implements Initializable {
             saveReachBounds();
             playIndicatorCompleted();
         });
+        reachGenTask.setOnFailed(e -> {
+            playIndicatorCompleted();
+            displayFailedDialog("generate reach bounds");
+        });
         attachProgressIndicator(reachGenTask.progressProperty());
         new Thread(reachGenTask).start();
     }
@@ -1131,6 +1152,7 @@ public class FXMLController implements Initializable {
             SSSP.setReachBounds(loadTask.getValue());
             findMaxReach();
         });
+        loadTask.setOnFailed(e -> displayFailedDialog("load reach bounds"));
         new Thread(loadTask).start();
     }
 
@@ -1143,6 +1165,7 @@ public class FXMLController implements Initializable {
                 return null;
             }
         };
+        saveTask.setOnFailed(e -> displayFailedDialog("save reach bounds"));
         new Thread(saveTask).start();
     }
 
@@ -1166,6 +1189,10 @@ public class FXMLController implements Initializable {
             setUpGraph();
             System.out.println("Finished computing SCC");
             playIndicatorCompleted();
+        });
+        sccTask.setOnFailed(e -> {
+            playIndicatorCompleted();
+            displayFailedDialog("compute SCC");
         });
         attachProgressIndicator(sccTask.progressProperty());
         new Thread(sccTask).start();
