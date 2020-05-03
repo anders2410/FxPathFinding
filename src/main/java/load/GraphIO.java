@@ -3,6 +3,7 @@ package load;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Graph;
+import model.GraphInfo;
 import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
@@ -25,7 +26,10 @@ public class GraphIO {
 
     public static String mapsDir = "maps\\";
     public static String tempDir = mapsDir + "temp\\";
+    public static String reachDir = mapsDir + "reach\\";
+    public static String infoDir = mapsDir + "info\\";
     private Graph graph;
+    private GraphInfo graphInfo;
     private long fileSize;
     private BiFunction<Node, Node, Double> distanceStrategy;
     private BiConsumer<Long, Long> progressListener;
@@ -113,6 +117,10 @@ public class GraphIO {
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
+            graphInfo = pbfParser.getGraphInfo();
+            if (graphInfo != null) {
+                storeGraphInfo(fileName);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -137,6 +145,33 @@ public class GraphIO {
             CountingInputStream input = new CountingInputStream(graphFileName, this);
             ObjectInputStream objectStream = new ObjectInputStream(input);
             graph = (Graph) objectStream.readObject();
+            objectStream.close();
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println(msg);
+        }
+    }
+
+    private void storeGraphInfo(String fileName) {
+        try {
+            String name = infoDir + fileName;
+            FileOutputStream fos = new FileOutputStream(name + "-info.tmp");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(graphInfo);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadGraphInfo(String fileName, String msg) {
+        try {
+            String graphFileName = fileName + "-info.tmp";
+            fileSize = Files.size(Paths.get(graphFileName));
+            CountingInputStream input = new CountingInputStream(graphFileName, this);
+            ObjectInputStream objectStream = new ObjectInputStream(input);
+            graphInfo = (GraphInfo) objectStream.readObject();
             objectStream.close();
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
@@ -260,6 +295,10 @@ public class GraphIO {
 
     public Graph getGraph() {
         return graph;
+    }
+
+    public GraphInfo getGraphInfo() {
+        return graphInfo;
     }
 }
 
