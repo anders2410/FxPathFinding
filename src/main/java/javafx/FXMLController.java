@@ -128,12 +128,12 @@ public class FXMLController implements Initializable {
         new Thread(loadGraphTask).start();
     }
 
-    private void storeGraph(String prefix, Graph inputGraph) {
+    private void storeGraph(String prefix) {
         Task<Void> storeGraphTask = new Task<>() {
             @Override
             protected Void call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy);
-                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), inputGraph);
+                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
                 return null;
             }
         };
@@ -1186,7 +1186,7 @@ public class FXMLController implements Initializable {
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
             sccGraph = true;
-            storeGraph("-scc", graph);
+            storeGraph("-scc");
             setUpGraph();
             System.out.println("Finished computing SCC");
             playIndicatorCompleted();
