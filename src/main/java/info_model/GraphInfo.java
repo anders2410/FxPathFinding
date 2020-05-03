@@ -1,9 +1,12 @@
-package model;
+package info_model;
 
+import model.Edge;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GraphInfo {
+public class GraphInfo implements Serializable {
     private List<NodeInfo> nodeList;
     private List<List<EdgeInfo>> adjList;
     private int nodeAmount;

@@ -1,6 +1,8 @@
-package model;
+package info_model;
 
-public class NodeInfo {
+import java.io.Serializable;
+
+public class NodeInfo implements Serializable {
     private int index;
 
     public NodeInfo(int index) {

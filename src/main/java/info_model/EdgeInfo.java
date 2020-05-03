@@ -1,6 +1,9 @@
-package model;
+package info_model;
 
-public class EdgeInfo {
+import java.io.Serializable;
+
+public class EdgeInfo implements Serializable {
+
     private int from, to;
     private int maxSpeed;
 

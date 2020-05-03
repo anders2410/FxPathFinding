@@ -1,7 +1,7 @@
 package paths.generator;
 
 import model.Edge;
-import model.EdgeInfo;
+import info_model.EdgeInfo;
 import paths.SSSP;
 
 import java.util.function.Function;

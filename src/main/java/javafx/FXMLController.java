@@ -133,7 +133,9 @@ public class FXMLController implements Initializable {
             @Override
             protected Void call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy);
-                graphIO.storeTMP(Util.trimFileTypes(fileName).concat(prefix), graph);
+                String name = Util.trimFileTypes(fileName).concat(prefix);
+                graphIO.storeTMP(name, graph);
+                graphIO.storeGraphInfo(name, null);
                 return null;
             }
         };

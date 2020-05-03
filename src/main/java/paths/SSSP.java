@@ -4,7 +4,7 @@ import datastructures.MinPriorityQueue;
 import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
-import model.GraphInfo;
+import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
 import paths.strategy.*;

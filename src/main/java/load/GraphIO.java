@@ -3,7 +3,7 @@ package load;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Graph;
-import model.GraphInfo;
+import info_model.GraphInfo;
 import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 
 import static paths.LandmarkMode.*;
 
+//TODO: Autogenerate folders
 public class GraphIO {
 
     public static String mapsDir = "maps\\";
@@ -117,6 +118,8 @@ public class GraphIO {
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
+            graphInfo = pbfParser.getGraphInfo();
+            storeGraphInfo(Util.trimFileTypes(fileName), graphInfo);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -149,7 +152,7 @@ public class GraphIO {
         }
     }
 
-    private void storeGraphInfo(String fileName) {
+    public void storeGraphInfo(String fileName, GraphInfo graphInfo) {
         try {
             String name = infoDir + fileName;
             FileOutputStream fos = new FileOutputStream(name + "-info.tmp");
