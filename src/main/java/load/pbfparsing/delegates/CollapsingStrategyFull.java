@@ -73,6 +73,10 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 if (maxSpeedString != null) {
                     if (maxSpeedString.contains("rural")) {
                         maxSpeed = 80;
+                    } else if (maxSpeedString.contains("urban")) {
+                        maxSpeed = 50;
+                    } else if (maxSpeedString.equals("none")) {
+                        maxSpeed = 140;
                     } else {
                         try {
                             maxSpeed = Integer.parseInt(maxSpeedString);
