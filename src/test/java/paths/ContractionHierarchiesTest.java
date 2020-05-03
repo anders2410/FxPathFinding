@@ -138,19 +138,35 @@ public class ContractionHierarchiesTest {
         ShortestPathResult dijkstraResult;
         ShortestPathResult CHResult;
 
-        int source = 10605;
-        int target = 5340;
+        int source = 7726;
+        int target = 5703;
 
         System.out.println("Original Graph");
-        originalGraph.getAdjList().get(5339).forEach(System.out::println);
+        //originalGraph.getAdjList().get(5339).forEach(System.out::println);
         System.out.println("Augmented Graph");
-        contractionHierarchiesResult.getGraph().getAdjList().get(5339).forEach(System.out::println);
+        //contractionHierarchiesResult.getGraph().getAdjList().get(5339).forEach(System.out::println);
 
         SSSP.setGraph(originalGraph);
         dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
 
         System.out.println(SSSP.getGraph());
         CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
+
+        /*originalGraph.getAdjList().get(6401).forEach(System.out::println);
+        System.out.println("");
+        originalGraph.getAdjList().get(6400).forEach(System.out::println);
+        System.out.println("");
+        originalGraph.getAdjList().get(6314).forEach(System.out::println);
+        System.out.println("");
+        originalGraph.getAdjList().get(6315).forEach(System.out::println);
+        System.out.println("");
+        contractionHierarchiesResult.getGraph().getAdjList().get(6401).forEach(System.out::println);
+        System.out.println("");
+        contractionHierarchiesResult.getGraph().getAdjList().get(6400).forEach(System.out::println);
+        System.out.println("");
+        contractionHierarchiesResult.getGraph().getAdjList().get(6314).forEach(System.out::println);
+        System.out.println("");
+        contractionHierarchiesResult.getGraph().getAdjList().get(6315).forEach(System.out::println);*/
 
         // CHResult.path.forEach(i -> contractionHierarchiesResult.getGraph().getAdjList().get(i).forEach(System.out::println));
 
@@ -170,7 +186,7 @@ public class ContractionHierarchiesTest {
         int algorithms = 1;
         matrix = new int[algorithms];
 
-        testCases = 100;
+        testCases = 1000;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failList = new ArrayList<>();
@@ -180,9 +196,6 @@ public class ContractionHierarchiesTest {
             seed++;
             SSSP.setGraph(originalGraph);
             ShortestPathResult dijkstraResult = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
-            if (dijkstraResult.path.size() > 20) {
-                continue;
-            }
             runtimes[0][i] = dijkstraResult.runTime;
             double dijkstraDist = dijkstraResult.d;
             List<Integer> dijkstraPath = dijkstraResult.path;
