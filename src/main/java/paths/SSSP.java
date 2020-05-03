@@ -278,9 +278,11 @@ public class SSSP {
             /*System.out.println(middlepoint);
             System.out.println(shortestPathCH);*/
 
+            //System.out.println(shortestPathCH);
             Set<Integer> result = new LinkedHashSet<>();
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {
                 List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
+                //System.out.println(contractedNodes);
                 result.add(shortestPathCH.get(i));
                 if (contractedNodes != null) {
                     result.addAll(contractedNodes);

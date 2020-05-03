@@ -138,8 +138,11 @@ public class ContractionHierarchiesTest {
         ShortestPathResult dijkstraResult;
         ShortestPathResult CHResult;
 
-        int source = 7726;
-        int target = 5703;
+        /*int source = 7726;
+        int target = 5703;*/
+
+        int source = 3059;
+        int target = 12090;
 
         System.out.println("Original Graph");
         //originalGraph.getAdjList().get(5339).forEach(System.out::println);
@@ -152,21 +155,21 @@ public class ContractionHierarchiesTest {
         System.out.println(SSSP.getGraph());
         CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
 
-        /*originalGraph.getAdjList().get(6401).forEach(System.out::println);
+        originalGraph.getAdjList().get(3059).forEach(System.out::println);
         System.out.println("");
-        originalGraph.getAdjList().get(6400).forEach(System.out::println);
+        originalGraph.getAdjList().get(3060).forEach(System.out::println);
         System.out.println("");
-        originalGraph.getAdjList().get(6314).forEach(System.out::println);
+        originalGraph.getAdjList().get(3071).forEach(System.out::println);
         System.out.println("");
-        originalGraph.getAdjList().get(6315).forEach(System.out::println);
+        originalGraph.getAdjList().get(3072).forEach(System.out::println);
         System.out.println("");
-        contractionHierarchiesResult.getGraph().getAdjList().get(6401).forEach(System.out::println);
+        contractionHierarchiesResult.getGraph().getAdjList().get(3059).forEach(System.out::println);
         System.out.println("");
-        contractionHierarchiesResult.getGraph().getAdjList().get(6400).forEach(System.out::println);
+        contractionHierarchiesResult.getGraph().getAdjList().get(3060).forEach(System.out::println);
         System.out.println("");
-        contractionHierarchiesResult.getGraph().getAdjList().get(6314).forEach(System.out::println);
+        contractionHierarchiesResult.getGraph().getAdjList().get(3071).forEach(System.out::println);
         System.out.println("");
-        contractionHierarchiesResult.getGraph().getAdjList().get(6315).forEach(System.out::println);*/
+        contractionHierarchiesResult.getGraph().getAdjList().get(3072).forEach(System.out::println);
 
         // CHResult.path.forEach(i -> contractionHierarchiesResult.getGraph().getAdjList().get(i).forEach(System.out::println));
 
