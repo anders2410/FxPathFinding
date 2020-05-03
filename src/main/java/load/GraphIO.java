@@ -117,10 +117,6 @@ public class GraphIO {
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
-            graphInfo = pbfParser.getGraphInfo();
-            if (graphInfo != null) {
-                storeGraphInfo(fileName);
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
