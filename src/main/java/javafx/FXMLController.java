@@ -343,7 +343,11 @@ public class FXMLController implements Initializable {
         boolean reverseVisited = currentResult.scannedNodesB.contains(from.index);
         boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
         if (inPath) {
-            return Color.RED;
+            int prevNode = currentResult.path.indexOf(from.index);
+            int nextNode = currentResult.path.indexOf(edge.to);
+            if (prevNode == nextNode + 1 || prevNode + 1 == nextNode)
+                return Color.RED;
+            else return Color.BLACK;
         }
         if (reverseVisited) {
             return Color.TURQUOISE;
@@ -355,7 +359,7 @@ public class FXMLController implements Initializable {
     }
 
     private Color graduateColorSaturation(Color color, double amount, double max) {
-        return color.deriveColor(-10*(amount/max), 1,1,1 - 0.8 + amount/(1.25*max));
+        return color.deriveColor(-10 * (amount / max), 1, 1, 1 - 0.8 + amount / (1.25 * max));
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
