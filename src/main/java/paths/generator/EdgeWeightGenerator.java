@@ -15,7 +15,7 @@ public class EdgeWeightGenerator {
     public static Function<Edge, Double> getMaxSpeedTime() {
         return (e) -> {
             EdgeInfo info = SSSP.getGraphInfo().getEdge(e);
-            return e.d / info.getMaxSpeed();
+            return e.d / (info.getMaxSpeed() == -1 ? 10 : info.getMaxSpeed());
         };
     }
 

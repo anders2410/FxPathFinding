@@ -6,6 +6,7 @@ import de.topobyte.osm4j.core.model.iface.OsmNode;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import de.topobyte.osm4j.pbf.seq.PbfIterator;
+import info_model.NodeInfo;
 import model.Graph;
 import info_model.GraphInfo;
 import model.Node;
@@ -34,6 +35,7 @@ public class PBFParser {
     private GraphInfo graphInfo;
     private String fileName;
     private ArrayList<Node> nodeList;
+    private ArrayList<NodeInfo> nodeListInfo;
     private Map<String, Node> nodeMap;
     private int indexCounter;
 
@@ -50,6 +52,7 @@ public class PBFParser {
     public PBFParser(String fileName) {
         this.fileName = fileName;
         nodeList = new ArrayList<>();
+        nodeListInfo = new ArrayList<>();
         nodeMap = new HashMap<>();
         indexCounter = 0;
     }
@@ -100,6 +103,7 @@ public class PBFParser {
                     nodeMap.put(id, n);
                     if (validNodesMap.get(id) > 1) {
                         nodeList.add(n);
+                        nodeListInfo.add(new NodeInfo(n.index));
                         indexCounter++;
                     }
                 }
@@ -121,6 +125,7 @@ public class PBFParser {
         }
 
         graph.setNodeList(nodeList);
+        graphInfo.setNodeList(nodeListInfo);
     }
 
     /**

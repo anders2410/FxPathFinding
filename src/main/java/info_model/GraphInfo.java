@@ -25,7 +25,7 @@ public class GraphInfo implements Serializable {
     }
 
     public void addEdge(EdgeInfo edgeInfo) {
-
+        adjList.get(edgeInfo.getFrom()).add(edgeInfo);
     }
 
     public void setNodeList(List<NodeInfo> nodeList) {
@@ -46,6 +46,21 @@ public class GraphInfo implements Serializable {
                 return edgeInfo;
             }
         }
-        return null;
+        return new EdgeInfo(0,0, -1);
+    }
+
+    public void printAdjList() {
+        System.out.println("[AdjList] size " + nodeAmount);
+        for (int i = 0; i < adjList.size(); i++) {
+            List<EdgeInfo> edges = adjList.get(i);
+            System.out.print("From " + i + " to: ");
+            for (EdgeInfo edge : edges) {
+                System.out.print(edge.getTo());
+                System.out.print(" maxSpeed=");
+                System.out.print(edge.getMaxSpeed());
+                System.out.print("; ");
+            }
+            System.out.println();
+        }
     }
 }

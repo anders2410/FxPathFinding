@@ -411,6 +411,10 @@ public class SSSP {
         SSSP.graph = graph;
     }
 
+    public static void setGraphInfo(GraphInfo graphInfo) {
+        SSSP.graphInfo = graphInfo;
+    }
+
     public static double[][] getLandmarkArray() {
         return landmarkArray;
     }

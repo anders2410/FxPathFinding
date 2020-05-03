@@ -24,4 +24,13 @@ public class EdgeInfo implements Serializable {
     public int getMaxSpeed() {
         return maxSpeed;
     }
+
+    @Override
+    public String toString() {
+        return "Edge{" +
+                "from=" + from +
+                ", to=" + to +
+                ", maxSpeed=" + maxSpeed +
+                "}";
+    }
 }

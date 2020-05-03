@@ -31,14 +31,14 @@ public class PathExperiments {
 
     @Test
     public void sccPoland() {
-        graphIO.loadGraph("poland-latest.osm.pbf");
+        graphIO.loadGraph("malta-latest.osm.pbf");
         graph = graphIO.getGraph();
         SSSP.setGraph(graph);
         GraphUtil gu = new GraphUtil(graph);
         List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
         graph = subGraphs.get(0);
         GraphIO graphIO = new GraphIO(Util::sphericalDistance);
-        graphIO.storeTMP(Util.trimFileTypes("poland-latest.osm.pbf").concat("-scc"), graph);
+        graphIO.storeTMP(Util.trimFileTypes("malta-latest.osm.pbf").concat("-scc"), graph);
         System.out.println("Finished computing SCC");
     }
 
