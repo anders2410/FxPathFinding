@@ -3,6 +3,7 @@ package load.pbfparsing.delegates;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import model.Graph;
+import model.GraphInfo;
 import model.Node;
 import load.pbfparsing.interfaces.CollapsingStrategy;
 
@@ -11,11 +12,25 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 public class CollapsingStrategyFull implements CollapsingStrategy {
-    boolean oneWayFlag = true;
+
+    private BiFunction<Node, Node, Double> distanceStrategy;
+    private Graph graph;
+    private GraphInfo graphInfo;
+    private Map<String, Integer> validNodes;
+
+    public CollapsingStrategyFull(BiFunction<Node, Node, Double> distanceStrategy) {
+        this.distanceStrategy = distanceStrategy;
+    }
 
     @Override
-    public void addEdgesGraph(OsmWay way, BiFunction<Node, Node, Double> distanceStrategy,
-                              Graph graph, Map<String, Node> nodeMap, Map<String, Integer> validNodesMap) {
+    public void init(Graph graph, GraphInfo graphInfo, Map<String, Integer> validNodes) {
+        this.graph = graph;
+        this.graphInfo = graphInfo;
+        this.validNodes = validNodes;
+    }
+
+    @Override
+    public void addEdgesGraph(OsmWay way, Map<String, Node> nodeMap) {
         int numNodes = way.getNumberOfNodes();
         boolean finished = false;
         boolean first = true;
@@ -27,14 +42,14 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 if (j == numNodes - 1) {
                     finished = true;
                 }
-                if (validNodesMap.get(Long.toString(way.getNodeId(i))) == null || validNodesMap.get(Long.toString(way.getNodeId(i))) < 2) {
+                if (validNodes.get(Long.toString(way.getNodeId(i))) == null || validNodes.get(Long.toString(way.getNodeId(i))) < 2) {
                     break;
                 }
                 if (first) {
                     first = false;
                     lastNodeId = Long.toString(way.getNodeId(i));
                 }
-                if (validNodesMap.get(Long.toString(way.getNodeId(j))) == null || validNodesMap.get(Long.toString(way.getNodeId(j))) < 2) {
+                if (validNodes.get(Long.toString(way.getNodeId(j))) == null || validNodes.get(Long.toString(way.getNodeId(j))) < 2) {
                     Node intermediateNode1 = nodeMap.get(lastNodeId);
                     Node intermediateNode2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                     lastNodeId = Long.toString(way.getNodeId(j));
@@ -42,24 +57,21 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                     continue;
                 }
 
+                // Flag to decide whether to use oneWay roads.
+                Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
+                String roadValue = tags.get("oneway");
+                String roundabout = tags.get("junction");
+                boolean oneWayFlagged = roadValue != null && roadValue.equals("yes");
+                boolean inRoundabout = roundabout != null && roundabout.equals("roundabout");
+                boolean oneWay = oneWayFlagged || inRoundabout;
+
                 Node node1 = nodeMap.get(Long.toString(way.getNodeId(i)));
                 Node intermediate = nodeMap.get(lastNodeId);
                 Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
                 graph.addEdge(node2, node1, cum_Dist);
-
-                // Flag to decide whether to use oneWay roads.
-                if (oneWayFlag) {
-                    Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
-                    String roadValue = tags.get("oneway");
-                    String roundabout = tags.get("junction");
-                    if (roadValue == null || !roadValue.equals("yes")) {
-                        if (roundabout == null || !roundabout.equals("roundabout")) {
-                            graph.addEdge(node1, node2, cum_Dist);
-                        }
-                    }
-                } else {
+                if (!oneWay) {
                     graph.addEdge(node1, node2, cum_Dist);
                 }
 
@@ -79,7 +91,7 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
     }
 
     @Override
-    public int getSumOfValid(Map<String, Integer> validNodes) {
+    public int getSumOfValid() {
         return validNodes.values().stream().map(integer -> {
             if (integer > 1) {
                 return 1;
