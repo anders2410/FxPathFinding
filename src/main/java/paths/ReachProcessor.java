@@ -37,7 +37,7 @@ public class ReachProcessor {
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
-        int[] bIterations = {0, 3, 6, 10, 15, 30, 40, 60, 90, 110, 130, 170, 210};
+        int[] bIterations = {0, 6, 15, 30, 40, 60, 90, 110, 130, 170, 210};
         for (int i = 0; i < bIterations.length; i++) {
             if (deletedNodes == 0) {
                 progressListener.accept((long) 10 * i, 100L);
@@ -55,6 +55,7 @@ public class ReachProcessor {
     }
 
     private Graph computeReachBoundsSubgraph(Graph mainGraph, Graph subGraph, int b) {
+        System.out.println(b);
         double maxReachOriginalGraph;
         List<Node> originalNodeList = mainGraph.getNodeList();
         List<Node> subGraphNodeList = subGraph.getNodeList();
