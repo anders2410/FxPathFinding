@@ -29,7 +29,7 @@ public class ContractionHierarchies {
     private Set<Integer> dijkstraVisited;
 
     private Map<Integer, List<Integer>> inNodeMap;
-    private Map<Pair<Integer, Integer>, List<Integer>> shortcuts;
+    private Map<Pair<Integer, Integer>, Integer> shortcuts;
 
     public ContractionHierarchies(Graph graph) {
         this.graph = new Graph(graph);
@@ -208,17 +208,8 @@ public class ContractionHierarchies {
                         if (alreadyEdge.getKey().d > totalCost) {
                             graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
-                            Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
-                            Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
                             Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                            List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
-                            List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
-                            List<Integer> temp3 = new ArrayList<>();
-                            temp3.addAll(temp1);
-                            temp3.add(n);
-                            temp3.addAll(temp2);
-
-                            shortcuts.replace(pair3, temp3);
+                            shortcuts.put(pair3, n);
                         }
                     } else {
                         graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
@@ -227,16 +218,8 @@ public class ContractionHierarchies {
                         temp11.add(inNodeIndex);
                         inNodeMap.replace(outNodeIndex, temp11);
 
-                        Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
-                        Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
                         Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                        List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
-                        List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
-                        List<Integer> temp3 = new ArrayList<>();
-                        temp3.addAll(temp1);
-                        temp3.add(n);
-                        temp3.addAll(temp2);
-                        shortcuts.replace(pair3, temp3);
+                        shortcuts.put(pair3, n);
                     }
                 }
             }
@@ -429,7 +412,7 @@ public class ContractionHierarchies {
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
 
-        Set<Integer> result = new LinkedHashSet<>();
+        /*Set<Integer> result = new LinkedHashSet<>();
         for (int i = 0; i < shortestPathA.size() - 1; i++) {
             List<Integer> contractedNodes = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i + 1)));
             result.add(shortestPathA.get(i));
@@ -437,9 +420,9 @@ public class ContractionHierarchies {
                 result.addAll(contractedNodes);
             }
             result.add(shortestPathA.get(i + 1));
-        }
+        }*/
 
-        return new Pair<>(finalDistance, result);
+        return new Pair<>(finalDistance, new HashSet<>());
     }
 
     private List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {

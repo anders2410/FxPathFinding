@@ -280,21 +280,60 @@ public class SSSP {
             /*System.out.println(middlepoint);
             System.out.println(shortestPathCH);*/
 
-            System.out.println(shortestPathCH);
+            /*System.out.println(shortestPathCH);
             Set<Integer> result = new LinkedHashSet<>();
-            Map<Pair<Integer, Integer>, List<Integer>> sho = contractionHierarchiesResult.getShortcuts();
+            Map<Pair<Integer, Integer>, Integer> sho = contractionHierarchiesResult.getShortcuts();
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {
-                List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
-                System.out.println(contractedNodes);
+                Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
+                System.out.println(contractedNode);
                 result.add(shortestPathCH.get(i));
-                if (contractedNodes != null) {
-                    result.addAll(contractedNodes);
+                if (contractedNode != null) {
+                    result.add(contractedNode);
                 }
                 result.add(shortestPathCH.get(i + 1));
             }
-            System.out.println(result);
+            System.out.println(result);*/
 
-            return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
+            System.out.println(shortestPathCH);
+            List<Integer> completeList = new ArrayList<>();
+            // Integer startNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(0), shortestPathCH.get(1)));
+            for (int i = 0; i < shortestPathCH.size() - 1; i++) {
+                int currentNode = shortestPathCH.get(i);
+                int j = i;
+                j++;
+                List<Integer> tempList = new ArrayList<>();
+                boolean isDone = false;
+                int a = shortestPathCH.get(i);
+                int b = shortestPathCH.get(j);
+                tempList.add(a);
+                boolean tempListSizeChanged = true;
+                while (tempListSizeChanged) {
+                    int tempSize = tempList.size();
+                    magicRecursion(a, b, tempList);
+                    int after = tempList.size();
+                    if (tempSize == after) {
+                        tempListSizeChanged = false;
+                    } else {
+                        a = tempList.get(after-2);
+                        b = tempList.get(after-1);
+                        tempList.remove(after-1);
+                    }
+                }
+                /*while (!isDone) {
+                    Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(a, b));
+                    if (c != null) {
+                        tempList.add(0, c);
+                        b = c;
+                    } else {
+                        isDone = true;
+                        tempList.add(0, currentNode);
+                        completeList.addAll(tempList);
+                    }
+                }*/
+                completeList.addAll(tempList);
+            }
+
+            return new ShortestPathResult(goalDistance, new ArrayList<>(completeList), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
 
         if (middlePoint == -1) {
@@ -303,6 +342,21 @@ public class SSSP {
 
         List<Integer> shortestPath = extractPathBi();
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
+    }
+
+    private static void magicRecursion(int a, int b, List<Integer> tempList) {
+        Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(a, b));
+        if (c != null) {
+            magicRecursion(a, c, tempList);
+            tempList.add(c);
+        } /*else {
+            int tempSize = tempList.size();
+            magicRecursion(tempList.get(tempSize-1), b, tempList);
+            int afterTempSize = tempList.size();
+            if (tempSize == afterTempSize) {
+                return;
+            }
+        }*/
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
