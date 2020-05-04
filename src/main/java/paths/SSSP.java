@@ -66,7 +66,7 @@ public class SSSP {
     private static GetPQueueStrategy priorityQueueGetter;
     private static double singleToAllBound;
     private static ContractionHierarchiesResult contractionHierarchiesResult;
-    private static double bestDistSoFarCH;
+    private static double bestPathLengthSoFar;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -88,7 +88,7 @@ public class SSSP {
         queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B), graph.getNodeAmount());
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
-        bestDistSoFarCH = Double.MAX_VALUE;
+        bestPathLengthSoFar = Double.MAX_VALUE;
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -193,6 +193,10 @@ public class SSSP {
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
         Integer currentNode = getQueue(dir).poll();
         if (currentNode == null) {
+            return;
+        }
+        // TODO: 04/05/2020 Another IF-statement that should be removed..
+        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > bestPathLengthSoFar) {
             return;
         }
         getScanned(dir).add(currentNode);
@@ -486,11 +490,11 @@ public class SSSP {
         SSSP.CHGraph = CHGraph;
     }
 
-    public static double getBestDistSoFarCH() {
-        return bestDistSoFarCH;
+    public static double getBestPathLengthSoFar() {
+        return bestPathLengthSoFar;
     }
 
-    public static void setBestDistSoFarCH(double bestDistSoFarCH) {
-        SSSP.bestDistSoFarCH = bestDistSoFarCH;
+    public static void setBestPathLengthSoFar(double bestPathLengthSoFar) {
+        SSSP.bestPathLengthSoFar = bestPathLengthSoFar;
     }
 }

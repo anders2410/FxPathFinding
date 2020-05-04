@@ -186,41 +186,50 @@ public class ContractionHierarchies {
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
                 if (distanceList.get(outNodeIndex) > totalCost) {
                     // TODO: 15/04/2020 Add implementation for one-way streets (still not working optimal..)
-                    graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
+                    boolean alreadyHasEdge = false;
+                    Pair<Edge, Integer> alreadyEdge = new Pair<>(new Edge(0,0,Double.MAX_VALUE), 0);
+                    List<Edge> get = graph.getAdjList().get(inNodeIndex);
+                    for (int i = 0, getSize = get.size(); i < getSize; i++) {
+                        Edge e = get.get(i);
+                        if (e.to == outNodeIndex &&  e.d < alreadyEdge.getKey().d) {
+                            alreadyHasEdge = true;
+                            alreadyEdge = new Pair<>(e, i);
+                        }
+                    }
 
-                    List<Integer> temp11 = inNodeMap.get(outNodeIndex);
-                    temp11.add(inNodeIndex);
-                    inNodeMap.replace(outNodeIndex, temp11);
+                    if (alreadyHasEdge) {
+                        if (alreadyEdge.getKey().d > totalCost) {
+                            graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
-                    Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
-                    Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
-                    Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                    List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
-                    List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
-                    List<Integer> temp3 = shortcuts.computeIfAbsent(pair3, k -> new ArrayList<>());
-                    temp3.addAll(temp1);
-                    temp3.add(n);
-                    temp3.addAll(temp2);
-                    shortcuts.replace(pair3, temp3);
+                            Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
+                            Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
+                            Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
+                            List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
+                            List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
+                            List<Integer> temp3 = shortcuts.computeIfAbsent(pair3, k -> new ArrayList<>());
+                            temp3.addAll(temp1);
+                            temp3.add(n);
+                            temp3.addAll(temp2);
+                            shortcuts.replace(pair3, temp3);
+                        }
+                    } else {
+                        graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
 
-                    /*if (checkIfOutNodeShortcut(n, inNodeIndex, outNodeIndex)) {
-                        graph.addEdge(outNodeIndex, inNodeIndex, totalCost);
+                        List<Integer> temp11 = inNodeMap.get(outNodeIndex);
+                        temp11.add(inNodeIndex);
+                        inNodeMap.replace(outNodeIndex, temp11);
 
-                        List<Integer> temp21 = inNodeMap.get(inNodeIndex);
-                        temp21.add(outNodeIndex);
-                        inNodeMap.replace(inNodeIndex, temp21);
-
-                        Pair<Integer, Integer> pair12 = new Pair<>(outNodeIndex, n);
-                        Pair<Integer, Integer> pair22 = new Pair<>(n, inNodeIndex);
-                        Pair<Integer, Integer> pair32 = new Pair<>(outNodeIndex, inNodeIndex);
-                        List<Integer> temp12 = shortcuts.computeIfAbsent(pair12, k -> new ArrayList<>());
-                        List<Integer> temp22 = shortcuts.computeIfAbsent(pair22, k -> new ArrayList<>());
-                        List<Integer> temp32 = shortcuts.computeIfAbsent(pair32, k -> new ArrayList<>());
-                        temp32.addAll(temp12);
-                        temp32.add(n);
-                        temp32.addAll(temp22);
-                        shortcuts.replace(pair32, temp32);
-                    }*/
+                        Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
+                        Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
+                        Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
+                        List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
+                        List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
+                        List<Integer> temp3 = shortcuts.computeIfAbsent(pair3, k -> new ArrayList<>());
+                        temp3.addAll(temp1);
+                        temp3.add(n);
+                        temp3.addAll(temp2);
+                        shortcuts.replace(pair3, temp3);
+                    }
                 }
             }
         }
