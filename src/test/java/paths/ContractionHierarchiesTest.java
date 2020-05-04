@@ -141,8 +141,11 @@ public class ContractionHierarchiesTest {
         /*int source = 7726;
         int target = 5703;*/
 
-        int source = 3059;
-        int target = 12090;
+        /*int source = 3059;
+        int target = 12090;*/
+
+        int source = 4408;
+        int target = 14897;
 
         System.out.println("Original Graph");
         //originalGraph.getAdjList().get(5339).forEach(System.out::println);
@@ -155,7 +158,7 @@ public class ContractionHierarchiesTest {
         System.out.println(SSSP.getGraph());
         CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
 
-        originalGraph.getAdjList().get(3059).forEach(System.out::println);
+        /*originalGraph.getAdjList().get(3059).forEach(System.out::println);
         System.out.println("");
         originalGraph.getAdjList().get(3060).forEach(System.out::println);
         System.out.println("");
@@ -169,7 +172,7 @@ public class ContractionHierarchiesTest {
         System.out.println("");
         contractionHierarchiesResult.getGraph().getAdjList().get(3071).forEach(System.out::println);
         System.out.println("");
-        contractionHierarchiesResult.getGraph().getAdjList().get(3072).forEach(System.out::println);
+        contractionHierarchiesResult.getGraph().getAdjList().get(3072).forEach(System.out::println);*/
 
         // CHResult.path.forEach(i -> contractionHierarchiesResult.getGraph().getAdjList().get(i).forEach(System.out::println));
 
@@ -209,7 +212,7 @@ public class ContractionHierarchiesTest {
             i++;
         }
 
-        System.out.println(matrix[0]);
+        failList.forEach(t -> System.out.println(t.dijkstraPath + "\n" + t.algoPath + "\n"));
         if (Arrays.equals(new int[algorithms], matrix)) {
             System.out.println(Arrays.deepToString(runtimes));
         } else fail();
@@ -220,10 +223,14 @@ public class ContractionHierarchiesTest {
         runtimes[algoNumber][i] = algoResult.runTime;
         double algoDist = algoResult.d;
         List<Integer> algoPath = algoResult.path;
-        if (!algoPath.equals(dijkstraPath)) {
+        if (!compareTwoDoublesWithTolerance(dijkstraDist, algoDist) || !dijkstraPath.equals(algoPath)) {
             matrix[algoNumber]++;
             failList.add(new TestResult(dijkstraPath.get(0), dijkstraPath.get(dijkstraPath.size() - 1), dijkstraPath, algoPath, dijkstraDist, algoDist));
         }
+    }
+
+    private boolean compareTwoDoublesWithTolerance(double a, double b) {
+        return Math.abs(a - b) <= 0.00000000000001 || Double.valueOf(a).equals(b);
     }
 }
 

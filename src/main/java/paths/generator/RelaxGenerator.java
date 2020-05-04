@@ -112,7 +112,6 @@ public class RelaxGenerator {
                         //setMiddlePoint(edge.to);
                     }
                 }
-
                 getBiDijkstra().relax(edge, dir);
             }
         };

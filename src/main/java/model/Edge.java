@@ -29,6 +29,11 @@ public class Edge implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(from, to, d);
+    }
+
+    @Override
     public String toString() {
         return "Edge{" +
                 "from=" + from +

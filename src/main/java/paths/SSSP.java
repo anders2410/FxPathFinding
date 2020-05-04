@@ -268,7 +268,6 @@ public class SSSP {
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
                     //System.out.println("Candidate: " + node + " with distance: " + distance);
-
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
                         middlepoint = node;
@@ -281,17 +280,19 @@ public class SSSP {
             /*System.out.println(middlepoint);
             System.out.println(shortestPathCH);*/
 
-            //System.out.println(shortestPathCH);
+            System.out.println(shortestPathCH);
             Set<Integer> result = new LinkedHashSet<>();
+            Map<Pair<Integer, Integer>, List<Integer>> sho = contractionHierarchiesResult.getShortcuts();
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {
                 List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
-                //System.out.println(contractedNodes);
+                System.out.println(contractedNodes);
                 result.add(shortestPathCH.get(i));
                 if (contractedNodes != null) {
                     result.addAll(contractedNodes);
                 }
                 result.add(shortestPathCH.get(i + 1));
             }
+            System.out.println(result);
 
             return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
