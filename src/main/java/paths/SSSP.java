@@ -17,6 +17,7 @@ import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
+import static paths.generator.GetPQueueGenerator.getTreeQueue;
 
 public class SSSP {
     public static boolean trace = false;
@@ -63,7 +64,6 @@ public class SSSP {
     private static double[] heuristicValuesA;
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
-    private static Set<Integer> prunedSet;
     private static double singleToAllBound;
     private static ContractionHierarchiesResult contractionHierarchiesResult;
     private static double bestDistSoFarCH;
@@ -88,7 +88,6 @@ public class SSSP {
         queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B), graph.getNodeAmount());
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
-        prunedSet = new LinkedHashSet<>();
         bestDistSoFarCH = Double.MAX_VALUE;
     }
 
@@ -184,24 +183,6 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        // TODO: 30/04/2020 Cleanup: Is this used or can it be deleted?
-        /*Set<Integer> a = getPrunedSet();
-        if (mode == REACH && source == 5087) {
-            PrintWriter pw = null;
-            try {
-                pw = new PrintWriter(
-                        new OutputStreamWriter(new FileOutputStream("test.txt"), "UTF-8"));
-                for (double s : getReachBounds()) {
-                    pw.println(s);
-                }
-                pw.flush();
-            } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } finally {
-                pw.close();
-            }
-        }
-        */
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
         // TODO: 25-04-2020 Strategy pattern this
         if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
@@ -215,6 +196,7 @@ public class SSSP {
             return;
         }
         getScanned(dir).add(currentNode);
+        if (mode == BOUNDED_SINGLE_TO_ALL) if (getNodeDist(dir).get(currentNode) > SSSP.getSingleToAllBound()) return;
         for (Edge edge : adjList.get(currentNode)) {
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);
@@ -466,10 +448,6 @@ public class SSSP {
 
     public static void setReachBounds(List<Double> bounds) {
         reachBounds = bounds;
-    }
-
-    public static Set<Integer> getPrunedSet() {
-        return prunedSet;
     }
 
     public static double getGoalDistance() {

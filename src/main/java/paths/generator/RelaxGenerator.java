@@ -122,7 +122,7 @@ public class RelaxGenerator {
     public static RelaxStrategy getBoundedDijkstra() {
         return (edge, dir) -> {
             double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge);
-            if (getNodeDist(dir).get(edge.from) > SSSP.getSingleToAllBound()) return;
+            /*if (getNodeDist(dir).get(edge.from) > SSSP.getSingleToAllBound()) return;*/
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
                 updatePriority(edge.to, dir);
