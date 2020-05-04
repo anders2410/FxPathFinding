@@ -5,8 +5,11 @@ import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
 import model.Node;
+import paths.strategy.PriorityStrategy;
 
 import java.util.*;
+
+import static paths.ABDir.A;
 
 /**
  * This class implements the pre-processing part of Contraction Hierarchies returning the augmented Graph and
@@ -26,7 +29,7 @@ public class ContractionHierarchies {
     private Set<Integer> dijkstraVisited;
 
     private Map<Integer, List<Integer>> inNodeMap;
-    private Map<Pair<Integer, Integer>, List<Integer>> shortcuts;
+    private Map<Pair<Integer, Integer>, Integer> shortcuts;
 
     public ContractionHierarchies(Graph graph) {
         this.graph = new Graph(graph);
@@ -41,17 +44,23 @@ public class ContractionHierarchies {
     // TODO: 28/04/2020 Consider if this should be done in collapsing?
     private void removeDuplicateEdges(Graph graph) {
         for (int i = 0; i < graph.getNodeList().size(); i++) {
-            Iterator<Edge> iterator = graph.getAdjList().get(i).iterator();
+            Set<Edge> set = new HashSet<>();
             List<Edge> copyEdges = new ArrayList<>(graph.getAdjList().get(i));
-            while (iterator.hasNext()) {
-                Edge e = iterator.next();
+            for (Edge e : graph.getAdjList().get(i)) {
                 for (Edge copyEdge : copyEdges) {
-                    if (copyEdge.d < e.d && copyEdge.to == e.to) {
-                        iterator.remove();
-                        break;
+                    if (copyEdge.d <= e.d && copyEdge.to == e.to) {
+                        set.remove(e);
+                        set.add(copyEdge);
                     }
                 }
             }
+            graph.getAdjList().set(i, new ArrayList<>(set));
+        }
+
+        // TODO: 17/04/2020 Fix hack with removing self-referring edges
+        for (Node nodeHack : graph.getNodeList()) {
+            List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
+            edgeList.removeIf(edge -> nodeHack.index == edge.to);
         }
     }
 
@@ -109,12 +118,6 @@ public class ContractionHierarchies {
 
             // Contraction part
             contractNode(n);
-        }
-
-        // TODO: 17/04/2020 Fix hack with removing self-referring edges
-        for (Node nodeHack : graph.getNodeList()) {
-            List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
-            edgeList.removeIf(edge -> nodeHack.index == edge.to);
         }
 
         return new ContractionHierarchiesResult(graph, ranks, shortcuts);
@@ -187,30 +190,26 @@ public class ContractionHierarchies {
                 if (distanceList.get(outNodeIndex) > totalCost) {
                     // TODO: 15/04/2020 Add implementation for one-way streets (still not working optimal..)
                     boolean alreadyHasEdge = false;
-                    Pair<Edge, Integer> alreadyEdge = new Pair<>(new Edge(0,0,Double.MAX_VALUE), 0);
+                    Pair<Edge, Integer> alreadyEdge = new Pair<>(new Edge(0, 0, Double.MAX_VALUE), 0);
                     List<Edge> get = graph.getAdjList().get(inNodeIndex);
                     for (int i = 0, getSize = get.size(); i < getSize; i++) {
                         Edge e = get.get(i);
-                        if (e.to == outNodeIndex &&  e.d < alreadyEdge.getKey().d) {
+                        if (e.to == outNodeIndex) {
                             alreadyHasEdge = true;
                             alreadyEdge = new Pair<>(e, i);
                         }
+                    }
+
+                    if (110 == n || 111 == n || 14819 == n || 14818 == n) {
+                        System.out.println("fest");
                     }
 
                     if (alreadyHasEdge) {
                         if (alreadyEdge.getKey().d > totalCost) {
                             graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
-                            Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
-                            Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
                             Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                            List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
-                            List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
-                            List<Integer> temp3 = shortcuts.computeIfAbsent(pair3, k -> new ArrayList<>());
-                            temp3.addAll(temp1);
-                            temp3.add(n);
-                            temp3.addAll(temp2);
-                            shortcuts.replace(pair3, temp3);
+                            shortcuts.put(pair3, n);
                         }
                     } else {
                         graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
@@ -219,16 +218,8 @@ public class ContractionHierarchies {
                         temp11.add(inNodeIndex);
                         inNodeMap.replace(outNodeIndex, temp11);
 
-                        Pair<Integer, Integer> pair1 = new Pair<>(inNodeIndex, n);
-                        Pair<Integer, Integer> pair2 = new Pair<>(n, outNodeIndex);
                         Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                        List<Integer> temp1 = shortcuts.computeIfAbsent(pair1, k -> new ArrayList<>());
-                        List<Integer> temp2 = shortcuts.computeIfAbsent(pair2, k -> new ArrayList<>());
-                        List<Integer> temp3 = shortcuts.computeIfAbsent(pair3, k -> new ArrayList<>());
-                        temp3.addAll(temp1);
-                        temp3.add(n);
-                        temp3.addAll(temp2);
-                        shortcuts.replace(pair3, temp3);
+                        shortcuts.put(pair3, n);
                     }
                 }
             }
@@ -245,7 +236,7 @@ public class ContractionHierarchies {
 
         List<Double> distanceList = dijkstraDistanceList;
 
-        Comparator<Integer> comp = Comparator.comparingDouble(distanceList::get);
+        Comparator<Integer> comp = getComparator();
         JavaMinPriorityQueue queue = new JavaMinPriorityQueue(comp, graph.getNodeAmount());
 
         distanceList.set(inNode, 0.0);
@@ -276,6 +267,17 @@ public class ContractionHierarchies {
             }
         }
         return distanceList;
+    }
+
+    private Comparator<Integer> getComparator() {
+        return (i, j) -> {
+            double diff = Math.abs(dijkstraDistanceList.get(i) - dijkstraDistanceList.get(j));
+            if (diff <= 0.000000000000001) {
+                return i.compareTo(j);
+            } else {
+                return Double.compare(dijkstraDistanceList.get(i), dijkstraDistanceList.get(j));
+            }
+        };
     }
 
     // --------------------------------------------- IMPORTANCE ------------------------------------------
@@ -317,7 +319,7 @@ public class ContractionHierarchies {
      * We can optionally experiment with some different weight to all the functions.
      */
     private int calculateImportance(int n) {
-        return edgeDifference(n)*9 + contractedNeighbours(n)*14 + nodeLevel(n)*7;
+        return edgeDifference(n) * 9 + contractedNeighbours(n) * 14 + nodeLevel(n) * 7;
     }
 
     // Update the importance of a node
@@ -410,7 +412,7 @@ public class ContractionHierarchies {
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
 
-        Set<Integer> result = new LinkedHashSet<>();
+        /*Set<Integer> result = new LinkedHashSet<>();
         for (int i = 0; i < shortestPathA.size() - 1; i++) {
             List<Integer> contractedNodes = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i + 1)));
             result.add(shortestPathA.get(i));
@@ -418,9 +420,9 @@ public class ContractionHierarchies {
                 result.addAll(contractedNodes);
             }
             result.add(shortestPathA.get(i + 1));
-        }
+        }*/
 
-        return new Pair<>(finalDistance, result);
+        return new Pair<>(finalDistance, new HashSet<>());
     }
 
     private List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {

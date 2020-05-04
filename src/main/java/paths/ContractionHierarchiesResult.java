@@ -9,9 +9,9 @@ import java.util.Map;
 public class ContractionHierarchiesResult {
     private Graph graph;
     private List<Integer> ranks;
-    private Map<Pair<Integer, Integer>, List<Integer>> shortcuts;
+    private Map<Pair<Integer, Integer>, Integer> shortcuts;
 
-    public ContractionHierarchiesResult(Graph graph, List<Integer> ranks, Map<Pair<Integer, Integer>, List<Integer>> shortcuts) {
+    public ContractionHierarchiesResult(Graph graph, List<Integer> ranks, Map<Pair<Integer, Integer>, Integer> shortcuts) {
         this.graph = graph;
         this.ranks = ranks;
         this.shortcuts = shortcuts;
@@ -25,7 +25,7 @@ public class ContractionHierarchiesResult {
         return ranks;
     }
 
-    public Map<Pair<Integer, Integer>, List<Integer>> getShortcuts() {
+    public Map<Pair<Integer, Integer>, Integer> getShortcuts() {
         return shortcuts;
     }
 }
