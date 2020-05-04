@@ -144,8 +144,14 @@ public class ContractionHierarchiesTest {
         /*int source = 3059;
         int target = 12090;*/
 
-        int source = 4408;
-        int target = 14897;
+        /*int source = 4408;
+        int target = 14897;*/
+
+        /*int source = 5087;
+        int target = 8548;*/
+
+        int source = 14788;
+        int target = 14830;
 
         System.out.println("Original Graph");
         //originalGraph.getAdjList().get(5339).forEach(System.out::println);

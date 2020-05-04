@@ -293,8 +293,20 @@ public class SSSP {
                 result.add(shortestPathCH.get(i + 1));
             }
             System.out.println(result);*/
+            List<Integer> complete = new ArrayList<>(shortestPathCH);
+            boolean isTrue = true;
+            while (isTrue) {
+                for (int i = 0; i < complete.size() - 1; i++) {
+                    Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+                    if (contractedNode != null) {
+                        complete.add(i+1, contractedNode);
+                        break;
+                    }
+                }
+                isTrue = shouldBeDone(complete);
+            }
 
-            System.out.println(shortestPathCH);
+            /*System.out.println(shortestPathCH);
             List<Integer> completeList = new ArrayList<>();
             // Integer startNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(0), shortestPathCH.get(1)));
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {
@@ -319,7 +331,7 @@ public class SSSP {
                         tempList.remove(after-1);
                     }
                 }
-                /*while (!isDone) {
+                *//*while (!isDone) {
                     Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(a, b));
                     if (c != null) {
                         tempList.add(0, c);
@@ -329,11 +341,11 @@ public class SSSP {
                         tempList.add(0, currentNode);
                         completeList.addAll(tempList);
                     }
-                }*/
+                }*//*
                 completeList.addAll(tempList);
-            }
+            }*/
 
-            return new ShortestPathResult(goalDistance, new ArrayList<>(completeList), scannedA, scannedB, relaxedA, relaxedB, duration);
+            return new ShortestPathResult(goalDistance, new ArrayList<>(complete), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
 
         if (middlePoint == -1) {
@@ -342,6 +354,17 @@ public class SSSP {
 
         List<Integer> shortestPath = extractPathBi();
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
+    }
+
+    private static boolean shouldBeDone(List<Integer> complete) {
+        for (int i = 0; i < complete.size() - 1; i++) {
+            Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+            if (contractedNode != null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void magicRecursion(int a, int b, List<Integer> tempList) {
