@@ -66,7 +66,7 @@ public class SSSP {
     private static Set<Integer> prunedSet;
     private static double singleToAllBound;
     private static ContractionHierarchiesResult contractionHierarchiesResult;
-    private static double bestDistSoFarCH;
+    private static double bestPathLengthSoFar;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -89,7 +89,7 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         prunedSet = new LinkedHashSet<>();
-        bestDistSoFarCH = Double.MAX_VALUE;
+        bestPathLengthSoFar = Double.MAX_VALUE;
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -214,6 +214,10 @@ public class SSSP {
         if (currentNode == null) {
             return;
         }
+        // TODO: 04/05/2020 Another IF-statement that should be removed..
+        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > bestPathLengthSoFar) {
+            return;
+        }
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
@@ -263,9 +267,8 @@ public class SSSP {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
-                    /*System.out.println("Candidate: " + node + " with distance: " + distance);
-                    System.out.println(nodeDistB.get(5147));
-                    System.out.println(nodeDistA.get(5147));*/
+                    //System.out.println("Candidate: " + node + " with distance: " + distance);
+
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
                         middlepoint = node;
@@ -510,11 +513,11 @@ public class SSSP {
         SSSP.CHGraph = CHGraph;
     }
 
-    public static double getBestDistSoFarCH() {
-        return bestDistSoFarCH;
+    public static double getBestPathLengthSoFar() {
+        return bestPathLengthSoFar;
     }
 
-    public static void setBestDistSoFarCH(double bestDistSoFarCH) {
-        SSSP.bestDistSoFarCH = bestDistSoFarCH;
+    public static void setBestPathLengthSoFar(double bestPathLengthSoFar) {
+        SSSP.bestPathLengthSoFar = bestPathLengthSoFar;
     }
 }
