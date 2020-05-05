@@ -127,7 +127,7 @@ public class FXMLController implements Initializable {
         loadGraphTask.setOnSucceeded(event -> {
             graph = loadGraphTask.getValue();
             landmarksGenerator = new Landmarks(graph);
-            GraphIO.loadBestLandmarks(fileName, landmarksGenerator);
+            new GraphIO(distanceStrategy).loadBestLandmarks(fileName, landmarksGenerator);
             SSSP.setReachBounds(null);
             loadReachBounds();
             setUpGraph();
@@ -877,7 +877,7 @@ public class FXMLController implements Initializable {
 
     public void handleLoadLandmarks() {
         pickLandMarkModeGUI();
-        GraphIO.loadLandmarks(fileName, landmarksGenMode, landmarksGenerator);
+        new GraphIO(distanceStrategy).loadLandmarks(fileName, landmarksGenMode, landmarksGenerator);
         redrawGraph();
     }
 
@@ -912,7 +912,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSaveLandmarks() {
-        GraphIO.saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
+        new GraphIO(distanceStrategy).saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
     }
 
     public void handleSetParameterEvent() {
@@ -1061,7 +1061,7 @@ public class FXMLController implements Initializable {
         monitorTask.setOnSucceeded(event -> {
             redrawGraph();
             SSSP.setLandmarks(landmarksGenerator);
-            GraphIO.saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
+            new GraphIO(distanceStrategy).saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
             playIndicatorCompleted();
         });
         attachProgressIndicator(monitorTask.progressProperty());

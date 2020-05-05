@@ -91,7 +91,11 @@ public class Util {
     }
 
     public static String trimFileTypes(String fileName) {
-        return fileName.substring(0, fileName.indexOf('.'));
+        int firstDot = fileName.indexOf('.');
+        if (firstDot == -1) {
+            return fileName;
+        }
+        return fileName.substring(0, firstDot);
     }
 
     public static String getFileType(String fileName) {

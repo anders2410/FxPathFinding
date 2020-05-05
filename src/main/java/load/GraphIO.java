@@ -26,9 +26,6 @@ import static paths.LandmarkMode.*;
 public class GraphIO {
 
     public static String mapsDir = "maps\\";
-    public static String tempDir = mapsDir + "temp\\";
-    public static String reachDir = mapsDir + "reach\\";
-    public static String infoDir = mapsDir + "info\\";
     private Graph graph;
     private GraphInfo graphInfo;
     private long fileSize;
@@ -45,9 +42,13 @@ public class GraphIO {
         bytesRead = 0;
     }
 
-    public static void saveLandmarks(String fileName, LandmarkMode generationMode, Set<Integer> landmarkSet) {
+    public static String getFolderName(String fileName) {
+        return mapsDir + Util.trimFileTypes(fileName) + "\\";
+    }
+
+    public void saveLandmarks(String fileName, LandmarkMode generationMode, Set<Integer> landmarkSet) {
         try {
-            String name = GraphIO.tempDir + Util.trimFileTypes(fileName);
+            String name = getFolderName(fileName) + Util.trimFileTypes(fileName);
             FileOutputStream fos = new FileOutputStream(name + "-" + generationMode.toString() + "landmarks.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(landmarkSet);
@@ -59,12 +60,18 @@ public class GraphIO {
 
     private void generateFolders() {
         new File(mapsDir).mkdir();
-        new File(tempDir).mkdir();
+        File[] files = new File(mapsDir).listFiles(file -> !file.isDirectory());
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            new File(Util.trimFileTypes(file.getAbsolutePath())).mkdir();
+        }
     }
 
     public LoadType loadGraph(String fileName) {
         // Check for temp file to load instead
-        String tmpName = tempDir + Util.trimFileTypes(fileName);
+        String tmpName = getFolderName(fileName) + Util.trimFileTypes(fileName);
         File sccFile = new File(tmpName + "-scc-graph.tmp");
         if (sccFile.exists()) {
             loadTMP(tmpName + "-scc", "SCC graph loaded from storage");
@@ -127,7 +134,7 @@ public class GraphIO {
 
     public void storeTMP(String fileName, Graph graph) {
         try {
-            String name = tempDir + fileName;
+            String name = getFolderName(fileName) + fileName;
             FileOutputStream fos = new FileOutputStream(name + "-graph.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(graph);
@@ -154,7 +161,7 @@ public class GraphIO {
 
     public void storeGraphInfo(String fileName, GraphInfo graphInfo) {
         try {
-            String name = infoDir + fileName;
+            String name = getFolderName(fileName) + fileName;
             FileOutputStream fos = new FileOutputStream(name + "-info.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(graphInfo);
@@ -165,13 +172,13 @@ public class GraphIO {
     }
 
     public void loadGraphInfo(String fileName, String msg) {
-        String infoName = infoDir + fileName;
+        String infoName = getFolderName(fileName) + fileName;
         File infoFile = new File(infoName + "-info.tmp");
         if (!infoFile.exists()) {
             return;
         }
         try {
-            String graphFileName = infoDir + fileName + "-info.tmp";
+            String graphFileName = getFolderName(fileName) + fileName + "-info.tmp";
             fileSize = Files.size(Paths.get(graphFileName));
             CountingInputStream input = new CountingInputStream(graphFileName, this);
             ObjectInputStream objectStream = new ObjectInputStream(input);
@@ -184,14 +191,14 @@ public class GraphIO {
         }
     }
 
-    public static void loadBestLandmarks(String fileName, Landmarks landmarks) {
+    public void loadBestLandmarks(String fileName, Landmarks landmarks) {
         if (tryMode(fileName, landmarks, MAXCOVER)) return;
         if (tryMode(fileName, landmarks, AVOID)) return;
         if (tryMode(fileName, landmarks, FARTHEST)) return;
         tryMode(fileName, landmarks, RANDOM);
     }
 
-    private static boolean tryMode(String fileName, Landmarks landmarks, LandmarkMode mode) {
+    private boolean tryMode(String fileName, Landmarks landmarks, LandmarkMode mode) {
         String maxCoverFileName = getLandmarksFilePathName(fileName, mode);
         if (new File(maxCoverFileName).exists()) {
             loadLandmarks(fileName, mode, landmarks);
@@ -201,7 +208,7 @@ public class GraphIO {
     }
 
     @SuppressWarnings(value = "unchecked")
-    public static void loadLandmarks(String fileName, LandmarkMode mode, Landmarks landmarks) {
+    public void loadLandmarks(String fileName, LandmarkMode mode, Landmarks landmarks) {
         try {
             String name = getLandmarksFilePathName(fileName, mode);
             FileInputStream landmarksInput = new FileInputStream(name);
@@ -223,8 +230,8 @@ public class GraphIO {
         }
     }
 
-    private static String getLandmarksFilePathName(String fileName, LandmarkMode mode) {
-        return tempDir + Util.trimFileTypes(fileName) + "-" + mode.toString() + "landmarks.tmp";
+    private String getLandmarksFilePathName(String fileName, LandmarkMode mode) {
+        return getFolderName(fileName) + Util.trimFileTypes(fileName) + "-" + mode.toString() + "landmarks.tmp";
     }
 
     public List<Double> loadReach(String fileName) {
@@ -236,7 +243,7 @@ public class GraphIO {
             fileName = Util.trimFileTypes(fileName);
         }
         try {
-            String reachFile = tempDir + fileName + "-reach-bounds.tmp";
+            String reachFile = getFolderName(fileName) + fileName + "-reach-bounds.tmp";
             if (!new File(reachFile).exists()) {
                 return null;
             }
@@ -261,7 +268,7 @@ public class GraphIO {
 
     public void saveReach(String fileName, List<Double> reachBounds) {
         try {
-            String name = tempDir + Util.trimFileTypes(fileName);
+            String name = getFolderName(fileName) + Util.trimFileTypes(fileName);
             FileOutputStream fos = new FileOutputStream(name + "-reach-bounds.tmp");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(reachBounds);

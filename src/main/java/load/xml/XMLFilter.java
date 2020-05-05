@@ -9,8 +9,8 @@ import javax.xml.parsers.*;
 
 import org.xml.sax.helpers.DefaultHandler;
 
+import static load.GraphIO.getFolderName;
 import static load.GraphIO.mapsDir;
-import static load.GraphIO.tempDir;
 
 public class XMLFilter extends DefaultHandler {
     private final String inFileType = ".osm";
@@ -38,7 +38,7 @@ public class XMLFilter extends DefaultHandler {
 
     public void executeFilter() {
         try {
-            fwriter = new FileWriter(tempDir + fileName + outFileType);
+            fwriter = new FileWriter(getFolderName(fileName) + fileName + outFileType);
             File inputFile = new File( mapsDir + fileName + inFileType);
 
             DefaultHandler handler = this;
