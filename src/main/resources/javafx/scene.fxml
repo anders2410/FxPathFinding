@@ -82,7 +82,8 @@
                 <items>
                     <MenuItem onAction="#handleOverlayNone" text="None"/>
                     <MenuItem onAction="#handleOverlayReach" text="ReachBounds"/>
-                    <MenuItem onAction="#handleOverlaySpeed" text="SpeedLimits"/>
+                    <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
+                    <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>

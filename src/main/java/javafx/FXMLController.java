@@ -288,30 +288,35 @@ public class FXMLController implements Initializable {
                 if (oppositeEdge == null || isBetter(from, edge, to, oppositeEdge)) {
                     PixelPoint pFrom = toScreenPos(from);
                     PixelPoint pTo = toScreenPos(to);
-                    Color color = chooseEdgeColor(from, edge);
-                    if (currentOverlay == OverlayType.REACH && SSSP.getReachBounds() != null) {
-                        color = graduateColorSaturation(color, SSSP.getReachBounds().get(from.index), maxReach);
-                    }
-                    if (currentOverlay == OverlayType.SPEED_LIMIT && graphInfo != null) {
-                        EdgeInfo info = graphInfo.getEdge(edge);
-                        if (info.getMaxSpeed() == -1) {
-                            color = Color.WHITE;
-                        }
-                    }
-                    gc.setStroke(color);
-                    gc.setLineWidth(chooseEdgeWidth(from, edge));
+                    gc.setStroke(makeColor(edge));
+                    gc.setLineWidth(chooseEdgeWidth(edge));
                     if (mouseEdges.contains(edge)) {
                         gc.setLineDashes(7);
                     } else {
                         gc.setLineDashes(0);
                     }
                     gc.strokeLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
-
-
                     drawnEdges.add(edge);
                 }
             }
         }
+    }
+
+    private Color makeColor(Edge edge) {
+        Color color = chooseAlgorithmEdgeColor(edge);
+        if (currentOverlay == OverlayType.REACH && SSSP.getReachBounds() != null) {
+            color = graduateColorSaturation(color, SSSP.getReachBounds().get(edge.from), maxReach);
+        }
+        if (currentOverlay == OverlayType.SPEED_MARKED && graphInfo != null) {
+            EdgeInfo info = graphInfo.getEdge(edge);
+            if (info.getMaxSpeed() == -1) {
+                color = Color.WHITE;
+            }
+        }
+        if (currentOverlay == OverlayType.SPEED_LIMIT && graphInfo != null) {
+            color = graduateColorSaturation(color, graphInfo.getEdge(edge).getMaxSpeed(), 140);
+        }
+        return color;
     }
 
     private double maxReach = 0;
@@ -354,20 +359,20 @@ public class FXMLController implements Initializable {
         return compVal;
     }
 
-    private double chooseEdgeWidth(Node from, Edge edge) {
-        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+    private double chooseEdgeWidth(Edge edge) {
+        boolean inPath = currentResult.path.contains(edge.from) && currentResult.path.contains(edge.to);
         if (inPath) {
             return 2;
         }
         return 1;
     }
 
-    private Color chooseEdgeColor(Node from, Edge edge) {
-        boolean visited = currentResult.scannedNodesA.contains(from.index);
-        boolean reverseVisited = currentResult.scannedNodesB.contains(from.index);
-        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+    private Color chooseAlgorithmEdgeColor(Edge edge) {
+        boolean visited = currentResult.scannedNodesA.contains(edge.from);
+        boolean reverseVisited = currentResult.scannedNodesB.contains(edge.from);
+        boolean inPath = currentResult.path.contains(edge.from) && currentResult.path.contains(edge.to);
         if (inPath) {
-            int prevNode = currentResult.path.indexOf(from.index);
+            int prevNode = currentResult.path.indexOf(edge.from);
             int nextNode = currentResult.path.indexOf(edge.to);
             if (prevNode == nextNode + 1 || prevNode + 1 == nextNode)
                 return Color.RED;
@@ -1228,6 +1233,11 @@ public class FXMLController implements Initializable {
     }
 
     public void handleOverlaySpeed() {
+        currentOverlay = OverlayType.SPEED_MARKED;
+        redrawGraph();
+    }
+
+    public void handleOverlaySpeedLimits() {
         currentOverlay = OverlayType.SPEED_LIMIT;
         redrawGraph();
     }
