@@ -5,8 +5,7 @@ import model.Graph;
 import paths.SSSP;
 import paths.strategy.PreProcessStrategy;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static paths.SSSP.*;
 

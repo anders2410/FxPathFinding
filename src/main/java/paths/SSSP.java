@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
+import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 import static paths.generator.GetPQueueGenerator.getTreeQueue;
 
@@ -199,9 +200,21 @@ public class SSSP {
         if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > bestPathLengthSoFar) {
             return;
         }
+        /*if (mode == BI_REACH_A_STAR || mode == BI_REACH_LANDMARKS) {
+            List<Double> bounds = getReachBounds();
+            double reachBound = bounds.get(currentNode);
+            boolean distBiggerThanReach = getNodeDist(dir).get(currentNode) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(currentNode)) <= 0.000000000000001);
+            boolean potentialBiggerThanReach = getPriorityStrategy().apply(currentNode, dir) - getNodeDist(dir).get(currentNode) > reachBound && !(Math.abs(reachBound - getPriorityStrategy().apply(currentNode, dir) - getNodeDist(dir).get(currentNode)) <= 0.000000000000001);
+            boolean newDistanceInValid = distBiggerThanReach && potentialBiggerThanReach;
+            if (newDistanceInValid) {
+                System.out.println(currentNode);
+                return;
+            }
+        }*/
         getScanned(dir).add(currentNode);
         if (mode == BOUNDED_SINGLE_TO_ALL) if (getNodeDist(dir).get(currentNode) > SSSP.getSingleToAllBound()) return;
         for (Edge edge : adjList.get(currentNode)) {
+
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);
         }
@@ -230,8 +243,6 @@ public class SSSP {
 
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
-            System.out.println(queueA);
-            System.out.println(queueB);
             if (alternationStrategy.check()) {
                 takeStep(adjList, A);
             } else {
@@ -268,7 +279,7 @@ public class SSSP {
                 for (int i = 0; i < complete.size() - 1; i++) {
                     Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
                     if (contractedNode != null) {
-                        complete.add(i+1, contractedNode);
+                        complete.add(i + 1, contractedNode);
                         break;
                     }
                 }

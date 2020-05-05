@@ -56,20 +56,37 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBiReachAStar() {
         return (edge, dir) -> {
-            List<Double> bounds = getReachBounds();
+            /*List<Double> bounds = getReachBounds();
             double reachBound = bounds.get(edge.to);
-            boolean newDistanceInValid = (getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(edge.from)) <= precision)) && (getPriorityStrategy().apply(edge.from, dir) - getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getPriorityStrategy().apply(edge.from, dir) - getNodeDist(dir).get(edge.from)) <= precision));
-            if (!newDistanceInValid) {
+            boolean distBiggerThanReach = getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(edge.from)) <= precision);
+            double nodePotential;
+            if (dir == ABDir.A) {
+                nodePotential = ((getHeuristicFunction().apply(edge.from, getTarget()) - getHeuristicFunction().apply(getSource(), edge.from)) / 2) + getHeuristicFunction().apply(getSource(), getTarget()) / 2;
+            } else {
+                nodePotential = ((getHeuristicFunction().apply(getSource(), edge.from) - getHeuristicFunction().apply(edge.from, getTarget())) / 2) + getHeuristicFunction().apply(getSource(), getTarget()) / 2;
+            }
+            boolean potentialBiggerThanReach = nodePotential > reachBound && !(Math.abs(reachBound - nodePotential) <= precision);
+            boolean newDistanceInValid = distBiggerThanReach && potentialBiggerThanReach;*/
+            double newDist = getNodeDist(dir).get(edge.from);
+            List<Double> bounds = getReachBounds();
+            double reachBound = bounds.get(edge.from);
+            double nodePotential;
+            if (dir == ABDir.A) {
+                nodePotential = ((getHeuristicFunction().apply(edge.from, getTarget()) - getHeuristicFunction().apply(getSource(), edge.from)) / 2) + getHeuristicFunction().apply(getSource(), getTarget()) / 2;
+            } else {
+                nodePotential = ((getHeuristicFunction().apply(getSource(), edge.from) - getHeuristicFunction().apply(edge.from, getTarget())) / 2) + getHeuristicFunction().apply(getSource(), getTarget()) / 2;
+            }
+            boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+            boolean projectedDistanceValid = reachBound > nodePotential || Math.abs(reachBound - nodePotential) <= precision;
+            boolean valid = newDistanceValid || projectedDistanceValid;
+            if (valid) {
                 getDijkstra().relax(edge, dir);
                 updateGoalDist(edge, dir);
             }
-/*
-            updateGoalDist(edge, dir);
-*/
         };
     }
 
-    private static double precision = 0.000000000000001;
+    private static double precision = 0.00000000000001;
 
     private static boolean reachValid(Edge edge, ABDir dir) {
         double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge);
@@ -91,10 +108,13 @@ public class RelaxGenerator {
             boolean newDistanceInValid = getNodeDist(dir).get(edge.from) > reachBound /*|| Math.abs(reachBound - newDist) <= precision*/;
             if (!newDistanceInValid) {
                 getBiDijkstra().relax(edge, dir);
-            } else if (getScanned(Util.revDir(dir)).contains(edge.to)) {
-                int mp = getMiddlePoint();
-                updateGoalDist(edge, dir);
-                setMiddlePoint(mp);
+            } else {
+                System.out.println(edge.from);
+                if (getScanned(Util.revDir(dir)).contains(edge.to)) {
+                    int mp = getMiddlePoint();
+                    updateGoalDist(edge, dir);
+                    setMiddlePoint(mp);
+                }
             }
         });
     }
