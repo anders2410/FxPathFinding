@@ -264,7 +264,7 @@ public class SSSP {
             System.out.println(shortestPathCH);*/
 
             //System.out.println(shortestPathCH);
-            Set<Integer> result = new LinkedHashSet<>();
+            /*Set<Integer> result = new LinkedHashSet<>();
             for (int i = 0; i < shortestPathCH.size() - 1; i++) {
                 List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
                 //System.out.println(contractedNodes);
@@ -273,7 +273,7 @@ public class SSSP {
                     result.addAll(contractedNodes);
                 }
                 result.add(shortestPathCH.get(i + 1));
-            }
+            }*/
 
             System.out.println(shortestPathCH);
             List<Integer> completeList = new ArrayList<>();
@@ -288,6 +288,7 @@ public class SSSP {
                 int b = shortestPathCH.get(j);
                 tempList.add(a);
                 boolean tempListSizeChanged = true;
+                boolean removeNextRound = false;
                 while (tempListSizeChanged) {
                     int tempSize = tempList.size();
                     magicRecursion(a, b, tempList);
@@ -295,9 +296,9 @@ public class SSSP {
                     if (tempSize == after) {
                         tempListSizeChanged = false;
                     } else {
-                        a = tempList.get(after-2);
-                        b = tempList.get(after-1);
-                        tempList.remove(after-1);
+//                        rightMagicRecurse(a, b, tempList);
+                        a = tempList.get(after - 1);
+
                     }
                 }
                 /*while (!isDone) {
@@ -325,19 +326,36 @@ public class SSSP {
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
 
+  /*  private static void rightMagicRecurse(int a, int b, List<Integer> tempList) {
+        boolean slotsFilled = false;
+        for (int i = 0; i < tempList.size() - 2; i++) {
+            Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(tempList.get(i), tempList.get(i + 1)));
+            if (c != null) {
+                tempList.remove()
+                magicRecursion(a, c, tempList);
+            }
+        }
+    }*/
+
     private static void magicRecursion(int a, int b, List<Integer> tempList) {
         Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(a, b));
+        if (a == 14651 || b == 14651){
+            System.out.println("he");
+        }
+        int size = tempList.size();
         if (c != null) {
             magicRecursion(a, c, tempList);
             tempList.add(c);
-        } /*else {
-            int tempSize = tempList.size();
-            magicRecursion(tempList.get(tempSize-1), b, tempList);
-            int afterTempSize = tempList.size();
-            if (tempSize == afterTempSize) {
-                return;
-            }
-        }*/
+        }
+        if (tempList.size() > size) {
+            Integer l = tempList.remove(tempList.size() - 1);
+            magicRecursion(tempList.get(tempList.size() - 1), l, tempList);
+            tempList.add(l);
+        }
+    }
+
+    private static void fillContractionHoles(int a, int b, List<Integer> tempList) {
+
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
