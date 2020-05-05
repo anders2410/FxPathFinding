@@ -1,27 +1,23 @@
-package paths;
+package model;
 
 import info_model.EdgeInfo;
 import info_model.GraphInfo;
 import info_model.GraphPair;
 import info_model.NodeInfo;
-import model.Edge;
-import model.Graph;
-import model.Node;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.max;
 
-public class GraphUtil {
+public class ModelUtil {
 
     private Graph graph;
 
     private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
     };
 
-    public GraphUtil(Graph graph) {
+    public ModelUtil(Graph graph) {
         this.graph = graph;
     }
 

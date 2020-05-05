@@ -1,4 +1,4 @@
-package paths;
+package paths.preprocessing;
 
 public enum LandmarkMode {
     RANDOM {

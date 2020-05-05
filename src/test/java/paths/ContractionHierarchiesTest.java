@@ -5,6 +5,8 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
+import paths.preprocessing.ContractionHierarchies;
+import paths.preprocessing.ContractionHierarchiesResult;
 
 import java.util.*;
 import java.util.function.BiFunction;

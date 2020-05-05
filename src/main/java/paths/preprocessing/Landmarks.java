@@ -1,8 +1,11 @@
-package paths;
+package paths.preprocessing;
 
 import model.Edge;
 import model.Graph;
 import model.Node;
+import model.ModelUtil;
+import paths.SSSP;
+import paths.ShortestPathResult;
 import paths.factory.LandmarksFactory;
 import paths.strategy.HeuristicFunction;
 
@@ -297,7 +300,7 @@ public class Landmarks {
             Random random = new Random();
             int randomInitialLandmark = random.nextInt(graph.getNodeAmount());
             landmarkSet.add(randomInitialLandmark);
-            landmarksDistancesBFS.put(randomInitialLandmark, new GraphUtil(graph).bfsMaxDistance(randomInitialLandmark));
+            landmarksDistancesBFS.put(randomInitialLandmark, new ModelUtil(graph).bfsMaxDistance(randomInitialLandmark));
             avoidGetLeaf();
             SSSP.setLandmarkArray(null);
             landmarkSet.remove(randomInitialLandmark);
@@ -395,7 +398,7 @@ public class Landmarks {
         // Current implementation is 'FarthestB' (B - breadth)
         // Simple but not necessarily best. MaxCover yields better results.
         // TODO: MaxCover for landmark selection
-        GraphUtil gu = new GraphUtil(graph);
+        ModelUtil gu = new ModelUtil(graph);
 
         if (landmarkSet.isEmpty()) {
             Random random = new Random();

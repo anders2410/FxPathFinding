@@ -28,15 +28,16 @@ import load.GraphIO;
 import load.LoadType;
 import model.Edge;
 import model.Graph;
+import model.ModelUtil;
 import model.Node;
 import paths.*;
+import paths.preprocessing.*;
 
 import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -1171,7 +1172,7 @@ public class FXMLController implements Initializable {
         Task<GraphPair> sccTask = new Task<>() {
             @Override
             protected GraphPair call() {
-                GraphUtil gu = new GraphUtil(graph);
+                ModelUtil gu = new ModelUtil(graph);
                 gu.setProgressListener(this::updateProgress);
                 List<Integer> nodesToKeep = gu.scc().get(0);
                 return gu.subGraphPair(graphInfo, nodesToKeep);

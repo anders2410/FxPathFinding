@@ -7,6 +7,8 @@ import model.Graph;
 import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
+import paths.preprocessing.ContractionHierarchiesResult;
+import paths.preprocessing.Landmarks;
 import paths.strategy.*;
 
 import java.util.*;
@@ -17,7 +19,6 @@ import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
-import static paths.generator.GetPQueueGenerator.getTreeQueue;
 
 public class SSSP {
     public static boolean trace = false;

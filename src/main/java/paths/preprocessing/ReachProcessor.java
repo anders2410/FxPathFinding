@@ -1,8 +1,11 @@
-package paths;
+package paths.preprocessing;
 
 import model.Edge;
 import model.Graph;
 import model.Node;
+import paths.AlgorithmMode;
+import paths.SSSP;
+import paths.ShortestPathResult;
 
 import java.time.Duration;
 import java.time.Instant;

@@ -1,15 +1,12 @@
-package paths;
+package paths.preprocessing;
 
 import datastructures.JavaMinPriorityQueue;
 import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
 import model.Node;
-import paths.strategy.PriorityStrategy;
 
 import java.util.*;
-
-import static paths.ABDir.A;
 
 /**
  * This class implements the pre-processing part of Contraction Hierarchies returning the augmented Graph and
