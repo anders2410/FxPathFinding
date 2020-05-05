@@ -1,8 +1,6 @@
 package javafx;
 
-import info_model.EdgeInfo;
 import info_model.GraphInfo;
-import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -77,7 +75,7 @@ public class FXMLController implements Initializable {
     private GraphInfo graphInfo;
     private Landmarks landmarksGenerator;
     private GraphicsContext gc;
-    private boolean sccGraph = false;
+    private boolean isSCCGraph = false;
 
     private BiFunction<Node, Node, Double> distanceStrategy;
     private AlgorithmMode algorithmMode = DIJKSTRA;
@@ -111,10 +109,10 @@ public class FXMLController implements Initializable {
         Task<Graph> loadGraphTask = new Task<>() {
             @Override
             protected Graph call() {
-                GraphIO graphIO = new GraphIO(distanceStrategy);
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType lt = graphIO.loadGraph(fileName);
-                sccGraph = lt == LoadType.SCC;
+                isSCCGraph = lt == LoadType.SCC;
                 if (usingInfo) {
                     if (lt != LoadType.PBF) {
                         graphIO.loadGraphInfo(Util.trimFileTypes(fileName), "Loaded graph info");
@@ -127,7 +125,7 @@ public class FXMLController implements Initializable {
         loadGraphTask.setOnSucceeded(event -> {
             graph = loadGraphTask.getValue();
             landmarksGenerator = new Landmarks(graph);
-            new GraphIO(distanceStrategy).loadBestLandmarks(fileName, landmarksGenerator);
+            new GraphIO(distanceStrategy, isSCCGraph).loadBestLandmarks(fileName, landmarksGenerator);
             SSSP.setReachBounds(null);
             loadReachBounds();
             setUpGraph();
@@ -141,13 +139,13 @@ public class FXMLController implements Initializable {
         new Thread(loadGraphTask).start();
     }
 
-    private void storeGraph(String prefix) {
+    private void storeGraph() {
         Task<Void> storeGraphTask = new Task<>() {
             @Override
             protected Void call() {
-                GraphIO graphIO = new GraphIO(distanceStrategy);
-                String name = Util.trimFileTypes(fileName).concat(prefix);
-                graphIO.storeTMP(name, graph);
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                String name = Util.trimFileTypes(fileName);
+                graphIO.storeGraph(name, graph);
                 graphIO.storeGraphInfo(name, null);
                 return null;
             }
@@ -681,7 +679,7 @@ public class FXMLController implements Initializable {
                 case D:
                     handleNavRightEvent();
                     break;
-                case SHIFT:
+                case F1:
                     toggleAirDistance();
                     break;
             }
@@ -877,7 +875,7 @@ public class FXMLController implements Initializable {
 
     public void handleLoadLandmarks() {
         pickLandMarkModeGUI();
-        new GraphIO(distanceStrategy).loadLandmarks(fileName, landmarksGenMode, landmarksGenerator);
+        new GraphIO(distanceStrategy, isSCCGraph).loadLandmarks(fileName, landmarksGenMode, landmarksGenerator);
         redrawGraph();
     }
 
@@ -912,7 +910,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSaveLandmarks() {
-        new GraphIO(distanceStrategy).saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
+        new GraphIO(distanceStrategy, isSCCGraph).saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
     }
 
     public void handleSetParameterEvent() {
@@ -920,7 +918,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleSCCEvent() {
-        if (!sccGraph) {
+        if (!isSCCGraph) {
             runSCC();
         } else {
             System.out.println("SCC already found");
@@ -1061,7 +1059,7 @@ public class FXMLController implements Initializable {
         monitorTask.setOnSucceeded(event -> {
             redrawGraph();
             SSSP.setLandmarks(landmarksGenerator);
-            new GraphIO(distanceStrategy).saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
+            new GraphIO(distanceStrategy, isSCCGraph).saveLandmarks(fileName, landmarksGenMode, landmarksGenerator.getLandmarkSet());
             playIndicatorCompleted();
         });
         attachProgressIndicator(monitorTask.progressProperty());
@@ -1178,7 +1176,7 @@ public class FXMLController implements Initializable {
         Task<List<Double>> loadTask = new Task<>() {
             @Override
             protected List<Double> call() {
-                GraphIO graphIO = new GraphIO(distanceStrategy);
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
                 return graphIO.loadReach(fileName);
             }
         };
@@ -1194,7 +1192,7 @@ public class FXMLController implements Initializable {
         Task<Void> saveTask = new Task<>() {
             @Override
             protected Void call() {
-                GraphIO graphIO = new GraphIO(distanceStrategy);
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
                 graphIO.saveReach(fileName, SSSP.getReachBounds());
                 return null;
             }
@@ -1218,8 +1216,8 @@ public class FXMLController implements Initializable {
             progress_indicator.setProgress(0.99);
             List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
             graph = subGraphs.get(0);
-            sccGraph = true;
-            storeGraph("-scc");
+            isSCCGraph = true;
+            storeGraph();
             setUpGraph();
             System.out.println("Finished computing SCC");
             playIndicatorCompleted();

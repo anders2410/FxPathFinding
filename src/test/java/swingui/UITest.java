@@ -15,7 +15,7 @@ public class UITest {
 
     @Before
     public void setUp() {
-        GraphIO graphIO = new GraphIO(Util::flatEarthDistance);
+        GraphIO graphIO = new GraphIO(Util::flatEarthDistance, false);
         graph = graphIO.loadOSMOld(fileName);
     }
 

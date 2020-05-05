@@ -22,7 +22,7 @@ public class GraphUtilTest {
         GraphIO graphIO;
         String fileName = "malta-latest.osm.pbf";
         SSSP.setDistanceStrategy(Util::sphericalDistance);
-        graphIO = new GraphIO(Util::sphericalDistance);
+        graphIO = new GraphIO(Util::sphericalDistance, true);
         graphIO.loadGraph(fileName);
         graph = graphIO.getGraph();
     }

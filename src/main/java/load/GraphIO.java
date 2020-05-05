@@ -31,31 +31,17 @@ public class GraphIO {
     private long fileSize;
     private BiFunction<Node, Node, Double> distanceStrategy;
     private BiConsumer<Long, Long> progressListener;
+    private boolean isSCCGraph;
 
     protected double progress;
     protected long bytesRead;
 
-    public GraphIO(BiFunction<Node, Node, Double> distanceStrategy) {
+    public GraphIO(BiFunction<Node, Node, Double> distanceStrategy, boolean isSCCGraph) {
         this.distanceStrategy = distanceStrategy;
+        this.isSCCGraph = isSCCGraph;
         generateFolders();
         progress = 0;
         bytesRead = 0;
-    }
-
-    public static String getFolderName(String fileName) {
-        return mapsDir + Util.trimFileTypes(fileName) + "\\";
-    }
-
-    public void saveLandmarks(String fileName, LandmarkMode generationMode, Set<Integer> landmarkSet) {
-        try {
-            String name = getFolderName(fileName) + Util.trimFileTypes(fileName);
-            FileOutputStream fos = new FileOutputStream(name + "-" + generationMode.toString() + "landmarks.tmp");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(landmarkSet);
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void generateFolders() {
@@ -71,15 +57,15 @@ public class GraphIO {
 
     public LoadType loadGraph(String fileName) {
         // Check for temp file to load instead
-        String tmpName = getFolderName(fileName) + Util.trimFileTypes(fileName);
-        File sccFile = new File(tmpName + "-scc-graph.tmp");
+        String folderName = getFolderName(fileName) + Util.trimFileTypes(fileName);
+        File sccFile = new File(folderName + "-scc-graph.tmp");
         if (sccFile.exists()) {
-            loadTMP(tmpName + "-scc", "SCC graph loaded from storage");
+            loadGraph(folderName + "-scc", "SCC graph loaded from storage");
             return LoadType.SCC;
         }
-        File tmpFile = new File(tmpName + "-graph.tmp");
+        File tmpFile = new File(folderName + "-graph.tmp");
         if (tmpFile.exists()) {
-            loadTMP(tmpName, "Graph loaded from storage");
+            loadGraph(folderName, "Graph loaded from storage");
             return LoadType.TEMP;
         }
         // Load actual file
@@ -121,7 +107,7 @@ public class GraphIO {
     private void loadPBF(String fileName) {
         try {
             PBFParser pbfParser = new PBFParser(fileName);
-            pbfParser.setStoreTMPListener(this::storeTMP);
+            pbfParser.setStoreTMPListener(this::storeGraph);
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
@@ -132,10 +118,10 @@ public class GraphIO {
         }
     }
 
-    public void storeTMP(String fileName, Graph graph) {
+    public void storeGraph(String fileName, Graph graph) {
         try {
-            String name = getFolderName(fileName) + fileName;
-            FileOutputStream fos = new FileOutputStream(name + "-graph.tmp");
+            String name = getTrimmedFolderSCCName(fileName) + "-graph.tmp";
+            FileOutputStream fos = new FileOutputStream(name);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(graph);
             oos.close();
@@ -144,7 +130,7 @@ public class GraphIO {
         }
     }
 
-    private void loadTMP(String name, String msg) {
+    private void loadGraph(String name, String msg) {
         try {
             String graphFileName = name + "-graph.tmp";
             fileSize = Files.size(Paths.get(graphFileName));
@@ -161,8 +147,8 @@ public class GraphIO {
 
     public void storeGraphInfo(String fileName, GraphInfo graphInfo) {
         try {
-            String name = getFolderName(fileName) + fileName;
-            FileOutputStream fos = new FileOutputStream(name + "-info.tmp");
+            String name = getTrimmedFolderSCCName(fileName) + "-info.tmp";
+            FileOutputStream fos = new FileOutputStream(name);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(graphInfo);
             oos.close();
@@ -172,13 +158,13 @@ public class GraphIO {
     }
 
     public void loadGraphInfo(String fileName, String msg) {
-        String infoName = getFolderName(fileName) + fileName;
-        File infoFile = new File(infoName + "-info.tmp");
+        String infoName = getTrimmedFolderSCCName(fileName) + "-info.tmp";
+        File infoFile = new File(infoName);
         if (!infoFile.exists()) {
             return;
         }
         try {
-            String graphFileName = getFolderName(fileName) + fileName + "-info.tmp";
+            String graphFileName = getTrimmedFolderSCCName(fileName) + "-info.tmp";
             fileSize = Files.size(Paths.get(graphFileName));
             CountingInputStream input = new CountingInputStream(graphFileName, this);
             ObjectInputStream objectStream = new ObjectInputStream(input);
@@ -188,6 +174,18 @@ public class GraphIO {
             e.printStackTrace();
         } finally {
             System.out.println(msg);
+        }
+    }
+
+    public void saveLandmarks(String fileName, LandmarkMode generationMode, Set<Integer> landmarkSet) {
+        try {
+            String name = getTrimmedFolderSCCName(fileName) + "-" + generationMode.toString() + "landmarks.tmp";
+            FileOutputStream fos = new FileOutputStream(name);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(landmarkSet);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -231,19 +229,12 @@ public class GraphIO {
     }
 
     private String getLandmarksFilePathName(String fileName, LandmarkMode mode) {
-        return getFolderName(fileName) + Util.trimFileTypes(fileName) + "-" + mode.toString() + "landmarks.tmp";
+        return getTrimmedFolderSCCName(fileName) + "-" + mode.toString() + "landmarks.tmp";
     }
 
     public List<Double> loadReach(String fileName) {
-        String fileType = Util.getFileType(fileName);
-        if (fileType.equals("osm")) {
-            fileName = Util.trimFileTypes(fileName);
-        }
-        if (fileType.equals("pbf")) {
-            fileName = Util.trimFileTypes(fileName);
-        }
         try {
-            String reachFile = getFolderName(fileName) + fileName + "-reach-bounds.tmp";
+            String reachFile = getTrimmedFolderSCCName(fileName) + "-reach-bounds.tmp";
             if (!new File(reachFile).exists()) {
                 return null;
             }
@@ -268,8 +259,8 @@ public class GraphIO {
 
     public void saveReach(String fileName, List<Double> reachBounds) {
         try {
-            String name = getFolderName(fileName) + Util.trimFileTypes(fileName);
-            FileOutputStream fos = new FileOutputStream(name + "-reach-bounds.tmp");
+            String name = getTrimmedFolderSCCName(fileName) + "-reach-bounds.tmp";
+            FileOutputStream fos = new FileOutputStream(name);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(reachBounds);
             oos.close();
@@ -298,6 +289,18 @@ public class GraphIO {
                 progressListener.accept(next_tier, fileSize);
             }
         }
+    }
+
+    public static String getFolderName(String fileName) {
+        return mapsDir + Util.trimFileTypes(fileName) + "\\";
+    }
+
+    private String applySCCSuffix() {
+        return isSCCGraph ? "-scc" : "";
+    }
+
+    private String getTrimmedFolderSCCName(String fileName) {
+        return getFolderName(fileName) + Util.trimFileTypes(fileName) + applySCCSuffix();
     }
 
     public void setProgressListener(BiConsumer<Long, Long> progressListener) {
