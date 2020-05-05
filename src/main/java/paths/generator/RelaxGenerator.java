@@ -15,7 +15,7 @@ import static paths.Util.revDir;
 
 public class RelaxGenerator {
 
-    private static Function<Edge, Double> edgeWeightStrategy = EdgeWeightGenerator.getMaxSpeedTime();
+    private static Function<Edge, Double> edgeWeightStrategy = EdgeWeightGenerator.getDistanceWeights();
 
     public static RelaxStrategy getDijkstra() {
         return (edge, dir) -> {
@@ -104,12 +104,9 @@ public class RelaxGenerator {
             List<Integer> ranks = getContractionHierarchiesResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
                 if (getScanned(revDir(dir)).contains(edge.to)) {
-                    //getDijkstra().relax(edge, dir);
                     double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
                     if (pathLength < SSSP.getBestPathLengthSoFar()) {
                         SSSP.setBestPathLengthSoFar(pathLength);
-                        //setGoalDistance(pathLength);
-                        //setMiddlePoint(edge.to);
                     }
                 }
                 getBiDijkstra().relax(edge, dir);

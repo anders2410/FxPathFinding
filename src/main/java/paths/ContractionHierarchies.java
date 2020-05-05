@@ -40,54 +40,6 @@ public class ContractionHierarchies {
         setInitialImportance();
     }
 
-   /* // Remove duplicate edges. Always select the one with lowest cost.
-    // TODO: 28/04/2020 Consider if this should be done in collapsing?
-    private void removeDuplicateEdges(Graph graph) {
-        for (int i = 0; i < graph.getNodeList().size(); i++) {
-            Set<Edge> set = new HashSet<>();
-            List<Edge> copyEdges = new ArrayList<>(graph.getAdjList().get(i));
-            for (Edge e : graph.getAdjList().get(i)) {
-                for (Edge copyEdge : copyEdges) {
-                    if (copyEdge.d <= e.d && copyEdge.to == e.to) {
-                        set.remove(e);
-                        set.add(copyEdge);
-                    }
-                }
-            }
-            graph.getAdjList().set(i, new ArrayList<>(set));
-        }
-
-        // TODO: 17/04/2020 Fix hack with removing self-referring edges
-        for (Node nodeHack : graph.getNodeList()) {
-            List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
-            edgeList.removeIf(edge -> nodeHack.index == edge.to);
-        }
-    }*/
-
-    // Remove duplicate edges. Always select the one with lowest cost.
-    // TODO: 28/04/2020 Consider if this should be done in collapsing?
-    private void removeDuplicateEdges(Graph graph) {
-        for (int i = 0; i < graph.getNodeList().size(); i++) {
-            Iterator<Edge> iterator = graph.getAdjList().get(i).iterator();
-            List<Edge> copyEdges = new ArrayList<>(graph.getAdjList().get(i));
-            while (iterator.hasNext()) {
-                Edge e = iterator.next();
-                for (Edge copyEdge : copyEdges) {
-                    if (copyEdge.d < e.d && copyEdge.to == e.to) {
-                        iterator.remove();
-                        break;
-                    }
-                }
-            }
-        }
-
-        // TODO: 17/04/2020 Fix hack with removing self-referring edges
-        for (Node nodeHack : graph.getNodeList()) {
-            List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
-            edgeList.removeIf(edge -> nodeHack.index == edge.to);
-        }
-    }
-
     // Initialize all the relevant lists, maps and sets.
     private void initializeLists() {
         contracted = new ArrayList<>();
@@ -98,7 +50,6 @@ public class ContractionHierarchies {
         shortcuts = new HashMap<>();
         dijkstraDistanceList = new ArrayList<>();
         dijkstraVisited = new HashSet<>();
-
         inNodeMap = getInNodeMap();
 
         for (Node ignored : graph.getNodeList()) {
@@ -141,19 +92,23 @@ public class ContractionHierarchies {
             rank++;
 
             // Contraction part
-            contractNode(n);
+            contractNode(n, false);
         }
 
         return new ContractionHierarchiesResult(graph, ranks, shortcuts);
     }
 
-    // Function to contract a node!
-    private void contractNode(int n) {
-        // Set contracted == true for the current node.
-        contracted.set(n, true);
+    // Function to contract a node. If computeNumberOfShortcuts is true it will not add the actual shortcuts,
+    // but rather return a value telling how many it would have contracted.
+    private int contractNode(int n, boolean computeNumberOfShortcuts) {
+        int numberOfShortcuts = 0;
 
-        // Update the given node's neighbors about that the given node has been contracted.
-        updateNeighbours(n);
+        if (!computeNumberOfShortcuts) {
+            // Set contracted == true for the current node.
+            contracted.set(n, true);
+            // Update the given node's neighbors about that the given node has been contracted.
+            updateNeighbours(n);
+        }
 
         // Find the lists of incoming and outgoing edges/nodes
         List<Edge> inEdgeList = getInEdgeList(inNodeMap.get(n), n);
@@ -196,7 +151,7 @@ public class ContractionHierarchies {
             }
 
             // Finds the shortest distances from the inNode to all the outNodes.
-            List<Double> distanceList = dijkstra(inNodeIndex, max);
+            List<Double> distanceList = dijkstra(n, inNodeIndex, max);
 
             // This adds shortcuts if no witness path was found.
             for (Edge outEdge : outEdgeList) {
@@ -212,47 +167,51 @@ public class ContractionHierarchies {
 
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
                 if (distanceList.get(outNodeIndex) > totalCost) {
-                    // TODO: 15/04/2020 Add implementation for one-way streets (still not working optimal..)
-                    boolean alreadyHasEdge = false;
-                    Pair<Edge, Integer> alreadyEdge = new Pair<>(new Edge(0, 0, Double.MAX_VALUE), 0);
-                    List<Edge> get = graph.getAdjList().get(inNodeIndex);
-                    for (int i = 0, getSize = get.size(); i < getSize; i++) {
-                        Edge e = get.get(i);
-                        if (e.to == outNodeIndex) {
-                            alreadyHasEdge = true;
-                            alreadyEdge = new Pair<>(e, i);
-                        }
-                    }
-
-                    if (alreadyHasEdge) {
-                        if (alreadyEdge.getKey().d > totalCost) {
-                            graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
-
-                            Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                            if (shortcuts.get(pair3) != null) {
-                                shortcuts.replace(pair3, n);
-                            } else {
-                                shortcuts.put(pair3, n);
+                    if (computeNumberOfShortcuts) {
+                        numberOfShortcuts++;
+                    } else {
+                        boolean alreadyHasEdge = false;
+                        Pair<Edge, Integer> alreadyEdge = new Pair<>(new Edge(0, 0, Double.MAX_VALUE), 0);
+                        List<Edge> get = graph.getAdjList().get(inNodeIndex);
+                        for (int i = 0, getSize = get.size(); i < getSize; i++) {
+                            Edge e = get.get(i);
+                            if (e.to == outNodeIndex) {
+                                alreadyHasEdge = true;
+                                alreadyEdge = new Pair<>(e, i);
                             }
                         }
-                    } else {
-                        graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
 
-                        List<Integer> temp11 = inNodeMap.get(outNodeIndex);
-                        temp11.add(inNodeIndex);
-                        inNodeMap.replace(outNodeIndex, temp11);
+                        if (alreadyHasEdge) {
+                            if (alreadyEdge.getKey().d > totalCost) {
+                                graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
-                        Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                        shortcuts.put(pair3, n);
+                                Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
+                                if (shortcuts.get(pair3) != null) {
+                                    shortcuts.replace(pair3, n);
+                                } else {
+                                    shortcuts.put(pair3, n);
+                                }
+                            }
+                        } else {
+                            graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
+
+                            List<Integer> temp11 = inNodeMap.get(outNodeIndex);
+                            temp11.add(inNodeIndex);
+                            inNodeMap.replace(outNodeIndex, temp11);
+
+                            Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
+                            shortcuts.put(pair3, n);
+                        }
                     }
                 }
             }
         }
+        return numberOfShortcuts;
     }
 
     // Is used in the witness search. It is a standard Dijkstra implementation where, the node we are about to
     // contract, is excluded from the search. As we want to find the shortest path bypassing it.
-    private List<Double> dijkstra(int inNode, double maxCost) {
+    private List<Double> dijkstra(int contractedNode, int inNode, double maxCost) {
         for (Integer i : dijkstraVisited) {
             dijkstraDistanceList.set(i, Double.MAX_VALUE);
         }
@@ -267,11 +226,12 @@ public class ContractionHierarchies {
 
         queue.add(inNode);
 
+        int i = 0;
         while (!queue.isEmpty()) {
             int node = queue.poll();
             dijkstraVisited.add(node);
 
-            if (distanceList.get(node) > maxCost) {
+            if (i > 5 || distanceList.get(node) > maxCost) {
                 return distanceList;
             }
 
@@ -279,7 +239,7 @@ public class ContractionHierarchies {
                 int temp = edge.to;
                 double cost = edge.d;
 
-                if (contracted.get(temp) || node == temp) {
+                if (contracted.get(temp) || contractedNode == temp) {
                     continue;
                 }
 
@@ -289,6 +249,7 @@ public class ContractionHierarchies {
                     dijkstraVisited.add(temp);
                 }
             }
+            i++;
         }
         return distanceList;
     }
@@ -314,8 +275,8 @@ public class ContractionHierarchies {
     private int edgeDifference(int n) {
         int inDegree = inNodeMap.get(n).size();
         int outDegree = graph.getAdjList().get(n).size();
-        int numberOfShortcuts = inDegree * outDegree;
-        return numberOfShortcuts - inDegree + outDegree;
+        int numberOfShortcuts = contractNode(n, true);
+        return numberOfShortcuts - inDegree - outDegree;
     }
 
     /**
@@ -343,7 +304,7 @@ public class ContractionHierarchies {
      * We can optionally experiment with some different weight to all the functions.
      */
     private int calculateImportance(int n) {
-        return edgeDifference(n) * 9 + contractedNeighbours(n) * 14 + nodeLevel(n) * 7;
+        return edgeDifference(n) + contractedNeighbours(n) + nodeLevel(n);
     }
 
     // Update the importance of a node
@@ -351,8 +312,110 @@ public class ContractionHierarchies {
         importance.set(n, calculateImportance(n));
     }
 
+    // ----------------------------- UTILITIES ------------------------------------------
+    // Calculates the incoming nodes
+    private Map<Integer, List<Integer>> getInNodeMap() {
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        List<Node> nodeList = graph.getNodeList();
+        for (int i = 0; i < nodeList.size(); i++) {
+            for (Edge e : graph.getAdjList().get(i)) {
+                List<Integer> list = map.computeIfAbsent(e.to, k -> new ArrayList<>());
+                list.add(nodeList.get(i).index);
+                map.replace(e.to, list);
+            }
+        }
+        return map;
+    }
 
-    // --------------------------------------- BIDIRECTIONAL ----------------------------------------
+    // Get all incoming edges for a given node.
+    private List<Edge> getInEdgeList(List<Integer> inNodeList, int node) {
+        List<Edge> inEdgeList = new ArrayList<>();
+        for (int inNode : inNodeList) {
+            for (Edge e : graph.getAdjList().get(inNode)) {
+                if (e.to == node) {
+                    inEdgeList.add(e);
+                    break;
+                }
+            }
+        }
+        return inEdgeList;
+    }
+
+    // Find all neighbours of a given node.
+    private List<Integer> getNeighbours(int node) {
+        List<Integer> list = new ArrayList<>();
+        for (Edge e : graph.getAdjList().get(node)) {
+            list.add(e.to);
+        }
+        list.addAll(inNodeMap.get(node));
+        return new ArrayList<>(new HashSet<>(list));
+    }
+
+    // Update the neighbours of the contracted node that this node has been contracted.
+    private void updateNeighbours(int n) {
+        for (Integer neighbour : getNeighbours(n)) {
+            contractedNeighbours.set(neighbour, contractedNeighbours.get(neighbour) + 1);
+            nodeLevel.set(neighbour, Math.max(nodeLevel.get(neighbour), nodeLevel.get(n) + 1));
+        }
+
+        // Update the neighbours in Priority Queue.
+        // Another update heuristic to ensure that the priority queue is correct!
+        for (Integer neighbour : getNeighbours(n)) {
+            if (!contracted.get(neighbour)) {
+                updateImportance(neighbour);
+                importanceQueue.updatePriority(neighbour);
+            }
+        }
+    }
+
+    // Remove duplicate edges. Always select the one with lowest cost.
+    // TODO: 28/04/2020 Consider if this should be done in collapsing?
+    private void removeDuplicateEdges(Graph graph) {
+        for (int i = 0; i < graph.getNodeList().size(); i++) {
+            Iterator<Edge> iterator = graph.getAdjList().get(i).iterator();
+            List<Edge> copyEdges = new ArrayList<>(graph.getAdjList().get(i));
+            while (iterator.hasNext()) {
+                Edge e = iterator.next();
+                for (Edge copyEdge : copyEdges) {
+                    if (copyEdge.d < e.d && copyEdge.to == e.to) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Removing all self-referring edges in the Graph
+        // TODO: 17/04/2020 Fix hack with removing self-referring edges
+        for (Node nodeHack : graph.getNodeList()) {
+            List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
+            edgeList.removeIf(edge -> nodeHack.index == edge.to);
+        }
+    }
+
+    /* // Remove duplicate edges. Always select the one with lowest cost.
+    private void removeDuplicateEdges(Graph graph) {
+        for (int i = 0; i < graph.getNodeList().size(); i++) {
+            Set<Edge> set = new HashSet<>();
+            List<Edge> copyEdges = new ArrayList<>(graph.getAdjList().get(i));
+            for (Edge e : graph.getAdjList().get(i)) {
+                for (Edge copyEdge : copyEdges) {
+                    if (copyEdge.d <= e.d && copyEdge.to == e.to) {
+                        set.remove(e);
+                        set.add(copyEdge);
+                    }
+                }
+            }
+            graph.getAdjList().set(i, new ArrayList<>(set));
+        }
+
+        for (Node nodeHack : graph.getNodeList()) {
+            List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
+            edgeList.removeIf(edge -> nodeHack.index == edge.to);
+        }
+    }*/
+
+    /*// --------------------------------------- BIDIRECTIONAL ----------------------------------------
     // This is now all obsolete as it has been integrated into SSSP!
     public Pair<Double, Set<Integer>> computeDist(Graph CHGraph, int source, int target) {
         List<Double> forwardDistanceList = new ArrayList<>();
@@ -436,7 +499,7 @@ public class ContractionHierarchies {
         Collections.reverse(shortestPathB);
         shortestPathA.addAll(shortestPathB);
 
-        /*Set<Integer> result = new LinkedHashSet<>();
+        *//*Set<Integer> result = new LinkedHashSet<>();
         for (int i = 0; i < shortestPathA.size() - 1; i++) {
             List<Integer> contractedNodes = shortcuts.get(new Pair<>(shortestPathA.get(i), shortestPathA.get(i + 1)));
             result.add(shortestPathA.get(i));
@@ -444,7 +507,7 @@ public class ContractionHierarchies {
                 result.addAll(contractedNodes);
             }
             result.add(shortestPathA.get(i + 1));
-        }*/
+        }*//*
 
         return new Pair<>(finalDistance, new HashSet<>());
     }
@@ -463,83 +526,6 @@ public class ContractionHierarchies {
         }
         Collections.reverse(path);
         return path;
-    }
-
-    // ----------------------------- UTILITIES ------------------------------------------
-    // Calculates the incoming nodes
-    private Map<Integer, List<Integer>> getInNodeMap() {
-        Map<Integer, List<Integer>> map = new HashMap<>();
-        List<Node> nodeList = graph.getNodeList();
-        for (int i = 0; i < nodeList.size(); i++) {
-            for (Edge e : graph.getAdjList().get(i)) {
-                List<Integer> list = map.computeIfAbsent(e.to, k -> new ArrayList<>());
-                list.add(nodeList.get(i).index);
-                map.replace(e.to, list);
-            }
-        }
-        return map;
-    }
-
-    // Get all incoming edges for a given node.
-    private List<Edge> getInEdgeList(List<Integer> inNodeList, int node) {
-        List<Edge> inEdgeList = new ArrayList<>();
-        for (int inNode : inNodeList) {
-            for (Edge e : graph.getAdjList().get(inNode)) {
-                if (e.to == node) {
-                    inEdgeList.add(e);
-                    break;
-                }
-            }
-        }
-        return inEdgeList;
-    }
-
-    // Find all neighbours of a given node.
-    private List<Integer> getNeighbours(int node) {
-        List<Integer> list = new ArrayList<>();
-        for (Edge e : graph.getAdjList().get(node)) {
-            list.add(e.to);
-        }
-        list.addAll(inNodeMap.get(node));
-        return new ArrayList<>(new HashSet<>(list));
-    }
-
-    // Update the neighbours of the contracted node that this node has been contracted.
-    private void updateNeighbours(int n) {
-        for (Integer neighbour : getNeighbours(n)) {
-            contractedNeighbours.set(neighbour, contractedNeighbours.get(neighbour) + 1);
-            nodeLevel.set(neighbour, Math.max(nodeLevel.get(neighbour), nodeLevel.get(n) + 1));
-        }
-
-        // Update the neighbours in Priority Queue.
-        // Another update heuristic to ensure that the priority queue is correct!
-        for (Integer neighbour : getNeighbours(n)) {
-            if (!contracted.get(neighbour)) {
-                updateImportance(neighbour);
-                importanceQueue.updatePriority(neighbour);
-            }
-        }
-    }
-
-    private boolean checkIfOutNodeShortcut(int node, int inNode, int outNode) {
-        boolean something = false;
-        for (Edge e : graph.getAdjList().get(node)) {
-            if (e.to == inNode) {
-                something = true;
-                break;
-            }
-        }
-
-        boolean anything = false;
-        for (Integer n : inNodeMap.get(node)) {
-            if (n == outNode) {
-                anything = true;
-                break;
-            }
-        }
-
-        return something && anything;
-    }
-
+    }*/
 }
 
