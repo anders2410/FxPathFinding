@@ -103,18 +103,16 @@ public class RelaxGenerator {
         return (edge, dir) -> {
             List<Integer> ranks = getContractionHierarchiesResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
-                getBiDijkstra().relax(edge, dir);
-                /*if (getScanned(revDir(dir)).contains(edge.to)) {
-                    double pathLength = getNodeDist(dir).get(edge.from) + edge.d + getNodeDist(revDir(dir)).get(edge.to);
-                    if (pathLength < SSSP.getBestDistSoFarCH()) {
-                        SSSP.setBestDistSoFarCH(pathLength);
-                        getBiDijkstra().relax(edge, dir);
-                        *//*getDijkstra().relax(edge, dir);
-                        setGoalDistance(pathLength);*//*
+                if (getScanned(revDir(dir)).contains(edge.to)) {
+                    //getDijkstra().relax(edge, dir);
+                    double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
+                    if (pathLength < SSSP.getBestPathLengthSoFar()) {
+                        SSSP.setBestPathLengthSoFar(pathLength);
+                        //setGoalDistance(pathLength);
+                        //setMiddlePoint(edge.to);
                     }
-                } else {
-                    getBiDijkstra().relax(edge, dir);
-                }*/
+                }
+                getBiDijkstra().relax(edge, dir);
             }
         };
     }
@@ -122,7 +120,7 @@ public class RelaxGenerator {
     public static RelaxStrategy getBoundedDijkstra() {
         return (edge, dir) -> {
             double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge);
-            if (getNodeDist(dir).get(edge.from) > SSSP.getSingleToAllBound()) return;
+            /*if (getNodeDist(dir).get(edge.from) > SSSP.getSingleToAllBound()) return;*/
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
                 updatePriority(edge.to, dir);

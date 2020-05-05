@@ -7,6 +7,8 @@ import model.Node;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -54,6 +56,35 @@ public class PathExperiments {
         graphIO.storeTMP(Util.trimFileTypes("denmark-latest.osm.pbf").concat("-scc"), graph);
         System.out.println("Finished computing SCC");
     }
+
+    @Test
+    public void allSpeedTestOne(){
+        SSSP.setGraph(graph);
+        Instant start = Instant.now();
+        SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
+        Instant end = Instant.now();
+        long timeElapsed = Duration.between(start, end).toMillis();
+        System.out.println(timeElapsed);
+    }
+    @Test
+    public void DijkstraSpeedTest() {
+        int testSize = 10000;
+        SSSP.setGraph(graph);
+        TestData data = new TestData();
+        int j = 0;
+        while (j < testSize) {
+            SSSP.seed++;
+            ShortestPathResult res = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            /*resultArray[0][j] = res;*/
+            if (res.path.size() > 20) {
+                data.addVisit(res.calculateAllUniqueVisits(graph));
+                data.addRuntime(res.runTime);
+                j++;
+            }
+        }
+        System.out.println(data.acumRuntime/testSize);
+    }
+
 
     @Test
     public void landmarksComparisonTest() {

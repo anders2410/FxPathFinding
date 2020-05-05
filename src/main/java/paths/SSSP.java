@@ -17,6 +17,7 @@ import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
+import static paths.generator.GetPQueueGenerator.getTreeQueue;
 
 public class SSSP {
     public static boolean trace = false;
@@ -63,10 +64,9 @@ public class SSSP {
     private static double[] heuristicValuesA;
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
-    private static Set<Integer> prunedSet;
     private static double singleToAllBound;
     private static ContractionHierarchiesResult contractionHierarchiesResult;
-    private static double bestDistSoFarCH;
+    private static double bestPathLengthSoFar;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -88,8 +88,7 @@ public class SSSP {
         queueB = priorityQueueGetter.initialiseNewQueue(getComparator(priorityStrategyB, B), graph.getNodeAmount());
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
-        prunedSet = new LinkedHashSet<>();
-        bestDistSoFarCH = Double.MAX_VALUE;
+        bestPathLengthSoFar = Double.MAX_VALUE;
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -184,24 +183,6 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        // TODO: 30/04/2020 Cleanup: Is this used or can it be deleted?
-        /*Set<Integer> a = getPrunedSet();
-        if (mode == REACH && source == 5087) {
-            PrintWriter pw = null;
-            try {
-                pw = new PrintWriter(
-                        new OutputStreamWriter(new FileOutputStream("test.txt"), "UTF-8"));
-                for (double s : getReachBounds()) {
-                    pw.println(s);
-                }
-                pw.flush();
-            } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } finally {
-                pw.close();
-            }
-        }
-        */
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
         // TODO: 25-04-2020 Strategy pattern this
         if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
@@ -214,7 +195,12 @@ public class SSSP {
         if (currentNode == null) {
             return;
         }
+        // TODO: 04/05/2020 Another IF-statement that should be removed..
+        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > bestPathLengthSoFar) {
+            return;
+        }
         getScanned(dir).add(currentNode);
+        if (mode == BOUNDED_SINGLE_TO_ALL) if (getNodeDist(dir).get(currentNode) > SSSP.getSingleToAllBound()) return;
         for (Edge edge : adjList.get(currentNode)) {
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);
@@ -263,9 +249,8 @@ public class SSSP {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
-                    /*System.out.println("Candidate: " + node + " with distance: " + distance);
-                    System.out.println(nodeDistB.get(5147));
-                    System.out.println(nodeDistA.get(5147));*/
+                    //System.out.println("Candidate: " + node + " with distance: " + distance);
+
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
                         middlepoint = node;
@@ -275,22 +260,19 @@ public class SSSP {
 
             setMiddlePoint(middlepoint);
             List<Integer> shortestPathCH = extractPathBi();
-            /*System.out.println(middlepoint);
-            System.out.println(shortestPathCH);*/
-
-            //System.out.println(shortestPathCH);
-            Set<Integer> result = new LinkedHashSet<>();
-            for (int i = 0; i < shortestPathCH.size() - 1; i++) {
-                List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
-                //System.out.println(contractedNodes);
-                result.add(shortestPathCH.get(i));
-                if (contractedNodes != null) {
-                    result.addAll(contractedNodes);
+            List<Integer> complete = new ArrayList<>(shortestPathCH);
+            boolean isTrue = true;
+            while (isTrue) {
+                for (int i = 0; i < complete.size() - 1; i++) {
+                    Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+                    if (contractedNode != null) {
+                        complete.add(i+1, contractedNode);
+                        break;
+                    }
                 }
-                result.add(shortestPathCH.get(i + 1));
+                isTrue = shouldBeDone(complete);
             }
-
-            return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
+            return new ShortestPathResult(goalDistance, new ArrayList<>(complete), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
 
         if (middlePoint == -1) {
@@ -300,6 +282,18 @@ public class SSSP {
         List<Integer> shortestPath = extractPathBi();
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
+
+    private static boolean shouldBeDone(List<Integer> complete) {
+        for (int i = 0; i < complete.size() - 1; i++) {
+            Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+            if (contractedNode != null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
         applyFactory(new DijkstraFactory());
@@ -470,10 +464,6 @@ public class SSSP {
         reachBounds = bounds;
     }
 
-    public static Set<Integer> getPrunedSet() {
-        return prunedSet;
-    }
-
     public static double getGoalDistance() {
         return goalDistance;
     }
@@ -510,11 +500,11 @@ public class SSSP {
         SSSP.CHGraph = CHGraph;
     }
 
-    public static double getBestDistSoFarCH() {
-        return bestDistSoFarCH;
+    public static double getBestPathLengthSoFar() {
+        return bestPathLengthSoFar;
     }
 
-    public static void setBestDistSoFarCH(double bestDistSoFarCH) {
-        SSSP.bestDistSoFarCH = bestDistSoFarCH;
+    public static void setBestPathLengthSoFar(double bestPathLengthSoFar) {
+        SSSP.bestPathLengthSoFar = bestPathLengthSoFar;
     }
 }

@@ -4,6 +4,8 @@ import model.Edge;
 import model.Graph;
 import model.Node;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -87,7 +89,10 @@ public class ReachProcessor {
                 maxFirst = Math.max(maxFirst, e.d);
             }
             SSSP.setSingleToAllBound(2 * b + maxReachOriginalGraph + d + maxFirst);
+//            Instant start = Instant.now();
             ShortestPathResult SPTH = SSSP.findShortestPath(i, 300, AlgorithmMode.BOUNDED_SINGLE_TO_ALL);
+//            Instant end = Instant.now();
+//            long timeElapsed = Duration.between(start, end).toMillis();
             Map<Integer, List<Integer>> leastCostTreeH = new HashMap<>();
             for (Map.Entry<Integer, Integer> e : SPTH.pathMap.entrySet()) {
                 List<Integer> list = leastCostTreeH.computeIfAbsent(e.getValue(), k -> new ArrayList<>());
@@ -95,7 +100,11 @@ public class ReachProcessor {
                 leastCostTreeH.replace(e.getValue(), list);
             }
             if (leastCostTreeH.size() == 0) continue;
+//            Instant start2 = Instant.now();
             traverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d);
+//            Instant end2 = Instant.now();
+//            long timeElapsed2 = Duration.between(start2, end2).toMillis();
+//            int a = 1 + 1;
         }
         for (int i = 0; i < subGraphNodeList.size(); i++) {
             if ((reachLCPT[i] >= b && subGraphNodeList.get(i) != null)) {
