@@ -117,7 +117,7 @@ public class PathExperiments {
 
     private void initTestParameters(Landmarks lm, LandmarkMode maxcover) {
         lm.clearLandmarks();
-        GraphIO.loadLandmarks(fileName, maxcover, lm);
+        new GraphIO(Util::sphericalDistance).loadLandmarks(fileName, maxcover, lm);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);

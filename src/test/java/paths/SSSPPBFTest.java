@@ -66,7 +66,7 @@ public class SSSPPBFTest {
 /*
         lm.landmarksMaxCover(16, true);
 */
-        GraphIO.loadLandmarks(fileName, LandmarkMode.MAXCOVER, lm);
+        new GraphIO(Util::sphericalDistance).loadLandmarks(fileName, LandmarkMode.MAXCOVER, lm);
         SSSP.setLandmarks(lm);
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);

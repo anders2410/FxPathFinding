@@ -230,6 +230,8 @@ public class SSSP {
 
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
+            System.out.println(queueA);
+            System.out.println(queueB);
             if (alternationStrategy.check()) {
                 takeStep(adjList, A);
             } else {
