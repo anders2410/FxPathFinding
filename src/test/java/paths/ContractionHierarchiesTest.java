@@ -24,7 +24,7 @@ public class ContractionHierarchiesTest {
     public void setUp() {
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         SSSP.setDistanceStrategy(distanceStrategy1);
-        graphIO = new GraphIO(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1, true);
         graphIO.loadGraph(fileName);
         originalGraph = graphIO.getGraph();
         SSSP.setGraph(originalGraph);

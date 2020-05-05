@@ -1,6 +1,5 @@
 package paths;
 
-import javafx.concurrent.Task;
 import load.GraphIO;
 import model.Graph;
 import model.Node;
@@ -13,8 +12,6 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
-
 public class PathExperiments {
     Graph graph;
     String fileName;
@@ -25,7 +22,7 @@ public class PathExperiments {
         fileName = "denmark-latest.osm.pbf";
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         SSSP.setDistanceStrategy(distanceStrategy1);
-        graphIO = new GraphIO(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1, true);
         graphIO.loadGraph(fileName);
         graph = graphIO.getGraph();
         SSSP.setGraph(graph);
@@ -39,8 +36,8 @@ public class PathExperiments {
         GraphUtil gu = new GraphUtil(graph);
         List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
         graph = subGraphs.get(0);
-        GraphIO graphIO = new GraphIO(Util::sphericalDistance);
-        graphIO.storeTMP(Util.trimFileTypes("malta-latest.osm.pbf").concat("-scc"), graph);
+        GraphIO graphIO = new GraphIO(Util::sphericalDistance, true);
+        graphIO.storeGraph(Util.trimFileTypes("malta-latest.osm.pbf").concat("-scc"), graph);
         System.out.println("Finished computing SCC");
     }
 
@@ -52,8 +49,8 @@ public class PathExperiments {
         GraphUtil gu = new GraphUtil(graph);
         List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
         graph = subGraphs.get(0);
-        GraphIO graphIO = new GraphIO(Util::sphericalDistance);
-        graphIO.storeTMP(Util.trimFileTypes("denmark-latest.osm.pbf").concat("-scc"), graph);
+        GraphIO graphIO = new GraphIO(Util::sphericalDistance, true);
+        graphIO.storeGraph(Util.trimFileTypes("denmark-latest.osm.pbf").concat("-scc"), graph);
         System.out.println("Finished computing SCC");
     }
 
@@ -117,7 +114,7 @@ public class PathExperiments {
 
     private void initTestParameters(Landmarks lm, LandmarkMode maxcover) {
         lm.clearLandmarks();
-        new GraphIO(Util::sphericalDistance).loadLandmarks(fileName, maxcover, lm);
+        new GraphIO(Util::sphericalDistance, true).loadLandmarks(fileName, maxcover, lm);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);

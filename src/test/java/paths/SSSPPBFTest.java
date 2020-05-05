@@ -28,7 +28,7 @@ public class SSSPPBFTest {
         BiFunction<Node, Node, Double> distanceStrategy2 = Util::sphericalDistance;
 
         SSSP.setDistanceStrategy(distanceStrategy1);
-        graphIO = new GraphIO(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1, true);
         graphIO.loadGraph(fileName);
         graph = graphIO.getGraph();
         SSSP.setGraph(graph);
@@ -66,7 +66,7 @@ public class SSSPPBFTest {
 /*
         lm.landmarksMaxCover(16, true);
 */
-        new GraphIO(Util::sphericalDistance).loadLandmarks(fileName, LandmarkMode.MAXCOVER, lm);
+        new GraphIO(getDistanceStrategy(), true).loadLandmarks(fileName, LandmarkMode.MAXCOVER, lm);
         SSSP.setLandmarks(lm);
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
