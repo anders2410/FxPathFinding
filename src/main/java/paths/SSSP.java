@@ -260,62 +260,19 @@ public class SSSP {
 
             setMiddlePoint(middlepoint);
             List<Integer> shortestPathCH = extractPathBi();
-            /*System.out.println(middlepoint);
-            System.out.println(shortestPathCH);*/
-
-            //System.out.println(shortestPathCH);
-            /*Set<Integer> result = new LinkedHashSet<>();
-            for (int i = 0; i < shortestPathCH.size() - 1; i++) {
-                List<Integer> contractedNodes = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(i), shortestPathCH.get(i + 1)));
-                //System.out.println(contractedNodes);
-                result.add(shortestPathCH.get(i));
-                if (contractedNodes != null) {
-                    result.addAll(contractedNodes);
-                }
-                result.add(shortestPathCH.get(i + 1));
-            }*/
-
-            System.out.println(shortestPathCH);
-            List<Integer> completeList = new ArrayList<>();
-            // Integer startNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(shortestPathCH.get(0), shortestPathCH.get(1)));
-            for (int i = 0; i < shortestPathCH.size() - 1; i++) {
-                int currentNode = shortestPathCH.get(i);
-                int j = i;
-                j++;
-                List<Integer> tempList = new ArrayList<>();
-                boolean isDone = false;
-                int a = shortestPathCH.get(i);
-                int b = shortestPathCH.get(j);
-                tempList.add(a);
-                boolean tempListSizeChanged = true;
-                boolean removeNextRound = false;
-                while (tempListSizeChanged) {
-                    int tempSize = tempList.size();
-                    magicRecursion(a, b, tempList);
-                    int after = tempList.size();
-                    if (tempSize == after) {
-                        tempListSizeChanged = false;
-                    } else {
-//                        rightMagicRecurse(a, b, tempList);
-                        a = tempList.get(after - 1);
-
+            List<Integer> complete = new ArrayList<>(shortestPathCH);
+            boolean isTrue = true;
+            while (isTrue) {
+                for (int i = 0; i < complete.size() - 1; i++) {
+                    Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+                    if (contractedNode != null) {
+                        complete.add(i+1, contractedNode);
+                        break;
                     }
                 }
-                /*while (!isDone) {
-                    Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(a, b));
-                    if (c != null) {
-                        tempList.add(0, c);
-                        b = c;
-                    } else {
-                        isDone = true;
-                        tempList.add(0, currentNode);
-                        completeList.addAll(tempList);
-                    }
-                }*/
-                completeList.addAll(tempList);
+                isTrue = shouldBeDone(complete);
             }
-
-            return new ShortestPathResult(goalDistance, new ArrayList<>(completeList), scannedA, scannedB, relaxedA, relaxedB, duration);
+            return new ShortestPathResult(goalDistance, new ArrayList<>(complete), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
 
         if (middlePoint == -1) {
@@ -326,37 +283,17 @@ public class SSSP {
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
 
-  /*  private static void rightMagicRecurse(int a, int b, List<Integer> tempList) {
-        boolean slotsFilled = false;
-        for (int i = 0; i < tempList.size() - 2; i++) {
-            Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(tempList.get(i), tempList.get(i + 1)));
-            if (c != null) {
-                tempList.remove()
-                magicRecursion(a, c, tempList);
+    private static boolean shouldBeDone(List<Integer> complete) {
+        for (int i = 0; i < complete.size() - 1; i++) {
+            Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+            if (contractedNode != null) {
+                return true;
             }
         }
-    }*/
 
-    private static void magicRecursion(int a, int b, List<Integer> tempList) {
-        Integer c = contractionHierarchiesResult.getShortcuts().get(new Pair<>(a, b));
-        if (a == 14651 || b == 14651){
-            System.out.println("he");
-        }
-        int size = tempList.size();
-        if (c != null) {
-            magicRecursion(a, c, tempList);
-            tempList.add(c);
-        }
-        if (tempList.size() > size) {
-            Integer l = tempList.remove(tempList.size() - 1);
-            magicRecursion(tempList.get(tempList.size() - 1), l, tempList);
-            tempList.add(l);
-        }
+        return false;
     }
 
-    private static void fillContractionHoles(int a, int b, List<Integer> tempList) {
-
-    }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
         applyFactory(new DijkstraFactory());

@@ -40,7 +40,7 @@ public class ContractionHierarchies {
         setInitialImportance();
     }
 
-    // Remove duplicate edges. Always select the one with lowest cost.
+   /* // Remove duplicate edges. Always select the one with lowest cost.
     // TODO: 28/04/2020 Consider if this should be done in collapsing?
     private void removeDuplicateEdges(Graph graph) {
         for (int i = 0; i < graph.getNodeList().size(); i++) {
@@ -55,6 +55,30 @@ public class ContractionHierarchies {
                 }
             }
             graph.getAdjList().set(i, new ArrayList<>(set));
+        }
+
+        // TODO: 17/04/2020 Fix hack with removing self-referring edges
+        for (Node nodeHack : graph.getNodeList()) {
+            List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
+            edgeList.removeIf(edge -> nodeHack.index == edge.to);
+        }
+    }*/
+
+    // Remove duplicate edges. Always select the one with lowest cost.
+    // TODO: 28/04/2020 Consider if this should be done in collapsing?
+    private void removeDuplicateEdges(Graph graph) {
+        for (int i = 0; i < graph.getNodeList().size(); i++) {
+            Iterator<Edge> iterator = graph.getAdjList().get(i).iterator();
+            List<Edge> copyEdges = new ArrayList<>(graph.getAdjList().get(i));
+            while (iterator.hasNext()) {
+                Edge e = iterator.next();
+                for (Edge copyEdge : copyEdges) {
+                    if (copyEdge.d < e.d && copyEdge.to == e.to) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
         }
 
         // TODO: 17/04/2020 Fix hack with removing self-referring edges
@@ -200,16 +224,16 @@ public class ContractionHierarchies {
                         }
                     }
 
-                    if (110 == n || 111 == n || 14819 == n || 14818 == n) {
-                        System.out.println("fest");
-                    }
-
                     if (alreadyHasEdge) {
                         if (alreadyEdge.getKey().d > totalCost) {
                             graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
                             Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                            shortcuts.put(pair3, n);
+                            if (shortcuts.get(pair3) != null) {
+                                shortcuts.replace(pair3, n);
+                            } else {
+                                shortcuts.put(pair3, n);
+                            }
                         }
                     } else {
                         graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
