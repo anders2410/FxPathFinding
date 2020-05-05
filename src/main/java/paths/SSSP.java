@@ -279,6 +279,7 @@ public class SSSP {
             List<Integer> shortestPathCH = extractPathBi();
             /*System.out.println(middlepoint);
             System.out.println(shortestPathCH);*/
+            // System.out.println(shortestPathCH);
 
             /*System.out.println(shortestPathCH);
             Set<Integer> result = new LinkedHashSet<>();

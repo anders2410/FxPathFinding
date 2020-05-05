@@ -229,7 +229,11 @@ public class ContractionHierarchies {
                             graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
                             Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                            shortcuts.replace(pair3, n);
+                            if (shortcuts.get(pair3) != null) {
+                                shortcuts.replace(pair3, n);
+                            } else {
+                                shortcuts.put(pair3, n);
+                            }
                         }
                     } else {
                         graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
