@@ -16,11 +16,18 @@
         <VBox layoutY="15.0" prefHeight="650.0" prefWidth="55.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0.0"
               AnchorPane.topAnchor="0">
 
+            <Button alignment="CENTER" onAction="#handleSeedEvent" styleClass="nav_button" text="RAND"/>
+            <Separator styleClass="nav_separator"/>
+
+            <Button alignment="CENTER" onAction="#handleSetParameterEvent" styleClass="nav_button" text="SET"/>
+            <Separator styleClass="nav_separator"/>
+
             <MenuButton alignment="CENTER" text="DIJK">
                 <items>
                     <MenuItem onAction="#handleDijkstraEvent" text="Dijkstra"/>
                     <MenuItem onAction="#handleBiDijkstraEvent" text="Bi-Dijkstra"/>
                     <MenuItem onAction="#handleBiDijkstraSameDistEvent" text="Bi-SameBalls"/>
+                    <MenuItem onAction="#handleCHEvent" text="CH"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
@@ -48,13 +55,6 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
-            <MenuButton alignment="CENTER" text="CH">
-                <items>
-                    <MenuItem onAction="#handleCHEvent" text="Uni CH"/>
-                </items>
-            </MenuButton>
-            <Separator styleClass="nav_separator"/>
-
             <MenuButton alignment="CENTER" text="PRE">
                 <items>
                     <MenuItem onAction="#handleSCCEvent" text="SCC"/>
@@ -64,7 +64,7 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
-            <MenuButton alignment="CENTER" text="LANDMARKS">
+            <MenuButton alignment="CENTER" text="LMKS">
                 <items>
                     <MenuItem onAction="#handleGenerateLandmarksAvoid" text="GenAvoid"/>
                     <MenuItem onAction="#handleGenerateLandmarksMaxCover" text="GenMaxCover"/>
@@ -78,10 +78,13 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
-            <Button alignment="CENTER" onAction="#handleSetParameterEvent" styleClass="nav_button" text="SET"/>
-            <Separator styleClass="nav_separator"/>
-
-            <Button alignment="CENTER" onAction="#handleSeedEvent" styleClass="nav_button" text="SEED"/>
+            <MenuButton alignment="CENTER" text="LAY">
+                <items>
+                    <MenuItem onAction="#handleOverlayNone" text="None"/>
+                    <MenuItem onAction="#handleOverlayReach" text="ReachBounds"/>
+                    <MenuItem onAction="#handleOverlaySpeed" text="SpeedLimits"/>
+                </items>
+            </MenuButton>
             <Separator styleClass="nav_separator"/>
 
             <Button alignment="CENTER" onAction="#handleChooseFileEvent" styleClass="nav_button" text="FILE"/>

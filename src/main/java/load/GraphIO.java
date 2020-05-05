@@ -22,7 +22,6 @@ import java.util.function.BiFunction;
 
 import static paths.LandmarkMode.*;
 
-//TODO: Autogenerate folders
 public class GraphIO {
 
     public static String mapsDir = "maps\\";

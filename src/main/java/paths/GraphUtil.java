@@ -1,5 +1,9 @@
 package paths;
 
+import info_model.EdgeInfo;
+import info_model.GraphInfo;
+import info_model.GraphPair;
+import info_model.NodeInfo;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -52,7 +56,7 @@ public class GraphUtil {
         }
     }
 
-    public List<Graph> scc() {
+    public List<List<Integer>> scc() {
         if (progressListener != null) progressListener.accept(1L, 100L);
         int counter = 0;
         int n = graph.getNodeAmount();
@@ -136,8 +140,14 @@ public class GraphUtil {
             }
             trace("}\n");
         }
-        Comparator<Graph> graphComp = (g1, g2) -> Integer.compare(g2.getNodeAmount(), g1.getNodeAmount());
-        return sccNodeLists.stream().map(this::subGraph).sorted(graphComp).collect(Collectors.toList());
+        sccNodeLists.sort((l1, l2) -> l2.size() - l1.size());
+        return sccNodeLists;
+    }
+
+    public GraphPair subGraphPair(GraphInfo graphInfo, List<Integer> nodeList) {
+        Graph subGraph = subGraph(nodeList);
+        GraphInfo subGraphInfo = graphInfo != null ? subGraph(graphInfo, nodeList) : null;
+        return new GraphPair(subGraph, subGraphInfo);
     }
 
     public Graph subGraph(List<Integer> nodesToKeep) {
@@ -158,6 +168,31 @@ public class GraphUtil {
                     int newFrom = indexMap.get(from);
                     int newTo = indexMap.get(edge.to);
                     subAdjList.get(newFrom).add(new Edge(newFrom, newTo, edge.d));
+                }
+            }
+        }
+        return subGraph;
+    }
+
+    public GraphInfo subGraph(GraphInfo graphInfo, List<Integer> nodesToKeep) {
+        GraphInfo subGraph = new GraphInfo(nodesToKeep.size());
+        Map<Integer, Integer> indexMap = new HashMap<>();
+        List<NodeInfo> subNodeList = subGraph.getNodeList();
+        List<List<EdgeInfo>> subAdjList = subGraph.getAdjList();
+        for (int i = 0; i < nodesToKeep.size(); i++) {
+            indexMap.put(nodesToKeep.get(i), i);
+            NodeInfo oldNode = graphInfo.getNodeList().get(nodesToKeep.get(i));
+            NodeInfo newNode = new NodeInfo(i);
+            subNodeList.add(newNode);
+        }
+
+        for (int from : nodesToKeep) {
+            for (EdgeInfo edge : graphInfo.getAdjList().get(from)) {
+                if (nodesToKeep.contains(edge.getTo())) {
+                    int newFrom = indexMap.get(from);
+                    int newTo = indexMap.get(edge.getTo());
+                    int newMaxSpeed = edge.getMaxSpeed();
+                    subAdjList.get(newFrom).add(new EdgeInfo(newFrom, newTo, newMaxSpeed));
                 }
             }
         }

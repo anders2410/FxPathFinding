@@ -42,7 +42,7 @@ public class PBFParser {
     private BiFunction<Node, Node, Double> distanceStrategy;
     private FilteringStrategy filteringStrategy = new StandardFilteringStrategy();
     private CollapsingStrategy collapsingStrategy;
-    private BiConsumer<String, Graph> storeTMPListener = null;
+    private BiConsumer<String, Graph> storeTMPListener;
 
     /**
      * The constructor of the PBFParser.

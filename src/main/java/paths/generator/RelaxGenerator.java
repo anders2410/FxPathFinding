@@ -15,7 +15,7 @@ import static paths.Util.revDir;
 
 public class RelaxGenerator {
 
-    private static Function<Edge, Double> edgeWeightStrategy = EdgeWeightGenerator.getDistanceWeights();
+    private static Function<Edge, Double> edgeWeightStrategy = EdgeWeightGenerator.getMaxSpeedTime();
 
     public static RelaxStrategy getDijkstra() {
         return (edge, dir) -> {

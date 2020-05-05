@@ -63,4 +63,8 @@ public class GraphInfo implements Serializable {
             System.out.println();
         }
     }
+
+    public int getNodeAmount() {
+        return nodeAmount;
+    }
 }
