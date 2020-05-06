@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -31,6 +32,7 @@ import model.Graph;
 import model.ModelUtil;
 import model.Node;
 import paths.*;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.*;
 
 import java.io.File;
@@ -1244,5 +1246,27 @@ public class FXMLController implements Initializable {
     public void handleOverlaySpeedLimits() {
         currentOverlay = OverlayType.SPEED_LIMIT;
         redrawGraph();
+    }
+
+    public void handleWeightDistance() {
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        runAlgorithm();
+    }
+
+    public void handleWeightSpeed() {
+        if (graphInfo != null) {
+            SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getMaxSpeedTime());
+            runAlgorithm();
+        } else {
+            System.out.println("Info hasn't been generated for this map: " + fileName);
+        }
+    }
+
+    public void handleWeightFlat() {
+        System.out.println("Not implemented");
+    }
+
+    public void handleWeightTrees() {
+        System.out.println("Not implemented");
     }
 }

@@ -78,6 +78,16 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
+            <MenuButton alignment="CENTER" text="WGHT">
+                <items>
+                    <MenuItem onAction="#handleWeightDistance" text="Distance"/>
+                    <MenuItem onAction="#handleWeightSpeed" text="SpeedLimits"/>
+                    <MenuItem onAction="#handleWeightFlat" text="MostFlat"/>
+                    <MenuItem onAction="#handleWeightTrees" text="MostTrees"/>
+                </items>
+            </MenuButton>
+            <Separator styleClass="nav_separator"/>
+
             <MenuButton alignment="CENTER" text="LAY">
                 <items>
                     <MenuItem onAction="#handleOverlayNone" text="None"/>

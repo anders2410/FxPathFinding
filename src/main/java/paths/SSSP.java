@@ -14,6 +14,7 @@ import paths.strategy.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static paths.ABDir.A;
 import static paths.ABDir.B;
@@ -40,6 +41,7 @@ public class SSSP {
     // All the different strategies!
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
+    private static Function<Edge, Double> edgeWeightStrategy;
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
     private static AlternationStrategy alternationStrategy;
@@ -501,5 +503,13 @@ public class SSSP {
 
     public static int getMiddlePoint() {
         return middlePoint;
+    }
+
+    public static Function<Edge, Double> getEdgeWeightStrategy() {
+        return edgeWeightStrategy;
+    }
+
+    public static void setEdgeWeightStrategy(Function<Edge, Double> edgeWeightStrategy) {
+        SSSP.edgeWeightStrategy = edgeWeightStrategy;
     }
 }
