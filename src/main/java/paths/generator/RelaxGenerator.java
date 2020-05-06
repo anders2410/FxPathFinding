@@ -109,7 +109,6 @@ public class RelaxGenerator {
             if (!newDistanceInValid) {
                 getBiDijkstra().relax(edge, dir);
             } else {
-                System.out.println(edge.from);
                 if (getScanned(Util.revDir(dir)).contains(edge.to)) {
                     int mp = getMiddlePoint();
                     updateGoalDist(edge, dir);
