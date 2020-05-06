@@ -322,7 +322,12 @@ public class FXMLController implements Initializable {
     private Color makeColor(Edge edge) {
         Color color = chooseAlgorithmEdgeColor(edge);
         if (currentOverlay == OverlayType.REACH && SSSP.getReachBounds() != null) {
+            findMaxReach();
             color = graduateColorSaturation(color, SSSP.getReachBounds().get(edge.from), maxReach);
+        }
+        if (currentOverlay == OverlayType.CH && SSSP.getContractionHierarchiesResult() != null){
+            findMaxRank();
+            color = graduateColorSaturation(color, SSSP.getContractionHierarchiesResult().getRanks().get(edge.from), maxRank);
         }
         if (currentOverlay == OverlayType.SPEED_MARKED && graphInfo != null) {
             EdgeInfo info = graphInfo.getEdge(edge);
@@ -336,10 +341,11 @@ public class FXMLController implements Initializable {
         return color;
     }
 
-    private double maxReach = 0;
+    private double maxReach = -1;
+    double maxRank = -1;
 
     private void findMaxReach() {
-        if (SSSP.getReachBounds() == null) {
+        if (SSSP.getReachBounds() == null || maxReach != -1) {
             return;
         }
         double maxSoFar = 0;
@@ -349,6 +355,19 @@ public class FXMLController implements Initializable {
             }
         }
         maxReach = maxSoFar;
+    }
+
+    private void findMaxRank() {
+        if (SSSP.getContractionHierarchiesResult() == null || maxRank != -1) {
+            return;
+        }
+        double maxSoFar = 0;
+        for (double rank : SSSP.getContractionHierarchiesResult().getRanks()) {
+            if (maxSoFar < rank && rank < 100000) {
+                maxSoFar = rank;
+            }
+        }
+        maxRank = maxSoFar;
     }
 
     public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
@@ -990,6 +1009,7 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateCHEvent() {
         System.out.println("Generating CH graph!");
+        maxRank = -1;
         Task<ContractionHierarchiesResult> CHTask = new Task<>() {
             @Override
             protected ContractionHierarchiesResult call() {
@@ -1141,6 +1161,7 @@ public class FXMLController implements Initializable {
     }
 
     private void generateReachBounds() {
+        maxReach = -1;
         Task<List<Double>> reachGenTask = new Task<>() {
             @Override
             protected List<Double> call() {
@@ -1152,7 +1173,6 @@ public class FXMLController implements Initializable {
         reachGenTask.setOnSucceeded(e -> {
             List<Double> bounds = reachGenTask.getValue();
             SSSP.setReachBounds(bounds);
-            findMaxReach();
             saveReachBounds();
             playIndicatorCompleted();
         });
@@ -1251,6 +1271,11 @@ public class FXMLController implements Initializable {
 
     public void handleOverlayReach() {
         currentOverlay = OverlayType.REACH;
+        redrawGraph();
+    }
+
+    public void handleOverlayCH() {
+        currentOverlay = OverlayType.CH;
         redrawGraph();
     }
 

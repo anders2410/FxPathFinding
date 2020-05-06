@@ -93,6 +93,7 @@
                 <items>
                     <MenuItem onAction="#handleOverlayNone" text="None"/>
                     <MenuItem onAction="#handleOverlayReach" text="ReachBounds"/>
+                    <MenuItem onAction="#handleOverlayCH" text="CH-Rank" />
                     <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
                     <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>
                 </items>
