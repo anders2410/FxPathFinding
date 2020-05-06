@@ -120,15 +120,11 @@ public class FXMLController implements Initializable {
                 LoadType lt = graphIO.loadGraph(fileName);
                 isSCCGraph = lt == LoadType.SCC;
                 if (lt != LoadType.PBF) {
-                    loadGraphInfo();
+                    loadInfo();
+                } else {
+                    graphInfo = graphIO.getGraphInfo();
                 }
                 return graphIO.getGraph();
-            }
-
-            private void loadGraphInfo() {
-                GraphIO graphIOInfo = new GraphIO(distanceStrategy, isSCCGraph);
-                graphIOInfo.loadGraphInfo(Util.trimFileTypes(fileName), "Loaded graph info");
-                graphInfo = graphIOInfo.getGraphInfo();
             }
         };
         loadGraphTask.setOnSucceeded(event -> {

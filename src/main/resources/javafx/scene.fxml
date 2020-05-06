@@ -57,10 +57,10 @@
 
             <MenuButton alignment="CENTER" text="PRE">
                 <items>
-                    <MenuItem onAction="#handleLoadInfo" text="Load extra info"/>
                     <MenuItem onAction="#handleSCCEvent" text="SCC"/>
                     <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
                     <MenuItem onAction="#handleGenerateCHEvent" text="Generate CH Graph"/>
+                    <MenuItem onAction="#handleLoadInfo" text="Load Info"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
