@@ -841,9 +841,7 @@ public class FXMLController implements Initializable {
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
         File selectedFile = GraphIO.selectMapFile(stage);
-        if (selectedFile.exists()) {
-            loadNewGraph(selectedFile.getName());
-        }
+        loadNewGraph(selectedFile.getName());
     }
 
     public void handleGenerateLandmarksAvoid() {

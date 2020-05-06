@@ -7,6 +7,7 @@ import model.Graph;
 import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
+import paths.generator.RelaxGenerator;
 import paths.preprocessing.ContractionHierarchiesResult;
 import paths.preprocessing.Landmarks;
 import paths.strategy.*;
@@ -510,6 +511,7 @@ public class SSSP {
     }
 
     public static void setEdgeWeightStrategy(Function<Edge, Double> edgeWeightStrategy) {
+        RelaxGenerator.setEdgeWeightStrategy(edgeWeightStrategy);
         SSSP.edgeWeightStrategy = edgeWeightStrategy;
     }
 }

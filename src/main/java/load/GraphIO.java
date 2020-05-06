@@ -1,5 +1,6 @@
 package load;
 
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Graph;
@@ -269,6 +270,8 @@ public class GraphIO {
     }
 
     public static File selectMapFile(Stage stage) {
+        if(true)
+        return selectMapDirectory(stage);
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.dir") + "\\" + mapsDir));
         fileChooser.getExtensionFilters().addAll(
@@ -276,6 +279,19 @@ public class GraphIO {
                 new FileChooser.ExtensionFilter("OSM Files", "*.osm")
         );
         return fileChooser.showOpenDialog(stage);
+    }
+
+    public static File selectMapDirectory(Stage stage) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setInitialDirectory(new File(System.getProperty("user.dir") + "\\" + mapsDir));
+        String dirName = directoryChooser.showDialog(stage).getAbsolutePath();
+        File pbfFile = new File(dirName + ".osm.pbf");
+        File osmFile = new File(dirName + ".osm");
+        if (osmFile.exists()) {
+            return osmFile;
+        } else {
+            return pbfFile;
+        }
     }
 
     long next_tier = 0;
