@@ -364,10 +364,6 @@ public class FXMLController implements Initializable {
         if (inPath) {
             return 2;
         }
-        if (currentResult.scannedNodesA.contains(from.index)
-        ) {
-            return 3;
-        }
         return 1;
     }
 
