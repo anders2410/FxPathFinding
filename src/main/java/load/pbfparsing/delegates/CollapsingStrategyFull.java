@@ -66,16 +66,16 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 Node node2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
-                graph.addEdge(node2, node1, cum_Dist);
+                graph.addEdge(node1, node2, cum_Dist);
                 String maxSpeedString = tags.get("maxspeed");
 
                 int maxSpeed = -1;
                 if (maxSpeedString != null) {
-                    if (maxSpeedString.contains("rural")) {
+                    if (maxSpeedString.contains("rural")) {         // Primært DK, Rumænien og Rusland
                         maxSpeed = 80;
-                    } else if (maxSpeedString.contains("urban")) {
+                    } else if (maxSpeedString.contains("urban")) {  // Primært DK, Rumænien og Rusland
                         maxSpeed = 50;
-                    } else if (maxSpeedString.equals("none")) {
+                    } else if (maxSpeedString.equals("none")) {     // Tyske motorveje
                         maxSpeed = 140;
                     } else {
                         try {
@@ -85,7 +85,8 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                         }
                     }
                 }
-                graphInfo.addEdge(new EdgeInfo(node2.index, node1.index, maxSpeed));
+                EdgeInfo edgeInfo = new EdgeInfo(node1.index, node2.index, maxSpeed);
+                graphInfo.addEdge(edgeInfo);
 
                 // Flag to decide whether to use oneWay roads.
                 if (oneWayFlag) {
@@ -93,13 +94,13 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                     String roundabout = tags.get("junction");
                     if (roadValue == null || !roadValue.equals("yes")) {
                         if (roundabout == null || !roundabout.equals("roundabout")) {
-                            graph.addEdge(node1, node2, cum_Dist);
-                            graphInfo.addEdge(new EdgeInfo(node1.index, node2.index, maxSpeed));
+                            graph.addEdge(node2, node1, cum_Dist);
+                            graphInfo.addEdge(new EdgeInfo(edgeInfo.getTo(), edgeInfo.getFrom(), maxSpeed));
                         }
                     }
                 } else {
-                    graph.addEdge(node1, node2, cum_Dist);
-                    graphInfo.addEdge(new EdgeInfo(node1.index, node2.index, maxSpeed));
+                    graph.addEdge(node2, node1, cum_Dist);
+                    graphInfo.addEdge(new EdgeInfo(edgeInfo.getTo(), edgeInfo.getFrom(), maxSpeed));
                 }
 
                 cum_Dist = 0;

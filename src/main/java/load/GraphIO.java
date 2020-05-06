@@ -157,6 +157,21 @@ public class GraphIO {
         }
     }
 
+    public void loadGraphInfo(String filename) {
+        if (Util.getFileType(filename).equals("osm")) {
+            System.out.println("Can't load info from .osm file");
+            return;
+        }
+        String infoName = getTrimmedFolderSCCName(filename) + "-info.tmp";
+        File infoFile = new File(infoName);
+        if (infoFile.exists()) {
+            loadGraphInfo(filename, "Loaded info from tmp file");
+        } else {
+            loadPBF(filename);
+            System.out.println("Info parsed from pbf file");
+        }
+    }
+
     public void loadGraphInfo(String fileName, String msg) {
         String infoName = getTrimmedFolderSCCName(fileName) + "-info.tmp";
         File infoFile = new File(infoName);
@@ -164,9 +179,8 @@ public class GraphIO {
             return;
         }
         try {
-            String graphFileName = getTrimmedFolderSCCName(fileName) + "-info.tmp";
-            fileSize = Files.size(Paths.get(graphFileName));
-            CountingInputStream input = new CountingInputStream(graphFileName, this);
+            fileSize = Files.size(Paths.get(infoName));
+            CountingInputStream input = new CountingInputStream(infoName, this);
             ObjectInputStream objectStream = new ObjectInputStream(input);
             graphInfo = (GraphInfo) objectStream.readObject();
             objectStream.close();
@@ -284,7 +298,11 @@ public class GraphIO {
     public static File selectMapDirectory(Stage stage) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(new File(System.getProperty("user.dir") + "\\" + mapsDir));
-        String dirName = directoryChooser.showDialog(stage).getAbsolutePath();
+        File dir = directoryChooser.showDialog(stage);
+        if (dir == null) {
+            return null;
+        }
+        String dirName = dir.getAbsolutePath();
         File pbfFile = new File(dirName + ".osm.pbf");
         File osmFile = new File(dirName + ".osm");
         if (osmFile.exists()) {

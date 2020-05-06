@@ -108,6 +108,9 @@ public class FXMLController implements Initializable {
      * @param fileName file to load.
      */
     private void loadNewGraph(String fileName) {
+        if (fileName == null || fileName.equals("")) {
+            return;
+        }
         this.fileName = fileName;
         Task<Graph> loadGraphTask = new Task<>() {
             @Override
@@ -176,6 +179,22 @@ public class FXMLController implements Initializable {
         SSSP.setGraphInfo(graphInfo);
         SSSP.setLandmarks(landmarksGenerator);
         resetSelection();
+    }
+
+    private void loadInfo() {
+        Task<GraphInfo> graphInfoTask = new Task<>() {
+            @Override
+            protected GraphInfo call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                graphIO.loadGraphInfo(fileName);
+                return graphIO.getGraphInfo();
+            }
+        };
+        graphInfoTask.setOnSucceeded(e -> {
+            graphInfo = graphInfoTask.getValue();
+            SSSP.setGraphInfo(graphInfo);
+        });
+        new Thread(graphInfoTask).start();
     }
 
     private Task<List<ShortestPathResult>> ssspTask;
@@ -841,7 +860,9 @@ public class FXMLController implements Initializable {
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
         File selectedFile = GraphIO.selectMapFile(stage);
-        loadNewGraph(selectedFile.getName());
+        if (selectedFile != null) {
+            loadNewGraph(selectedFile.getName());
+        }
     }
 
     public void handleGenerateLandmarksAvoid() {
@@ -925,6 +946,10 @@ public class FXMLController implements Initializable {
         }
     }
 
+    public void handleLoadInfo() {
+        loadInfo();
+    }
+
     public void handleReachEvent() {
         chooseReachAlgorithm(REACH);
     }
@@ -951,7 +976,8 @@ public class FXMLController implements Initializable {
 
     private void chooseReachAlgorithm(AlgorithmMode mode) {
         if (SSSP.getReachBounds() == null) {
-            System.out.println("No reach bounds found");
+            System.out.println("No reach bounds found. Trying to load them.");
+            loadReachBounds();
             return;
         }
         chooseAlgorithm(mode);
