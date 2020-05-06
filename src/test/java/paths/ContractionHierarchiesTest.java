@@ -56,18 +56,14 @@ public class ContractionHierarchiesTest {
             int source = random.nextInt(originalGraph.getNodeAmount());
             int target = random.nextInt(originalGraph.getNodeAmount());
 
-            SSSP.setGraph(originalGraph);
-            System.out.println(SSSP.getGraph());
             dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
-            SSSP.setGraph(contractionHierarchiesResult.getGraph());
-            System.out.println(SSSP.getGraph());
             CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
-            System.out.println(contractionHierarchiesResult.getGraph());
 
             System.out.println(dijkstraResult.path);
             System.out.println(CHResult.path);
             System.out.println("Dijkstra distance: " + dijkstraResult.d);
             System.out.println("CH distance: " + CHResult.d);
+            System.out.println();
 
             seed++;
         }
@@ -84,31 +80,14 @@ public class ContractionHierarchiesTest {
         ShortestPathResult dijkstraResult;
         ShortestPathResult CHResult;
 
-        /*int source = 7726;
-        int target = 5703;*/
-
-        /*int source = 3059;
-        int target = 12090;*/
-
-        /*int source = 4408;
-        int target = 14897;*/
-
-        /*int source = 5087;
-        int target = 8548;*/
-
-        /*int source = 14788;
-        int target = 14830;*/
+        // Paths we had problems with earlier
+        /*int source = 7726, 3059, 4408, 5087, 14830;
+        int target = 5703, 12090, 14897, 8548, 14830;*/
 
         int source = 5640;
         int target = 4779;
 
-        System.out.println("Original Graph");
-        System.out.println("Augmented Graph");
-
-        SSSP.setGraph(originalGraph);
         dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
-
-        System.out.println(SSSP.getGraph());
         CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
 
         System.out.println(dijkstraResult.path);
@@ -127,7 +106,7 @@ public class ContractionHierarchiesTest {
         int algorithms = 1;
         matrix = new int[algorithms];
 
-        testCases = 50000;
+        testCases = 1000;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failList = new ArrayList<>();
@@ -142,7 +121,6 @@ public class ContractionHierarchiesTest {
             List<Integer> dijkstraPath = dijkstraResult.path;
 
             // Running the test algorithm
-            SSSP.setGraph(contractionHierarchiesResult.getGraph());
             testSingle(dijkstraDist, dijkstraPath);
             i++;
         }
@@ -187,55 +165,3 @@ class TestResult {
         this.algorithmDist = algorithmDist;
     }
 }
-
-/*@Test
-    public void testContractionHierarchiesNotIntegrated() {
-        System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
-        System.out.println("Number of nodes: " + contractionHierarchiesResult.getGraph().getNodeAmount());
-        System.out.println("Number of edges: " + contractionHierarchiesResult.getGraph().getEdgeAmount());
-
-        System.out.println("------------------------------ NOT-INTEGRATED VS. DIJKSTRA ----------------------------------------");
-        ShortestPathResult dijkstraResult;
-
-        int seed = 0;
-        for (int i = 0; i < 40; i++) {
-            Random random = new Random(seed);
-            int source = random.nextInt(originalGraph.getNodeAmount());
-            int target = random.nextInt(originalGraph.getNodeAmount());
-
-            SSSP.setGraph(originalGraph);
-            dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
-
-            Pair<Double, Set<Integer>> CHResult = contractionHierarchies.computeDist(contractionHierarchiesResult.getGraph(), source, target);
-
-            System.out.println(dijkstraResult.path);
-            System.out.println(CHResult.getValue());
-            System.out.println("Dijkstra distance: " + dijkstraResult.d);
-            System.out.println("CH distance: " + CHResult.getKey());
-
-            seed++;
-        }
-    }*/
-
-    /*@Test
-    public void testContractionHierarchiesSinglePathNotIntegrated() {
-        System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
-        System.out.println("Number of nodes: " + contractionHierarchiesResult.getGraph().getNodeAmount());
-        System.out.println("Number of edges: " + contractionHierarchiesResult.getGraph().getEdgeAmount());
-
-
-        System.out.println("------------------------------ NOT-INTEGRATED VS. DIJKSTRA ----------------------------------------");
-        ShortestPathResult dijkstraResult;
-
-        int source = 5339;
-        int target = 5147;
-
-        SSSP.setGraph(originalGraph);
-        dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
-        Pair<Double, Set<Integer>> CHResult = contractionHierarchies.computeDist(contractionHierarchiesResult.getGraph(), source, target);
-
-        System.out.println(dijkstraResult.path);
-        System.out.println(CHResult.getValue());
-        System.out.println("Dijkstra distance: " + dijkstraResult.d);
-        System.out.println("CH distance: " + CHResult.getKey());
-    }*/
