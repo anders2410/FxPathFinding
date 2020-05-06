@@ -1,4 +1,4 @@
-package paths;
+package paths.preprocessing;
 
 import javafx.util.Pair;
 import model.Graph;

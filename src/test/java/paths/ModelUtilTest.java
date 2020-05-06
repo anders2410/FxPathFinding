@@ -2,8 +2,8 @@ package paths;
 
 
 import load.GraphIO;
-import model.Edge;
 import model.Graph;
+import model.ModelUtil;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +13,7 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class GraphUtilTest {
+public class ModelUtilTest {
 
     Graph graph;
 
@@ -49,7 +49,7 @@ public class GraphUtilTest {
                 graph.addEdge(i, j, j);
             }
         }
-        GraphUtil graphUtil = new GraphUtil(graph);
+        ModelUtil graphUtil = new ModelUtil(graph);
         Graph subGraph = graphUtil.subGraph(Arrays.asList(1, 2, 3));
         subGraph.printAdjList();
         Graph subGraph2 = graphUtil.subGraph(Arrays.asList(1, 2, 4, 5));

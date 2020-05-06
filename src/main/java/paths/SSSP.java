@@ -7,6 +7,8 @@ import model.Graph;
 import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
+import paths.preprocessing.ContractionHierarchiesResult;
+import paths.preprocessing.Landmarks;
 import paths.strategy.*;
 
 import java.util.*;
@@ -18,7 +20,6 @@ import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
 import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
-import static paths.generator.GetPQueueGenerator.getTreeQueue;
 
 public class SSSP {
     public static boolean trace = false;
@@ -32,11 +33,6 @@ public class SSSP {
     private static int source, target;
     private static AlgorithmMode mode;
     private static double goalDistance;
-
-    public static int getMiddlePoint() {
-        return middlePoint;
-    }
-
     private static int middlePoint;
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
@@ -191,36 +187,6 @@ public class SSSP {
         return new ShortestPathResult(nodeDistA.get(target), shortestPath, scannedA, relaxedA, duration);
     }
 
-    private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
-        Integer currentNode = getQueue(dir).poll();
-        if (currentNode == null) {
-            return;
-        }
-        // TODO: 04/05/2020 Another IF-statement that should be removed..
-        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > bestPathLengthSoFar) {
-            return;
-        }
-        /*if (mode == BI_REACH_A_STAR || mode == BI_REACH_LANDMARKS) {
-            List<Double> bounds = getReachBounds();
-            double reachBound = bounds.get(currentNode);
-            boolean distBiggerThanReach = getNodeDist(dir).get(currentNode) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(currentNode)) <= 0.000000000000001);
-            boolean potentialBiggerThanReach = getPriorityStrategy().apply(currentNode, dir) - getNodeDist(dir).get(currentNode) > reachBound && !(Math.abs(reachBound - getPriorityStrategy().apply(currentNode, dir) - getNodeDist(dir).get(currentNode)) <= 0.000000000000001);
-            boolean newDistanceInValid = distBiggerThanReach && potentialBiggerThanReach;
-            if (newDistanceInValid) {
-                System.out.println(currentNode);
-                return;
-            }
-        }*/
-        getScanned(dir).add(currentNode);
-        if (mode == BOUNDED_SINGLE_TO_ALL) if (getNodeDist(dir).get(currentNode) > SSSP.getSingleToAllBound()) return;
-        for (Edge edge : adjList.get(currentNode)) {
-
-            /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
-            getRelaxStrategy(dir).relax(edge, dir);
-        }
-    }
-
-    // Implementation pseudo code from https://www.cs.princeton.edu/courses/archive/spr06/cos423/Handouts/EPP%20shortest%20path%20algorithms.pdf
     private static ShortestPathResult biDirectional() {
         long startTime = System.nanoTime();
 
@@ -262,8 +228,6 @@ public class SSSP {
                 if (scannedA.contains(node) && scannedB.contains(node)) {
                     // Replace if lower than actual
                     double distance = nodeDistA.get(node) + nodeDistB.get(node);
-                    //System.out.println("Candidate: " + node + " with distance: " + distance);
-
                     if (0 <= distance && distance < finalDistance) {
                         finalDistance = distance;
                         middlepoint = node;
@@ -272,20 +236,23 @@ public class SSSP {
             }
 
             setMiddlePoint(middlepoint);
+
+            // This is the unpacking of the shortest path. It unpacks all shortcuts on the route found by
+            // the modified Bi-Directional Dijkstras.
             List<Integer> shortestPathCH = extractPathBi();
-            List<Integer> complete = new ArrayList<>(shortestPathCH);
-            boolean isTrue = true;
-            while (isTrue) {
-                for (int i = 0; i < complete.size() - 1; i++) {
-                    Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+            List<Integer> result = new ArrayList<>(shortestPathCH);
+            boolean shouldContinue = true;
+            while (shouldContinue) {
+                for (int i = 0; i < result.size() - 1; i++) {
+                    Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(result.get(i), result.get(i + 1)));
                     if (contractedNode != null) {
-                        complete.add(i + 1, contractedNode);
+                        result.add(i+1, contractedNode);
                         break;
                     }
                 }
-                isTrue = shouldBeDone(complete);
+                shouldContinue = shouldBeDone(result);
             }
-            return new ShortestPathResult(goalDistance, new ArrayList<>(complete), scannedA, scannedB, relaxedA, relaxedB, duration);
+            return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
         }
 
         if (middlePoint == -1) {
@@ -296,17 +263,22 @@ public class SSSP {
         return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
     }
 
-    private static boolean shouldBeDone(List<Integer> complete) {
-        for (int i = 0; i < complete.size() - 1; i++) {
-            Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
-            if (contractedNode != null) {
-                return true;
-            }
+    private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
+        Integer currentNode = getQueue(dir).poll();
+        if (currentNode == null) {
+            return;
         }
-
-        return false;
+        // TODO: 04/05/2020 Another IF-statement that should be removed..
+        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > bestPathLengthSoFar) {
+            return;
+        }
+        getScanned(dir).add(currentNode);
+        if (mode == BOUNDED_SINGLE_TO_ALL) if (getNodeDist(dir).get(currentNode) > SSSP.getSingleToAllBound()) return;
+        for (Edge edge : adjList.get(currentNode)) {
+            /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
+            getRelaxStrategy(dir).relax(edge, dir);
+        }
     }
-
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
         applyFactory(new DijkstraFactory());
@@ -322,6 +294,17 @@ public class SSSP {
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
         return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
+    }
+
+    private static boolean shouldBeDone(List<Integer> complete) {
+        for (int i = 0; i < complete.size() - 1; i++) {
+            Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+            if (contractedNode != null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static List<Integer> extractPathBi() {
@@ -456,11 +439,6 @@ public class SSSP {
         return dir == A ? queueA : queueB;
     }
 
-
-   /* public static Map<Integer, Double> getEstimatedDist(ABDir dir) {
-        return dir == A ? estimatedDistA : estimatedDistB;
-    }*/
-
     public static Landmarks getLandmarks() {
         return landmarks;
     }
@@ -519,5 +497,9 @@ public class SSSP {
 
     public static void setBestPathLengthSoFar(double bestPathLengthSoFar) {
         SSSP.bestPathLengthSoFar = bestPathLengthSoFar;
+    }
+
+    public static int getMiddlePoint() {
+        return middlePoint;
     }
 }

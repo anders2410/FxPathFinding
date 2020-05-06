@@ -1,6 +1,8 @@
 package javafx;
 
+import info_model.EdgeInfo;
 import info_model.GraphInfo;
+import info_model.GraphPair;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -26,15 +28,16 @@ import load.GraphIO;
 import load.LoadType;
 import model.Edge;
 import model.Graph;
+import model.ModelUtil;
 import model.Node;
 import paths.*;
+import paths.preprocessing.*;
 
 import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -67,8 +70,6 @@ public class FXMLController implements Initializable {
     private Label seed_label;
     @FXML
     private ProgressIndicator progress_indicator;
-
-    private final boolean usingInfo = false;
 
     private Stage stage;
     private Graph graph;
@@ -113,13 +114,16 @@ public class FXMLController implements Initializable {
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType lt = graphIO.loadGraph(fileName);
                 isSCCGraph = lt == LoadType.SCC;
-                if (usingInfo) {
-                    if (lt != LoadType.PBF) {
-                        graphIO.loadGraphInfo(Util.trimFileTypes(fileName), "Loaded graph info");
-                    }
-                    graphInfo = graphIO.getGraphInfo();
+                if (lt != LoadType.PBF) {
+                    loadGraphInfo();
                 }
                 return graphIO.getGraph();
+            }
+
+            private void loadGraphInfo() {
+                GraphIO graphIOInfo = new GraphIO(distanceStrategy, isSCCGraph);
+                graphIOInfo.loadGraphInfo(Util.trimFileTypes(fileName), "Loaded graph info");
+                graphInfo = graphIOInfo.getGraphInfo();
             }
         };
         loadGraphTask.setOnSucceeded(event -> {
@@ -146,7 +150,9 @@ public class FXMLController implements Initializable {
                 GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
                 String name = Util.trimFileTypes(fileName);
                 graphIO.storeGraph(name, graph);
-                graphIO.storeGraphInfo(name, null);
+                if (graphInfo != null) {
+                    graphIO.storeGraphInfo(name, graphInfo);
+                }
                 return null;
             }
         };
@@ -282,34 +288,35 @@ public class FXMLController implements Initializable {
                 if (oppositeEdge == null || isBetter(from, edge, to, oppositeEdge)) {
                     PixelPoint pFrom = toScreenPos(from);
                     PixelPoint pTo = toScreenPos(to);
-                    Color color = chooseEdgeColor(from, edge);
-                    if (SSSP.getReachBounds() != null && isReach()) {
-                        color = graduateColorSaturation(color, SSSP.getReachBounds().get(from.index), maxReach);
-                    }
-                    /*if (graphInfo != null) {
-                        EdgeInfo info = graphInfo.getEdge(edge);
-                        if (info.getMaxSpeed() == -1) {
-                            color = Color.WHITE;
-                        }
-                    }*/
-                    gc.setStroke(color);
-                    gc.setLineWidth(chooseEdgeWidth(from, edge));
+                    gc.setStroke(makeColor(edge));
+                    gc.setLineWidth(chooseEdgeWidth(edge));
                     if (mouseEdges.contains(edge)) {
                         gc.setLineDashes(7);
                     } else {
                         gc.setLineDashes(0);
                     }
                     gc.strokeLine(pFrom.x, pFrom.y, pTo.x, pTo.y);
-
-
                     drawnEdges.add(edge);
                 }
             }
         }
     }
 
-    private boolean isReach() {
-        return algorithmMode == REACH || algorithmMode == REACH_A_STAR || algorithmMode == REACH_LANDMARKS || algorithmMode == BI_REACH || algorithmMode == BI_REACH_A_STAR || algorithmMode == BI_REACH_LANDMARKS;
+    private Color makeColor(Edge edge) {
+        Color color = chooseAlgorithmEdgeColor(edge);
+        if (currentOverlay == OverlayType.REACH && SSSP.getReachBounds() != null) {
+            color = graduateColorSaturation(color, SSSP.getReachBounds().get(edge.from), maxReach);
+        }
+        if (currentOverlay == OverlayType.SPEED_MARKED && graphInfo != null) {
+            EdgeInfo info = graphInfo.getEdge(edge);
+            if (info.getMaxSpeed() == -1) {
+                color = Color.WHITE;
+            }
+        }
+        if (currentOverlay == OverlayType.SPEED_LIMIT && graphInfo != null) {
+            color = graduateColorSaturation(color, graphInfo.getEdge(edge).getMaxSpeed(), 140);
+        }
+        return color;
     }
 
     private double maxReach = 0;
@@ -352,8 +359,8 @@ public class FXMLController implements Initializable {
         return compVal;
     }
 
-    private double chooseEdgeWidth(Node from, Edge edge) {
-        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+    private double chooseEdgeWidth(Edge edge) {
+        boolean inPath = currentResult.path.contains(edge.from) && currentResult.path.contains(edge.to);
         if (inPath) {
             return 2;
         }
@@ -364,12 +371,12 @@ public class FXMLController implements Initializable {
         return 1;
     }
 
-    private Color chooseEdgeColor(Node from, Edge edge) {
-        boolean visited = currentResult.scannedNodesA.contains(from.index);
-        boolean reverseVisited = currentResult.scannedNodesB.contains(from.index);
-        boolean inPath = currentResult.path.contains(from.index) && currentResult.path.contains(edge.to);
+    private Color chooseAlgorithmEdgeColor(Edge edge) {
+        boolean visited = currentResult.scannedNodesA.contains(edge.from);
+        boolean reverseVisited = currentResult.scannedNodesB.contains(edge.from);
+        boolean inPath = currentResult.path.contains(edge.from) && currentResult.path.contains(edge.to);
         if (inPath) {
-            int prevNode = currentResult.path.indexOf(from.index);
+            int prevNode = currentResult.path.indexOf(edge.from);
             int nextNode = currentResult.path.indexOf(edge.to);
             if (prevNode == nextNode + 1 || prevNode + 1 == nextNode)
                 return Color.RED;
@@ -781,50 +788,43 @@ public class FXMLController implements Initializable {
     }
 
     public void handleDijkstraEvent() {
-        algorithmMode = DIJKSTRA;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(DIJKSTRA);
     }
 
     public void handleBiDijkstraEvent() {
-        algorithmMode = BI_DIJKSTRA;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(BI_DIJKSTRA);
     }
 
 
     public void handleBiDijkstraSameDistEvent() {
-        algorithmMode = BI_DIJKSTRA_SAME_DIST;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(BI_DIJKSTRA_SAME_DIST);
     }
 
     public void handleAStarEvent() {
-        algorithmMode = A_STAR;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(A_STAR);
     }
 
     public void handleBiAStarConEvent() {
-        algorithmMode = BI_A_STAR_CONSISTENT;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(BI_A_STAR_CONSISTENT);
     }
 
     public void handleBiAStarSymEvent() {
-        algorithmMode = BI_A_STAR_SYMMETRIC;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(BI_A_STAR_SYMMETRIC);
     }
 
     public void handleLandmarksEvent() {
-        algorithmMode = A_STAR_LANDMARKS;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(A_STAR_LANDMARKS);
     }
 
     public void handleBiLandmarksEvent() {
-        algorithmMode = BI_A_STAR_LANDMARKS;
+        chooseAlgorithm(BI_A_STAR_LANDMARKS);
+    }
+
+    private void chooseAlgorithm(AlgorithmMode dijkstra) {
+        if (currentOverlay == OverlayType.REACH) {
+            currentOverlay = OverlayType.NONE;
+        }
+        algorithmMode = dijkstra;
         runAlgorithm();
         setAlgorithmLabels();
     }
@@ -930,63 +930,36 @@ public class FXMLController implements Initializable {
     }
 
     public void handleReachEvent() {
-        if (SSSP.getReachBounds() == null) {
-            System.out.println("No reach bounds found");
-            return;
-        }
-        algorithmMode = REACH;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseReachAlgorithm(REACH);
     }
 
     public void handleBiReachEvent() {
-        if (SSSP.getReachBounds() == null) {
-            System.out.println("No reach bounds found");
-            return;
-        }
-        algorithmMode = BI_REACH;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseReachAlgorithm(BI_REACH);
     }
 
     public void handleReachAStarEvent() {
-        if (SSSP.getReachBounds() == null) {
-            System.out.println("No reach bounds found");
-            return;
-        }
-        algorithmMode = REACH_A_STAR;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseReachAlgorithm(REACH_A_STAR);
     }
 
     public void handleBiReachAStarEvent() {
-        if (SSSP.getReachBounds() == null) {
-            System.out.println("No reach bounds found");
-            return;
-        }
-        algorithmMode = BI_REACH_A_STAR;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseReachAlgorithm(BI_REACH_A_STAR);
     }
 
     public void handleReachLandmarksEvent() {
-        if (SSSP.getReachBounds() == null) {
-            System.out.println("No reach bounds found");
-            return;
-        }
-        algorithmMode = REACH_LANDMARKS;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseReachAlgorithm(REACH_LANDMARKS);
     }
 
     public void handleBiReachLandmarksEvent() {
+        chooseReachAlgorithm(BI_REACH_LANDMARKS);
+    }
+
+    private void chooseReachAlgorithm(AlgorithmMode mode) {
         if (SSSP.getReachBounds() == null) {
             System.out.println("No reach bounds found");
             return;
         }
-        algorithmMode = BI_REACH_LANDMARKS;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(mode);
+        currentOverlay = OverlayType.REACH;
     }
 
     public void handleGenerateReachEvent() {
@@ -994,9 +967,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleCHEvent() {
-        algorithmMode = CONTRACTION_HIERARCHIES;
-        runAlgorithm();
-        setAlgorithmLabels();
+        chooseAlgorithm(CONTRACTION_HIERARCHIES);
     }
 
     public void handleGenerateCHEvent() {
@@ -1207,19 +1178,20 @@ public class FXMLController implements Initializable {
 
     private void runSCC() {
         System.out.println("Computing SCC");
-        Task<List<Graph>> sccTask = new Task<>() {
+        Task<GraphPair> sccTask = new Task<>() {
             @Override
-            protected List<Graph> call() {
-                GraphUtil gu = new GraphUtil(graph);
+            protected GraphPair call() {
+                ModelUtil gu = new ModelUtil(graph);
                 gu.setProgressListener(this::updateProgress);
-                return gu.scc();
+                List<Integer> nodesToKeep = gu.scc().get(0);
+                return gu.subGraphPair(graphInfo, nodesToKeep);
             }
         };
         sccTask.setOnSucceeded(e -> {
             progress_indicator.progressProperty().unbind();
             progress_indicator.setProgress(0.99);
-            List<Graph> subGraphs = sccTask.getValue().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
-            graph = subGraphs.get(0);
+            graph = sccTask.getValue().getGraph();
+            graphInfo = sccTask.getValue().getGraphInfo();
             isSCCGraph = true;
             storeGraph();
             setUpGraph();
@@ -1250,5 +1222,27 @@ public class FXMLController implements Initializable {
         }));
         indicatorTimeline.setCycleCount(200);
         indicatorTimeline.playFromStart();
+    }
+
+    private OverlayType currentOverlay = OverlayType.NONE;
+
+    public void handleOverlayNone() {
+        currentOverlay = OverlayType.NONE;
+        redrawGraph();
+    }
+
+    public void handleOverlayReach() {
+        currentOverlay = OverlayType.REACH;
+        redrawGraph();
+    }
+
+    public void handleOverlaySpeed() {
+        currentOverlay = OverlayType.SPEED_MARKED;
+        redrawGraph();
+    }
+
+    public void handleOverlaySpeedLimits() {
+        currentOverlay = OverlayType.SPEED_LIMIT;
+        redrawGraph();
     }
 }

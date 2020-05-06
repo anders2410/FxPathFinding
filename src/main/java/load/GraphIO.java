@@ -8,9 +8,9 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
-import paths.LandmarkMode;
+import paths.preprocessing.LandmarkMode;
 import paths.Util;
-import paths.Landmarks;
+import paths.preprocessing.Landmarks;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -20,9 +20,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-import static paths.LandmarkMode.*;
+import static paths.preprocessing.LandmarkMode.*;
 
-//TODO: Autogenerate folders
 public class GraphIO {
 
     public static String mapsDir = "maps\\";

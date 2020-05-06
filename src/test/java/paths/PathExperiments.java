@@ -5,12 +5,13 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
+import paths.preprocessing.LandmarkMode;
+import paths.preprocessing.Landmarks;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 public class PathExperiments {
     Graph graph;
@@ -28,7 +29,7 @@ public class PathExperiments {
         SSSP.setGraph(graph);
     }
 
-    @Test
+    /*@Test
     public void sccPoland() {
         graphIO.loadGraph("malta-latest.osm.pbf");
         graph = graphIO.getGraph();
@@ -52,7 +53,7 @@ public class PathExperiments {
         GraphIO graphIO = new GraphIO(Util::sphericalDistance, true);
         graphIO.storeGraph(Util.trimFileTypes("denmark-latest.osm.pbf").concat("-scc"), graph);
         System.out.println("Finished computing SCC");
-    }
+    }*/
 
     @Test
     public void allSpeedTestOne(){
