@@ -6,11 +6,13 @@ public class EdgeInfo implements Serializable {
 
     private int from, to;
     private int maxSpeed;
+    private Surface surface;
 
-    public EdgeInfo(int from, int to, int maxSpeed) {
+    public EdgeInfo(int from, int to, int maxSpeed, Surface surface) {
         this.from = from;
         this.to = to;
         this.maxSpeed = maxSpeed;
+        this.surface = surface;
     }
 
     public int getFrom() {
@@ -23,6 +25,10 @@ public class EdgeInfo implements Serializable {
 
     public int getMaxSpeed() {
         return maxSpeed;
+    }
+
+    public Surface getSurface() {
+        return surface;
     }
 
     @Override

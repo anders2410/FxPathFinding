@@ -3,6 +3,7 @@ package load.pbfparsing.delegates;
 import de.topobyte.osm4j.core.model.iface.OsmWay;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
 import info_model.EdgeInfo;
+import info_model.Surface;
 import model.Graph;
 import info_model.GraphInfo;
 import model.Node;
@@ -11,6 +12,8 @@ import load.pbfparsing.interfaces.CollapsingStrategy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+
+import static info_model.Surface.*;
 
 public class CollapsingStrategyFull implements CollapsingStrategy {
     boolean oneWayFlag = true;
@@ -67,26 +70,9 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
                 graph.addEdge(node1, node2, cum_Dist);
-                String maxSpeedString = tags.get("maxspeed");
-
-                int maxSpeed = -1;
-                if (maxSpeedString != null) {
-                    if (maxSpeedString.contains("rural")) {         // Primært DK, Rumænien og Rusland
-                        maxSpeed = 80;
-                    } else if (maxSpeedString.contains("urban")) {  // Primært DK, Rumænien og Rusland
-                        maxSpeed = 50;
-                    } else if (maxSpeedString.equals("none")) {     // Tyske motorveje
-                        maxSpeed = 140;
-                    } else {
-                        try {
-                            maxSpeed = Integer.parseInt(maxSpeedString);
-                        } catch (NumberFormatException e) {
-                            System.out.println("Couldn't parse: " + maxSpeedString + " to integer.");
-                        }
-                    }
-                }
-                EdgeInfo edgeInfo = new EdgeInfo(node1.index, node2.index, maxSpeed);
+                EdgeInfo edgeInfo = getEdgeInfo(tags, node1, node2);
                 graphInfo.addEdge(edgeInfo);
+                EdgeInfo revEdgeInfo = new EdgeInfo(edgeInfo.getTo(), edgeInfo.getFrom(), edgeInfo.getMaxSpeed(), edgeInfo.getSurface());
 
                 // Flag to decide whether to use oneWay roads.
                 if (oneWayFlag) {
@@ -95,12 +81,12 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                     if (roadValue == null || !roadValue.equals("yes")) {
                         if (roundabout == null || !roundabout.equals("roundabout")) {
                             graph.addEdge(node2, node1, cum_Dist);
-                            graphInfo.addEdge(new EdgeInfo(edgeInfo.getTo(), edgeInfo.getFrom(), maxSpeed));
+                            graphInfo.addEdge(revEdgeInfo);
                         }
                     }
                 } else {
                     graph.addEdge(node2, node1, cum_Dist);
-                    graphInfo.addEdge(new EdgeInfo(edgeInfo.getTo(), edgeInfo.getFrom(), maxSpeed));
+                    graphInfo.addEdge(revEdgeInfo);
                 }
 
                 cum_Dist = 0;
@@ -108,6 +94,57 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 i = j;
             }
         }
+    }
+
+    private static final Map<String, Surface> surfaceMap = new HashMap<>();
+    static {
+        surfaceMap.put("asphalt", ASPHALT);
+        surfaceMap.put("gravel", GRAVEL);
+        surfaceMap.put("dirt", DIRT);
+        surfaceMap.put("grass", GRASS);
+        surfaceMap.put("paving_stones", PAVING_STONES);
+        surfaceMap.put("paved", PAVED);
+        surfaceMap.put("unpaved", UNPAVED);
+        surfaceMap.put("concrete", CONCRETE);
+        surfaceMap.put("cobblestone", COBBLESTONE);
+        surfaceMap.put("ground", GROUND);
+        surfaceMap.put("sand", SAND);
+        surfaceMap.put("earth", EARTH);
+    }
+
+    private EdgeInfo getEdgeInfo(Map<String, String> tags, Node node1, Node node2) {
+        // MaxSpeed
+        String maxSpeedString = tags.get("maxspeed");
+        int maxSpeed = -1;
+        if (maxSpeedString != null) {
+            if (maxSpeedString.contains("rural")) {         // Primært DK, Rumænien og Rusland
+                maxSpeed = 80;
+            } else if (maxSpeedString.contains("urban")) {  // Primært DK, Rumænien og Rusland
+                maxSpeed = 50;
+            } else if (maxSpeedString.equals("none")) {     // Tyske motorveje
+                maxSpeed = 140;
+            } else {
+                double factor = 1;
+                if (maxSpeedString.contains(" mph")) {
+                    maxSpeedString = maxSpeedString.split(" mph")[0];
+                    factor = 1.60934;
+                }
+                if (maxSpeedString.contains(";")) {
+                    maxSpeedString = maxSpeedString.split(";")[0];
+                }
+                try {
+                    maxSpeed = Integer.parseInt(maxSpeedString);
+                } catch (NumberFormatException e) {
+                    System.out.println("Couldn't parse: " + maxSpeedString + " to integer.");
+                }
+                maxSpeed = (int) Math.round(maxSpeed * factor);
+            }
+        }
+        // Surface
+        String surfaceString = tags.get("surface");
+        Surface surface = surfaceMap.getOrDefault(surfaceString, UNKNOWN);
+
+        return new EdgeInfo(node1.index, node2.index, maxSpeed, surface);
     }
 
     @Override

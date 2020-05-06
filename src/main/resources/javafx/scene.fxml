@@ -96,6 +96,7 @@
                     <MenuItem onAction="#handleOverlayCH" text="CH-Rank" />
                     <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
                     <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>
+                    <MenuItem onAction="#handleOverlaySurface" text="Surface" />
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>

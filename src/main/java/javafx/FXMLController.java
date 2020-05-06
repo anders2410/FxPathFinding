@@ -319,30 +319,61 @@ public class FXMLController implements Initializable {
         }
     }
 
+    private OverlayType currentOverlay = OverlayType.NONE;
+
     private Color makeColor(Edge edge) {
         Color color = chooseAlgorithmEdgeColor(edge);
         if (currentOverlay == OverlayType.REACH && SSSP.getReachBounds() != null) {
             findMaxReach();
             color = graduateColorSaturation(color, SSSP.getReachBounds().get(edge.from), maxReach);
         }
-        if (currentOverlay == OverlayType.CH && SSSP.getContractionHierarchiesResult() != null){
+        if (currentOverlay == OverlayType.CH && SSSP.getContractionHierarchiesResult() != null) {
             findMaxRank();
             color = graduateColorSaturation(color, SSSP.getContractionHierarchiesResult().getRanks().get(edge.from), maxRank);
         }
         if (currentOverlay == OverlayType.SPEED_MARKED && graphInfo != null) {
             EdgeInfo info = graphInfo.getEdge(edge);
             if (info.getMaxSpeed() == -1) {
-                color = Color.WHITE;
+                color = Color.BROWN;
             }
         }
         if (currentOverlay == OverlayType.SPEED_LIMIT && graphInfo != null) {
             color = graduateColorSaturation(color, graphInfo.getEdge(edge).getMaxSpeed(), 140);
         }
+        if (currentOverlay == OverlayType.SURFACE && graphInfo != null) {
+            EdgeInfo info = graphInfo.getEdge(edge);
+            switch (info.getSurface()) {
+                case PAVED:
+                case CONCRETE:
+                case ASPHALT:
+                    color = Color.BLACK;
+                    break;
+                case GRAVEL:
+                    color = Color.RED;
+                    break;
+                case GROUND:
+                case SAND:
+                case EARTH:
+                case DIRT:
+                case UNPAVED:
+                    color = Color.BROWN;
+                    break;
+                case GRASS:
+                    color = Color.GREEN;
+                    break;
+                case PAVING_STONES:
+                case COBBLESTONE:
+                    color = Color.BLUE;
+                    break;
+                case UNKNOWN:
+                    color = Color.PINK;
+                    break;
+            }
+        }
         return color;
     }
 
     private double maxReach = -1;
-    double maxRank = -1;
 
     private void findMaxReach() {
         if (SSSP.getReachBounds() == null || maxReach != -1) {
@@ -356,6 +387,8 @@ public class FXMLController implements Initializable {
         }
         maxReach = maxSoFar;
     }
+
+    double maxRank = -1;
 
     private void findMaxRank() {
         if (SSSP.getContractionHierarchiesResult() == null || maxRank != -1) {
@@ -1262,8 +1295,6 @@ public class FXMLController implements Initializable {
         indicatorTimeline.playFromStart();
     }
 
-    private OverlayType currentOverlay = OverlayType.NONE;
-
     public void handleOverlayNone() {
         currentOverlay = OverlayType.NONE;
         redrawGraph();
@@ -1286,6 +1317,11 @@ public class FXMLController implements Initializable {
 
     public void handleOverlaySpeedLimits() {
         currentOverlay = OverlayType.SPEED_LIMIT;
+        redrawGraph();
+    }
+
+    public void handleOverlaySurface() {
+        currentOverlay = OverlayType.SURFACE;
         redrawGraph();
     }
 

@@ -1,9 +1,6 @@
 package model;
 
-import info_model.EdgeInfo;
-import info_model.GraphInfo;
-import info_model.GraphPair;
-import info_model.NodeInfo;
+import info_model.*;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -188,7 +185,8 @@ public class ModelUtil {
                     int newFrom = indexMap.get(from);
                     int newTo = indexMap.get(edge.getTo());
                     int newMaxSpeed = edge.getMaxSpeed();
-                    subAdjList.get(newFrom).add(new EdgeInfo(newFrom, newTo, newMaxSpeed));
+                    Surface newSurface = edge.getSurface();
+                    subAdjList.get(newFrom).add(new EdgeInfo(newFrom, newTo, newMaxSpeed, newSurface));
                 }
             }
         }
