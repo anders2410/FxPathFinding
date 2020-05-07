@@ -7,6 +7,8 @@ import model.Node;
 import org.junit.Before;
 import org.junit.Test;
 import load.pbfparsing.PBFParser;
+import paths.preprocessing.ContractionHierarchies;
+import paths.preprocessing.ContractionHierarchiesResult;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -96,7 +98,7 @@ public class SSSPPBFTest {
 
     @Test
     public void testAlgorithms() {
-        int algorithms = 13;
+        int algorithms = 14;
         matrix = new int[algorithms];
 //        List<Graph> graphs = new GraphUtil(graph).scc();
 //        graph = graphs.get(0);
@@ -109,7 +111,10 @@ public class SSSPPBFTest {
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 
-        testCases = 100000;
+        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
+        ContractionHierarchiesResult contractionHierarchiesResult = contractionHierarchies.preprocess();
+        SSSP.setContractionHierarchiesResult(contractionHierarchiesResult);
+        testCases = 1000;
         runtimes = new double[algorithms][testCases];
 
         i = 0;
@@ -134,6 +139,8 @@ public class SSSPPBFTest {
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_A_STAR, 10);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH_LANDMARKS, 11);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_LANDMARKS, 12);
+            testSingle(distDijk, pathDijk, AlgorithmMode.CONTRACTION_HIERARCHIES, 13);
+
             //Only interested in tests where path is atleast 100
             i++;
         }
@@ -148,6 +155,7 @@ public class SSSPPBFTest {
         double distAstar = aStarRes.d;
         List<Integer> pathAstar = aStarRes.path;
         if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
+            System.out.println(aStar + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
             matrix[i2]++;
             failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size() - 1));
         }

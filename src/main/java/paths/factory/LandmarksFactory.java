@@ -28,7 +28,10 @@ public class LandmarksFactory implements AlgorithmFactory {
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getSearchMeetTermination();
     }
-
+    @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
         return PreProcessGenerator.getLandmarksPreStrategy();

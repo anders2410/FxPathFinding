@@ -26,6 +26,11 @@ public class ReachLandmarksFactory implements AlgorithmFactory {
     }
 
     @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
+
+    @Override
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getSearchMeetTermination();
     }
