@@ -119,14 +119,12 @@ public class FXMLController implements Initializable {
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType lt = graphIO.loadGraph(fileName);
                 isSCCGraph = lt == LoadType.SCC;
-                if (lt == LoadType.TEMP || lt == LoadType.SCC) {
-                    graphInfo = graphIO.getGraphInfo();
-                }
                 return graphIO.getGraph();
             }
         };
         loadGraphTask.setOnSucceeded(event -> {
             graph = loadGraphTask.getValue();
+            new GraphIO(distanceStrategy, isSCCGraph).loadGraphInfo(fileName);
             landmarksGenerator = new Landmarks(graph);
             new GraphIO(distanceStrategy, isSCCGraph).loadBestLandmarks(fileName, landmarksGenerator);
             SSSP.setReachBounds(null);
@@ -176,17 +174,21 @@ public class FXMLController implements Initializable {
         resetSelection();
     }
 
-    private void loadInfo() {
-        Task<GraphInfo> graphInfoTask = new Task<>() {
+    private void parseInfo() {
+        Task<LoadType> graphInfoTask = new Task<>() {
             @Override
-            protected GraphInfo call() {
+            protected LoadType call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-                graphIO.loadGraphInfo(fileName);
-                return graphIO.getGraphInfo();
+                LoadType loadType = graphIO.parseGraphInfo(fileName);
+                graphInfo = graphIO.getGraphInfo();
+                return loadType;
             }
         };
         graphInfoTask.setOnSucceeded(e -> {
-            graphInfo = graphInfoTask.getValue();
+            LoadType loadType = graphInfoTask.getValue();
+            if (loadType == LoadType.TEMP || loadType == LoadType.PBF) {
+                runSCC();
+            }
             SSSP.setGraphInfo(graphInfo);
         });
         new Thread(graphInfoTask).start();
@@ -1008,7 +1010,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLoadInfo() {
-        loadInfo();
+        parseInfo();
     }
 
     public void handleReachEvent() {
@@ -1313,6 +1315,9 @@ public class FXMLController implements Initializable {
                 ModelUtil gu = new ModelUtil(graph);
                 gu.setProgressListener(this::updateProgress);
                 List<Integer> nodesToKeep = gu.scc().get(0);
+                if (graphInfo == null) {
+                    return new GraphPair(gu.subGraph(nodesToKeep), null);
+                }
                 return gu.subGraphPair(graphInfo, nodesToKeep);
             }
         };

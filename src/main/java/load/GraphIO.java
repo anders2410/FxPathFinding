@@ -168,22 +168,32 @@ public class GraphIO {
         }
     }
 
-    public void loadGraphInfo(String filename) {
+    public LoadType parseGraphInfo(String filename) {
         if (Util.getFileType(filename).equals("osm")) {
             System.out.println("Can't load info from .osm file");
-            return;
+            return LoadType.NONE;
         }
+
+        String infoNameSCC = getFolderName(filename) + Util.trimFileTypes(filename) + "-scc-info.tmp";
+        File infoFileSCC = new File(infoNameSCC);
+        if (isSCCGraph && !infoFileSCC.exists()) {
+            isSCCGraph = false;
+        }
+
         String infoName = getTrimmedFolderSCCName(filename) + "-info.tmp";
         File infoFile = new File(infoName);
+
         if (infoFile.exists()) {
-            loadGraphInfo(filename, "Loaded info from tmp file");
+            loadGraphInfo(filename);
+            return isSCCGraph ? LoadType.SCC : LoadType.TEMP;
         } else {
             loadPBF(filename, true);
             System.out.println("Info parsed from pbf file");
+            return LoadType.PBF;
         }
     }
 
-    public void loadGraphInfo(String fileName, String msg) {
+    public void loadGraphInfo(String fileName) {
         String infoName = getTrimmedFolderSCCName(fileName) + "-info.tmp";
         File infoFile = new File(infoName);
         if (!infoFile.exists()) {
@@ -198,7 +208,7 @@ public class GraphIO {
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         } finally {
-            System.out.println(msg);
+            System.out.println("Loaded info from tmp file");
         }
     }
 
