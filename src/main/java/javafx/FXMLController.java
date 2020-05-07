@@ -1041,7 +1041,9 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateCHEvent() {
-        if (SSSP.getContractionHierarchiesResult() != null) {
+        GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+        System.out.println(fileName);
+        if (graphIO.doesFileExists(fileName, "-contraction-hierarchies.tmp")) {
             loadContractionHierarchies();
         } else {
             generateContractionHierarchies();
