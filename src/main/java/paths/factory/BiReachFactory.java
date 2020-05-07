@@ -28,7 +28,10 @@ public class BiReachFactory implements AlgorithmFactory {
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getBiReachTermination();
     }
-
+    @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
         return PreProcessGenerator.getReachPreStrategy();

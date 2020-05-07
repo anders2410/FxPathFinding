@@ -30,8 +30,14 @@ public class OneToAllDijkstra implements AlgorithmFactory {
     }
 
     @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
+
+    @Override
     public PreProcessStrategy getPreProcessStrategy() {
-        return () -> {};
+        return () -> {
+        };
     }
 
     @Override

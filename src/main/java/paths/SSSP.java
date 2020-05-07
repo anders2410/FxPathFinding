@@ -67,6 +67,7 @@ public class SSSP {
     private static double singleToAllBound;
     private static ContractionHierarchiesResult contractionHierarchiesResult;
     private static double bestPathLengthSoFar;
+    private static ScanPruningStrategy scanPruningStrategy;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -157,6 +158,7 @@ public class SSSP {
         priorityStrategyB = factory.getPriorityStrategy();
         priorityQueueGetter = getJavaQueue();
         alternationStrategy = factory.getAlternationStrategy();
+        scanPruningStrategy = factory.getScanPruningStrategy();
     }
 
     // Path finding
@@ -249,7 +251,7 @@ public class SSSP {
                 for (int i = 0; i < result.size() - 1; i++) {
                     Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(result.get(i), result.get(i + 1)));
                     if (contractedNode != null) {
-                        result.add(i+1, contractedNode);
+                        result.add(i + 1, contractedNode);
                         break;
                     }
                 }
@@ -268,15 +270,17 @@ public class SSSP {
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
         Integer currentNode = getQueue(dir).poll();
-        if (currentNode == null) {
+        if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
+       /* if (currentNode == null) {
             return;
         }
         // TODO: 04/05/2020 Another IF-statement that should be removed..
-        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > bestPathLengthSoFar) {
+        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > getBestPathLengthSoFar()) {
             return;
         }
-        getScanned(dir).add(currentNode);
         if (mode == BOUNDED_SINGLE_TO_ALL) if (getNodeDist(dir).get(currentNode) > SSSP.getSingleToAllBound()) return;
+*/
+        getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);

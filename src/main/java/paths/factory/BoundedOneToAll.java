@@ -28,7 +28,10 @@ public class BoundedOneToAll implements AlgorithmFactory {
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getEmptyStoppingStrategy();
     }
-
+    @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBoundsPruning();
+    }
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
         return () -> {};
