@@ -1,5 +1,6 @@
 package paths.generator;
 
+import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
 import paths.SSSP;
@@ -14,10 +15,12 @@ public class PreProcessGenerator {
     public static PreProcessStrategy getCHPreStrategy() {
         return () -> {
             List<Integer> ranks = SSSP.getContractionHierarchiesResult().getRanks();
+            Map<Pair<Integer, Integer>, Integer> shortcuts = getContractionHierarchiesResult().getShortcuts();
             Graph graph = SSSP.getContractionHierarchiesResult().getGraph();
-            SSSP.setCHGraph(graph);
-            if (ranks == null || graph == null) {
+            if (ranks == null || graph == null || shortcuts == null) {
                 System.out.println("Something wrong with CH preprocess..");
+            } else {
+                SSSP.setCHGraph(graph);
             }
         };
     }

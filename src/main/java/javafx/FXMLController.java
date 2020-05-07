@@ -1041,6 +1041,14 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateCHEvent() {
+        if (SSSP.getContractionHierarchiesResult() != null) {
+            loadContractionHierarchies();
+        } else {
+            generateContractionHierarchies();
+        }
+    }
+
+    private void generateContractionHierarchies() {
         System.out.println("Generating CH graph!");
         maxRank = -1;
         Task<ContractionHierarchiesResult> CHTask = new Task<>() {
@@ -1054,11 +1062,42 @@ public class FXMLController implements Initializable {
             try {
                 SSSP.setContractionHierarchiesResult(CHTask.get());
                 System.out.println("CH is generated successfully!");
+                saveContractionHierarchies();
             } catch (InterruptedException | ExecutionException ex) {
                 ex.printStackTrace();
             }
         });
         new Thread(CHTask).start();
+    }
+
+    private void loadContractionHierarchies() {
+        Task<ContractionHierarchiesResult> loadTask = new Task<>() {
+            @Override
+            protected ContractionHierarchiesResult call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                return graphIO.loadContractionHierarchies(fileName);
+            }
+        };
+        loadTask.setOnSucceeded(e -> {
+            SSSP.setContractionHierarchiesResult(loadTask.getValue());
+            System.out.println("Loaded Contraction Hierarchies successfully!");
+        });
+        loadTask.setOnFailed(e -> displayFailedDialog("load contraction hierarchies", e));
+        new Thread(loadTask).start();
+    }
+
+    private void saveContractionHierarchies() {
+        Task<Void> saveTask = new Task<>() {
+            @Override
+            protected Void call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                graphIO.saveContractionHierarchies(fileName, SSSP.getContractionHierarchiesResult());
+                System.out.println("Saved Contraction Hierarchies successfully!");
+                return null;
+            }
+        };
+        saveTask.setOnFailed(e -> displayFailedDialog("save contraction hierarchies", e));
+        new Thread(saveTask).start();
     }
 
     // UTILITIES
