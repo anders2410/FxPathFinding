@@ -3,13 +3,17 @@ package paths.preprocessing;
 import javafx.util.Pair;
 import model.Graph;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class ContractionHierarchiesResult {
-    private Graph graph;
-    private List<Integer> ranks;
-    private Map<Pair<Integer, Integer>, Integer> shortcuts;
+public class ContractionHierarchiesResult implements Serializable {
+    // We should define our own ID as different machines could generate different ID's
+    private static final long serialVersionUID = 6529685098267757690L;
+
+    private final Graph graph;
+    private final List<Integer> ranks;
+    private final Map<Pair<Integer, Integer>, Integer> shortcuts;
 
     public ContractionHierarchiesResult(Graph graph, List<Integer> ranks, Map<Pair<Integer, Integer>, Integer> shortcuts) {
         this.graph = graph;

@@ -9,6 +9,7 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
+import paths.preprocessing.ContractionHierarchiesResult;
 import paths.preprocessing.LandmarkMode;
 import paths.Util;
 import paths.preprocessing.Landmarks;
@@ -277,6 +278,43 @@ public class GraphIO {
             FileOutputStream fos = new FileOutputStream(name);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(reachBounds);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ContractionHierarchiesResult loadContractionHierarchies(String fileName) {
+        try {
+            String CHFile = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
+            if (!new File(CHFile).exists()) {
+                return null;
+            }
+            FileInputStream CHInput = new FileInputStream(CHFile);
+            ObjectInputStream CHStream = new ObjectInputStream(CHInput);
+
+            ContractionHierarchiesResult contractionHierarchies = null;
+
+            try {
+                contractionHierarchies = (ContractionHierarchiesResult) CHStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            CHStream.close();
+            assert contractionHierarchies != null;
+            return contractionHierarchies;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void saveContractionHierarchies(String fileName, ContractionHierarchiesResult CHResult) {
+        try {
+            String name = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
+            FileOutputStream fos = new FileOutputStream(name);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(CHResult);
             oos.close();
         } catch (IOException e) {
             e.printStackTrace();
