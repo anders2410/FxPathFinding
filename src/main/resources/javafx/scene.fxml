@@ -60,6 +60,7 @@
                     <MenuItem onAction="#handleSCCEvent" text="SCC"/>
                     <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
                     <MenuItem onAction="#handleGenerateCHEvent" text="Generate CH Graph"/>
+                    <MenuItem onAction="#handleLoadInfo" text="Load Info"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
@@ -78,12 +79,24 @@
             </MenuButton>
             <Separator styleClass="nav_separator"/>
 
+            <MenuButton alignment="CENTER" text="WGHT">
+                <items>
+                    <MenuItem onAction="#handleWeightDistance" text="Distance"/>
+                    <MenuItem onAction="#handleWeightSpeed" text="SpeedLimits"/>
+                    <MenuItem onAction="#handleWeightFlat" text="MostFlat"/>
+                    <MenuItem onAction="#handleWeightTrees" text="MostTrees"/>
+                </items>
+            </MenuButton>
+            <Separator styleClass="nav_separator"/>
+
             <MenuButton alignment="CENTER" text="LAY">
                 <items>
                     <MenuItem onAction="#handleOverlayNone" text="None"/>
                     <MenuItem onAction="#handleOverlayReach" text="ReachBounds"/>
+                    <MenuItem onAction="#handleOverlayCH" text="CH-Rank" />
                     <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
                     <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>
+                    <MenuItem onAction="#handleOverlaySurface" text="Surface" />
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>

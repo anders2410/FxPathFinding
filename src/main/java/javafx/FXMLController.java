@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -31,6 +32,7 @@ import model.Graph;
 import model.ModelUtil;
 import model.Node;
 import paths.*;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.*;
 
 import java.io.File;
@@ -106,6 +108,9 @@ public class FXMLController implements Initializable {
      * @param fileName file to load.
      */
     private void loadNewGraph(String fileName) {
+        if (fileName == null || fileName.equals("")) {
+            return;
+        }
         this.fileName = fileName;
         Task<Graph> loadGraphTask = new Task<>() {
             @Override
@@ -115,15 +120,11 @@ public class FXMLController implements Initializable {
                 LoadType lt = graphIO.loadGraph(fileName);
                 isSCCGraph = lt == LoadType.SCC;
                 if (lt != LoadType.PBF) {
-                    loadGraphInfo();
+                    loadInfo();
+                } else {
+                    graphInfo = graphIO.getGraphInfo();
                 }
                 return graphIO.getGraph();
-            }
-
-            private void loadGraphInfo() {
-                GraphIO graphIOInfo = new GraphIO(distanceStrategy, isSCCGraph);
-                graphIOInfo.loadGraphInfo(Util.trimFileTypes(fileName), "Loaded graph info");
-                graphInfo = graphIOInfo.getGraphInfo();
             }
         };
         loadGraphTask.setOnSucceeded(event -> {
@@ -174,6 +175,22 @@ public class FXMLController implements Initializable {
         SSSP.setGraphInfo(graphInfo);
         SSSP.setLandmarks(landmarksGenerator);
         resetSelection();
+    }
+
+    private void loadInfo() {
+        Task<GraphInfo> graphInfoTask = new Task<>() {
+            @Override
+            protected GraphInfo call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                graphIO.loadGraphInfo(fileName);
+                return graphIO.getGraphInfo();
+            }
+        };
+        graphInfoTask.setOnSucceeded(e -> {
+            graphInfo = graphInfoTask.getValue();
+            SSSP.setGraphInfo(graphInfo);
+        });
+        new Thread(graphInfoTask).start();
     }
 
     private Task<List<ShortestPathResult>> ssspTask;
@@ -302,27 +319,64 @@ public class FXMLController implements Initializable {
         }
     }
 
+    private OverlayType currentOverlay = OverlayType.NONE;
+
     private Color makeColor(Edge edge) {
         Color color = chooseAlgorithmEdgeColor(edge);
         if (currentOverlay == OverlayType.REACH && SSSP.getReachBounds() != null) {
+            findMaxReach();
             color = graduateColorSaturation(color, SSSP.getReachBounds().get(edge.from), maxReach);
+        }
+        if (currentOverlay == OverlayType.CH && SSSP.getContractionHierarchiesResult() != null) {
+            findMaxRank();
+            color = graduateColorSaturation(color, SSSP.getContractionHierarchiesResult().getRanks().get(edge.from), maxRank);
         }
         if (currentOverlay == OverlayType.SPEED_MARKED && graphInfo != null) {
             EdgeInfo info = graphInfo.getEdge(edge);
             if (info.getMaxSpeed() == -1) {
-                color = Color.WHITE;
+                color = Color.BROWN;
             }
         }
         if (currentOverlay == OverlayType.SPEED_LIMIT && graphInfo != null) {
             color = graduateColorSaturation(color, graphInfo.getEdge(edge).getMaxSpeed(), 140);
         }
+        if (currentOverlay == OverlayType.SURFACE && graphInfo != null) {
+            EdgeInfo info = graphInfo.getEdge(edge);
+            switch (info.getSurface()) {
+                case PAVED:
+                case CONCRETE:
+                case ASPHALT:
+                    color = Color.BLACK;
+                    break;
+                case GRAVEL:
+                    color = Color.RED;
+                    break;
+                case GROUND:
+                case SAND:
+                case EARTH:
+                case DIRT:
+                case UNPAVED:
+                    color = Color.BROWN;
+                    break;
+                case GRASS:
+                    color = Color.GREEN;
+                    break;
+                case PAVING_STONES:
+                case COBBLESTONE:
+                    color = Color.BLUE;
+                    break;
+                case UNKNOWN:
+                    color = Color.PINK;
+                    break;
+            }
+        }
         return color;
     }
 
-    private double maxReach = 0;
+    private double maxReach = -1;
 
     private void findMaxReach() {
-        if (SSSP.getReachBounds() == null) {
+        if (SSSP.getReachBounds() == null || maxReach != -1) {
             return;
         }
         double maxSoFar = 0;
@@ -332,6 +386,21 @@ public class FXMLController implements Initializable {
             }
         }
         maxReach = maxSoFar;
+    }
+
+    double maxRank = -1;
+
+    private void findMaxRank() {
+        if (SSSP.getContractionHierarchiesResult() == null || maxRank != -1) {
+            return;
+        }
+        double maxSoFar = 0;
+        for (double rank : SSSP.getContractionHierarchiesResult().getRanks()) {
+            if (maxSoFar < rank && rank < 100000) {
+                maxSoFar = rank;
+            }
+        }
+        maxRank = maxSoFar;
     }
 
     public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
@@ -839,7 +908,7 @@ public class FXMLController implements Initializable {
     public void handleChooseFileEvent() {
         selectedNodes = new ArrayDeque<>();
         File selectedFile = GraphIO.selectMapFile(stage);
-        if (selectedFile.exists()) {
+        if (selectedFile != null) {
             loadNewGraph(selectedFile.getName());
         }
     }
@@ -925,6 +994,10 @@ public class FXMLController implements Initializable {
         }
     }
 
+    public void handleLoadInfo() {
+        loadInfo();
+    }
+
     public void handleReachEvent() {
         chooseReachAlgorithm(REACH);
     }
@@ -951,7 +1024,8 @@ public class FXMLController implements Initializable {
 
     private void chooseReachAlgorithm(AlgorithmMode mode) {
         if (SSSP.getReachBounds() == null) {
-            System.out.println("No reach bounds found");
+            System.out.println("No reach bounds found. Trying to load them.");
+            loadReachBounds();
             return;
         }
         chooseAlgorithm(mode);
@@ -968,6 +1042,7 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateCHEvent() {
         System.out.println("Generating CH graph!");
+        maxRank = -1;
         Task<ContractionHierarchiesResult> CHTask = new Task<>() {
             @Override
             protected ContractionHierarchiesResult call() {
@@ -1119,6 +1194,7 @@ public class FXMLController implements Initializable {
     }
 
     private void generateReachBounds() {
+        maxReach = -1;
         Task<List<Double>> reachGenTask = new Task<>() {
             @Override
             protected List<Double> call() {
@@ -1130,7 +1206,6 @@ public class FXMLController implements Initializable {
         reachGenTask.setOnSucceeded(e -> {
             List<Double> bounds = reachGenTask.getValue();
             SSSP.setReachBounds(bounds);
-            findMaxReach();
             saveReachBounds();
             playIndicatorCompleted();
         });
@@ -1220,8 +1295,6 @@ public class FXMLController implements Initializable {
         indicatorTimeline.playFromStart();
     }
 
-    private OverlayType currentOverlay = OverlayType.NONE;
-
     public void handleOverlayNone() {
         currentOverlay = OverlayType.NONE;
         redrawGraph();
@@ -1229,6 +1302,11 @@ public class FXMLController implements Initializable {
 
     public void handleOverlayReach() {
         currentOverlay = OverlayType.REACH;
+        redrawGraph();
+    }
+
+    public void handleOverlayCH() {
+        currentOverlay = OverlayType.CH;
         redrawGraph();
     }
 
@@ -1240,5 +1318,32 @@ public class FXMLController implements Initializable {
     public void handleOverlaySpeedLimits() {
         currentOverlay = OverlayType.SPEED_LIMIT;
         redrawGraph();
+    }
+
+    public void handleOverlaySurface() {
+        currentOverlay = OverlayType.SURFACE;
+        redrawGraph();
+    }
+
+    public void handleWeightDistance() {
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        runAlgorithm();
+    }
+
+    public void handleWeightSpeed() {
+        if (graphInfo != null) {
+            SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getMaxSpeedTime());
+            runAlgorithm();
+        } else {
+            System.out.println("Info hasn't been generated for this map: " + fileName);
+        }
+    }
+
+    public void handleWeightFlat() {
+        System.out.println("Not implemented");
+    }
+
+    public void handleWeightTrees() {
+        System.out.println("Not implemented");
     }
 }

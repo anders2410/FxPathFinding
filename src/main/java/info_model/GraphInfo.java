@@ -46,7 +46,7 @@ public class GraphInfo implements Serializable {
                 return edgeInfo;
             }
         }
-        return new EdgeInfo(0,0, -1);
+        return new EdgeInfo(0,0, -1, Surface.UNKNOWN);
     }
 
     public void printAdjList() {

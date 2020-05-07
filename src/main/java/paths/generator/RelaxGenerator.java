@@ -145,7 +145,12 @@ public class RelaxGenerator {
             }
         };
     }
-/*
+
+    public static void setEdgeWeightStrategy(Function<Edge, Double> edgeWeightStrategy) {
+        RelaxGenerator.edgeWeightStrategy = edgeWeightStrategy;
+    }
+
+    /*
     public static RelaxStrategy getAStarNew() {
         return (from, edge, dir) -> {
             edge.visited = true;
