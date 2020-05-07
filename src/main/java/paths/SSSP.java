@@ -271,15 +271,6 @@ public class SSSP {
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
         Integer currentNode = getQueue(dir).poll();
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
-       /* if (currentNode == null) {
-            return;
-        }
-        // TODO: 04/05/2020 Another IF-statement that should be removed..
-        if (mode == CONTRACTION_HIERARCHIES && getNodeDist(dir).get(currentNode) > getBestPathLengthSoFar()) {
-            return;
-        }
-        if (mode == BOUNDED_SINGLE_TO_ALL) if (getNodeDist(dir).get(currentNode) > SSSP.getSingleToAllBound()) return;
-*/
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
