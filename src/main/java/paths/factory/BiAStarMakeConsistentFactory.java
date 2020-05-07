@@ -36,6 +36,11 @@ public class BiAStarMakeConsistentFactory implements AlgorithmFactory {
     }
 
     @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
+
+    @Override
     public AlternationStrategy getAlternationStrategy() {
         return AlternationGenerator.getSameDistanceStrategy();
     }

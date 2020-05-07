@@ -38,4 +38,9 @@ public class AStarFactory implements AlgorithmFactory {
     public AlternationStrategy getAlternationStrategy() {
         return AlternationGenerator.getOneDirectional();
     }
+
+    @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
 }

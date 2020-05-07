@@ -1056,7 +1056,6 @@ public class FXMLController implements Initializable {
     public void handleGenerateCHEvent() {
         GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
         if (!graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
-            System.out.println(fileName);
             generateContractionHierarchies();
         }
     }
@@ -1068,6 +1067,7 @@ public class FXMLController implements Initializable {
             @Override
             protected ContractionHierarchiesResult call() {
                 ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
+                contractionHierarchies.setProgressListener(this::updateProgress);
                 return contractionHierarchies.preprocess();
             }
         };
@@ -1076,10 +1076,16 @@ public class FXMLController implements Initializable {
                 SSSP.setContractionHierarchiesResult(CHTask.get());
                 System.out.println("CH is generated successfully!");
                 saveContractionHierarchies();
+                playIndicatorCompleted();
             } catch (InterruptedException | ExecutionException ex) {
                 ex.printStackTrace();
             }
         });
+        CHTask.setOnFailed(e -> {
+            playIndicatorCompleted();
+            displayFailedDialog("generate contraction hierarchies", e);
+        });
+        attachProgressIndicator(CHTask.progressProperty());
         new Thread(CHTask).start();
     }
 

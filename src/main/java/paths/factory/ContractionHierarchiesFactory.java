@@ -28,7 +28,10 @@ public class ContractionHierarchiesFactory implements AlgorithmFactory {
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getEmptyStoppingStrategy();
     }
-
+    @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getCHPruning();
+    }
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
         return PreProcessGenerator.getCHPreStrategy();

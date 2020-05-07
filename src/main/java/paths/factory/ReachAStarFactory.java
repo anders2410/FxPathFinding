@@ -24,7 +24,10 @@ public class ReachAStarFactory implements AlgorithmFactory {
     public RelaxStrategy getRelaxStrategy() {
         return RelaxGenerator.getReach();
     }
-
+    @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
     @Override
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getSearchMeetTermination();

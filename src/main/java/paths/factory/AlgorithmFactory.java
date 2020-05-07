@@ -16,4 +16,6 @@ public interface AlgorithmFactory {
     PreProcessStrategy getPreProcessStrategy();
 
     AlternationStrategy getAlternationStrategy();
+
+    ScanPruningStrategy getScanPruningStrategy();
 }

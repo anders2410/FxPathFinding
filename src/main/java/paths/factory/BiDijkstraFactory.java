@@ -33,7 +33,10 @@ public class BiDijkstraFactory implements AlgorithmFactory {
     public PreProcessStrategy getPreProcessStrategy() {
         return () -> {};
     }
-
+    @Override
+    public ScanPruningStrategy getScanPruningStrategy() {
+        return ScanPruningGenerator.getBasePruning();
+    }
     @Override
     public AlternationStrategy getAlternationStrategy() {
         return AlternationGenerator.getAmountSeenStrategy();
