@@ -175,7 +175,7 @@ public class ModelUtil {
         for (int i = 0; i < nodesToKeep.size(); i++) {
             indexMap.put(nodesToKeep.get(i), i);
             NodeInfo oldNode = graphInfo.getNodeList().get(nodesToKeep.get(i));
-            NodeInfo newNode = new NodeInfo(i);
+            NodeInfo newNode = new NodeInfo(i, oldNode.getNatureValue(), oldNode.isFuelAmenity());
             subNodeList.add(newNode);
         }
 

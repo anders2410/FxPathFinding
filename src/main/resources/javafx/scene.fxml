@@ -97,6 +97,8 @@
                     <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
                     <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>
                     <MenuItem onAction="#handleOverlaySurface" text="Surface" />
+                    <MenuItem onAction="#handleOverlayNature" text="Nature"/>
+                    <MenuItem onAction="#handleOverlayFuel" text="Fuel amenities"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>

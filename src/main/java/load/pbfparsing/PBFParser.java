@@ -34,6 +34,7 @@ public class PBFParser {
     private Graph graph;
     private GraphInfo graphInfo;
     private String fileName;
+    private boolean parseInfo;
     private ArrayList<Node> nodeList;
     private ArrayList<NodeInfo> nodeListInfo;
     private Map<String, Node> nodeMap;
@@ -49,8 +50,9 @@ public class PBFParser {
      *
      * @param fileName the name of the file you want to extract information from.
      */
-    public PBFParser(String fileName) {
+    public PBFParser(String fileName, boolean parseInfo) {
         this.fileName = fileName;
+        this.parseInfo = parseInfo;
         nodeList = new ArrayList<>();
         nodeListInfo = new ArrayList<>();
         nodeMap = new HashMap<>();
@@ -65,11 +67,13 @@ public class PBFParser {
      */
     public void executePBFParser() throws IOException {
         System.out.print("Started PBFParsing\n");
-        collapsingStrategy = new CollapsingStrategyFull(distanceStrategy);
+        collapsingStrategy = new CollapsingStrategyFull(distanceStrategy, parseInfo);
         Map<String, Integer> validNodes = findValidNodes();
-        int sumOfValid = collapsingStrategy.getSumOfValid(validNodes);
-        graph = new Graph(sumOfValid);
-        graphInfo = new GraphInfo(sumOfValid);
+        int amountOfValid = collapsingStrategy.getAmountOfValid(validNodes);
+        graph = new Graph(amountOfValid);
+        if (parseInfo) {
+            graphInfo = new GraphInfo(amountOfValid);
+        }
 
         collapsingStrategy.initSecondPass(graph, graphInfo, validNodes);
         buildGraph(validNodes);
@@ -103,7 +107,7 @@ public class PBFParser {
                     nodeMap.put(id, n);
                     if (validNodesMap.get(id) > 1) {
                         nodeList.add(n);
-                        nodeListInfo.add(new NodeInfo(n.index));
+                        nodeListInfo.add(getNodeInfo(n));
                         indexCounter++;
                     }
                 }
@@ -125,7 +129,35 @@ public class PBFParser {
         }
 
         graph.setNodeList(nodeList);
-        graphInfo.setNodeList(nodeListInfo);
+        if (parseInfo) {
+            graphInfo.setNodeList(nodeListInfo);
+        }
+    }
+
+    private NodeInfo getNodeInfo(Node n) {
+        float natureValue = 0;
+        for (OsmNode naturalNode : naturalNodes) {
+            double dist = getSquaredDistance(n, naturalNode.getLongitude(), naturalNode.getLatitude());
+            if (dist < 0.0625) { // Closer than 50 meters to a natural node
+                natureValue++;
+            }
+        }
+
+        boolean closeToFuel = false;
+        for (OsmNode fuelNode : fuelNodes) {
+            double dist = getSquaredDistance(n, fuelNode.getLongitude(), fuelNode.getLatitude());
+            if (dist < 0.0625) { // Closer than 50 meters to a fuel amenity
+                closeToFuel = true;
+            }
+        }
+
+        return new NodeInfo(n.index, natureValue, closeToFuel);
+    }
+
+    private double getSquaredDistance(Node n, double longitude, double latitude) {
+        double lonDif = n.longitude - longitude;
+        double latDif = n.latitude - latitude;
+        return Math.pow(latDif, 2) + Math.pow(lonDif, 2);
     }
 
     /**
@@ -139,6 +171,10 @@ public class PBFParser {
         return new Node(indexCounter, lon, lat);
     }
 
+
+    private Set<OsmNode> naturalNodes = new HashSet<>();
+    private Set<OsmNode> fuelNodes = new HashSet<>();
+
     /**
      * This method go through all the Ways can adds all USED nodes in a set.
      *
@@ -151,11 +187,22 @@ public class PBFParser {
         PbfIterator iterator = new PbfIterator(input, false);
         HashMap<String, Integer> nodeRefMap = new HashMap<>();
         for (EntityContainer container : iterator) {
+            // Filter nodes used to construct graph info
+            if (parseInfo && container.getType() == EntityType.Node) {
+                OsmNode node = (OsmNode) container.getEntity();
+                Map<String, String> tags = OsmModelUtil.getTagsAsMap(node);
+                if (tags.containsKey("amenity") && tags.get("amenity").equals("fuel")) {
+                    fuelNodes.add(node);
+                }
+                if (tags.containsKey("natural")) {
+                    naturalNodes.add(node);
+                }
+            }
+            // Filter nodes used in graph
             if (container.getType() == EntityType.Way) {
                 OsmWay way = (OsmWay) container.getEntity();
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(way);
-                String roadValue = tags.get("highway");
-                if (filteringStrategy.shouldFilter(roadValue) || !tags.containsKey("highway")) {
+                if (!tags.containsKey("highway") || filteringStrategy.shouldFilter(tags.get("highway"))) {
                     continue;
                 }
                 collapsingStrategy.createNodeMap(way, nodeRefMap);

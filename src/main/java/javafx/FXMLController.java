@@ -3,13 +3,13 @@ package javafx;
 import info_model.EdgeInfo;
 import info_model.GraphInfo;
 import info_model.GraphPair;
+import info_model.NodeInfo;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -119,9 +119,7 @@ public class FXMLController implements Initializable {
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType lt = graphIO.loadGraph(fileName);
                 isSCCGraph = lt == LoadType.SCC;
-                if (lt != LoadType.PBF) {
-                    loadInfo();
-                } else {
+                if (lt == LoadType.TEMP || lt == LoadType.SCC) {
                     graphInfo = graphIO.getGraphInfo();
                 }
                 return graphIO.getGraph();
@@ -133,6 +131,7 @@ public class FXMLController implements Initializable {
             new GraphIO(distanceStrategy, isSCCGraph).loadBestLandmarks(fileName, landmarksGenerator);
             SSSP.setReachBounds(null);
             loadReachBounds();
+            loadContractionHierarchies();
             setUpGraph();
             playIndicatorCompleted();
         });
@@ -331,46 +330,60 @@ public class FXMLController implements Initializable {
             findMaxRank();
             color = graduateColorSaturation(color, SSSP.getContractionHierarchiesResult().getRanks().get(edge.from), maxRank);
         }
-        if (currentOverlay == OverlayType.SPEED_MARKED && graphInfo != null) {
-            EdgeInfo info = graphInfo.getEdge(edge);
-            if (info.getMaxSpeed() == -1) {
-                color = Color.BROWN;
-            }
-        }
-        if (currentOverlay == OverlayType.SPEED_LIMIT && graphInfo != null) {
-            color = graduateColorSaturation(color, graphInfo.getEdge(edge).getMaxSpeed(), 140);
-        }
-        if (currentOverlay == OverlayType.SURFACE && graphInfo != null) {
-            EdgeInfo info = graphInfo.getEdge(edge);
-            switch (info.getSurface()) {
-                case PAVED:
-                case CONCRETE:
-                case ASPHALT:
-                    color = Color.BLACK;
-                    break;
-                case GRAVEL:
-                    color = Color.RED;
-                    break;
-                case GROUND:
-                case SAND:
-                case EARTH:
-                case DIRT:
-                case UNPAVED:
+        if (graphInfo != null) {
+            EdgeInfo edgeInfo = graphInfo.getEdge(edge);
+            NodeInfo nodeInfo = graphInfo.getNodeList().get(edgeInfo.getFrom());
+            if (currentOverlay == OverlayType.SPEED_MARKED) {
+                if (edgeInfo.getMaxSpeed() == -1) {
                     color = Color.BROWN;
-                    break;
-                case GRASS:
-                    color = Color.GREEN;
-                    break;
-                case PAVING_STONES:
-                case COBBLESTONE:
-                    color = Color.BLUE;
-                    break;
-                case UNKNOWN:
-                    color = Color.PINK;
-                    break;
+                }
+            }
+            if (currentOverlay == OverlayType.SPEED_LIMIT) {
+                color = graduateColorSaturation(color, edgeInfo.getMaxSpeed(), 140);
+            }
+            if (currentOverlay == OverlayType.SURFACE) {
+                color = getSurfaceColor(edge);
+            }
+            if (currentOverlay == OverlayType.NATURE_VALUE) {
+                if (nodeInfo.getNatureValue() > 0) {
+                    color = Color.DARKGREEN;
+                    color = graduateColorSaturation(color, nodeInfo.getNatureValue(), 6);
+                    color = color.deriveColor(0, 1 - 0.8 + nodeInfo.getNatureValue() / (1.25 * 6), 1, 1);
+                }
+            }
+            if (currentOverlay == OverlayType.FUEL) {
+                if (nodeInfo.isFuelAmenity()) {
+                    color = Color.CYAN;
+                }
             }
         }
         return color;
+    }
+
+    private Color getSurfaceColor(Edge edge) {
+        EdgeInfo info = graphInfo.getEdge(edge);
+        switch (info.getSurface()) {
+            case PAVED:
+            case CONCRETE:
+            case ASPHALT:
+                return Color.BLACK;
+            case GRAVEL:
+                return Color.RED;
+            case GROUND:
+            case SAND:
+            case EARTH:
+            case DIRT:
+            case UNPAVED:
+                return Color.BROWN;
+            case GRASS:
+                return Color.GREEN;
+            case PAVING_STONES:
+            case COBBLESTONE:
+                return Color.BLUE;
+            case UNKNOWN:
+            default:
+                return Color.PINK;
+        }
     }
 
     private double maxReach = -1;
@@ -1042,10 +1055,8 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateCHEvent() {
         GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-        System.out.println(fileName);
-        if (graphIO.doesFileExists(fileName, "-contraction-hierarchies.tmp")) {
-            loadContractionHierarchies();
-        } else {
+        if (!graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
+            System.out.println(fileName);
             generateContractionHierarchies();
         }
     }
@@ -1363,6 +1374,16 @@ public class FXMLController implements Initializable {
 
     public void handleOverlaySurface() {
         currentOverlay = OverlayType.SURFACE;
+        redrawGraph();
+    }
+
+    public void handleOverlayNature() {
+        currentOverlay = OverlayType.NATURE_VALUE;
+        redrawGraph();
+    }
+
+    public void handleOverlayFuel() {
+        currentOverlay = OverlayType.FUEL;
         redrawGraph();
     }
 

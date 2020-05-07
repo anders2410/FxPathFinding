@@ -78,7 +78,7 @@ public class GraphIO {
             return LoadType.OSM;
         }
         if (fileType.equals("pbf")) {
-            loadPBF(fileName);
+            loadPBF(fileName, false);
             System.out.println("Pre-processing completed");
             return LoadType.PBF;
         }
@@ -105,15 +105,17 @@ public class GraphIO {
         return xmlGraphExtractor.getGraph();
     }
 
-    private void loadPBF(String fileName) {
+    private void loadPBF(String fileName, boolean parseInfo) {
         try {
-            PBFParser pbfParser = new PBFParser(fileName);
+            PBFParser pbfParser = new PBFParser(fileName, parseInfo);
             pbfParser.setStoreTMPListener(this::storeGraph);
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
-            graphInfo = pbfParser.getGraphInfo();
-            storeGraphInfo(Util.trimFileTypes(fileName), graphInfo);
+            if (parseInfo) {
+                graphInfo = pbfParser.getGraphInfo();
+                storeGraphInfo(Util.trimFileTypes(fileName), graphInfo);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -168,7 +170,7 @@ public class GraphIO {
         if (infoFile.exists()) {
             loadGraphInfo(filename, "Loaded info from tmp file");
         } else {
-            loadPBF(filename);
+            loadPBF(filename, true);
             System.out.println("Info parsed from pbf file");
         }
     }
@@ -386,7 +388,7 @@ public class GraphIO {
         return graphInfo;
     }
 
-    public boolean doesFileExists(String filename, String extension) {
+    public boolean fileExtensionExists(String filename, String extension) {
         String folderName = getTrimmedFolderSCCName(filename);
         File file = new File(folderName + extension);
         return file.exists();
