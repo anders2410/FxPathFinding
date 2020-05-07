@@ -45,6 +45,14 @@ public class GraphIO {
         bytesRead = 0;
     }
 
+    public GraphIO(boolean isSCCGraph) {
+        this.distanceStrategy = Util::sphericalDistance;
+        this.isSCCGraph = isSCCGraph;
+        generateFolders();
+        progress = 0;
+        bytesRead = 0;
+    }
+
     private void generateFolders() {
         new File(mapsDir).mkdir();
         File[] files = new File(mapsDir).listFiles(file -> !file.isDirectory());
