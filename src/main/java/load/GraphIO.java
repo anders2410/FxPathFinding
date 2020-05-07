@@ -385,6 +385,12 @@ public class GraphIO {
     public GraphInfo getGraphInfo() {
         return graphInfo;
     }
+
+    public boolean doesFileExists(String filename, String extension) {
+        String folderName = getTrimmedFolderSCCName(filename);
+        File file = new File(folderName + extension);
+        return file.exists();
+    }
 }
 
 
