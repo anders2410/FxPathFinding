@@ -46,7 +46,7 @@ public class CollapsingStrategyNone implements CollapsingStrategy {
     }
 
     @Override
-    public int getSumOfValid(Map<String, Integer> validNodes) {
+    public int getAmountOfValid(Map<String, Integer> validNodes) {
         return validNodes.size();
     }
 }

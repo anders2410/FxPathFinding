@@ -45,6 +45,14 @@ public class GraphIO {
         bytesRead = 0;
     }
 
+    public GraphIO(boolean isSCCGraph) {
+        this.distanceStrategy = Util::sphericalDistance;
+        this.isSCCGraph = isSCCGraph;
+        generateFolders();
+        progress = 0;
+        bytesRead = 0;
+    }
+
     private void generateFolders() {
         new File(mapsDir).mkdir();
         File[] files = new File(mapsDir).listFiles(file -> !file.isDirectory());
@@ -78,7 +86,7 @@ public class GraphIO {
             return LoadType.OSM;
         }
         if (fileType.equals("pbf")) {
-            loadPBF(fileName);
+            loadPBF(fileName, false);
             System.out.println("Pre-processing completed");
             return LoadType.PBF;
         }
@@ -105,15 +113,17 @@ public class GraphIO {
         return xmlGraphExtractor.getGraph();
     }
 
-    private void loadPBF(String fileName) {
+    private void loadPBF(String fileName, boolean parseInfo) {
         try {
-            PBFParser pbfParser = new PBFParser(fileName);
+            PBFParser pbfParser = new PBFParser(fileName, parseInfo);
             pbfParser.setStoreTMPListener(this::storeGraph);
             pbfParser.setDistanceStrategy(distanceStrategy);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
-            graphInfo = pbfParser.getGraphInfo();
-            storeGraphInfo(Util.trimFileTypes(fileName), graphInfo);
+            if (parseInfo) {
+                graphInfo = pbfParser.getGraphInfo();
+                storeGraphInfo(Util.trimFileTypes(fileName), graphInfo);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -158,22 +168,32 @@ public class GraphIO {
         }
     }
 
-    public void loadGraphInfo(String filename) {
+    public LoadType parseGraphInfo(String filename) {
         if (Util.getFileType(filename).equals("osm")) {
             System.out.println("Can't load info from .osm file");
-            return;
+            return LoadType.NONE;
         }
+
+        String infoNameSCC = getFolderName(filename) + Util.trimFileTypes(filename) + "-scc-info.tmp";
+        File infoFileSCC = new File(infoNameSCC);
+        if (isSCCGraph && !infoFileSCC.exists()) {
+            isSCCGraph = false;
+        }
+
         String infoName = getTrimmedFolderSCCName(filename) + "-info.tmp";
         File infoFile = new File(infoName);
+
         if (infoFile.exists()) {
-            loadGraphInfo(filename, "Loaded info from tmp file");
+            loadGraphInfo(filename);
+            return isSCCGraph ? LoadType.SCC : LoadType.TEMP;
         } else {
-            loadPBF(filename);
+            loadPBF(filename, true);
             System.out.println("Info parsed from pbf file");
+            return LoadType.PBF;
         }
     }
 
-    public void loadGraphInfo(String fileName, String msg) {
+    public void loadGraphInfo(String fileName) {
         String infoName = getTrimmedFolderSCCName(fileName) + "-info.tmp";
         File infoFile = new File(infoName);
         if (!infoFile.exists()) {
@@ -188,7 +208,7 @@ public class GraphIO {
         } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         } finally {
-            System.out.println(msg);
+            System.out.println("Loaded info from tmp file");
         }
     }
 
@@ -386,7 +406,7 @@ public class GraphIO {
         return graphInfo;
     }
 
-    public boolean doesFileExists(String filename, String extension) {
+    public boolean fileExtensionExists(String filename, String extension) {
         String folderName = getTrimmedFolderSCCName(filename);
         File file = new File(folderName + extension);
         return file.exists();

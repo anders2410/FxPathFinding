@@ -17,8 +17,7 @@ public class ReachProcessor {
     private List<Double> bounds;
     private double[] reachLCPT;
 
-    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
-    };
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> { };
 
     double reachMetric(Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)

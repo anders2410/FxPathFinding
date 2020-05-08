@@ -19,13 +19,15 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
     boolean oneWayFlag = true;
 
     BiFunction<Node, Node, Double> distanceStrategy;
+    private boolean parseInfo;
 
     Graph graph;
     GraphInfo graphInfo;
     Map<String, Integer> validNodesMap;
 
-    public CollapsingStrategyFull(BiFunction<Node, Node, Double> distanceStrategy) {
+    public CollapsingStrategyFull(BiFunction<Node, Node, Double> distanceStrategy, boolean parseInfo) {
         this.distanceStrategy = distanceStrategy;
+        this.parseInfo = parseInfo;
     }
 
     @Override
@@ -60,6 +62,7 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                     Node intermediateNode2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                     lastNodeId = Long.toString(way.getNodeId(j));
                     cum_Dist += distanceStrategy.apply(intermediateNode1, intermediateNode2);
+                    cum_Dist += distanceStrategy.apply(intermediateNode1, intermediateNode2);
                     continue;
                 }
 
@@ -70,9 +73,11 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
                 graph.addEdge(node1, node2, cum_Dist);
-                EdgeInfo edgeInfo = getEdgeInfo(tags, node1, node2);
-                graphInfo.addEdge(edgeInfo);
-                EdgeInfo revEdgeInfo = new EdgeInfo(edgeInfo.getTo(), edgeInfo.getFrom(), edgeInfo.getMaxSpeed(), edgeInfo.getSurface());
+                EdgeInfo edgeInfo = parseInfo ? getEdgeInfo(tags, node1, node2) : null;
+                if (parseInfo) {
+                    graphInfo.addEdge(edgeInfo);
+                }
+                EdgeInfo revEdgeInfo = parseInfo ? new EdgeInfo(edgeInfo.getTo(), edgeInfo.getFrom(), edgeInfo.getMaxSpeed(), edgeInfo.getSurface()) : null;
 
                 // Flag to decide whether to use oneWay roads.
                 if (oneWayFlag) {
@@ -81,12 +86,16 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                     if (roadValue == null || !roadValue.equals("yes")) {
                         if (roundabout == null || !roundabout.equals("roundabout")) {
                             graph.addEdge(node2, node1, cum_Dist);
-                            graphInfo.addEdge(revEdgeInfo);
+                            if (parseInfo) {
+                                graphInfo.addEdge(revEdgeInfo);
+                            }
                         }
                     }
                 } else {
                     graph.addEdge(node2, node1, cum_Dist);
-                    graphInfo.addEdge(revEdgeInfo);
+                    if (parseInfo) {
+                        graphInfo.addEdge(revEdgeInfo);
+                    }
                 }
 
                 cum_Dist = 0;
@@ -156,7 +165,7 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
     }
 
     @Override
-    public int getSumOfValid(Map<String, Integer> validNodes) {
+    public int getAmountOfValid(Map<String, Integer> validNodes) {
         return validNodes.values().stream().map(integer -> {
             if (integer > 1) {
                 return 1;

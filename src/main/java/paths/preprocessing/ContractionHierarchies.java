@@ -7,13 +7,14 @@ import model.Graph;
 import model.Node;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  * This class implements the pre-processing part of Contraction Hierarchies returning the augmented Graph and
  * the ranks of all the nodes.
  */
 public class ContractionHierarchies {
-    private Graph graph;
+    private final Graph graph;
     private final JavaMinPriorityQueue importanceQueue;
 
     // Instead of adding additional fields in Node we store values in internal lists
@@ -27,6 +28,8 @@ public class ContractionHierarchies {
 
     private Map<Integer, List<Integer>> inNodeMap;
     private Map<Pair<Integer, Integer>, Integer> shortcuts;
+
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> { };
 
     public ContractionHierarchies(Graph graph) {
         this.graph = new Graph(graph);
@@ -73,6 +76,7 @@ public class ContractionHierarchies {
     public ContractionHierarchiesResult preprocess() {
         // Stores the number of nodes that are contracted
         int rank = 0;
+        long numberOfContractedNodes = 0;
 
         while (!importanceQueue.isEmpty()) {
             int n = importanceQueue.poll();
@@ -85,11 +89,14 @@ public class ContractionHierarchies {
                 continue;
             }
 
+            progressListener.accept(numberOfContractedNodes, (long) graph.getNodeAmount());
+
             ranks.set(n, rank);
             rank++;
 
             // Contraction part
             contractNode(n, false);
+            numberOfContractedNodes++;
         }
 
         return new ContractionHierarchiesResult(graph, ranks, shortcuts);
@@ -388,6 +395,10 @@ public class ContractionHierarchies {
             List<Edge> edgeList = graph.getAdjList().get(nodeHack.index);
             edgeList.removeIf(edge -> nodeHack.index == edge.to);
         }
+    }
+
+    public void setProgressListener(BiConsumer<Long, Long> progressListener) {
+        this.progressListener = progressListener;
     }
 
     /* // Remove duplicate edges. Always select the one with lowest cost.

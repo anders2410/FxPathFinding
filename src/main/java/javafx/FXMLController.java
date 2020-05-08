@@ -3,13 +3,13 @@ package javafx;
 import info_model.EdgeInfo;
 import info_model.GraphInfo;
 import info_model.GraphPair;
+import info_model.NodeInfo;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -119,20 +119,17 @@ public class FXMLController implements Initializable {
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType lt = graphIO.loadGraph(fileName);
                 isSCCGraph = lt == LoadType.SCC;
-                if (lt != LoadType.PBF) {
-                    loadInfo();
-                } else {
-                    graphInfo = graphIO.getGraphInfo();
-                }
                 return graphIO.getGraph();
             }
         };
         loadGraphTask.setOnSucceeded(event -> {
             graph = loadGraphTask.getValue();
+            new GraphIO(distanceStrategy, isSCCGraph).loadGraphInfo(fileName);
             landmarksGenerator = new Landmarks(graph);
             new GraphIO(distanceStrategy, isSCCGraph).loadBestLandmarks(fileName, landmarksGenerator);
             SSSP.setReachBounds(null);
             loadReachBounds();
+            loadContractionHierarchies();
             setUpGraph();
             playIndicatorCompleted();
         });
@@ -177,17 +174,21 @@ public class FXMLController implements Initializable {
         resetSelection();
     }
 
-    private void loadInfo() {
-        Task<GraphInfo> graphInfoTask = new Task<>() {
+    private void parseInfo() {
+        Task<LoadType> graphInfoTask = new Task<>() {
             @Override
-            protected GraphInfo call() {
+            protected LoadType call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-                graphIO.loadGraphInfo(fileName);
-                return graphIO.getGraphInfo();
+                LoadType loadType = graphIO.parseGraphInfo(fileName);
+                graphInfo = graphIO.getGraphInfo();
+                return loadType;
             }
         };
         graphInfoTask.setOnSucceeded(e -> {
-            graphInfo = graphInfoTask.getValue();
+            LoadType loadType = graphInfoTask.getValue();
+            if (loadType == LoadType.TEMP || loadType == LoadType.PBF) {
+                runSCC();
+            }
             SSSP.setGraphInfo(graphInfo);
         });
         new Thread(graphInfoTask).start();
@@ -331,46 +332,60 @@ public class FXMLController implements Initializable {
             findMaxRank();
             color = graduateColorSaturation(color, SSSP.getContractionHierarchiesResult().getRanks().get(edge.from), maxRank);
         }
-        if (currentOverlay == OverlayType.SPEED_MARKED && graphInfo != null) {
-            EdgeInfo info = graphInfo.getEdge(edge);
-            if (info.getMaxSpeed() == -1) {
-                color = Color.BROWN;
-            }
-        }
-        if (currentOverlay == OverlayType.SPEED_LIMIT && graphInfo != null) {
-            color = graduateColorSaturation(color, graphInfo.getEdge(edge).getMaxSpeed(), 140);
-        }
-        if (currentOverlay == OverlayType.SURFACE && graphInfo != null) {
-            EdgeInfo info = graphInfo.getEdge(edge);
-            switch (info.getSurface()) {
-                case PAVED:
-                case CONCRETE:
-                case ASPHALT:
-                    color = Color.BLACK;
-                    break;
-                case GRAVEL:
-                    color = Color.RED;
-                    break;
-                case GROUND:
-                case SAND:
-                case EARTH:
-                case DIRT:
-                case UNPAVED:
+        if (graphInfo != null) {
+            EdgeInfo edgeInfo = graphInfo.getEdge(edge);
+            NodeInfo nodeInfo = graphInfo.getNodeList().get(edgeInfo.getFrom());
+            if (currentOverlay == OverlayType.SPEED_MARKED) {
+                if (edgeInfo.getMaxSpeed() == -1) {
                     color = Color.BROWN;
-                    break;
-                case GRASS:
-                    color = Color.GREEN;
-                    break;
-                case PAVING_STONES:
-                case COBBLESTONE:
-                    color = Color.BLUE;
-                    break;
-                case UNKNOWN:
-                    color = Color.PINK;
-                    break;
+                }
+            }
+            if (currentOverlay == OverlayType.SPEED_LIMIT) {
+                color = graduateColorSaturation(color, edgeInfo.getMaxSpeed(), 140);
+            }
+            if (currentOverlay == OverlayType.SURFACE) {
+                color = getSurfaceColor(edge);
+            }
+            if (currentOverlay == OverlayType.NATURE_VALUE) {
+                if (nodeInfo.getNatureValue() > 0) {
+                    color = Color.DARKGREEN;
+                    color = graduateColorSaturation(color, nodeInfo.getNatureValue(), 6);
+                    color = color.deriveColor(0, 1 - 0.8 + nodeInfo.getNatureValue() / (1.25 * 6), 1, 1);
+                }
+            }
+            if (currentOverlay == OverlayType.FUEL) {
+                if (nodeInfo.isFuelAmenity()) {
+                    color = Color.CYAN;
+                }
             }
         }
         return color;
+    }
+
+    private Color getSurfaceColor(Edge edge) {
+        EdgeInfo info = graphInfo.getEdge(edge);
+        switch (info.getSurface()) {
+            case PAVED:
+            case CONCRETE:
+            case ASPHALT:
+                return Color.BLACK;
+            case GRAVEL:
+                return Color.RED;
+            case GROUND:
+            case SAND:
+            case EARTH:
+            case DIRT:
+            case UNPAVED:
+                return Color.BROWN;
+            case GRASS:
+                return Color.GREEN;
+            case PAVING_STONES:
+            case COBBLESTONE:
+                return Color.BLUE;
+            case UNKNOWN:
+            default:
+                return Color.PINK;
+        }
     }
 
     private double maxReach = -1;
@@ -995,7 +1010,7 @@ public class FXMLController implements Initializable {
     }
 
     public void handleLoadInfo() {
-        loadInfo();
+        parseInfo();
     }
 
     public void handleReachEvent() {
@@ -1042,10 +1057,7 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateCHEvent() {
         GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-        System.out.println(fileName);
-        if (graphIO.doesFileExists(fileName, "-contraction-hierarchies.tmp")) {
-            loadContractionHierarchies();
-        } else {
+        if (!graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
             generateContractionHierarchies();
         }
     }
@@ -1057,6 +1069,7 @@ public class FXMLController implements Initializable {
             @Override
             protected ContractionHierarchiesResult call() {
                 ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
+                contractionHierarchies.setProgressListener(this::updateProgress);
                 return contractionHierarchies.preprocess();
             }
         };
@@ -1065,10 +1078,16 @@ public class FXMLController implements Initializable {
                 SSSP.setContractionHierarchiesResult(CHTask.get());
                 System.out.println("CH is generated successfully!");
                 saveContractionHierarchies();
+                playIndicatorCompleted();
             } catch (InterruptedException | ExecutionException ex) {
                 ex.printStackTrace();
             }
         });
+        CHTask.setOnFailed(e -> {
+            playIndicatorCompleted();
+            displayFailedDialog("generate contraction hierarchies", e);
+        });
+        attachProgressIndicator(CHTask.progressProperty());
         new Thread(CHTask).start();
     }
 
@@ -1296,6 +1315,9 @@ public class FXMLController implements Initializable {
                 ModelUtil gu = new ModelUtil(graph);
                 gu.setProgressListener(this::updateProgress);
                 List<Integer> nodesToKeep = gu.scc().get(0);
+                if (graphInfo == null) {
+                    return new GraphPair(gu.subGraph(nodesToKeep), null);
+                }
                 return gu.subGraphPair(graphInfo, nodesToKeep);
             }
         };
@@ -1363,6 +1385,16 @@ public class FXMLController implements Initializable {
 
     public void handleOverlaySurface() {
         currentOverlay = OverlayType.SURFACE;
+        redrawGraph();
+    }
+
+    public void handleOverlayNature() {
+        currentOverlay = OverlayType.NATURE_VALUE;
+        redrawGraph();
+    }
+
+    public void handleOverlayFuel() {
+        currentOverlay = OverlayType.FUEL;
         redrawGraph();
     }
 

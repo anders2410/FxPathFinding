@@ -16,5 +16,5 @@ public interface CollapsingStrategy {
 
     void createNodeMap(OsmWay way, HashMap<String, Integer> nodeRefMap);
 
-    int getSumOfValid(Map<String, Integer> validNodes);
+    int getAmountOfValid(Map<String, Integer> validNodes);
 }

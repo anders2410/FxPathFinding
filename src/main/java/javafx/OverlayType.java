@@ -7,4 +7,6 @@ public enum OverlayType {
     SPEED_MARKED,
     SPEED_LIMIT,
     SURFACE,
+    NATURE_VALUE,
+    FUEL,
 }
