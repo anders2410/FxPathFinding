@@ -421,6 +421,8 @@ public class SSSP {
         SSSP.alternationStrategy = alternationStrategy;
     }
 
+    public static Set<Edge> getRelaxed(ABDir dir) {return  dir == A ? relaxedA : relaxedB;}
+
     public static Set<Integer> getScanned(ABDir dir) {
         return dir == A ? scannedA : scannedB;
     }
