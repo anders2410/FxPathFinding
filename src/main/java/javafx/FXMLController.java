@@ -179,6 +179,7 @@ public class FXMLController implements Initializable {
             @Override
             protected LoadType call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                graphIO.setProgressListener(this::updateProgress);
                 LoadType loadType = graphIO.parseGraphInfo(fileName);
                 graphInfo = graphIO.getGraphInfo();
                 return loadType;
@@ -190,7 +191,13 @@ public class FXMLController implements Initializable {
                 runSCC();
             }
             SSSP.setGraphInfo(graphInfo);
+            playIndicatorCompleted();
         });
+        graphInfoTask.setOnFailed(event -> {
+            playIndicatorCompleted();
+            displayFailedDialog("load graph info " + Util.trimFileTypes(fileName), event);
+        });
+        attachProgressIndicator(graphInfoTask.progressProperty());
         new Thread(graphInfoTask).start();
     }
 

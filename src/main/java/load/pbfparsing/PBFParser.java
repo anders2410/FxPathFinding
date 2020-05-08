@@ -17,6 +17,8 @@ import load.pbfparsing.interfaces.FilteringStrategy;
 import paths.Util;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -44,6 +46,7 @@ public class PBFParser {
     private FilteringStrategy filteringStrategy = new StandardFilteringStrategy();
     private CollapsingStrategy collapsingStrategy;
     private BiConsumer<String, Graph> storeTMPListener;
+    private BiConsumer<Long, Long> progressListener;
 
     /**
      * The constructor of the PBFParser.
@@ -77,11 +80,11 @@ public class PBFParser {
 
         collapsingStrategy.initSecondPass(graph, graphInfo, validNodes);
         buildGraph(validNodes);
-
+        progressListener.accept(50L, 100L);
         if (storeTMPListener != null) {
             storeTMPListener.accept(Util.trimFileTypes(fileName), graph);
         }
-
+        progressListener.accept(100L, 100L);
         System.out.print("Finished PBFParsing\n");
     }
 
@@ -97,13 +100,20 @@ public class PBFParser {
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
         // Iterates over all containers in the .pbf file
+        long i = 0;
         for (EntityContainer container : iterator) {
             if (container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
                 String id = Long.toString(node.getId());
-                Node n = constructGraphNode(node);
                 // If a valid node is found, it will add it to the Graph.
                 if (validNodesMap.containsKey(id)) {
+                    i++;
+                    if (i == validNodesMap.size()) {
+                        progressListener.accept(0L,100L);
+                    } else {
+                        progressListener.accept(i, (long) validNodesMap.size());
+                    }
+                    Node n = constructGraphNode(node);
                     nodeMap.put(id, n);
                     if (validNodesMap.get(id) > 1) {
                         nodeList.add(n);
@@ -146,7 +156,7 @@ public class PBFParser {
         boolean closeToFuel = false;
         for (OsmNode fuelNode : fuelNodes) {
             double dist = getSquaredDistance(n, fuelNode.getLongitude(), fuelNode.getLatitude());
-            if (dist < 0.0625) { // Closer than 50 meters to a fuel amenity
+            if (dist < 0.0025) { // Closer than 50 meters to a fuel amenity
                 closeToFuel = true;
             }
         }
@@ -181,12 +191,21 @@ public class PBFParser {
      * @return The set of all valid nodes.
      * @throws FileNotFoundException Is thrown if file cannot be found.
      */
-    private Map<String, Integer> findValidNodes() throws FileNotFoundException {
+    private Map<String, Integer> findValidNodes() throws IOException {
         File file = new File(mapsDir + fileName);
+        int average_node_size = 9;
+        long approx_nodes = Files.size(Paths.get(file.getAbsolutePath()))/average_node_size;
         FileInputStream input = new FileInputStream(file);
         PbfIterator iterator = new PbfIterator(input, false);
         HashMap<String, Integer> nodeRefMap = new HashMap<>();
+        long i = 0;
         for (EntityContainer container : iterator) {
+            i++;
+            if (i > approx_nodes) {
+                progressListener.accept(0L,100L);
+            } else {
+                progressListener.accept(i, approx_nodes);
+            }
             // Filter nodes used to construct graph info
             if (parseInfo && container.getType() == EntityType.Node) {
                 OsmNode node = (OsmNode) container.getEntity();
@@ -225,5 +244,9 @@ public class PBFParser {
 
     public void setStoreTMPListener(BiConsumer<String, Graph> storeTMPListener) {
         this.storeTMPListener = storeTMPListener;
+    }
+
+    public void setProgressListener(BiConsumer<Long, Long> progressListener) {
+        this.progressListener = progressListener;
     }
 }

@@ -118,6 +118,7 @@ public class GraphIO {
             PBFParser pbfParser = new PBFParser(fileName, parseInfo);
             pbfParser.setStoreTMPListener(this::storeGraph);
             pbfParser.setDistanceStrategy(distanceStrategy);
+            pbfParser.setProgressListener(progressListener);
             pbfParser.executePBFParser();
             graph = pbfParser.getGraph();
             if (parseInfo) {
