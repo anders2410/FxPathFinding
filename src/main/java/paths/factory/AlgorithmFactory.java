@@ -18,4 +18,6 @@ public interface AlgorithmFactory {
     AlternationStrategy getAlternationStrategy();
 
     ScanPruningStrategy getScanPruningStrategy();
+
+    ResultPackingStrategy getResultPackingStrategy();
 }

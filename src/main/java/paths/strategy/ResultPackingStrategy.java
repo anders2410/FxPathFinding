@@ -6,5 +6,5 @@ import paths.ShortestPathResult;
 import java.util.List;
 
 public interface ResultPackingStrategy {
-    ShortestPathResult packResult(List<Integer> path, long duration);
+    ShortestPathResult packResult(long duration);
 }
