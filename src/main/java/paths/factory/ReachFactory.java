@@ -27,6 +27,12 @@ public class ReachFactory implements AlgorithmFactory {
     public ScanPruningStrategy getScanPruningStrategy() {
         return ScanPruningGenerator.getBasePruning();
     }
+
+    @Override
+    public ResultPackingStrategy getResultPackingStrategy() {
+        return ResultPackingGenerator.getOneDirectionalPack();
+    }
+
     @Override
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getSearchMeetTermination();

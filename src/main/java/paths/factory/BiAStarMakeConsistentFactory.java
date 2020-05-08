@@ -41,6 +41,11 @@ public class BiAStarMakeConsistentFactory implements AlgorithmFactory {
     }
 
     @Override
+    public ResultPackingStrategy getResultPackingStrategy() {
+        return ResultPackingGenerator.getStandardBiPack();
+    }
+
+    @Override
     public AlternationStrategy getAlternationStrategy() {
         return AlternationGenerator.getSameDistanceStrategy();
     }

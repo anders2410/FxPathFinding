@@ -68,6 +68,7 @@ public class SSSP {
     private static ContractionHierarchiesResult contractionHierarchiesResult;
     private static double bestPathLengthSoFar;
     private static ScanPruningStrategy scanPruningStrategy;
+    private static ResultPackingStrategy resultPackingStrategy;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -159,6 +160,7 @@ public class SSSP {
         priorityQueueGetter = getJavaQueue();
         alternationStrategy = factory.getAlternationStrategy();
         scanPruningStrategy = factory.getScanPruningStrategy();
+        resultPackingStrategy = factory.getResultPackingStrategy();
     }
 
     // Path finding
@@ -185,11 +187,7 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        List<Integer> shortestPath = extractPath(pathMapA, source, target);
-        // TODO: 25-04-2020 Strategy pattern this
-        if (mode == SINGLE_TO_ALL || mode == BOUNDED_SINGLE_TO_ALL)
-            return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
-        return new ShortestPathResult(nodeDistA.get(target), shortestPath, scannedA, relaxedA, duration);
+        return resultPackingStrategy.packResult(duration);
     }
 
     private static ShortestPathResult biDirectional() {
@@ -222,50 +220,7 @@ public class SSSP {
         }
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-
-
-        // TODO: 28/04/2020 Do something about this. Maybe strategy pattern?
-        if (mode == CONTRACTION_HIERARCHIES) {
-            // Goes through all overlapping nodes and find the one with the smallest distance.
-            int middlepoint = -1;
-            double finalDistance = Double.MAX_VALUE;
-            for (int node : scannedA) {
-                if (scannedA.contains(node) && scannedB.contains(node)) {
-                    // Replace if lower than actual
-                    double distance = nodeDistA.get(node) + nodeDistB.get(node);
-                    if (0 <= distance && distance < finalDistance) {
-                        finalDistance = distance;
-                        middlepoint = node;
-                    }
-                }
-            }
-
-            setMiddlePoint(middlepoint);
-
-            // This is the unpacking of the shortest path. It unpacks all shortcuts on the route found by
-            // the modified Bi-Directional Dijkstras.
-            List<Integer> shortestPathCH = extractPathBi();
-            List<Integer> result = new ArrayList<>(shortestPathCH);
-            boolean shouldContinue = true;
-            while (shouldContinue) {
-                for (int i = 0; i < result.size() - 1; i++) {
-                    Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(result.get(i), result.get(i + 1)));
-                    if (contractedNode != null) {
-                        result.add(i + 1, contractedNode);
-                        break;
-                    }
-                }
-                shouldContinue = shouldBeDone(result);
-            }
-            return new ShortestPathResult(goalDistance, new ArrayList<>(result), scannedA, scannedB, relaxedA, relaxedB, duration);
-        }
-
-        if (middlePoint == -1) {
-            return new ShortestPathResult();
-        }
-
-        List<Integer> shortestPath = extractPathBi();
-        return new ShortestPathResult(goalDistance, shortestPath, scannedA, scannedB, relaxedA, relaxedB, duration);
+        return resultPackingStrategy.packResult(duration);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
@@ -294,7 +249,7 @@ public class SSSP {
         return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
     }
 
-    private static boolean shouldBeDone(List<Integer> complete) {
+    public static boolean shouldBeDone(List<Integer> complete) {
         for (int i = 0; i < complete.size() - 1; i++) {
             Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
             if (contractedNode != null) {
@@ -305,7 +260,7 @@ public class SSSP {
         return false;
     }
 
-    private static List<Integer> extractPathBi() {
+    public static List<Integer> extractPathBi() {
         List<Integer> shortestPathA = extractPath(pathMapA, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, target, middlePoint);
         if (!shortestPathB.isEmpty()) {
@@ -316,7 +271,7 @@ public class SSSP {
         return shortestPathA;
     }
 
-    private static List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {
+    public static List<Integer> extractPath(Map<Integer, Integer> pathMap, int from, int to) {
         Integer curNode = to;
         List<Integer> path = new ArrayList<>(pathMap.size());
         path.add(to);
@@ -419,6 +374,10 @@ public class SSSP {
 
     public static void setAlternationStrategy(AlternationStrategy alternationStrategy) {
         SSSP.alternationStrategy = alternationStrategy;
+    }
+
+    public static Set<Edge> getRelaxed(ABDir dir) {
+        return dir == A ? relaxedA : relaxedB;
     }
 
     public static Set<Integer> getScanned(ABDir dir) {

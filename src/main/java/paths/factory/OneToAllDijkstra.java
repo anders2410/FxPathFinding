@@ -35,6 +35,11 @@ public class OneToAllDijkstra implements AlgorithmFactory {
     }
 
     @Override
+    public ResultPackingStrategy getResultPackingStrategy() {
+        return ResultPackingGenerator.getSingleToAllPack();
+    }
+
+    @Override
     public PreProcessStrategy getPreProcessStrategy() {
         return () -> {
         };

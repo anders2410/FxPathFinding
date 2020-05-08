@@ -32,6 +32,13 @@ public class LandmarksFactory implements AlgorithmFactory {
     public ScanPruningStrategy getScanPruningStrategy() {
         return ScanPruningGenerator.getBasePruning();
     }
+
+    @Override
+    public ResultPackingStrategy getResultPackingStrategy() {
+        return ResultPackingGenerator.getOneDirectionalPack();
+
+    }
+
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
         return PreProcessGenerator.getLandmarksPreStrategy();

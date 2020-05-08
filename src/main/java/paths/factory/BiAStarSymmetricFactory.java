@@ -38,6 +38,13 @@ public class BiAStarSymmetricFactory implements AlgorithmFactory {
     public ScanPruningStrategy getScanPruningStrategy() {
         return ScanPruningGenerator.getBasePruning();
     }
+
+    @Override
+    public ResultPackingStrategy getResultPackingStrategy() {
+        return ResultPackingGenerator.getStandardBiPack();
+
+    }
+
     @Override
     public AlternationStrategy getAlternationStrategy() {
         return AlternationGenerator.getAmountSeenStrategy();
