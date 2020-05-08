@@ -323,6 +323,7 @@ public class GraphIO {
             }
             CHStream.close();
             assert contractionHierarchies != null;
+            System.out.println("Loaded Contraction Hierarchies successfully!");
             return contractionHierarchies;
         } catch (IOException e) {
             e.printStackTrace();

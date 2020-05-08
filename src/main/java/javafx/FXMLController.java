@@ -43,6 +43,7 @@ import java.util.function.BiFunction;
 
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
+import static paths.SSSP.updatePriority;
 import static paths.Util.algorithmNames;
 
 /**
@@ -124,7 +125,9 @@ public class FXMLController implements Initializable {
         };
         loadGraphTask.setOnSucceeded(event -> {
             graph = loadGraphTask.getValue();
-            new GraphIO(distanceStrategy, isSCCGraph).loadGraphInfo(fileName);
+            GraphIO graphIOInfo = new GraphIO(distanceStrategy, isSCCGraph);
+            graphIOInfo.loadGraphInfo(fileName);
+            graphInfo = graphIOInfo.getGraphInfo();
             landmarksGenerator = new Landmarks(graph);
             new GraphIO(distanceStrategy, isSCCGraph).loadBestLandmarks(fileName, landmarksGenerator);
             SSSP.setReachBounds(null);
@@ -182,16 +185,19 @@ public class FXMLController implements Initializable {
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType loadType = graphIO.parseGraphInfo(fileName);
                 graphInfo = graphIO.getGraphInfo();
+                updateProgress(1,1);
                 return loadType;
             }
         };
         graphInfoTask.setOnSucceeded(e -> {
             LoadType loadType = graphInfoTask.getValue();
-            if (loadType == LoadType.TEMP || loadType == LoadType.PBF) {
-                runSCC();
+            playIndicatorCompleted();
+            if (isSCCGraph && (loadType == LoadType.TEMP || loadType == LoadType.PBF)) {
+                graphInfo = new ModelUtil(graph).subGraph(graphInfo, graph.getSccNodeSet());
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                graphIO.storeGraphInfo(fileName, graphInfo);
             }
             SSSP.setGraphInfo(graphInfo);
-            playIndicatorCompleted();
         });
         graphInfoTask.setOnFailed(event -> {
             playIndicatorCompleted();
@@ -1108,7 +1114,6 @@ public class FXMLController implements Initializable {
         };
         loadTask.setOnSucceeded(e -> {
             SSSP.setContractionHierarchiesResult(loadTask.getValue());
-            System.out.println("Loaded Contraction Hierarchies successfully!");
         });
         loadTask.setOnFailed(e -> displayFailedDialog("load contraction hierarchies", e));
         new Thread(loadTask).start();
@@ -1325,12 +1330,11 @@ public class FXMLController implements Initializable {
                 if (graphInfo == null) {
                     return new GraphPair(gu.subGraph(nodesToKeep), null);
                 }
+                updateProgress(99L, 100L);
                 return gu.subGraphPair(graphInfo, nodesToKeep);
             }
         };
         sccTask.setOnSucceeded(e -> {
-            progress_indicator.progressProperty().unbind();
-            progress_indicator.setProgress(0.99);
             graph = sccTask.getValue().getGraph();
             graphInfo = sccTask.getValue().getGraphInfo();
             isSCCGraph = true;

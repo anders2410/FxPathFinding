@@ -53,7 +53,7 @@ public class ModelUtil {
         if (progressListener != null) progressListener.accept(1L, 100L);
         int counter = 0;
         int n = graph.getNodeAmount();
-        long pn = 4 * n;
+        long pn = 4 * n + n/100;
         List<List<Edge>> adjList = graph.getAdjList();
         int time = 0;
         Map<Integer, Integer> finishingTimes = new HashMap<>();
@@ -145,6 +145,7 @@ public class ModelUtil {
 
     public Graph subGraph(List<Integer> nodesToKeep) {
         Graph subGraph = new Graph(nodesToKeep.size());
+        subGraph.setSccNodeSet(nodesToKeep);
         Map<Integer, Integer> indexMap = new HashMap<>();
         List<Node> subNodeList = subGraph.getNodeList();
         List<List<Edge>> subAdjList = subGraph.getAdjList();

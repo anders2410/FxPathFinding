@@ -148,7 +148,7 @@ public class PBFParser {
         float natureValue = 0;
         for (OsmNode naturalNode : naturalNodes) {
             double dist = getSquaredDistance(n, naturalNode.getLongitude(), naturalNode.getLatitude());
-            if (dist < 0.0625) { // Closer than 50 meters to a natural node
+            if (dist < 0.00025) { // Closer than 50 meters to a natural node
                 natureValue++;
             }
         }
@@ -156,7 +156,7 @@ public class PBFParser {
         boolean closeToFuel = false;
         for (OsmNode fuelNode : fuelNodes) {
             double dist = getSquaredDistance(n, fuelNode.getLongitude(), fuelNode.getLatitude());
-            if (dist < 0.0025) { // Closer than 50 meters to a fuel amenity
+            if (dist < 0.00025) { // Closer than 50 meters to a fuel amenity
                 closeToFuel = true;
             }
         }

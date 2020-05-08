@@ -9,6 +9,7 @@ public class Graph implements Serializable {
 
     private List<Node> nodeList;
     private List<List<Edge>> adjList;
+    private List<Integer> sccNodeSet;
     private int nodeAmount;
 
     public Graph(int nodeAmount) {
@@ -134,5 +135,13 @@ public class Graph implements Serializable {
             }
             System.out.println();
         }
+    }
+
+    public void setSccNodeSet(List<Integer> sccNodeSet) {
+        this.sccNodeSet = sccNodeSet;
+    }
+
+    public List<Integer> getSccNodeSet() {
+        return sccNodeSet;
     }
 }
