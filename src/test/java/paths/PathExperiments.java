@@ -59,12 +59,12 @@ public class PathExperiments {
     public void compareAllAlgorithmsOnDifferentParameters() {
         setUp(fileName);
 
-        TestDataExtra dijkstraData = new TestDataExtra();
-        TestDataExtra biDijkstraData = new TestDataExtra();
-        TestDataExtra biAStarData = new TestDataExtra();
-        TestDataExtra ALTData = new TestDataExtra();
-        TestDataExtra ReachData = new TestDataExtra();
-        TestDataExtra CHData = new TestDataExtra();
+        TestDataExtra dijkstraData = new TestDataExtra("Dijkstra");
+        TestDataExtra biDijkstraData = new TestDataExtra("Bi-Dijkstra");
+        TestDataExtra biAStarData = new TestDataExtra("Bi-AStar");
+        TestDataExtra ALTData = new TestDataExtra("BiALT");
+        TestDataExtra ReachData = new TestDataExtra("REAL");
+        TestDataExtra CHData = new TestDataExtra("CH");
 
         testAlgorithm(AlgorithmMode.DIJKSTRA, dijkstraData);
         testAlgorithm(AlgorithmMode.BI_DIJKSTRA, biDijkstraData);
@@ -73,17 +73,17 @@ public class PathExperiments {
         testAlgorithm(AlgorithmMode.BI_REACH_LANDMARKS, ReachData);
         testAlgorithm(AlgorithmMode.CONTRACTION_HIERARCHIES, CHData);
 
-        System.out.println("Dijkstra Average: " + dijkstraData.getAverageVisited());
-        System.out.println("Bi-Dijkstra Average: " + biDijkstraData.getAverageVisited());
-        System.out.println("Bi-AStar Average: " + biAStarData.getAverageVisited());
-        System.out.println("BiALT Average: " + ALTData.getAverageVisited());
-        System.out.println("REAL Average: " + ReachData.getAverageVisited());
-        System.out.println("CH Average: " + CHData.getAverageVisited());
+        System.out.println(dijkstraData);
+        System.out.println(biDijkstraData);
+        System.out.println(biAStarData);
+        System.out.println(ALTData);
+        System.out.println(ReachData);
+        System.out.println(CHData);
     }
 
     private void testAlgorithm(AlgorithmMode mode, TestDataExtra data) {
         int i = 0;
-        while (i < 100) {
+        while (i < 1000) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(mode);
             data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size(), res.path.size(), res.runTime);
@@ -221,25 +221,36 @@ class TestData {
 
 class TestDataExtra {
     private int maxVisits, totalVisits;
-    private long averageRuntime;
+    private long totalRuntime;
     private final List<Integer> pathLengthList;
+    private final String name;
 
-    protected TestDataExtra() {
+    protected TestDataExtra(String name) {
+        this.name = name;
         maxVisits = 0;
         totalVisits = 0;
-        averageRuntime = 0;
+        totalRuntime = 0;
         pathLengthList = new ArrayList<>();
     }
 
     protected void addVisit(int nodesVisited, int pathLength, long runtime) {
         if (nodesVisited > maxVisits) maxVisits = nodesVisited;
-        averageRuntime += runtime;
+        totalRuntime += runtime;
         totalVisits += nodesVisited;
         pathLengthList.add(pathLength);
     }
 
     protected Integer getAverageVisited() {
         return totalVisits / pathLengthList.size();
+    }
+
+    protected Long getAverageRuntime() {
+        return totalRuntime / pathLengthList.size();
+    }
+
+    @Override
+    public String toString() {
+        return name + " average nodes visited: " + getAverageVisited() + ", max visited: " + maxVisits + ", average runtime: " + getAverageRuntime();
     }
 }
 
