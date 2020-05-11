@@ -11,7 +11,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
+import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
 
 public class PathExperiments {
@@ -36,20 +38,50 @@ public class PathExperiments {
     @Test
     public void testCompareAlgorithms() {
         setUp("malta-latest.osm.pbf");
-        seed = 0;
-        while (seed < testCases) {
-            seed++;
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                DIJKSTRA,
+                BI_DIJKSTRA,
+                A_STAR,
+                BI_A_STAR_CONSISTENT,
+                A_STAR_LANDMARKS,
+                BI_A_STAR_LANDMARKS);
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        int unidir_victories = results.stream().map(r -> r.get(DIJKSTRA).getNodesScanned() < r.get(BI_DIJKSTRA).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
+        int unidirastar_victories = results.stream().map(r -> r.get(A_STAR).getNodesScanned() < r.get(BI_A_STAR_CONSISTENT).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
+        int unidirlm_victories = results.stream().map(r -> r.get(A_STAR_LANDMARKS).getNodesScanned() < r.get(BI_A_STAR_LANDMARKS).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
+        System.out.println("Dijkstra visited less nodes than BiDijkstra " + unidir_victories + " times.");
+        System.out.println("A* visited less nodes than BiA* " + unidirastar_victories + " times.");
+        System.out.println("ALT visited less nodes than BiALT " + unidirlm_victories + " times.");
+        System.out.println("Done");
+    }
 
-            ShortestPathResult res = SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
-            RunningTimeResult testRes = new RunningTimeResult(res.scannedNodesA.size() + res.scannedNodesB.size(), res.runTime);
+    private List<Map<AlgorithmMode, TestManyRes>> testMany(List<AlgorithmMode> modesToTest, int amount) {
+        System.out.println("Experiment on " + amount + " cases begun.");
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = new ArrayList<>();
+        while (seed < amount) {
+            if (seed % 100 == 0) {
+                System.out.println("Ran " + seed + " shortest paths");
+            }
+            Map<AlgorithmMode, TestManyRes> resMap = new HashMap<>();
+            for (AlgorithmMode mode : modesToTest) {
+                resMap.put(mode, convertToTestManyRes(SSSP.randomPath(mode)));
+            }
+            results.add(resMap);
+            seed++;
         }
+        return results;
+    }
+
+    private TestManyRes convertToTestManyRes(ShortestPathResult spRes) {
+        return new TestManyRes(spRes.runTime, spRes.scannedNodesA.size() + spRes.scannedNodesB.size());
     }
 
     @Test
     public void allSpeedTestOne(){
         setUp("malta-latest.osm.pbf");
         Instant start = Instant.now();
-        SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
+        SSSP.findShortestPath(500, 300, SINGLE_TO_ALL);
         Instant end = Instant.now();
         long timeElapsed = Duration.between(start, end).toMillis();
         System.out.println(timeElapsed);
@@ -66,7 +98,7 @@ public class PathExperiments {
         TestDataExtra ReachData = new TestDataExtra("REAL");
         TestDataExtra CHData = new TestDataExtra("CH");
 
-        testAlgorithm(AlgorithmMode.DIJKSTRA, dijkstraData);
+        testAlgorithm(DIJKSTRA, dijkstraData);
         testAlgorithm(AlgorithmMode.BI_DIJKSTRA, biDijkstraData);
         testAlgorithm(AlgorithmMode.BI_A_STAR_CONSISTENT, biAStarData);
         testAlgorithm(AlgorithmMode.BI_A_STAR_LANDMARKS, ALTData);
@@ -99,7 +131,7 @@ public class PathExperiments {
         int j = 0;
         while (j < testSize) {
             SSSP.seed++;
-            ShortestPathResult res = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
             /*resultArray[0][j] = res;*/
             if (res.path.size() > 20) {
                 data.addVisit(res.calculateAllUniqueVisits(graph));
@@ -254,21 +286,20 @@ class TestDataExtra {
     }
 }
 
-class RunningTimeResult {
-    protected int nodesVisited;
-    protected double runningTime;
+class TestManyRes {
+    private double runTime;
+    private int nodesScanned;
 
-    public RunningTimeResult(int nodesVisited, double runningTime) {
-        this.nodesVisited = nodesVisited;
-        this.runningTime = runningTime;
+    public TestManyRes(double runTime, int nodesScanned) {
+        this.runTime = runTime;
+        this.nodesScanned = nodesScanned;
     }
 
-    public int getNodesVisited() {
-        return nodesVisited;
+    public double getRunTime() {
+        return runTime;
     }
 
-    public double getRunningTime() {
-        return runningTime;
+    public int getNodesScanned() {
+        return nodesScanned;
     }
 }
-
