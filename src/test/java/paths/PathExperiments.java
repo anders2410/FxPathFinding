@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 
+import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
 
 public class PathExperiments {
@@ -36,19 +37,35 @@ public class PathExperiments {
     @Test
     public void testCompareAlgorithms() {
         setUp("malta-latest.osm.pbf");
-        seed = 0;
-        while (seed < testCases) {
-            seed++;
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                DIJKSTRA,
+                BI_DIJKSTRA,
+                A_STAR,
+                BI_A_STAR_CONSISTENT,
+                A_STAR_LANDMARKS,
+                BI_A_STAR_LANDMARKS);
+        List<Map<AlgorithmMode, ShortestPathResult>> results = testMany(modesToTest, testCases);
+    }
 
-            ShortestPathResult res = SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
+    private List<Map<AlgorithmMode, ShortestPathResult>> testMany(List<AlgorithmMode> modesToTest, int amount) {
+        seed = 0;
+        List<Map<AlgorithmMode, ShortestPathResult>> results = new ArrayList<>();
+        while (seed < amount) {
+            seed++;
+            Map<AlgorithmMode, ShortestPathResult> resMap = new HashMap<>();
+            for (AlgorithmMode mode : modesToTest) {
+                resMap.put(mode, SSSP.randomPath(mode));
+            }
+            results.add(resMap);
         }
+        return results;
     }
 
     @Test
     public void allSpeedTestOne(){
         setUp("malta-latest.osm.pbf");
         Instant start = Instant.now();
-        SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
+        SSSP.findShortestPath(500, 300, SINGLE_TO_ALL);
         Instant end = Instant.now();
         long timeElapsed = Duration.between(start, end).toMillis();
         System.out.println(timeElapsed);
@@ -65,7 +82,7 @@ public class PathExperiments {
         TestDataExtra ReachData = new TestDataExtra();
         TestDataExtra CHData = new TestDataExtra();
 
-        testAlgorithm(AlgorithmMode.DIJKSTRA, dijkstraData);
+        testAlgorithm(DIJKSTRA, dijkstraData);
         testAlgorithm(AlgorithmMode.BI_DIJKSTRA, biDijkstraData);
         testAlgorithm(AlgorithmMode.BI_A_STAR_CONSISTENT, biAStarData);
         testAlgorithm(AlgorithmMode.BI_A_STAR_LANDMARKS, ALTData);
@@ -98,7 +115,7 @@ public class PathExperiments {
         int j = 0;
         while (j < testSize) {
             SSSP.seed++;
-            ShortestPathResult res = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
             /*resultArray[0][j] = res;*/
             if (res.path.size() > 20) {
                 data.addVisit(res.calculateAllUniqueVisits(graph));
