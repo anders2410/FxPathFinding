@@ -44,7 +44,6 @@ public class PathExperiments {
             seed++;
 
             ShortestPathResult res = SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
-            RunningTimeResult testRes = new RunningTimeResult(res.scannedNodesA.size() + res.scannedNodesB.size(), res.runTime);
         }
     }
 
@@ -183,24 +182,6 @@ class TestData {
 
     public void addStartingPoint(Integer integer) {
         pathStartList.add(integer);
-    }
-}
-
-class RunningTimeResult {
-    protected int nodesVisited;
-    protected double runningTime;
-
-    public RunningTimeResult(int nodesVisited, double runningTime) {
-        this.nodesVisited = nodesVisited;
-        this.runningTime = runningTime;
-    }
-
-    public int getNodesVisited() {
-        return nodesVisited;
-    }
-
-    public double getRunningTime() {
-        return runningTime;
     }
 }
 
