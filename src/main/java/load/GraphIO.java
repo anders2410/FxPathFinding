@@ -9,7 +9,7 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
-import paths.preprocessing.ContractionHierarchiesResult;
+import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
 import paths.Util;
 import paths.preprocessing.Landmarks;
@@ -305,7 +305,7 @@ public class GraphIO {
         }
     }
 
-    public ContractionHierarchiesResult loadContractionHierarchies(String fileName) {
+    public CHResult loadCH(String fileName) {
         try {
             String CHFile = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
             if (!new File(CHFile).exists()) {
@@ -314,10 +314,10 @@ public class GraphIO {
             FileInputStream CHInput = new FileInputStream(CHFile);
             ObjectInputStream CHStream = new ObjectInputStream(CHInput);
 
-            ContractionHierarchiesResult contractionHierarchies = null;
+            CHResult contractionHierarchies = null;
 
             try {
-                contractionHierarchies = (ContractionHierarchiesResult) CHStream.readObject();
+                contractionHierarchies = (CHResult) CHStream.readObject();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -331,7 +331,7 @@ public class GraphIO {
         return null;
     }
 
-    public void saveContractionHierarchies(String fileName, ContractionHierarchiesResult CHResult) {
+    public void saveCH(String fileName, CHResult CHResult) {
         try {
             String name = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
             FileOutputStream fos = new FileOutputStream(name);

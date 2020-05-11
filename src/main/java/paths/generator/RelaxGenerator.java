@@ -120,7 +120,7 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getCH() {
         return (edge, dir) -> {
-            List<Integer> ranks = getContractionHierarchiesResult().getRanks();
+            List<Integer> ranks = getCHResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
                 if (getScanned(revDir(dir)).contains(edge.to)) {
                     double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);

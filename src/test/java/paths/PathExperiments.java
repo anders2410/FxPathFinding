@@ -5,6 +5,7 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
+import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -14,19 +15,38 @@ import java.util.*;
 import java.util.function.BiFunction;
 
 public class PathExperiments {
-    Graph graph;
-    String fileName;
+
+    String fileName = "malta-latest.osm.pbf";
+    BiFunction<Node, Node, Double> distanceStrategy = Util::sphericalDistance;
+
     GraphIO graphIO;
+    Graph graph;
 
     @Before
     public void setUp() {
-        fileName = "denmark-latest.osm.pbf";
-        BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
-        SSSP.setDistanceStrategy(distanceStrategy1);
-        graphIO = new GraphIO(distanceStrategy1, true);
+        fileName = "malta-latest.osm.pbf";
+        SSSP.setDistanceStrategy(distanceStrategy);
+        loadAllPreProcessing();
+    }
+
+    public void loadAllPreProcessing() {
+        graphIO = new GraphIO(distanceStrategy, true);
+
+        assert graphIO.fileExtensionExists(fileName, ".tmp");
         graphIO.loadGraph(fileName);
         graph = graphIO.getGraph();
         SSSP.setGraph(graph);
+
+        Landmarks landmarks = new Landmarks(graph);
+        graphIO.loadBestLandmarks(fileName, landmarks);
+        SSSP.setLandmarks(landmarks);
+        SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+
+        List<Double> reachBounds = graphIO.loadReach(fileName);
+        SSSP.setReachBounds(reachBounds);
+
+        CHResult ch = graphIO.loadCH(fileName);
+        SSSP.setCHResult(ch);
     }
 
     /*@Test
@@ -56,6 +76,11 @@ public class PathExperiments {
     }*/
 
     @Test
+    public void testCompareAlgorithms() {
+
+    }
+
+    @Test
     public void allSpeedTestOne(){
         SSSP.setGraph(graph);
         Instant start = Instant.now();
@@ -64,6 +89,7 @@ public class PathExperiments {
         long timeElapsed = Duration.between(start, end).toMillis();
         System.out.println(timeElapsed);
     }
+
     @Test
     public void DijkstraSpeedTest() {
         int testSize = 10000;

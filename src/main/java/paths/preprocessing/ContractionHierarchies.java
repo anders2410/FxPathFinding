@@ -73,7 +73,7 @@ public class ContractionHierarchies {
 
     // The idea in the pre-processing step: We iterate the nodes one by one in the order of importance
     // and add 'shortcuts' whenever no witness path, for a given 'shortcut', has been found.
-    public ContractionHierarchiesResult preprocess() {
+    public CHResult preprocess() {
         // Stores the number of nodes that are contracted
         int rank = 0;
         long numberOfContractedNodes = 0;
@@ -99,7 +99,7 @@ public class ContractionHierarchies {
             numberOfContractedNodes++;
         }
 
-        return new ContractionHierarchiesResult(graph, ranks, shortcuts);
+        return new CHResult(graph, ranks, shortcuts);
     }
 
     // Function to contract a node. If computeNumberOfShortcuts is true it will not add the actual shortcuts,

@@ -43,7 +43,6 @@ import java.util.function.BiFunction;
 
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
-import static paths.SSSP.updatePriority;
 import static paths.Util.algorithmNames;
 
 /**
@@ -341,9 +340,9 @@ public class FXMLController implements Initializable {
             findMaxReach();
             color = graduateColorSaturation(color, SSSP.getReachBounds().get(edge.from), maxReach);
         }
-        if (currentOverlay == OverlayType.CH && SSSP.getContractionHierarchiesResult() != null) {
+        if (currentOverlay == OverlayType.CH && SSSP.getCHResult() != null) {
             findMaxRank();
-            color = graduateColorSaturation(color, SSSP.getContractionHierarchiesResult().getRanks().get(edge.from), maxRank);
+            color = graduateColorSaturation(color, SSSP.getCHResult().getRanks().get(edge.from), maxRank);
         }
         if (graphInfo != null) {
             EdgeInfo edgeInfo = graphInfo.getEdge(edge);
@@ -419,11 +418,11 @@ public class FXMLController implements Initializable {
     double maxRank = -1;
 
     private void findMaxRank() {
-        if (SSSP.getContractionHierarchiesResult() == null || maxRank != -1) {
+        if (SSSP.getCHResult() == null || maxRank != -1) {
             return;
         }
         double maxSoFar = 0;
-        for (double rank : SSSP.getContractionHierarchiesResult().getRanks()) {
+        for (double rank : SSSP.getCHResult().getRanks()) {
             if (maxSoFar < rank && rank < 100000) {
                 maxSoFar = rank;
             }
@@ -1078,9 +1077,9 @@ public class FXMLController implements Initializable {
     private void generateContractionHierarchies() {
         System.out.println("Generating CH graph!");
         maxRank = -1;
-        Task<ContractionHierarchiesResult> CHTask = new Task<>() {
+        Task<CHResult> CHTask = new Task<>() {
             @Override
-            protected ContractionHierarchiesResult call() {
+            protected CHResult call() {
                 ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
                 contractionHierarchies.setProgressListener(this::updateProgress);
                 return contractionHierarchies.preprocess();
@@ -1088,7 +1087,7 @@ public class FXMLController implements Initializable {
         };
         CHTask.setOnSucceeded(e -> {
             try {
-                SSSP.setContractionHierarchiesResult(CHTask.get());
+                SSSP.setCHResult(CHTask.get());
                 System.out.println("CH is generated successfully!");
                 saveContractionHierarchies();
                 playIndicatorCompleted();
@@ -1105,15 +1104,15 @@ public class FXMLController implements Initializable {
     }
 
     private void loadContractionHierarchies() {
-        Task<ContractionHierarchiesResult> loadTask = new Task<>() {
+        Task<CHResult> loadTask = new Task<>() {
             @Override
-            protected ContractionHierarchiesResult call() {
+            protected CHResult call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-                return graphIO.loadContractionHierarchies(fileName);
+                return graphIO.loadCH(fileName);
             }
         };
         loadTask.setOnSucceeded(e -> {
-            SSSP.setContractionHierarchiesResult(loadTask.getValue());
+            SSSP.setCHResult(loadTask.getValue());
         });
         loadTask.setOnFailed(e -> displayFailedDialog("load contraction hierarchies", e));
         new Thread(loadTask).start();
@@ -1124,7 +1123,7 @@ public class FXMLController implements Initializable {
             @Override
             protected Void call() {
                 GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-                graphIO.saveContractionHierarchies(fileName, SSSP.getContractionHierarchiesResult());
+                graphIO.saveCH(fileName, SSSP.getCHResult());
                 System.out.println("Saved Contraction Hierarchies successfully!");
                 return null;
             }
