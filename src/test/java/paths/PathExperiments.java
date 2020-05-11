@@ -45,6 +45,7 @@ public class PathExperiments {
                 A_STAR_LANDMARKS,
                 BI_A_STAR_LANDMARKS);
         List<Map<AlgorithmMode, ShortestPathResult>> results = testMany(modesToTest, testCases);
+        System.out.println("Done");
     }
 
     private List<Map<AlgorithmMode, ShortestPathResult>> testMany(List<AlgorithmMode> modesToTest, int amount) {
