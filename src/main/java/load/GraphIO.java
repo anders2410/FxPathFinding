@@ -9,6 +9,8 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
+import paths.AlgorithmMode;
+import paths.SSSP;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
 import paths.Util;
@@ -62,6 +64,22 @@ public class GraphIO {
         for (File file : files) {
             new File(Util.trimFileTypes(file.getAbsolutePath())).mkdir();
         }
+    }
+
+    public void loadAllPreProcessing(String fileName) {
+        loadGraph(fileName);
+        SSSP.setGraph(graph);
+
+        Landmarks landmarks = new Landmarks(graph);
+        loadBestLandmarks(fileName, landmarks);
+        SSSP.setLandmarks(landmarks);
+        SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+
+        List<Double> reachBounds = loadReach(fileName);
+        SSSP.setReachBounds(reachBounds);
+
+        CHResult ch = loadCH(fileName);
+        SSSP.setCHResult(ch);
     }
 
     public LoadType loadGraph(String fileName) {
@@ -307,21 +325,21 @@ public class GraphIO {
 
     public CHResult loadCH(String fileName) {
         try {
-            String CHFile = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
-            if (!new File(CHFile).exists()) {
+            String chFile = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
+            if (!new File(chFile).exists()) {
                 return null;
             }
-            FileInputStream CHInput = new FileInputStream(CHFile);
-            ObjectInputStream CHStream = new ObjectInputStream(CHInput);
+            FileInputStream chInput = new FileInputStream(chFile);
+            ObjectInputStream chStream = new ObjectInputStream(chInput);
 
             CHResult contractionHierarchies = null;
 
             try {
-                contractionHierarchies = (CHResult) CHStream.readObject();
+                contractionHierarchies = (CHResult) chStream.readObject();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            CHStream.close();
+            chStream.close();
             assert contractionHierarchies != null;
             System.out.println("Loaded Contraction Hierarchies successfully!");
             return contractionHierarchies;

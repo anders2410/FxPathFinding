@@ -4,6 +4,7 @@ import load.GraphIO;
 import model.Graph;
 import model.Node;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
@@ -14,6 +15,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 
+import static paths.SSSP.seed;
+
 public class PathExperiments {
 
     String fileName = "malta-latest.osm.pbf";
@@ -22,67 +25,32 @@ public class PathExperiments {
     GraphIO graphIO;
     Graph graph;
 
-    @Before
-    public void setUp() {
-        fileName = "malta-latest.osm.pbf";
+    private void setUp(String fileName) {
         SSSP.setDistanceStrategy(distanceStrategy);
-        loadAllPreProcessing();
-    }
 
-    public void loadAllPreProcessing() {
         graphIO = new GraphIO(distanceStrategy, true);
-
-        assert graphIO.fileExtensionExists(fileName, ".tmp");
-        graphIO.loadGraph(fileName);
-        graph = graphIO.getGraph();
-        SSSP.setGraph(graph);
-
-        Landmarks landmarks = new Landmarks(graph);
-        graphIO.loadBestLandmarks(fileName, landmarks);
-        SSSP.setLandmarks(landmarks);
-        SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-
-        List<Double> reachBounds = graphIO.loadReach(fileName);
-        SSSP.setReachBounds(reachBounds);
-
-        CHResult ch = graphIO.loadCH(fileName);
-        SSSP.setCHResult(ch);
+        assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
+        graphIO.loadAllPreProcessing(fileName);
+        graph = SSSP.getGraph();
     }
 
-    /*@Test
-    public void sccPoland() {
-        graphIO.loadGraph("malta-latest.osm.pbf");
-        graph = graphIO.getGraph();
-        SSSP.setGraph(graph);
-        GraphUtil gu = new GraphUtil(graph);
-        List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
-        graph = subGraphs.get(0);
-        GraphIO graphIO = new GraphIO(Util::sphericalDistance, true);
-        graphIO.storeGraph(Util.trimFileTypes("malta-latest.osm.pbf").concat("-scc"), graph);
-        System.out.println("Finished computing SCC");
-    }
-
-    @Test
-    public void sccDenmark() {
-        graphIO.loadGraph("denmark-latest.osm.pbf");
-        graph = graphIO.getGraph();
-        SSSP.setGraph(graph);
-        GraphUtil gu = new GraphUtil(graph);
-        List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
-        graph = subGraphs.get(0);
-        GraphIO graphIO = new GraphIO(Util::sphericalDistance, true);
-        graphIO.storeGraph(Util.trimFileTypes("denmark-latest.osm.pbf").concat("-scc"), graph);
-        System.out.println("Finished computing SCC");
-    }*/
+    int testCases = 1000;
 
     @Test
     public void testCompareAlgorithms() {
+        setUp("malta-latest.osm.pbf");
+        seed = 0;
+        while (seed < testCases) {
+            seed++;
 
+            ShortestPathResult res = SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
+            RunningTimeResult testRes = new RunningTimeResult(res.scannedNodesA.size() + res.scannedNodesB.size(), res.runTime);
+        }
     }
 
     @Test
     public void allSpeedTestOne(){
-        SSSP.setGraph(graph);
+        setUp("malta-latest.osm.pbf");
         Instant start = Instant.now();
         SSSP.findShortestPath(500, 300, AlgorithmMode.SINGLE_TO_ALL);
         Instant end = Instant.now();
@@ -92,8 +60,8 @@ public class PathExperiments {
 
     @Test
     public void DijkstraSpeedTest() {
-        int testSize = 10000;
-        SSSP.setGraph(graph);
+        setUp("malta-latest.osm.pbf");
+        int testSize = 1000;
         TestData data = new TestData();
         int j = 0;
         while (j < testSize) {
@@ -112,9 +80,8 @@ public class PathExperiments {
 
     @Test
     public void landmarksComparisonTest() {
+        setUp("malta-latest.osm.pbf");
         int testSize = 10000;
-
-        SSSP.setGraph(graph);
 
         TestData maxData = new TestData();
         TestData avoidData = new TestData();
@@ -163,6 +130,32 @@ public class PathExperiments {
             }
         }
     }
+
+    /*@Test
+    public void sccPoland() {
+        graphIO.loadGraph("malta-latest.osm.pbf");
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        GraphUtil gu = new GraphUtil(graph);
+        List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
+        graph = subGraphs.get(0);
+        GraphIO graphIO = new GraphIO(Util::sphericalDistance, true);
+        graphIO.storeGraph(Util.trimFileTypes("malta-latest.osm.pbf").concat("-scc"), graph);
+        System.out.println("Finished computing SCC");
+    }
+
+    @Test
+    public void sccDenmark() {
+        graphIO.loadGraph("denmark-latest.osm.pbf");
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        GraphUtil gu = new GraphUtil(graph);
+        List<Graph> subGraphs = gu.scc().stream().filter(g -> g.getNodeAmount() > 2).collect(Collectors.toList());
+        graph = subGraphs.get(0);
+        GraphIO graphIO = new GraphIO(Util::sphericalDistance, true);
+        graphIO.storeGraph(Util.trimFileTypes("denmark-latest.osm.pbf").concat("-scc"), graph);
+        System.out.println("Finished computing SCC");
+    }*/
 }
 
 class TestData {
@@ -190,6 +183,24 @@ class TestData {
 
     public void addStartingPoint(Integer integer) {
         pathStartList.add(integer);
+    }
+}
+
+class RunningTimeResult {
+    protected int nodesVisited;
+    protected double runningTime;
+
+    public RunningTimeResult(int nodesVisited, double runningTime) {
+        this.nodesVisited = nodesVisited;
+        this.runningTime = runningTime;
+    }
+
+    public int getNodesVisited() {
+        return nodesVisited;
+    }
+
+    public double getRunningTime() {
+        return runningTime;
     }
 }
 
