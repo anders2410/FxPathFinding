@@ -3,10 +3,7 @@ package paths;
 import load.GraphIO;
 import model.Graph;
 import model.Node;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -59,6 +56,42 @@ public class PathExperiments {
     }
 
     @Test
+    public void compareAllAlgorithmsOnDifferentParameters() {
+        setUp(fileName);
+
+        TestDataExtra dijkstraData = new TestDataExtra();
+        TestDataExtra biDijkstraData = new TestDataExtra();
+        TestDataExtra biAStarData = new TestDataExtra();
+        TestDataExtra ALTData = new TestDataExtra();
+        TestDataExtra ReachData = new TestDataExtra();
+        TestDataExtra CHData = new TestDataExtra();
+
+        testAlgorithm(AlgorithmMode.DIJKSTRA, dijkstraData);
+        testAlgorithm(AlgorithmMode.BI_DIJKSTRA, biDijkstraData);
+        testAlgorithm(AlgorithmMode.BI_A_STAR_CONSISTENT, biAStarData);
+        testAlgorithm(AlgorithmMode.BI_A_STAR_LANDMARKS, ALTData);
+        testAlgorithm(AlgorithmMode.BI_REACH_LANDMARKS, ReachData);
+        testAlgorithm(AlgorithmMode.CONTRACTION_HIERARCHIES, CHData);
+
+        System.out.println("Dijkstra Average: " + dijkstraData.getAverageVisited());
+        System.out.println("Bi-Dijkstra Average: " + biDijkstraData.getAverageVisited());
+        System.out.println("Bi-AStar Average: " + biAStarData.getAverageVisited());
+        System.out.println("BiALT Average: " + ALTData.getAverageVisited());
+        System.out.println("REAL Average: " + ReachData.getAverageVisited());
+        System.out.println("CH Average: " + CHData.getAverageVisited());
+    }
+
+    private void testAlgorithm(AlgorithmMode mode, TestDataExtra data) {
+        int i = 0;
+        while (i < 100) {
+            SSSP.seed++;
+            ShortestPathResult res = SSSP.randomPath(mode);
+            data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size(), res.path.size(), res.runTime);
+            i++;
+        }
+    }
+
+    @Test
     public void DijkstraSpeedTest() {
         setUp("malta-latest.osm.pbf");
         int testSize = 1000;
@@ -74,7 +107,7 @@ public class PathExperiments {
                 j++;
             }
         }
-        System.out.println(data.acumRuntime/testSize);
+        System.out.println(data.averageRuntime /testSize);
     }
 
 
@@ -100,10 +133,10 @@ public class PathExperiments {
 
         initTestParameters(lm, LandmarkMode.MAXCOVER);
         testGenerationMethod(testSize, maxData);
-        System.out.println(maxData.acumVisits);
-        System.out.println(avoidData.acumVisits);
-        System.out.println(randomData.acumVisits);
-        System.out.println(farthestData.acumVisits);
+        System.out.println(maxData.averageVisit);
+        System.out.println(avoidData.averageVisit);
+        System.out.println(randomData.averageVisit);
+        System.out.println(farthestData.averageVisit);
     }
 
     private void initTestParameters(Landmarks lm, LandmarkMode maxcover) {
@@ -159,30 +192,54 @@ public class PathExperiments {
 }
 
 class TestData {
-    protected int minVisits, maxVisits, acumVisits;
-    protected long acumRuntime;
+    protected int minVisits, maxVisits, averageVisit;
+    protected long averageRuntime;
     protected List<Integer> pathStartList;
 
     public TestData() {
         minVisits = Integer.MAX_VALUE;
         maxVisits = 0;
-        acumVisits = 0;
-        acumRuntime = 0;
+        averageVisit = 0;
+        averageRuntime = 0;
         pathStartList = new ArrayList<>();
     }
 
     public void addVisit(int size) {
         if (size < minVisits && size != 0) minVisits = size;
         if (size > maxVisits) maxVisits = size;
-        acumVisits += size;
+        averageVisit += size;
     }
 
     public void addRuntime(long runTime) {
-        acumRuntime += runTime;
+        averageRuntime += runTime;
     }
 
     public void addStartingPoint(Integer integer) {
         pathStartList.add(integer);
+    }
+}
+
+class TestDataExtra {
+    private int maxVisits, totalVisits;
+    private long averageRuntime;
+    private final List<Integer> pathLengthList;
+
+    protected TestDataExtra() {
+        maxVisits = 0;
+        totalVisits = 0;
+        averageRuntime = 0;
+        pathLengthList = new ArrayList<>();
+    }
+
+    protected void addVisit(int nodesVisited, int pathLength, long runtime) {
+        if (nodesVisited > maxVisits) maxVisits = nodesVisited;
+        averageRuntime += runtime;
+        totalVisits += nodesVisited;
+        pathLengthList.add(pathLength);
+    }
+
+    protected Integer getAverageVisited() {
+        return totalVisits / pathLengthList.size();
     }
 }
 
