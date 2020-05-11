@@ -2,6 +2,7 @@ package paths;
 
 import load.GraphIO;
 import model.Graph;
+import model.ModelUtil;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import paths.preprocessing.ReachProcessor;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +34,21 @@ public class ReachTest {
     @Test
     public void denmarkReachSave() {
         fileName = "denmark-latest.osm.pbf";
+        BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
+        SSSP.setDistanceStrategy(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1, true);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        ReachProcessor reachProcessor = new ReachProcessor();
+        List<Double> arr = reachProcessor.computeReachBound(graph);
+        graphIO.saveReach(fileName, arr);
+        System.out.println(arr);
+    }
+
+    @Test
+    public void PolandSave() {
+        fileName = "poland-latest.osm.pbf";
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         SSSP.setDistanceStrategy(distanceStrategy1);
         graphIO = new GraphIO(distanceStrategy1, true);

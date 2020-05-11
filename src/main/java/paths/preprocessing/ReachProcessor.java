@@ -17,7 +17,8 @@ public class ReachProcessor {
     private List<Double> bounds;
     private double[] reachLCPT;
 
-    private BiConsumer<Long, Long> progressListener = (l1, l2) -> { };
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
+    };
 
     double reachMetric(Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
@@ -41,7 +42,7 @@ public class ReachProcessor {
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
-        int[] bIterations = {0, 6, 15, 30, 40, 60, 90, 110, 130, 170, 210};
+        int[] bIterations = {0, 15, 30, 40, 60, 90, 110, 130, 170, 210, 300};
         for (int i = 0; i < bIterations.length; i++) {
             if (deletedNodes == 0) {
                 progressListener.accept((long) 10 * i, 100L);
