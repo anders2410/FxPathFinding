@@ -6,9 +6,8 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
-import load.pbfparsing.PBFParser;
 import paths.preprocessing.ContractionHierarchies;
-import paths.preprocessing.ContractionHierarchiesResult;
+import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -110,8 +109,8 @@ public class SSSPPBFTest {
         SSSP.setReachBounds(bounds);
 
         ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
-        ContractionHierarchiesResult contractionHierarchiesResult = contractionHierarchies.preprocess();
-        SSSP.setContractionHierarchiesResult(contractionHierarchiesResult);
+        CHResult CHResult = contractionHierarchies.preprocess();
+        SSSP.setCHResult(CHResult);
         testCases = 1000;
         runtimes = new double[algorithms][testCases];
 

@@ -8,7 +8,7 @@ import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
 import paths.generator.RelaxGenerator;
-import paths.preprocessing.ContractionHierarchiesResult;
+import paths.preprocessing.CHResult;
 import paths.preprocessing.Landmarks;
 import paths.strategy.*;
 
@@ -20,7 +20,6 @@ import java.util.function.Function;
 import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
-import static paths.Util.revDir;
 import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
@@ -65,7 +64,7 @@ public class SSSP {
     private static double[] heuristicValuesB;
     private static GetPQueueStrategy priorityQueueGetter;
     private static double singleToAllBound;
-    private static ContractionHierarchiesResult contractionHierarchiesResult;
+    private static CHResult chResult;
     private static double bestPathLengthSoFar;
     private static ScanPruningStrategy scanPruningStrategy;
     private static ResultPackingStrategy resultPackingStrategy;
@@ -251,7 +250,7 @@ public class SSSP {
 
     public static boolean shouldBeDone(List<Integer> complete) {
         for (int i = 0; i < complete.size() - 1; i++) {
-            Integer contractedNode = contractionHierarchiesResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+            Integer contractedNode = chResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
             if (contractedNode != null) {
                 return true;
             }
@@ -436,12 +435,12 @@ public class SSSP {
         (dir == A ? relaxedA : relaxedB).add(edge);
     }
 
-    public static ContractionHierarchiesResult getContractionHierarchiesResult() {
-        return contractionHierarchiesResult;
+    public static CHResult getCHResult() {
+        return chResult;
     }
 
-    public static void setContractionHierarchiesResult(ContractionHierarchiesResult contractionHierarchiesResult) {
-        SSSP.contractionHierarchiesResult = contractionHierarchiesResult;
+    public static void setCHResult(CHResult chResult) {
+        SSSP.chResult = chResult;
     }
 
     public static void setCHGraph(Graph CHGraph) {

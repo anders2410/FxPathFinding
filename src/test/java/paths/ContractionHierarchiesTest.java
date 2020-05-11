@@ -6,7 +6,7 @@ import model.Node;
 import org.junit.Before;
 import org.junit.Test;
 import paths.preprocessing.ContractionHierarchies;
-import paths.preprocessing.ContractionHierarchiesResult;
+import paths.preprocessing.CHResult;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -19,7 +19,7 @@ public class ContractionHierarchiesTest {
     String fileName = "malta-latest.osm.pbf";
     GraphIO graphIO;
     ContractionHierarchies contractionHierarchies;
-    ContractionHierarchiesResult contractionHierarchiesResult;
+    CHResult CHResult;
 
     @Before
     public void setUp() {
@@ -31,8 +31,8 @@ public class ContractionHierarchiesTest {
         SSSP.setGraph(originalGraph);
 
         contractionHierarchies = new ContractionHierarchies(originalGraph);
-        contractionHierarchiesResult = contractionHierarchies.preprocess();
-        SSSP.setContractionHierarchiesResult(contractionHierarchiesResult);
+        CHResult = contractionHierarchies.preprocess();
+        SSSP.setCHResult(CHResult);
 
         System.out.println("------------------------------ ORIGINAL GRAPH ----------------------------------------------------");
         System.out.println("Number of nodes: " + originalGraph.getNodeAmount());
@@ -42,8 +42,8 @@ public class ContractionHierarchiesTest {
     @Test
     public void testContractionHierarchiesIntegrated() {
         System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
-        System.out.println("Number of nodes: " + contractionHierarchiesResult.getGraph().getNodeAmount());
-        System.out.println("Number of edges: " + contractionHierarchiesResult.getGraph().getEdgeAmount());
+        System.out.println("Number of nodes: " + CHResult.getGraph().getNodeAmount());
+        System.out.println("Number of edges: " + CHResult.getGraph().getEdgeAmount());
 
 
         System.out.println("------------------------------ TESTING VS. DIJKSTRA -----------------------------------------------");
@@ -72,8 +72,8 @@ public class ContractionHierarchiesTest {
     @Test
     public void testContractionHierarchiesSinglePathIntegrated() {
         System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
-        System.out.println("Number of nodes: " + contractionHierarchiesResult.getGraph().getNodeAmount());
-        System.out.println("Number of edges: " + contractionHierarchiesResult.getGraph().getEdgeAmount());
+        System.out.println("Number of nodes: " + CHResult.getGraph().getNodeAmount());
+        System.out.println("Number of edges: " + CHResult.getGraph().getEdgeAmount());
 
 
         System.out.println("--------------------------- SINGLE INTEGRATED VS. DIJKSTRA -------------------------------");

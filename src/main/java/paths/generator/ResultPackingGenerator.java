@@ -5,7 +5,6 @@ import paths.ABDir;
 import paths.SSSP;
 import paths.ShortestPathResult;
 import paths.strategy.ResultPackingStrategy;
-import paths.strategy.ScanPruningStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,7 @@ public class ResultPackingGenerator {
             boolean shouldContinue = true;
             while (shouldContinue) {
                 for (int i = 0; i < result.size() - 1; i++) {
-                    Integer contractedNode = getContractionHierarchiesResult().getShortcuts().get(new Pair<>(result.get(i), result.get(i + 1)));
+                    Integer contractedNode = getCHResult().getShortcuts().get(new Pair<>(result.get(i), result.get(i + 1)));
                     if (contractedNode != null) {
                         result.add(i + 1, contractedNode);
                         break;

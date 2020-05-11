@@ -14,9 +14,9 @@ public class PreProcessGenerator {
 
     public static PreProcessStrategy getCHPreStrategy() {
         return () -> {
-            List<Integer> ranks = SSSP.getContractionHierarchiesResult().getRanks();
-            Map<Pair<Integer, Integer>, Integer> shortcuts = getContractionHierarchiesResult().getShortcuts();
-            Graph graph = SSSP.getContractionHierarchiesResult().getGraph();
+            List<Integer> ranks = SSSP.getCHResult().getRanks();
+            Map<Pair<Integer, Integer>, Integer> shortcuts = getCHResult().getShortcuts();
+            Graph graph = SSSP.getCHResult().getGraph();
             if (ranks == null || graph == null || shortcuts == null) {
                 System.out.println("Something wrong with CH preprocess..");
             } else {

@@ -5,11 +5,10 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
-import paths.preprocessing.ContractionHierarchiesResult;
+import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
-import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -46,7 +45,8 @@ public class PathExperiments {
         List<Double> reachBounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(reachBounds);
 
-        ContractionHierarchiesResult ch = graphIO.loadContractionHierarchies(fileName);
+        CHResult ch = graphIO.loadCH(fileName);
+        SSSP.setCHResult(ch);
     }
 
     /*@Test
