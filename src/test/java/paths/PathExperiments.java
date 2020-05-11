@@ -44,22 +44,30 @@ public class PathExperiments {
                 BI_A_STAR_CONSISTENT,
                 A_STAR_LANDMARKS,
                 BI_A_STAR_LANDMARKS);
-        List<Map<AlgorithmMode, ShortestPathResult>> results = testMany(modesToTest, testCases);
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
         System.out.println("Done");
     }
 
-    private List<Map<AlgorithmMode, ShortestPathResult>> testMany(List<AlgorithmMode> modesToTest, int amount) {
+    private List<Map<AlgorithmMode, TestManyRes>> testMany(List<AlgorithmMode> modesToTest, int amount) {
+        System.out.println("Experiment on " + amount + " cases begun.");
         seed = 0;
-        List<Map<AlgorithmMode, ShortestPathResult>> results = new ArrayList<>();
+        List<Map<AlgorithmMode, TestManyRes>> results = new ArrayList<>();
         while (seed < amount) {
-            seed++;
-            Map<AlgorithmMode, ShortestPathResult> resMap = new HashMap<>();
+            if (seed % 100 == 0) {
+                System.out.println("Ran " + seed + " shortest paths");
+            }
+            Map<AlgorithmMode, TestManyRes> resMap = new HashMap<>();
             for (AlgorithmMode mode : modesToTest) {
-                resMap.put(mode, SSSP.randomPath(mode));
+                resMap.put(mode, convertToTestManyRes(SSSP.randomPath(mode)));
             }
             results.add(resMap);
+            seed++;
         }
         return results;
+    }
+
+    private TestManyRes convertToTestManyRes(ShortestPathResult spRes) {
+        return new TestManyRes(spRes.runTime, spRes.scannedNodesA.size() + spRes.scannedNodesB.size());
     }
 
     @Test
@@ -257,5 +265,23 @@ class TestDataExtra {
 
     protected Integer getAverageVisited() {
         return totalVisits / pathLengthList.size();
+    }
+}
+
+class TestManyRes {
+    private double runTime;
+    private int nodesScanned;
+
+    public TestManyRes(double runTime, int nodesScanned) {
+        this.runTime = runTime;
+        this.nodesScanned = nodesScanned;
+    }
+
+    public double getRunTime() {
+        return runTime;
+    }
+
+    public int getNodesScanned() {
+        return nodesScanned;
     }
 }
