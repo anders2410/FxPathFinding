@@ -196,6 +196,7 @@ public class SSSP {
         List<List<Edge>> adjList;
         List<List<Edge>> revAdjList;
 
+        // TODO: 11/05/2020 Should we fix this?
         if (mode == CONTRACTION_HIERARCHIES) {
             adjList = CHGraph.getAdjList();
             revAdjList = CHGraph.getReverse(adjList);

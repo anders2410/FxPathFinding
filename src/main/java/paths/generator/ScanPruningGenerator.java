@@ -8,10 +8,7 @@ import static paths.SSSP.getNodeDist;
 
 public class ScanPruningGenerator {
     public static ScanPruningStrategy getBasePruning() {
-        return (dir, nodeToScan) -> {
-            if (nodeToScan == null) return true;
-            return false;
-        };
+        return (dir, nodeToScan) -> nodeToScan == null;
     }
 
     public static ScanPruningStrategy getBoundsPruning() {
