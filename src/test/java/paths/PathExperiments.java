@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -45,6 +46,12 @@ public class PathExperiments {
                 A_STAR_LANDMARKS,
                 BI_A_STAR_LANDMARKS);
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        int unidir_victories = results.stream().map(r -> r.get(DIJKSTRA).getNodesScanned() < r.get(BI_DIJKSTRA).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
+        int unidirastar_victories = results.stream().map(r -> r.get(A_STAR).getNodesScanned() < r.get(BI_A_STAR_CONSISTENT).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
+        int unidirlm_victories = results.stream().map(r -> r.get(A_STAR_LANDMARKS).getNodesScanned() < r.get(BI_A_STAR_LANDMARKS).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
+        System.out.println("Dijkstra visited less nodes than BiDijkstra " + unidir_victories + " times.");
+        System.out.println("A* visited less nodes than BiA* " + unidirastar_victories + " times.");
+        System.out.println("ALT visited less nodes than BiALT " + unidirlm_victories + " times.");
         System.out.println("Done");
     }
 
