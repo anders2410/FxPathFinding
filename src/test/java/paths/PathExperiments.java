@@ -37,7 +37,7 @@ public class PathExperiments {
         graph = SSSP.getGraph();
     }
 
-    int testCases = 10;
+    int testCases = 1000;
 
     @Test
     public void testCompareAlgorithms() {
