@@ -102,26 +102,23 @@ public class PathExperiments {
         dataList.add(biDijkstraData);
         dataList.add(biAStarData);
         dataList.add(ALTData);
-        dataList.add(ReachData);
-        dataList.add(CHData);*/
-        dataList.add(ALTData);
+        dataList.add(ReachData);*/
+        dataList.add(CHData);
 
         for (TestDataExtra data : dataList) {
             testAlgorithm(data);
             System.out.println(data);
+            /*System.out.println(data.calculateValuesInPathLengthRange(0, 50));
+            System.out.println(data.calculateValuesInPathLengthRange(51, 100));
+            System.out.println(data.calculateValuesInPathLengthRange(101, 150));
+            System.out.println(data.calculateValuesInPathLengthRange(151, 200));
+            System.out.println(data.calculateValuesInPathLengthRange(201, Integer.MAX_VALUE));*/
         }
-
-        /*System.out.println(dijkstraData);
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(0, 50));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(51, 100));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(101, 150));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(151, 200));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(201, Integer.MAX_VALUE));*/
     }
 
     private void testAlgorithm(TestDataExtra data) {
         int i = 0;
-        while (i < 1000) {
+        while (i < 10) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(data.getMode());
             data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size(), res.path.size(), res.runTime);
@@ -309,7 +306,7 @@ class TestDataExtra {
                 " to " + to +
                 "." + " average nodes visited: " +
                 (total/count) + ", max visited: " +
-                maxVisits;
+                max;
     }
 
     @Override
