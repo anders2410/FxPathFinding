@@ -12,6 +12,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
@@ -33,7 +35,7 @@ public class PathExperiments {
         graph = SSSP.getGraph();
     }
 
-    int testCases = 1000;
+    int testCases = 10;
 
     @Test
     public void testCompareAlgorithms() {
@@ -44,24 +46,54 @@ public class PathExperiments {
                 A_STAR,
                 BI_A_STAR_CONSISTENT,
                 A_STAR_LANDMARKS,
-                BI_A_STAR_LANDMARKS);
+                BI_A_STAR_LANDMARKS,
+                REACH,
+                BI_REACH
+                );
+        seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
-        int unidir_victories = results.stream().map(r -> r.get(DIJKSTRA).getNodesScanned() < r.get(BI_DIJKSTRA).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
-        int unidirastar_victories = results.stream().map(r -> r.get(A_STAR).getNodesScanned() < r.get(BI_A_STAR_CONSISTENT).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
-        int unidirlm_victories = results.stream().map(r -> r.get(A_STAR_LANDMARKS).getNodesScanned() < r.get(BI_A_STAR_LANDMARKS).getNodesScanned() ? 1 : 0).reduce(Integer::sum).orElse(-1);
-        System.out.println("Dijkstra visited less nodes than BiDijkstra " + unidir_victories + " times.");
-        System.out.println("A* visited less nodes than BiA* " + unidirastar_victories + " times.");
-        System.out.println("ALT visited less nodes than BiALT " + unidirlm_victories + " times.");
+        checkResultsValid(results);
+
+        List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_astar_wins = results.stream().filter(r -> r.get(A_STAR).nodesScanned < r.get(BI_A_STAR_CONSISTENT).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_lm_wins = results.stream().filter(r -> r.get(A_STAR_LANDMARKS).nodesScanned < r.get(BI_A_STAR_LANDMARKS).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_real_wins = results.stream().filter(r -> r.get(REACH).nodesScanned < r.get(BI_REACH).nodesScanned).collect(Collectors.toList());
+        System.out.println("Amount of unidirectional victories");
+        System.out.println("Dijkstra visited less nodes than BiDijkstra " + ud_dijkstra_wins.size() + " times.");
+        System.out.println("A* visited less nodes than BiA* " + ud_astar_wins.size() + " times.");
+        System.out.println("ALT visited less nodes than BiALT " + ud_lm_wins.size() + " times.");
+        System.out.println("REAL visited less nodes than BiREAL " + ud_real_wins.size() + " times.");
+
+        List<Map<AlgorithmMode, TestManyRes>> dijkstra_astar_overlap = ud_dijkstra_wins.stream().filter(ud_astar_wins::contains).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> dijkstra_lm_overlap = ud_dijkstra_wins.stream().filter(ud_lm_wins::contains).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> astar_lm_overlap = ud_astar_wins.stream().filter(ud_lm_wins::contains).collect(Collectors.toList());
+        System.out.println("Intersections");
+        System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_astar_overlap.size() + " cases, where A* better than BiA*");
+        dijkstra_astar_overlap.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_lm_overlap.size() + " cases, where ALT better than BiALT");
+        System.out.println("A* better than BiA* in " + astar_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("Done");
+    }
+
+    private void printPair(TestManyRes res) {
+        System.out.println("(" + res.from + ", " + res.to + ")");
+    }
+
+    private void checkResultsValid(List<Map<AlgorithmMode, TestManyRes>> results) {
+        for (Map<AlgorithmMode, TestManyRes> result : results) {
+            for (AlgorithmMode mode : result.keySet()) {
+                assert result.get(DIJKSTRA).from == result.get(mode).from;
+                assert result.get(DIJKSTRA).to == result.get(mode).to;
+            }
+        }
     }
 
     private List<Map<AlgorithmMode, TestManyRes>> testMany(List<AlgorithmMode> modesToTest, int amount) {
         System.out.println("Experiment on " + amount + " cases begun.");
-        seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = new ArrayList<>();
-        while (seed < amount) {
-            if (seed % 100 == 0) {
-                System.out.println("Ran " + seed + " shortest paths");
+        for (int i = 1; i < amount + 1; i++) {
+            if (i % 100 == 0) {
+                System.out.println("Ran " + i + " shortest paths");
             }
             Map<AlgorithmMode, TestManyRes> resMap = new HashMap<>();
             for (AlgorithmMode mode : modesToTest) {
@@ -74,7 +106,10 @@ public class PathExperiments {
     }
 
     private TestManyRes convertToTestManyRes(ShortestPathResult spRes) {
-        return new TestManyRes(spRes.runTime, spRes.scannedNodesA.size() + spRes.scannedNodesB.size());
+        if (spRes.path.size() == 0) {
+            return new TestManyRes(0, 0);
+        }
+        return new TestManyRes(spRes.runTime, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.get(0), spRes.path.get(spRes.path.size()-1));
     }
 
     @Test
@@ -276,19 +311,19 @@ class TestDataExtra {
 }
 
 class TestManyRes {
-    private double runTime;
-    private int nodesScanned;
+    double runTime;
+    int nodesScanned;
+    int from, to;
+
+    public TestManyRes(double runTime, int nodesScanned, int from, int to) {
+        this.runTime = runTime;
+        this.nodesScanned = nodesScanned;
+        this.from = from;
+        this.to = to;
+    }
 
     public TestManyRes(double runTime, int nodesScanned) {
         this.runTime = runTime;
         this.nodesScanned = nodesScanned;
-    }
-
-    public double getRunTime() {
-        return runTime;
-    }
-
-    public int getNodesScanned() {
-        return nodesScanned;
     }
 }
