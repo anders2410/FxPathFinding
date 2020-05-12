@@ -4,6 +4,7 @@ import load.GraphIO;
 import model.Graph;
 import model.Node;
 import org.junit.Test;
+import org.junit.internal.runners.statements.Fail;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.fail;
 import static paths.AlgorithmMode.*;
 import static paths.SSSP.seed;
 
@@ -80,10 +82,15 @@ public class PathExperiments {
     }
 
     private void checkResultsValid(List<Map<AlgorithmMode, TestManyRes>> results) {
-        for (Map<AlgorithmMode, TestManyRes> result : results) {
+        for (int i = 0; i < results.size(); i++) {
+            Map<AlgorithmMode, TestManyRes> result = results.get(i);
             for (AlgorithmMode mode : result.keySet()) {
-                assert result.get(DIJKSTRA).from == result.get(mode).from;
-                assert result.get(DIJKSTRA).to == result.get(mode).to;
+                if (result.get(DIJKSTRA).from != result.get(mode).from || result.get(DIJKSTRA).to != result.get(mode).to) {
+                    printPair(result.get(DIJKSTRA));
+                    printPair(result.get(mode));
+                    System.out.println(Util.algorithmNames.get(mode));
+                    fail();
+                }
             }
         }
     }
