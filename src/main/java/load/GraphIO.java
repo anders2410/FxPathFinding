@@ -286,6 +286,7 @@ public class GraphIO {
         return getTrimmedFolderSCCName(fileName) + "-" + mode.toString() + "landmarks.tmp";
     }
 
+    @SuppressWarnings("unchecked")
     public List<Double> loadReach(String fileName) {
         try {
             String reachFile = getTrimmedFolderSCCName(fileName) + "-reach-bounds.tmp";

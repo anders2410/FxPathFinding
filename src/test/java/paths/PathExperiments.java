@@ -1,10 +1,10 @@
 package paths;
 
+import javafx.util.Pair;
 import load.GraphIO;
 import model.Graph;
 import model.Node;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -12,9 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.fail;
 import static paths.AlgorithmMode.*;
@@ -133,22 +131,23 @@ public class PathExperiments {
     public void compareAllAlgorithmsOnDifferentParameters() {
         setUp("denmark-latest.osm.pbf");
 
-        TestDataExtra dijkstraData = new TestDataExtra("Dijkstra", DIJKSTRA);
-        TestDataExtra biDijkstraData = new TestDataExtra("Bi-Dijkstra", BI_DIJKSTRA);
-        TestDataExtra biAStarData = new TestDataExtra("Bi-AStar", BI_A_STAR_CONSISTENT);
-        TestDataExtra ALTData = new TestDataExtra("BiALT", BI_A_STAR_LANDMARKS);
-        TestDataExtra ReachData = new TestDataExtra("REAL", BI_REACH_LANDMARKS);
-        TestDataExtra CHData = new TestDataExtra("CH", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
+        Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
+        Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
+        Pair<String, AlgorithmMode> ALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> ReachPair = new Pair<>("REAL", BI_REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
-        List<TestDataExtra> dataList = new ArrayList<>();
-        /*dataList.add(dijkstraData);
-        dataList.add(biDijkstraData);
-        dataList.add(biAStarData);
-        dataList.add(ALTData);
-        dataList.add(ReachData);*/
-        dataList.add(CHData);
+        List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
+        /*pairList.add(dijkstraPair);
+        pairList.add(biDijkstraPair);
+        pairList.add(biAStarPair);
+        pairList.add(ALTPair);
+        pairList.add(ReachPair);*/
+        pairList.add(CHPair);
 
-        for (TestDataExtra data : dataList) {
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testAlgorithm(data);
             System.out.println(data);
             /*System.out.println(data.calculateValuesInPathLengthRange(0, 50));
