@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -274,6 +275,7 @@ public class FXMLController implements Initializable {
         clearCanvas();
         drawAllEdges();
         drawSelectedNodes();
+        drawOverlayNodes();
         drawAllLandmarks();
     }
 
@@ -290,6 +292,28 @@ public class FXMLController implements Initializable {
             drawNode(node);
         }
         selectedNodes.addFirst(from);
+    }
+
+    List<Node> overlayNodes = new ArrayList<>();
+    List<Node> overlayNodes2 = new ArrayList<>();
+
+    private void resetOverlays() {
+        overlayNodes = new ArrayList<>();
+        overlayNodes2 = new ArrayList<>();
+    }
+
+    private void drawOverlayNodes() {
+        if (currentOverlay == OverlayType.NODEPAIRS) {
+            gc.setStroke(Color.BLACK);
+            gc.setFill(Color.GREEN);
+            for (Node node : overlayNodes) {
+                drawNode(node);
+            }
+            gc.setFill(Color.DARKRED);
+            for (Node node : overlayNodes2) {
+                drawNode(node);
+            }
+        }
     }
 
     private void drawNode(Node node) {
@@ -863,6 +887,7 @@ public class FXMLController implements Initializable {
         if (graph == null) {
             return;
         }
+        resetOverlays();
         resetSelection();
         cancelAlgorithm();
     }
@@ -1258,6 +1283,29 @@ public class FXMLController implements Initializable {
         dialog.show();
     }
 
+    private void displayGetNodesDialog() {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Input node pairs");
+        dialog.setContentText("Input node pairs here: ");
+        TextField textField = new TextField();
+        textField.setPromptText("Node pairs");
+        dialog.getDialogPane().setContent(textField);
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().add(okButton);
+        dialog.setResultConverter(buttonType -> textField.getText());
+        dialog.showAndWait();
+        for (String res : dialog.getResult().split("[)]")) {
+            if (res.length() < 1) {
+                return;
+            }
+            String[] pair = res.replaceAll(" ", "").substring(1).split(",");
+            int fromIndex = Integer.parseInt(pair[0]);
+            int toIndex = Integer.parseInt(pair[1]);
+            overlayNodes.add(graph.getNodeList().get(fromIndex));
+            overlayNodes2.add(graph.getNodeList().get(toIndex));
+        }
+    }
+
     public void handleClearLandmarks() {
         landmarksGenerator.clearLandmarks();
         SSSP.setLandmarkArray(null);
@@ -1380,6 +1428,12 @@ public class FXMLController implements Initializable {
 
     public void handleOverlayCH() {
         currentOverlay = OverlayType.CH;
+        redrawGraph();
+    }
+
+    public void handleOverlayNodes() {
+        currentOverlay = OverlayType.NODEPAIRS;
+        displayGetNodesDialog();
         redrawGraph();
     }
 

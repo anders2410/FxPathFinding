@@ -36,6 +36,14 @@ public class RelaxGenerator {
         };
     }
 
+    public static RelaxStrategy getBiDijkstraWithEdgePrune() {
+        return (edge, dir) -> {
+            if (!getScanned(revDir(dir)).contains(edge.to)) {
+                getBiDijkstra().relax(edge, dir);
+            }
+        };
+    }
+
     private static boolean updateGoalDist(Edge edge, ABDir dir) {
         double newPathDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
         if (newPathDist < getGoalDistance()) {
@@ -56,6 +64,7 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBiReachAStar() {
         return (edge, dir) -> {
+            if (getScanned(revDir(dir)).contains(edge.to)) return;
             /*List<Double> bounds = getReachBounds();
             double reachBound = bounds.get(edge.to);
             boolean distBiggerThanReach = getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(edge.from)) <= precision);

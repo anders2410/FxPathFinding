@@ -35,10 +35,27 @@ public class PathExperiments {
         graph = SSSP.getGraph();
     }
 
-    int testCases = 1000;
+
+
 
     @Test
-    public void testCompareAlgorithms() {
+    public void testPrintListUniAndBi() {
+        int testCases = 1000;
+        setUp("malta-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                DIJKSTRA,
+                BI_DIJKSTRA
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        checkResultsValid(results);
+        List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
+        ud_dijkstra_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+    }
+
+    @Test
+    public void testCompareUniAndBiDir() {
+        int testCases = 1000;
         setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
@@ -48,7 +65,11 @@ public class PathExperiments {
                 A_STAR_LANDMARKS,
                 BI_A_STAR_LANDMARKS,
                 REACH,
-                BI_REACH
+                BI_REACH,
+                REACH_A_STAR,
+                BI_REACH_A_STAR,
+                REACH_LANDMARKS,
+                BI_REACH_LANDMARKS
                 );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
@@ -57,11 +78,15 @@ public class PathExperiments {
         List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> ud_astar_wins = results.stream().filter(r -> r.get(A_STAR).nodesScanned < r.get(BI_A_STAR_CONSISTENT).nodesScanned).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> ud_lm_wins = results.stream().filter(r -> r.get(A_STAR_LANDMARKS).nodesScanned < r.get(BI_A_STAR_LANDMARKS).nodesScanned).collect(Collectors.toList());
-        List<Map<AlgorithmMode, TestManyRes>> ud_real_wins = results.stream().filter(r -> r.get(REACH).nodesScanned < r.get(BI_REACH).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_re_wins = results.stream().filter(r -> r.get(REACH).nodesScanned < r.get(BI_REACH).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_rea_wins = results.stream().filter(r -> r.get(REACH_A_STAR).nodesScanned < r.get(BI_REACH_A_STAR).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_real_wins = results.stream().filter(r -> r.get(REACH_LANDMARKS).nodesScanned < r.get(BI_REACH_LANDMARKS).nodesScanned).collect(Collectors.toList());
         System.out.println("Amount of unidirectional victories");
         System.out.println("Dijkstra visited less nodes than BiDijkstra " + ud_dijkstra_wins.size() + " times.");
         System.out.println("A* visited less nodes than BiA* " + ud_astar_wins.size() + " times.");
         System.out.println("ALT visited less nodes than BiALT " + ud_lm_wins.size() + " times.");
+        System.out.println("RE visited less nodes than BiRE " + ud_re_wins.size() + " times.");
+        System.out.println("REA* visited less nodes than BiREA* " + ud_rea_wins.size() + " times.");
         System.out.println("REAL visited less nodes than BiREAL " + ud_real_wins.size() + " times.");
 
         List<Map<AlgorithmMode, TestManyRes>> dijkstra_astar_overlap = ud_dijkstra_wins.stream().filter(ud_astar_wins::contains).collect(Collectors.toList());
@@ -69,7 +94,6 @@ public class PathExperiments {
         List<Map<AlgorithmMode, TestManyRes>> astar_lm_overlap = ud_astar_wins.stream().filter(ud_lm_wins::contains).collect(Collectors.toList());
         System.out.println("Intersections");
         System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_astar_overlap.size() + " cases, where A* better than BiA*");
-        dijkstra_astar_overlap.forEach(r -> printPair(r.get(DIJKSTRA)));
         System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("A* better than BiA* in " + astar_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("Done");
@@ -150,12 +174,14 @@ public class PathExperiments {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testAlgorithm(data);
             System.out.println(data);
-            /*System.out.println(data.calculateValuesInPathLengthRange(0, 50));
-            System.out.println(data.calculateValuesInPathLengthRange(51, 100));
-            System.out.println(data.calculateValuesInPathLengthRange(101, 150));
-            System.out.println(data.calculateValuesInPathLengthRange(151, 200));
-            System.out.println(data.calculateValuesInPathLengthRange(201, Integer.MAX_VALUE));*/
         }
+
+        /*System.out.println(dijkstraData);
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(0, 50));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(51, 100));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(101, 150));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(151, 200));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(201, Integer.MAX_VALUE));*/
     }
 
     private void testAlgorithm(TestDataExtra data) {
