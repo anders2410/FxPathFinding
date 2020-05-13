@@ -111,7 +111,7 @@ public class SSSPPBFTest {
         ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
         CHResult CHResult = contractionHierarchies.preprocess();
         SSSP.setCHResult(CHResult);
-        testCases = 1000;
+        testCases = 100000;
         runtimes = new double[algorithms][testCases];
 
         i = 0;
