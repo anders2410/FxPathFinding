@@ -31,7 +31,7 @@ public class PathExperiments {
 
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadAllPreProcessing(fileName);
+        graphIO.loadPreAll(fileName);
         graph = SSSP.getGraph();
     }
 
@@ -40,7 +40,7 @@ public class PathExperiments {
 
     @Test
     public void testPrintListUniAndBi() {
-        int testCases = 1000;
+        int testCases = 10000;
         setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
@@ -50,12 +50,12 @@ public class PathExperiments {
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
         checkResultsValid(results);
         List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
-        ud_dijkstra_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        results.forEach(r -> printPair(r.get(DIJKSTRA)));
     }
 
     @Test
     public void testCompareUniAndBiDir() {
-        int testCases = 1000;
+        int testCases = 10000;
         setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,

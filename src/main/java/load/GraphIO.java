@@ -66,7 +66,20 @@ public class GraphIO {
         }
     }
 
-    public void loadAllPreProcessing(String fileName) {
+    public void loadPreAll(String fileName) {
+        loadPreREAL(fileName);
+        CHResult ch = loadCH(fileName);
+        SSSP.setCHResult(ch);
+    }
+
+    public void loadPreREAL(String fileName) {
+        loadPreALT(fileName);
+
+        List<Double> reachBounds = loadReach(fileName);
+        SSSP.setReachBounds(reachBounds);
+    }
+
+    public void loadPreALT(String fileName) {
         loadGraph(fileName);
         SSSP.setGraph(graph);
 
@@ -74,12 +87,6 @@ public class GraphIO {
         loadBestLandmarks(fileName, landmarks);
         SSSP.setLandmarks(landmarks);
         SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-
-        List<Double> reachBounds = loadReach(fileName);
-        SSSP.setReachBounds(reachBounds);
-
-        CHResult ch = loadCH(fileName);
-        SSSP.setCHResult(ch);
     }
 
     public LoadType loadGraph(String fileName) {
