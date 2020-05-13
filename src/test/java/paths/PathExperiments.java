@@ -168,7 +168,7 @@ public class PathExperiments {
         pairList.add(biAStarPair);
         pairList.add(ALTPair);
         pairList.add(ReachPair);*/
-        pairList.add(CHPair);
+        pairList.add(dijkstraPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());

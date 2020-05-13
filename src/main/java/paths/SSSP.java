@@ -184,9 +184,7 @@ public class SSSP {
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);
         }
-        long endTime = System.nanoTime();
-        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        return resultPackingStrategy.packResult(duration);
+        return resultPackingStrategy.packResult(startTime);
     }
 
     private static ShortestPathResult biDirectional() {
@@ -218,9 +216,7 @@ public class SSSP {
                 takeStep(revAdjList, B);
             }
         }
-        long endTime = System.nanoTime();
-        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        return resultPackingStrategy.packResult(duration);
+        return resultPackingStrategy.packResult(startTime);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
@@ -243,9 +239,9 @@ public class SSSP {
         while (!queueA.isEmpty()) {
             takeStep(adjList, A);
         }
+        List<Integer> shortestPath = extractPath(pathMapA, source, target);
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        List<Integer> shortestPath = extractPath(pathMapA, source, target);
         return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
     }
 
