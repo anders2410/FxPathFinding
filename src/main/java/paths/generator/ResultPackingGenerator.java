@@ -14,10 +14,8 @@ import static paths.SSSP.*;
 
 public class ResultPackingGenerator {
     public static ResultPackingStrategy getOneDirectionalPack() {
-        return (startTime) -> {
+        return (duration) -> {
             List<Integer> shortestPath = extractPath(getPathMap(ABDir.A), getSource(), getTarget());
-            long endTime = System.nanoTime();
-            long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
             return new ShortestPathResult(getNodeDist(ABDir.A).get(getTarget()), shortestPath, getScanned(ABDir.A), getRelaxed(ABDir.A), duration);
         };
     }
@@ -30,17 +28,15 @@ public class ResultPackingGenerator {
     }
 
     public static ResultPackingStrategy getStandardBiPack() {
-        return (startTime) -> {
+        return (duration) -> {
             if (SSSP.getMiddlePoint() == -1) return new ShortestPathResult();
             List<Integer> shortestPath = SSSP.extractPathBi();
-            long endTime = System.nanoTime();
-            long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
             return new ShortestPathResult(getGoalDistance(), shortestPath, getScanned(ABDir.A), getScanned(ABDir.B), getRelaxed(ABDir.A), getRelaxed(ABDir.B), duration);
         };
     }
 
     public static ResultPackingStrategy getCHPack() {
-        return (startTime) -> {
+        return (duration) -> {
             // Goes through all overlapping nodes and find the one with the smallest distance.
             int middlepoint = -1;
             double finalDistance = Double.MAX_VALUE;
@@ -70,8 +66,6 @@ public class ResultPackingGenerator {
                 }
                 shouldContinue = shouldBeDone(result);
             }
-            long endTime = System.nanoTime();
-            long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
             return new ShortestPathResult(getGoalDistance(), new ArrayList<>(result), getScanned(ABDir.A), getScanned(ABDir.B), getRelaxed(ABDir.A), getRelaxed(ABDir.B), duration);
         };
     }

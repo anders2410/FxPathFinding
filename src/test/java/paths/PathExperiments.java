@@ -35,9 +35,6 @@ public class PathExperiments {
         graph = SSSP.getGraph();
     }
 
-
-
-
     @Test
     public void testPrintListUniAndBi() {
         int testCases = 10000;
@@ -153,7 +150,7 @@ public class PathExperiments {
 
     @Test
     public void compareAllAlgorithmsOnDifferentParameters() {
-        setUp("denmark-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -163,12 +160,12 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        /*pairList.add(dijkstraPair);
+        pairList.add(dijkstraPair);
         pairList.add(biDijkstraPair);
         pairList.add(biAStarPair);
         pairList.add(ALTPair);
-        pairList.add(ReachPair);*/
-        pairList.add(dijkstraPair);
+        pairList.add(ReachPair);
+        pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
@@ -186,7 +183,7 @@ public class PathExperiments {
 
     private void testAlgorithm(TestDataExtra data) {
         int i = 0;
-        while (i < 10) {
+        while (i < 1000) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(data.getMode());
             data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size(), res.path.size(), res.runTime);

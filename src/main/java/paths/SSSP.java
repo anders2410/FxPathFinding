@@ -175,20 +175,21 @@ public class SSSP {
     }
 
     private static ShortestPathResult oneDirectional() {
-        long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
 
+        long startTime = System.nanoTime();
         while (!queueA.isEmpty()) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);
         }
-        return resultPackingStrategy.packResult(startTime);
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        return resultPackingStrategy.packResult(duration);
     }
 
     private static ShortestPathResult biDirectional() {
-        long startTime = System.nanoTime();
 
         List<List<Edge>> adjList;
         List<List<Edge>> revAdjList;
@@ -208,6 +209,7 @@ public class SSSP {
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
 
+        long startTime = System.nanoTime();
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {
@@ -216,7 +218,9 @@ public class SSSP {
                 takeStep(revAdjList, B);
             }
         }
-        return resultPackingStrategy.packResult(startTime);
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        return resultPackingStrategy.packResult(duration);
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
