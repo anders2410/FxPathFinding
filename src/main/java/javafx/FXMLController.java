@@ -87,6 +87,7 @@ public class FXMLController implements Initializable {
     private int mouseNodes = 0;
     private String fileName;
     private LandmarkMode landmarksGenMode;
+    private List<Integer> densityMeasures;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -133,6 +134,7 @@ public class FXMLController implements Initializable {
             SSSP.setReachBounds(null);
             loadReachBounds();
             loadContractionHierarchies();
+            loadDensities();
             setUpGraph();
             playIndicatorCompleted();
         });
@@ -368,6 +370,10 @@ public class FXMLController implements Initializable {
             findMaxRank();
             color = graduateColorSaturation(color, SSSP.getCHResult().getRanks().get(edge.from), maxRank);
         }
+        if (currentOverlay == OverlayType.DENSITY && densityMeasures != null) {
+            findMaxDensity();
+            color = graduateColorHue(Color.RED, densityMeasures.get(edge.from), maxDensity);
+        }
         if (graphInfo != null) {
             EdgeInfo edgeInfo = graphInfo.getEdge(edge);
             NodeInfo nodeInfo = graphInfo.getNodeList().get(edgeInfo.getFrom());
@@ -454,6 +460,21 @@ public class FXMLController implements Initializable {
         maxRank = maxSoFar;
     }
 
+    private int maxDensity = -1;
+
+    private void findMaxDensity() {
+        if (densityMeasures == null || maxDensity != -1) {
+            return;
+        }
+        int maxSoFar = 0;
+        for (int density : densityMeasures) {
+            if (maxSoFar < density) {
+                maxSoFar = density;
+            }
+        }
+        maxDensity = maxSoFar;
+    }
+
     public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
         return compVal(from1, e1) >= compVal(from2, e2);
     }
@@ -509,6 +530,10 @@ public class FXMLController implements Initializable {
 
     private Color graduateColorSaturation(Color color, double amount, double max) {
         return color.deriveColor(-10 * (amount / max), 1, 1, 1 - 0.8 + amount / (1.25 * max));
+    }
+
+    private Color graduateColorHue(Color color, double amount, double max) {
+        return color.deriveColor(60 * (amount / max), 1, 1, 1);
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
@@ -1357,13 +1382,62 @@ public class FXMLController implements Initializable {
         Task<Void> saveTask = new Task<>() {
             @Override
             protected Void call() {
-                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                GraphIO graphIO = new GraphIO(isSCCGraph);
                 graphIO.saveReach(fileName, SSSP.getReachBounds());
                 return null;
             }
         };
         saveTask.setOnFailed(e -> displayFailedDialog("save reach bounds", e));
         new Thread(saveTask).start();
+    }
+
+    public void handleGenerateDensities() {
+        Task<List<Integer>> generateDensitiesTask = new Task<>() {
+            @Override
+            protected List<Integer> call() {
+                ModelUtil modelUtil = new ModelUtil(graph);
+                modelUtil.setProgressListener(this::updateProgress);
+                return modelUtil.computeDensityMeasures(2);
+            }
+        };
+        generateDensitiesTask.setOnSucceeded(e -> {
+            densityMeasures = generateDensitiesTask.getValue();
+            saveDensities();
+            playIndicatorCompleted();
+        });
+        generateDensitiesTask.setOnFailed(e -> {
+            displayFailedDialog("generate densities", e);
+            playIndicatorCompleted();
+        });
+        attachProgressIndicator(generateDensitiesTask.progressProperty());
+        new Thread(generateDensitiesTask).start();
+    }
+
+    public void loadDensities() {
+        Task<List<Integer>> loadTask = new Task<>() {
+            @Override
+            protected List<Integer> call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                return graphIO.loadDensities(fileName);
+            }
+        };
+        loadTask.setOnSucceeded(e -> {
+            densityMeasures = loadTask.getValue();
+        });
+        loadTask.setOnFailed(e -> displayFailedDialog("load densities", e));
+        new Thread(loadTask).start();
+    }
+
+    public void saveDensities() {
+        Task<Void> saveDensitiesTask = new Task<>() {
+            @Override
+            protected Void call() {
+                new GraphIO(isSCCGraph).storeDensities(fileName, densityMeasures);
+                return null;
+            }
+        };
+        saveDensitiesTask.setOnFailed(e -> displayFailedDialog("save densities", e));
+        new Thread(saveDensitiesTask).start();
     }
 
     private void runSCC() {
@@ -1434,6 +1508,11 @@ public class FXMLController implements Initializable {
     public void handleOverlayNodes() {
         currentOverlay = OverlayType.NODEPAIRS;
         displayGetNodesDialog();
+        redrawGraph();
+    }
+
+    public void handleOverlayDensity() {
+        currentOverlay = OverlayType.DENSITY;
         redrawGraph();
     }
 

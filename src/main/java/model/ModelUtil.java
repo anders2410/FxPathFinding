@@ -41,6 +41,20 @@ public class ModelUtil {
         return hop;
     }
 
+    /**
+     * @param radius to scan in kilometer from the nodes.
+     * @return list of amount of neighbours in radius for all nodes.
+     */
+    public List<Integer> computeDensityMeasures(int radius) {
+        List<Integer> densityMeasures = new ArrayList<>();
+        int nodeListSize = graph.getNodeAmount();
+        for (int i = 0; i < nodeListSize; i++) {
+            progressListener.accept((long) i, (long) nodeListSize);
+            densityMeasures.add(nodesWithinRadius(i, radius));
+        }
+        return densityMeasures;
+    }
+
     public int nodesWithinRadius(int source, double radius) {
         int amountScanned = 0;
         List<Double> nodeDist = new ArrayList<>();

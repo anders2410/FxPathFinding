@@ -31,7 +31,7 @@ public class PathExperiments {
 
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadPreALT(fileName);
+        graphIO.loadPreAll(fileName);
         graph = SSSP.getGraph();
     }
 
@@ -66,8 +66,8 @@ public class PathExperiments {
 
     @Test
     public void testCompareUniAndBiDir() {
-        int testCases = 5000;
-        setUp("estonia-latest.osm.pbf");
+        int testCases = 10000;
+        setUp("denmark-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
                 BI_DIJKSTRA,
@@ -95,16 +95,22 @@ public class PathExperiments {
         System.out.println("Amount of unidirectional victories");
         System.out.println("Dijkstra visited less nodes than BiDijkstra " + ud_dijkstra_wins.size() + " times.");
         ud_dijkstra_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("A* visited less nodes than BiA* " + ud_astar_wins.size() + " times.");
         ud_astar_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("ALT visited less nodes than BiALT " + ud_lm_wins.size() + " times.");
         ud_lm_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("RE visited less nodes than BiRE " + ud_re_wins.size() + " times.");
         ud_re_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("REA* visited less nodes than BiREA* " + ud_rea_wins.size() + " times.");
         ud_rea_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("REAL visited less nodes than BiREAL " + ud_real_wins.size() + " times.");
         ud_real_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
 
         List<Map<AlgorithmMode, TestManyRes>> dijkstra_astar_overlap = ud_dijkstra_wins.stream().filter(ud_astar_wins::contains).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> dijkstra_lm_overlap = ud_dijkstra_wins.stream().filter(ud_lm_wins::contains).collect(Collectors.toList());
