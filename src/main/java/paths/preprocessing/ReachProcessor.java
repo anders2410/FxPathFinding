@@ -1,5 +1,6 @@
 package paths.preprocessing;
 
+import javafx.FXMLController;
 import model.Edge;
 import model.Graph;
 import model.Node;
@@ -17,11 +18,17 @@ public class ReachProcessor {
     private List<Double> bounds;
     private double[] reachLCPT;
 
-    private BiConsumer<Long, Long> progressListener = (l1, l2) -> { };
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
+    };
+    private FXMLController fcontroller;
 
     double reachMetric(Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
         return e.d;
+    }
+
+    public void SetFXML(FXMLController f) {
+        fcontroller = f;
     }
 
     public Graph getOriginalGraph() {
@@ -41,11 +48,17 @@ public class ReachProcessor {
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
-        int[] bIterations = {0, 6, 15, 30, 40, 60, 90, 110, 130, 170, 210};
+        int[] bIterations = {0, 5, 6, 7, 8, 9, 10, 11, 14, 16, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 240, 280, 300};
+        Instant start = Instant.now();
+
         for (int i = 0; i < bIterations.length; i++) {
             if (deletedNodes == 0) {
                 progressListener.accept((long) 10 * i, 100L);
             }
+            Instant end = Instant.now();
+            long timeElapsed = Duration.between(start, end).toMillis();
+            start = Instant.now();
+            System.out.println("Time: " + timeElapsed);
             subGraph = computeReachBoundsSubgraph(g, subGraph, bIterations[i]);
         }
         /*for (int i = 0; i < 100; i++) {
@@ -75,7 +88,11 @@ public class ReachProcessor {
         Map<Integer, Set<Integer>> nodesIngoingMap = computeGraphExclusiveIn(mainGraph, subGraph);
         SSSP.setGraph(connectiveGraph);
 
+        fcontroller.setGraph(connectiveGraph);
+        fcontroller.setUpGraph();
+
         for (int i = 0; i < subGraphNodeList.size(); i++) {
+            if (b == 0) continue;
             if (subGraphNodeList.get(i) == null) continue;
             double g = 0, d = 0;
             if (nodesIngoingMap.containsKey(i)) {
@@ -91,10 +108,12 @@ public class ReachProcessor {
                 maxFirst = Math.max(maxFirst, e.d);
             }
             SSSP.setSingleToAllBound(2 * b + maxReachOriginalGraph + d + maxFirst);
-//            Instant start = Instant.now();
+/*
+            Instant start = Instant.now();
+*/
             ShortestPathResult SPTH = SSSP.findShortestPath(i, 300, AlgorithmMode.BOUNDED_SINGLE_TO_ALL);
-//            Instant end = Instant.now();
-//            long timeElapsed = Duration.between(start, end).toMillis();
+        /*   Instant end = Instant.now();
+           long timeElapsed = Duration.between(start, end).toMillis();*/
             Map<Integer, List<Integer>> leastCostTreeH = new HashMap<>();
             for (Map.Entry<Integer, Integer> e : SPTH.pathMap.entrySet()) {
                 List<Integer> list = leastCostTreeH.computeIfAbsent(e.getValue(), k -> new ArrayList<>());
@@ -102,10 +121,15 @@ public class ReachProcessor {
                 leastCostTreeH.replace(e.getValue(), list);
             }
             if (leastCostTreeH.size() == 0) continue;
-//            Instant start2 = Instant.now();
+/*
+            Instant start2 = Instant.now();
+*/
             traverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d);
-//            Instant end2 = Instant.now();
-//            long timeElapsed2 = Duration.between(start2, end2).toMillis();
+/*            Instant end2 = Instant.now();
+            long timeElapsed2 = Duration.between(start2, end2).toMillis();
+            System.out.println("---");
+            System.out.println(timeElapsed);
+            System.out.println(timeElapsed2);*/
 //            int a = 1 + 1;
         }
         for (int i = 0; i < subGraphNodeList.size(); i++) {

@@ -68,6 +68,8 @@ public class SSSP {
     private static double bestPathLengthSoFar;
     private static ScanPruningStrategy scanPruningStrategy;
     private static ResultPackingStrategy resultPackingStrategy;
+    private static List<List<Edge>> adjList;
+    private static List<List<Edge>> revAdjList;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -90,6 +92,13 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
+        if (mode == CONTRACTION_HIERARCHIES) {
+            adjList = CHGraph.getAdjList();
+            revAdjList = CHGraph.getReverse(adjList);
+        } else {
+            adjList = graph.getAdjList();
+            revAdjList = graph.getReverse(adjList);
+        }
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -191,17 +200,8 @@ public class SSSP {
 
     private static ShortestPathResult biDirectional() {
 
-        List<List<Edge>> adjList;
-        List<List<Edge>> revAdjList;
 
-        // TODO: 11/05/2020 Should we fix this?
-        if (mode == CONTRACTION_HIERARCHIES) {
-            adjList = CHGraph.getAdjList();
-            revAdjList = CHGraph.getReverse(adjList);
-        } else {
-            adjList = graph.getAdjList();
-            revAdjList = graph.getReverse(adjList);
-        }
+        long startTime = System.nanoTime();
 
         queueA.insert(source);
         queueB.insert(target);
@@ -209,7 +209,6 @@ public class SSSP {
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
 
-        long startTime = System.nanoTime();
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {
