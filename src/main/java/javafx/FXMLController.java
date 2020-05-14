@@ -74,6 +74,11 @@ public class FXMLController implements Initializable {
     private ProgressIndicator progress_indicator;
 
     private Stage stage;
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+    }
+
     private Graph graph;
     private GraphInfo graphInfo;
     private Landmarks landmarksGenerator;
@@ -163,7 +168,7 @@ public class FXMLController implements Initializable {
     /**
      * Is called on the GUI thread when a loadGraph thread is finished.
      */
-    private void setUpGraph() {
+    public void setUpGraph() {
         mouseNodes = 0;
         if (gc != null) {
             nodes_label.setText("Nodes in Graph: " + graph.getNodeAmount());
@@ -1266,11 +1271,13 @@ public class FXMLController implements Initializable {
 
     private void generateReachBounds() {
         maxReach = -1;
+        FXMLController f = this;
         Task<List<Double>> reachGenTask = new Task<>() {
             @Override
             protected List<Double> call() {
                 ReachProcessor reachProcessor = new ReachProcessor();
                 reachProcessor.setProgressListener(this::updateProgress);
+                reachProcessor.SetFXML(f);
                 return reachProcessor.computeReachBound(new Graph(graph));
             }
         };

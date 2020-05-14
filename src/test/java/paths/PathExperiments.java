@@ -51,7 +51,7 @@ public class PathExperiments {
                 BI_A_STAR_LANDMARKS,
                 REACH,
                 BI_REACH
-                );
+        );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
         checkResultsValid(results);
@@ -116,11 +116,11 @@ public class PathExperiments {
         if (spRes.path.size() == 0) {
             return new TestManyRes(0, 0);
         }
-        return new TestManyRes(spRes.runTime, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.get(0), spRes.path.get(spRes.path.size()-1));
+        return new TestManyRes(spRes.runTime, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.get(0), spRes.path.get(spRes.path.size() - 1));
     }
 
     @Test
-    public void allSpeedTestOne(){
+    public void allSpeedTestOne() {
         setUp("malta-latest.osm.pbf");
         Instant start = Instant.now();
         SSSP.findShortestPath(500, 300, SINGLE_TO_ALL);
@@ -175,17 +175,63 @@ public class PathExperiments {
         int testSize = 1000;
         TestData data = new TestData();
         int j = 0;
+        seed = 0;
         while (j < testSize) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
             /*resultArray[0][j] = res;*/
-            if (res.path.size() > 20) {
+            data.addVisit(res.scannedNodesA.size());
+            data.addRuntime(res.runTime);
+            j++;
+
+        }
+        System.out.println(data.getAverageRunTime());
+    }
+
+    @Test
+    public void staraSpeedTest() {
+        setUp("malta-latest.osm.pbf");
+        int testSize = 1000;
+        TestData data = new TestData();
+        int j = 0;
+        seed = 0;
+        while (j < testSize) {
+            SSSP.seed++;
+            ShortestPathResult res = SSSP.randomPath(BI_A_STAR_CONSISTENT);
+            /*resultArray[0][j] = res;*/
+            data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size());
+            data.addRuntime(res.runTime);
+            j++;
+
+        }
+        System.out.println(data.getAverageRunTime());
+    }
+
+    @Test
+    public void Astar() {
+        setUp("denmark-latest.osm.pbf");
+        int testSize = 1000;
+        TestData data = new TestData();
+        TestData data2 = new TestData();
+
+        int j = 0;
+        seed = 0;
+        while (j < testSize) {
+            SSSP.seed++;
+            ShortestPathResult res2 = SSSP.randomPath(DIJKSTRA);
+            ShortestPathResult res = SSSP.randomPath(BI_A_STAR_CONSISTENT);
+
+            /*resultArray[0][j] = res;*/
+                data2.addVisit(res2.calculateAllUniqueVisits(graph));
+                data2.addRuntime(res2.runTime);
                 data.addVisit(res.calculateAllUniqueVisits(graph));
                 data.addRuntime(res.runTime);
                 j++;
-            }
+
         }
-        System.out.println(data.averageRuntime /testSize);
+        System.out.println(data.getAverageRunTime());
+        System.out.println(data2.getAverageRunTime());
+
     }
 
 
@@ -271,14 +317,16 @@ public class PathExperiments {
 
 class TestData {
     protected int minVisits, maxVisits, averageVisit;
-    protected long averageRuntime;
+    protected long runtime;
     protected List<Integer> pathStartList;
+    private int runCounts;
 
     public TestData() {
         minVisits = Integer.MAX_VALUE;
         maxVisits = 0;
         averageVisit = 0;
-        averageRuntime = 0;
+        runCounts = 0;
+        runtime = 0;
         pathStartList = new ArrayList<>();
     }
 
@@ -289,11 +337,16 @@ class TestData {
     }
 
     public void addRuntime(long runTime) {
-        averageRuntime += runTime;
+        runtime += runTime;
+        runCounts++;
     }
 
     public void addStartingPoint(Integer integer) {
         pathStartList.add(integer);
+    }
+
+    public long getAverageRunTime() {
+        return runtime / runCounts;
     }
 }
 
@@ -348,7 +401,7 @@ class TestDataExtra {
                 " in range: " + from +
                 " to " + to +
                 "." + " average nodes visited: " +
-                (total/count) + ", max visited: " +
+                (total / count) + ", max visited: " +
                 max;
     }
 

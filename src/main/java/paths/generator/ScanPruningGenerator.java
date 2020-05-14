@@ -3,8 +3,7 @@ package paths.generator;
 import paths.SSSP;
 import paths.strategy.ScanPruningStrategy;
 
-import static paths.SSSP.getBestPathLengthSoFar;
-import static paths.SSSP.getNodeDist;
+import static paths.SSSP.*;
 
 public class ScanPruningGenerator {
     public static ScanPruningStrategy getBasePruning() {

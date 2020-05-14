@@ -68,6 +68,8 @@ public class SSSP {
     private static double bestPathLengthSoFar;
     private static ScanPruningStrategy scanPruningStrategy;
     private static ResultPackingStrategy resultPackingStrategy;
+    private static List<List<Edge>> adjList;
+    private static List<List<Edge>> revAdjList;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -90,6 +92,13 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
+        if (mode == CONTRACTION_HIERARCHIES) {
+            adjList = CHGraph.getAdjList();
+            revAdjList = CHGraph.getReverse(adjList);
+        } else {
+            adjList = graph.getAdjList();
+            revAdjList = graph.getReverse(adjList);
+        }
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -185,14 +194,12 @@ public class SSSP {
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = TimeUnit.NANOSECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         return resultPackingStrategy.packResult(duration);
     }
 
     private static ShortestPathResult biDirectional() {
-        long startTime = System.nanoTime();
-
-        List<List<Edge>> adjList;
+       /* List<List<Edge>> adjList;
         List<List<Edge>> revAdjList;
 
         // TODO: 11/05/2020 Should we fix this?
@@ -202,7 +209,8 @@ public class SSSP {
         } else {
             adjList = graph.getAdjList();
             revAdjList = graph.getReverse(adjList);
-        }
+        }*/
+        long startTime = System.nanoTime();
 
         queueA.insert(source);
         queueB.insert(target);
@@ -219,7 +227,7 @@ public class SSSP {
             }
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = TimeUnit.NANOSECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         return resultPackingStrategy.packResult(duration);
     }
 
@@ -244,7 +252,7 @@ public class SSSP {
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = TimeUnit.NANOSECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
         return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
     }
