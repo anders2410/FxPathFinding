@@ -88,8 +88,8 @@ public class ReachProcessor {
         Map<Integer, Set<Integer>> nodesIngoingMap = computeGraphExclusiveIn(mainGraph, subGraph);
         SSSP.setGraph(connectiveGraph);
 
-        fcontroller.setGraph(connectiveGraph);
-        fcontroller.setUpGraph();
+        /*fcontroller.setGraph(connectiveGraph);
+        fcontroller.setUpGraph();*/
 
         for (int i = 0; i < subGraphNodeList.size(); i++) {
             if (b == 0) continue;
