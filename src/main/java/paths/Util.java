@@ -24,6 +24,7 @@ public class Util {
         algorithmNames.put(DIJKSTRA, "Dijkstra");
         algorithmNames.put(BI_DIJKSTRA, "Bidirectional Dijkstra");
         algorithmNames.put(BI_DIJKSTRA_SAME_DIST, "Bidirectional Dijkstra Same Distance");
+        algorithmNames.put(BI_DIJKSTRA_DENSITY, "Density based bidirectional Dijkstra");
         algorithmNames.put(A_STAR, "A*");
         algorithmNames.put(BI_A_STAR_SYMMETRIC, "Bidirectional A* Sym");
         algorithmNames.put(BI_A_STAR_CONSISTENT, "Bidirectional A* Con");

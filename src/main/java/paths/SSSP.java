@@ -41,6 +41,7 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
+    private static List<Integer> densityMeasures;
 
     // All the different strategies!
     private static boolean biDirectional;
@@ -135,6 +136,7 @@ public class SSSP {
         factoryMap.put(DIJKSTRA, new DijkstraFactory());
         factoryMap.put(BI_DIJKSTRA, new BiDijkstraFactory());
         factoryMap.put(BI_DIJKSTRA_SAME_DIST, new BiDijkstraSameDistFactory());
+        factoryMap.put(BI_DIJKSTRA_DENSITY, new BiDijkstraDensityFactory());
         factoryMap.put(A_STAR, new AStarFactory());
         factoryMap.put(BI_A_STAR_CONSISTENT, new BiAStarMakeConsistentFactory());
         factoryMap.put(BI_A_STAR_SYMMETRIC, new BiAStarSymmetricFactory());
@@ -470,5 +472,13 @@ public class SSSP {
     public static void setEdgeWeightStrategy(Function<Edge, Double> edgeWeightStrategy) {
         RelaxGenerator.setEdgeWeightStrategy(edgeWeightStrategy);
         SSSP.edgeWeightStrategy = edgeWeightStrategy;
+    }
+
+    public static List<Integer> getDensityMeasures() {
+        return densityMeasures;
+    }
+
+    public static void setDensityMeasures(List<Integer> densityMeasures) {
+        SSSP.densityMeasures = densityMeasures;
     }
 }

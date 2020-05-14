@@ -7,14 +7,13 @@ import paths.strategy.AlternationStrategy;
 import paths.strategy.ScanPruningStrategy;
 import paths.strategy.TerminationStrategy;
 
-public class BiDijkstraSameDistFactory extends BiDijkstraFactory {
+public class BiDijkstraDensityFactory extends BiDijkstraFactory {
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getSameDistanceStrategy();
+        return AlternationGenerator.getDensityBasedStrategy();
     }
-
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getKeyAboveGoalStrategy();
     }
 }

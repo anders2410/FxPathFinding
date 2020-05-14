@@ -27,6 +27,7 @@
                     <MenuItem onAction="#handleDijkstraEvent" text="Dijkstra"/>
                     <MenuItem onAction="#handleBiDijkstraEvent" text="Bi-Dijkstra"/>
                     <MenuItem onAction="#handleBiDijkstraSameDistEvent" text="Bi-SameBalls"/>
+                    <MenuItem onAction="#handleBiDijkstraDensityEvent" text="Bi-Density"/>
                     <MenuItem onAction="#handleCHEvent" text="CH"/>
                 </items>
             </MenuButton>
