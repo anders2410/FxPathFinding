@@ -41,6 +41,31 @@ public class ModelUtil {
         return hop;
     }
 
+    public int nodesWithinRadius(int source, double radius) {
+        int amountScanned = 0;
+        List<Double> nodeDist = new ArrayList<>();
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            nodeDist.add(Double.MAX_VALUE);
+        }
+        nodeDist.set(source, 0.0);
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing(nodeDist::get));
+        for (Node node : graph.getNodeList()) {
+            priorityQueue.add(node.index);
+        }
+        while (!priorityQueue.isEmpty() && (nodeDist.get(priorityQueue.peek()) < radius)) {
+            Integer from = priorityQueue.poll();
+            amountScanned++;
+            for (Edge edge : graph.getAdjList().get(from)) {
+                if (nodeDist.get(from) + edge.d < nodeDist.get(edge.to)) {
+                    nodeDist.set(edge.to, nodeDist.get(from) + edge.d);
+                    priorityQueue.remove(edge.to);
+                    priorityQueue.add(edge.to);
+                }
+            }
+        }
+        return amountScanned;
+    }
+
     boolean trace = false;
 
     private void trace(String msg) {
