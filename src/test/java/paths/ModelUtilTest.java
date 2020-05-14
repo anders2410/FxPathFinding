@@ -5,6 +5,7 @@ import load.GraphIO;
 import model.Graph;
 import model.ModelUtil;
 import model.Node;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,6 +62,13 @@ public class ModelUtilTest {
         assertEquals(subGraph2.getNodeList().get(3).index, 3);
         assertEquals(subGraph.getNodeList().get(1).index, 1);
         assertEquals(subGraph2.getAdjList().get(3).get(2).d, graph.getAdjList().get(5).get(4).d, 0);
+    }
+
+    @Test
+    public void nodesWithinRadius() {
+        ModelUtil modelUtil = new ModelUtil(graph);
+        int amount = modelUtil.nodesWithinRadius(3258, 2);
+        Assert.assertEquals(amount, 745, 10);
     }
 
 }

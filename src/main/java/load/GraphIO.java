@@ -66,7 +66,20 @@ public class GraphIO {
         }
     }
 
-    public void loadAllPreProcessing(String fileName) {
+    public void loadPreAll(String fileName) {
+        loadPreREAL(fileName);
+        CHResult ch = loadCH(fileName);
+        SSSP.setCHResult(ch);
+    }
+
+    public void loadPreREAL(String fileName) {
+        loadPreALT(fileName);
+
+        List<Double> reachBounds = loadReach(fileName);
+        SSSP.setReachBounds(reachBounds);
+    }
+
+    public void loadPreALT(String fileName) {
         loadGraph(fileName);
         SSSP.setGraph(graph);
 
@@ -74,12 +87,6 @@ public class GraphIO {
         loadBestLandmarks(fileName, landmarks);
         SSSP.setLandmarks(landmarks);
         SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
-
-        List<Double> reachBounds = loadReach(fileName);
-        SSSP.setReachBounds(reachBounds);
-
-        CHResult ch = loadCH(fileName);
-        SSSP.setCHResult(ch);
     }
 
     public LoadType loadGraph(String fileName) {
@@ -286,6 +293,7 @@ public class GraphIO {
         return getTrimmedFolderSCCName(fileName) + "-" + mode.toString() + "landmarks.tmp";
     }
 
+    @SuppressWarnings("unchecked")
     public List<Double> loadReach(String fileName) {
         try {
             String reachFile = getTrimmedFolderSCCName(fileName) + "-reach-bounds.tmp";
@@ -355,6 +363,43 @@ public class GraphIO {
             FileOutputStream fos = new FileOutputStream(name);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(CHResult);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Integer> loadDensities(String fileName) {
+        try {
+            String densityFile = getTrimmedFolderSCCName(fileName) + "-densities.tmp";
+            if (!new File(densityFile).exists()) {
+                return null;
+            }
+            FileInputStream densityInput = new FileInputStream(densityFile);
+            ObjectInputStream reachStream = new ObjectInputStream(densityInput);
+
+            List<Integer> densityMeasures = null;
+
+            try {
+                densityMeasures = (List<Integer>) reachStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            reachStream.close();
+            assert densityMeasures != null;
+            return densityMeasures;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void storeDensities(String fileName, List<Integer> densityMeasures) {
+        try {
+            String sccName = getTrimmedFolderSCCName(fileName) + "-densities.tmp";
+            FileOutputStream fos = new FileOutputStream(sccName);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(densityMeasures);
             oos.close();
         } catch (IOException e) {
             e.printStackTrace();

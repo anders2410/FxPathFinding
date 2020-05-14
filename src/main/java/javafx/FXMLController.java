@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -91,6 +92,7 @@ public class FXMLController implements Initializable {
     private int mouseNodes = 0;
     private String fileName;
     private LandmarkMode landmarksGenMode;
+    private List<Integer> densityMeasures;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -137,6 +139,7 @@ public class FXMLController implements Initializable {
             SSSP.setReachBounds(null);
             loadReachBounds();
             loadContractionHierarchies();
+            loadDensities();
             setUpGraph();
             playIndicatorCompleted();
         });
@@ -279,6 +282,7 @@ public class FXMLController implements Initializable {
         clearCanvas();
         drawAllEdges();
         drawSelectedNodes();
+        drawOverlayNodes();
         drawAllLandmarks();
     }
 
@@ -295,6 +299,28 @@ public class FXMLController implements Initializable {
             drawNode(node);
         }
         selectedNodes.addFirst(from);
+    }
+
+    List<Node> overlayNodes = new ArrayList<>();
+    List<Node> overlayNodes2 = new ArrayList<>();
+
+    private void resetOverlays() {
+        overlayNodes = new ArrayList<>();
+        overlayNodes2 = new ArrayList<>();
+    }
+
+    private void drawOverlayNodes() {
+        if (currentOverlay == OverlayType.NODEPAIRS) {
+            gc.setStroke(Color.BLACK);
+            gc.setFill(Color.GREEN);
+            for (Node node : overlayNodes) {
+                drawNode(node);
+            }
+            gc.setFill(Color.DARKRED);
+            for (Node node : overlayNodes2) {
+                drawNode(node);
+            }
+        }
     }
 
     private void drawNode(Node node) {
@@ -348,6 +374,10 @@ public class FXMLController implements Initializable {
         if (currentOverlay == OverlayType.CH && SSSP.getCHResult() != null) {
             findMaxRank();
             color = graduateColorSaturation(color, SSSP.getCHResult().getRanks().get(edge.from), maxRank);
+        }
+        if (currentOverlay == OverlayType.DENSITY && densityMeasures != null) {
+            findMaxDensity();
+            color = graduateColorHue(Color.RED, densityMeasures.get(edge.from), maxDensity);
         }
         if (graphInfo != null) {
             EdgeInfo edgeInfo = graphInfo.getEdge(edge);
@@ -435,6 +465,21 @@ public class FXMLController implements Initializable {
         maxRank = maxSoFar;
     }
 
+    private int maxDensity = -1;
+
+    private void findMaxDensity() {
+        if (densityMeasures == null || maxDensity != -1) {
+            return;
+        }
+        int maxSoFar = 0;
+        for (int density : densityMeasures) {
+            if (maxSoFar < density) {
+                maxSoFar = density;
+            }
+        }
+        maxDensity = maxSoFar;
+    }
+
     public boolean isBetter(Node from1, Edge e1, Node from2, Edge e2) {
         return compVal(from1, e1) >= compVal(from2, e2);
     }
@@ -490,6 +535,10 @@ public class FXMLController implements Initializable {
 
     private Color graduateColorSaturation(Color color, double amount, double max) {
         return color.deriveColor(-10 * (amount / max), 1, 1, 1 - 0.8 + amount / (1.25 * max));
+    }
+
+    private Color graduateColorHue(Color color, double amount, double max) {
+        return color.deriveColor(60 * (amount / max), 1, 1, 1);
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
@@ -868,6 +917,7 @@ public class FXMLController implements Initializable {
         if (graph == null) {
             return;
         }
+        resetOverlays();
         resetSelection();
         cancelAlgorithm();
     }
@@ -1263,6 +1313,29 @@ public class FXMLController implements Initializable {
         dialog.show();
     }
 
+    private void displayGetNodesDialog() {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Input node pairs");
+        dialog.setContentText("Input node pairs here: ");
+        TextField textField = new TextField();
+        textField.setPromptText("Node pairs");
+        dialog.getDialogPane().setContent(textField);
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().add(okButton);
+        dialog.setResultConverter(buttonType -> textField.getText());
+        dialog.showAndWait();
+        for (String res : dialog.getResult().split("[)]")) {
+            if (res.length() < 1) {
+                return;
+            }
+            String[] pair = res.replaceAll(" ", "").substring(1).split(",");
+            int fromIndex = Integer.parseInt(pair[0]);
+            int toIndex = Integer.parseInt(pair[1]);
+            overlayNodes.add(graph.getNodeList().get(fromIndex));
+            overlayNodes2.add(graph.getNodeList().get(toIndex));
+        }
+    }
+
     public void handleClearLandmarks() {
         landmarksGenerator.clearLandmarks();
         SSSP.setLandmarkArray(null);
@@ -1316,13 +1389,62 @@ public class FXMLController implements Initializable {
         Task<Void> saveTask = new Task<>() {
             @Override
             protected Void call() {
-                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                GraphIO graphIO = new GraphIO(isSCCGraph);
                 graphIO.saveReach(fileName, SSSP.getReachBounds());
                 return null;
             }
         };
         saveTask.setOnFailed(e -> displayFailedDialog("save reach bounds", e));
         new Thread(saveTask).start();
+    }
+
+    public void handleGenerateDensities() {
+        Task<List<Integer>> generateDensitiesTask = new Task<>() {
+            @Override
+            protected List<Integer> call() {
+                ModelUtil modelUtil = new ModelUtil(graph);
+                modelUtil.setProgressListener(this::updateProgress);
+                return modelUtil.computeDensityMeasures(2);
+            }
+        };
+        generateDensitiesTask.setOnSucceeded(e -> {
+            densityMeasures = generateDensitiesTask.getValue();
+            saveDensities();
+            playIndicatorCompleted();
+        });
+        generateDensitiesTask.setOnFailed(e -> {
+            displayFailedDialog("generate densities", e);
+            playIndicatorCompleted();
+        });
+        attachProgressIndicator(generateDensitiesTask.progressProperty());
+        new Thread(generateDensitiesTask).start();
+    }
+
+    public void loadDensities() {
+        Task<List<Integer>> loadTask = new Task<>() {
+            @Override
+            protected List<Integer> call() {
+                GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+                return graphIO.loadDensities(fileName);
+            }
+        };
+        loadTask.setOnSucceeded(e -> {
+            densityMeasures = loadTask.getValue();
+        });
+        loadTask.setOnFailed(e -> displayFailedDialog("load densities", e));
+        new Thread(loadTask).start();
+    }
+
+    public void saveDensities() {
+        Task<Void> saveDensitiesTask = new Task<>() {
+            @Override
+            protected Void call() {
+                new GraphIO(isSCCGraph).storeDensities(fileName, densityMeasures);
+                return null;
+            }
+        };
+        saveDensitiesTask.setOnFailed(e -> displayFailedDialog("save densities", e));
+        new Thread(saveDensitiesTask).start();
     }
 
     private void runSCC() {
@@ -1387,6 +1509,17 @@ public class FXMLController implements Initializable {
 
     public void handleOverlayCH() {
         currentOverlay = OverlayType.CH;
+        redrawGraph();
+    }
+
+    public void handleOverlayNodes() {
+        currentOverlay = OverlayType.NODEPAIRS;
+        displayGetNodesDialog();
+        redrawGraph();
+    }
+
+    public void handleOverlayDensity() {
+        currentOverlay = OverlayType.DENSITY;
         redrawGraph();
     }
 

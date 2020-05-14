@@ -184,32 +184,23 @@ public class SSSP {
     }
 
     private static ShortestPathResult oneDirectional() {
-        long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
 
+        long startTime = System.nanoTime();
         while (!queueA.isEmpty()) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.NANOSECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = endTime - startTime;
         return resultPackingStrategy.packResult(duration);
     }
 
     private static ShortestPathResult biDirectional() {
-       /* List<List<Edge>> adjList;
-        List<List<Edge>> revAdjList;
 
-        // TODO: 11/05/2020 Should we fix this?
-        if (mode == CONTRACTION_HIERARCHIES) {
-            adjList = CHGraph.getAdjList();
-            revAdjList = CHGraph.getReverse(adjList);
-        } else {
-            adjList = graph.getAdjList();
-            revAdjList = graph.getReverse(adjList);
-        }*/
+
         long startTime = System.nanoTime();
 
         queueA.insert(source);
@@ -227,7 +218,7 @@ public class SSSP {
             }
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.NANOSECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = endTime - startTime;
         return resultPackingStrategy.packResult(duration);
     }
 
@@ -251,9 +242,9 @@ public class SSSP {
         while (!queueA.isEmpty()) {
             takeStep(adjList, A);
         }
-        long endTime = System.nanoTime();
-        long duration = TimeUnit.NANOSECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
+        long endTime = System.nanoTime();
+        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
         return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
     }
 

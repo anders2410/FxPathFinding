@@ -61,6 +61,7 @@
                     <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
                     <MenuItem onAction="#handleGenerateCHEvent" text="Generate CH Graph"/>
                     <MenuItem onAction="#handleLoadInfo" text="Load Info"/>
+                    <MenuItem onAction="#handleGenerateDensities" text="Generate density measures"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
@@ -94,6 +95,8 @@
                     <MenuItem onAction="#handleOverlayNone" text="None"/>
                     <MenuItem onAction="#handleOverlayReach" text="ReachBounds"/>
                     <MenuItem onAction="#handleOverlayCH" text="CH-Rank" />
+                    <MenuItem onAction="#handleOverlayNodes" text="NodePairs" />
+                    <MenuItem onAction="#handleOverlayDensity" text="Density" />
                     <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
                     <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>
                     <MenuItem onAction="#handleOverlaySurface" text="Surface" />

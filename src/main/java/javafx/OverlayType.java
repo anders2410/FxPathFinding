@@ -9,4 +9,6 @@ public enum OverlayType {
     SURFACE,
     NATURE_VALUE,
     FUEL,
+    NODEPAIRS,
+    DENSITY;
 }

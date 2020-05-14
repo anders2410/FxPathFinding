@@ -1,10 +1,10 @@
 package paths;
 
+import javafx.util.Pair;
 import load.GraphIO;
 import model.Graph;
 import model.Node;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -12,9 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.fail;
 import static paths.AlgorithmMode.*;
@@ -33,15 +31,43 @@ public class PathExperiments {
 
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadAllPreProcessing(fileName);
+        graphIO.loadPreAll(fileName);
         graph = SSSP.getGraph();
     }
 
-    int testCases = 1000;
+    @Test
+    public void testPrintAllTests() {
+        int testCases = 10000;
+        setUp("denmark-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                DIJKSTRA
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        checkResultsValid(results);
+        results.forEach(r -> printPair(r.get(DIJKSTRA)));
+        results.forEach(r -> System.out.print(r.get(DIJKSTRA).pathDistance + ", "));
+        System.out.println();
+    }
 
     @Test
-    public void testCompareAlgorithms() {
-        setUp("malta-latest.osm.pbf");
+    public void testPrintListUniWins() {
+        int testCases = 10000;
+        setUp("estonia-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                A_STAR,
+                BI_A_STAR_CONSISTENT
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(A_STAR).nodesScanned < r.get(BI_A_STAR_CONSISTENT).nodesScanned).collect(Collectors.toList());
+        ud_dijkstra_wins.forEach(r -> printPair(r.get(A_STAR)));
+    }
+
+    @Test
+    public void testCompareUniAndBiDir() {
+        int testCases = 10000;
+        setUp("denmark-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
                 BI_DIJKSTRA,
@@ -50,8 +76,12 @@ public class PathExperiments {
                 A_STAR_LANDMARKS,
                 BI_A_STAR_LANDMARKS,
                 REACH,
-                BI_REACH
-        );
+                BI_REACH,
+                REACH_A_STAR,
+                BI_REACH_A_STAR,
+                REACH_LANDMARKS,
+                BI_REACH_LANDMARKS
+                );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
         checkResultsValid(results);
@@ -59,26 +89,41 @@ public class PathExperiments {
         List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> ud_astar_wins = results.stream().filter(r -> r.get(A_STAR).nodesScanned < r.get(BI_A_STAR_CONSISTENT).nodesScanned).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> ud_lm_wins = results.stream().filter(r -> r.get(A_STAR_LANDMARKS).nodesScanned < r.get(BI_A_STAR_LANDMARKS).nodesScanned).collect(Collectors.toList());
-        List<Map<AlgorithmMode, TestManyRes>> ud_real_wins = results.stream().filter(r -> r.get(REACH).nodesScanned < r.get(BI_REACH).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_re_wins = results.stream().filter(r -> r.get(REACH).nodesScanned < r.get(BI_REACH).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_rea_wins = results.stream().filter(r -> r.get(REACH_A_STAR).nodesScanned < r.get(BI_REACH_A_STAR).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> ud_real_wins = results.stream().filter(r -> r.get(REACH_LANDMARKS).nodesScanned < r.get(BI_REACH_LANDMARKS).nodesScanned).collect(Collectors.toList());
         System.out.println("Amount of unidirectional victories");
         System.out.println("Dijkstra visited less nodes than BiDijkstra " + ud_dijkstra_wins.size() + " times.");
+        ud_dijkstra_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("A* visited less nodes than BiA* " + ud_astar_wins.size() + " times.");
+        ud_astar_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("ALT visited less nodes than BiALT " + ud_lm_wins.size() + " times.");
+        ud_lm_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
+        System.out.println("RE visited less nodes than BiRE " + ud_re_wins.size() + " times.");
+        ud_re_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
+        System.out.println("REA* visited less nodes than BiREA* " + ud_rea_wins.size() + " times.");
+        ud_rea_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
         System.out.println("REAL visited less nodes than BiREAL " + ud_real_wins.size() + " times.");
+        ud_real_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
+        System.out.println();
 
         List<Map<AlgorithmMode, TestManyRes>> dijkstra_astar_overlap = ud_dijkstra_wins.stream().filter(ud_astar_wins::contains).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> dijkstra_lm_overlap = ud_dijkstra_wins.stream().filter(ud_lm_wins::contains).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> astar_lm_overlap = ud_astar_wins.stream().filter(ud_lm_wins::contains).collect(Collectors.toList());
         System.out.println("Intersections");
         System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_astar_overlap.size() + " cases, where A* better than BiA*");
-        dijkstra_astar_overlap.forEach(r -> printPair(r.get(DIJKSTRA)));
         System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("A* better than BiA* in " + astar_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("Done");
     }
 
     private void printPair(TestManyRes res) {
-        System.out.println("(" + res.from + ", " + res.to + ")");
+        System.out.print("(" + res.from + ", " + res.to + ") ");
     }
 
     private void checkResultsValid(List<Map<AlgorithmMode, TestManyRes>> results) {
@@ -116,11 +161,11 @@ public class PathExperiments {
         if (spRes.path.size() == 0) {
             return new TestManyRes(0, 0);
         }
-        return new TestManyRes(spRes.runTime, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.get(0), spRes.path.get(spRes.path.size() - 1));
+        return new TestManyRes(spRes.runTime, spRes.d, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.size(), spRes.path.get(0), spRes.path.get(spRes.path.size()-1));
     }
 
     @Test
-    public void allSpeedTestOne() {
+    public void allSpeedTestOne(){
         setUp("malta-latest.osm.pbf");
         Instant start = Instant.now();
         SSSP.findShortestPath(500, 300, SINGLE_TO_ALL);
@@ -131,37 +176,40 @@ public class PathExperiments {
 
     @Test
     public void compareAllAlgorithmsOnDifferentParameters() {
-        setUp("denmark-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
 
-        TestDataExtra dijkstraData = new TestDataExtra("Dijkstra", DIJKSTRA);
-        TestDataExtra biDijkstraData = new TestDataExtra("Bi-Dijkstra", BI_DIJKSTRA);
-        TestDataExtra biAStarData = new TestDataExtra("Bi-AStar", BI_A_STAR_CONSISTENT);
-        TestDataExtra ALTData = new TestDataExtra("BiALT", BI_A_STAR_LANDMARKS);
-        TestDataExtra ReachData = new TestDataExtra("REAL", BI_REACH_LANDMARKS);
-        TestDataExtra CHData = new TestDataExtra("CH", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
+        Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
+        Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
+        Pair<String, AlgorithmMode> ALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> ReachPair = new Pair<>("REAL", BI_REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
-        List<TestDataExtra> dataList = new ArrayList<>();
-        /*dataList.add(dijkstraData);
-        dataList.add(biDijkstraData);
-        dataList.add(biAStarData);
-        dataList.add(ALTData);
-        dataList.add(ReachData);*/
-        dataList.add(CHData);
+        List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
+        pairList.add(dijkstraPair);
+        pairList.add(biDijkstraPair);
+        pairList.add(biAStarPair);
+        pairList.add(ALTPair);
+        pairList.add(ReachPair);
+        pairList.add(CHPair);
 
-        for (TestDataExtra data : dataList) {
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testAlgorithm(data);
             System.out.println(data);
-            /*System.out.println(data.calculateValuesInPathLengthRange(0, 50));
-            System.out.println(data.calculateValuesInPathLengthRange(51, 100));
-            System.out.println(data.calculateValuesInPathLengthRange(101, 150));
-            System.out.println(data.calculateValuesInPathLengthRange(151, 200));
-            System.out.println(data.calculateValuesInPathLengthRange(201, Integer.MAX_VALUE));*/
         }
+
+        /*System.out.println(dijkstraData);
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(0, 50));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(51, 100));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(101, 150));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(151, 200));
+        System.out.println(dijkstraData.calculateValuesInPathLengthRange(201, Integer.MAX_VALUE));*/
     }
 
     private void testAlgorithm(TestDataExtra data) {
         int i = 0;
-        while (i < 10) {
+        while (i < 1000) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(data.getMode());
             data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size(), res.path.size(), res.runTime);
@@ -175,63 +223,17 @@ public class PathExperiments {
         int testSize = 1000;
         TestData data = new TestData();
         int j = 0;
-        seed = 0;
         while (j < testSize) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
             /*resultArray[0][j] = res;*/
-            data.addVisit(res.scannedNodesA.size());
-            data.addRuntime(res.runTime);
-            j++;
-
-        }
-        System.out.println(data.getAverageRunTime());
-    }
-
-    @Test
-    public void staraSpeedTest() {
-        setUp("malta-latest.osm.pbf");
-        int testSize = 1000;
-        TestData data = new TestData();
-        int j = 0;
-        seed = 0;
-        while (j < testSize) {
-            SSSP.seed++;
-            ShortestPathResult res = SSSP.randomPath(BI_A_STAR_CONSISTENT);
-            /*resultArray[0][j] = res;*/
-            data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size());
-            data.addRuntime(res.runTime);
-            j++;
-
-        }
-        System.out.println(data.getAverageRunTime());
-    }
-
-    @Test
-    public void Astar() {
-        setUp("denmark-latest.osm.pbf");
-        int testSize = 1000;
-        TestData data = new TestData();
-        TestData data2 = new TestData();
-
-        int j = 0;
-        seed = 0;
-        while (j < testSize) {
-            SSSP.seed++;
-            ShortestPathResult res2 = SSSP.randomPath(DIJKSTRA);
-            ShortestPathResult res = SSSP.randomPath(BI_A_STAR_CONSISTENT);
-
-            /*resultArray[0][j] = res;*/
-                data2.addVisit(res2.calculateAllUniqueVisits(graph));
-                data2.addRuntime(res2.runTime);
+            if (res.path.size() > 20) {
                 data.addVisit(res.calculateAllUniqueVisits(graph));
                 data.addRuntime(res.runTime);
                 j++;
-
+            }
         }
-        System.out.println(data.getAverageRunTime());
-        System.out.println(data2.getAverageRunTime());
-
+        System.out.println(data.averageRuntime /testSize);
     }
 
 
@@ -317,16 +319,14 @@ public class PathExperiments {
 
 class TestData {
     protected int minVisits, maxVisits, averageVisit;
-    protected long runtime;
+    protected long averageRuntime;
     protected List<Integer> pathStartList;
-    private int runCounts;
 
     public TestData() {
         minVisits = Integer.MAX_VALUE;
         maxVisits = 0;
         averageVisit = 0;
-        runCounts = 0;
-        runtime = 0;
+        averageRuntime = 0;
         pathStartList = new ArrayList<>();
     }
 
@@ -337,16 +337,11 @@ class TestData {
     }
 
     public void addRuntime(long runTime) {
-        runtime += runTime;
-        runCounts++;
+        averageRuntime += runTime;
     }
 
     public void addStartingPoint(Integer integer) {
         pathStartList.add(integer);
-    }
-
-    public long getAverageRunTime() {
-        return runtime / runCounts;
     }
 }
 
@@ -401,7 +396,7 @@ class TestDataExtra {
                 " in range: " + from +
                 " to " + to +
                 "." + " average nodes visited: " +
-                (total / count) + ", max visited: " +
+                (total/count) + ", max visited: " +
                 max;
     }
 
@@ -417,8 +412,18 @@ class TestDataExtra {
 
 class TestManyRes {
     double runTime;
-    int nodesScanned;
+    double pathDistance;
+    int nodesScanned, nodesInPath;
     int from, to;
+
+    public TestManyRes(double runTime, double pathDistance, int nodesScanned, int nodesInPath, int from, int to) {
+        this.runTime = runTime;
+        this.pathDistance = pathDistance;
+        this.nodesScanned = nodesScanned;
+        this.nodesInPath = nodesInPath;
+        this.from = from;
+        this.to = to;
+    }
 
     public TestManyRes(double runTime, int nodesScanned, int from, int to) {
         this.runTime = runTime;
