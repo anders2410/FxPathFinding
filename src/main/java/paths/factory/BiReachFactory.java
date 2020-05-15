@@ -46,6 +46,6 @@ public class BiReachFactory implements AlgorithmFactory {
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getSameDistanceStrategy();
+        return AlternationGenerator.getSmallestQueueStrategy();
     }
 }

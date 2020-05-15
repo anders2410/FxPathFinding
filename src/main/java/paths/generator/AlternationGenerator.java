@@ -19,6 +19,10 @@ public class AlternationGenerator {
         return () -> getQueue(A).size() > getQueue(B).size();
     }
 
+    public static AlternationStrategy getSmallestQueueStrategy() {
+        return () -> getQueue(A).size() < getQueue(B).size();
+    }
+
     public static AlternationStrategy getAmountSeenStrategy() {
         return () -> getQueue(A).size() + getScanned(A).size() < getQueue(B).size() + getScanned(B).size();
     }
