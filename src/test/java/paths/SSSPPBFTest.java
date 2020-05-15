@@ -108,16 +108,18 @@ public class SSSPPBFTest {
         List<Double> bounds = graphIO.loadReach(fileName);
         SSSP.setReachBounds(bounds);
 
-        ContractionHierarchies contractionHierarchies = new ContractionHierarchies(graph);
-        CHResult CHResult = contractionHierarchies.preprocess();
+        CHResult CHResult = graphIO.loadCH(fileName);
         SSSP.setCHResult(CHResult);
-        testCases = 100000;
+        testCases = 100;
         runtimes = new double[algorithms][testCases];
 
         i = 0;
         failMap = new HashMap<>();
         seed = 0;
         while (i < testCases) {
+            if (i % 200 == 0) {
+                System.out.println("Conducted " + i + " tests");
+            }
             seed++;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
             runtimes[0][i] = dijkRes.runTime;

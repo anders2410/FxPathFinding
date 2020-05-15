@@ -68,7 +68,7 @@ public class PathExperiments {
     @Test
     public void testCompareUniAndBiDir() {
         int testCases = 10000;
-        setUp("denmark-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
                 BI_DIJKSTRA,

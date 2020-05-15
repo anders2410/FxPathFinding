@@ -27,6 +27,10 @@ public class AlternationGenerator {
         return () -> getQueue(A).size() + getScanned(A).size() < getQueue(B).size() + getScanned(B).size();
     }
 
+    public static AlternationStrategy getDensityBasedStrategy() {
+        return () -> getDensityMeasures().get(getQueue(A).peek()) < getDensityMeasures().get(getQueue(B).peek());
+    }
+
     public static AlternationStrategy getSameDistanceStrategy() {
         return () -> getNodeDist(A).get(getQueue(A).peek()) < getNodeDist(B).get(getQueue(B).peek());
     }

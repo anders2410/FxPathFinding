@@ -115,6 +115,7 @@ public class FXMLController implements Initializable {
      * @param fileName file to load.
      */
     private void loadNewGraph(String fileName) {
+        onRightClick();
         if (fileName == null || fileName.equals("")) {
             return;
         }
@@ -538,7 +539,7 @@ public class FXMLController implements Initializable {
     }
 
     private Color graduateColorHue(Color color, double amount, double max) {
-        return color.deriveColor(60 * (amount / max), 1, 1, 1);
+        return color.deriveColor(120 * (amount / max), 1, 1, 1);
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {
@@ -942,9 +943,12 @@ public class FXMLController implements Initializable {
         chooseAlgorithm(BI_DIJKSTRA);
     }
 
-
     public void handleBiDijkstraSameDistEvent() {
         chooseAlgorithm(BI_DIJKSTRA_SAME_DIST);
+    }
+
+    public void handleBiDijkstraDensityEvent() {
+        chooseAlgorithm(BI_DIJKSTRA_DENSITY);
     }
 
     public void handleAStarEvent() {
@@ -1409,6 +1413,7 @@ public class FXMLController implements Initializable {
         };
         generateDensitiesTask.setOnSucceeded(e -> {
             densityMeasures = generateDensitiesTask.getValue();
+            SSSP.setDensityMeasures(densityMeasures);
             saveDensities();
             playIndicatorCompleted();
         });
@@ -1429,7 +1434,9 @@ public class FXMLController implements Initializable {
             }
         };
         loadTask.setOnSucceeded(e -> {
+            findMaxDensity();
             densityMeasures = loadTask.getValue();
+            SSSP.setDensityMeasures(densityMeasures);
         });
         loadTask.setOnFailed(e -> displayFailedDialog("load densities", e));
         new Thread(loadTask).start();
