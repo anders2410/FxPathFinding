@@ -16,7 +16,7 @@ import static paths.SSSP.seed;
 
 public class ContractionHierarchiesTest {
     Graph originalGraph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "estonia-latest.osm.pbf";
     GraphIO graphIO;
     ContractionHierarchies contractionHierarchies;
     CHResult CHResult;
@@ -106,7 +106,7 @@ public class ContractionHierarchiesTest {
         int algorithms = 1;
         matrix = new int[algorithms];
 
-        testCases = 1000;
+        testCases = 10000;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failList = new ArrayList<>();
@@ -143,7 +143,7 @@ public class ContractionHierarchiesTest {
     }
 
     private boolean compareTwoDoublesWithTolerance(double a, double b) {
-        return Math.abs(a - b) <= 0.0000000000001 || Double.valueOf(a).equals(b);
+        return Math.abs(a - b) <= 0.00000000001 || Double.valueOf(a).equals(b);
     }
 }
 
