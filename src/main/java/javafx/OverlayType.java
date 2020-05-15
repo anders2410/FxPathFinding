@@ -10,5 +10,5 @@ public enum OverlayType {
     NATURE_VALUE,
     FUEL,
     NODEPAIRS,
-    ;
+    DENSITY;
 }

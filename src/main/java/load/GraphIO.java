@@ -369,6 +369,43 @@ public class GraphIO {
         }
     }
 
+    public List<Integer> loadDensities(String fileName) {
+        try {
+            String densityFile = getTrimmedFolderSCCName(fileName) + "-densities.tmp";
+            if (!new File(densityFile).exists()) {
+                return null;
+            }
+            FileInputStream densityInput = new FileInputStream(densityFile);
+            ObjectInputStream reachStream = new ObjectInputStream(densityInput);
+
+            List<Integer> densityMeasures = null;
+
+            try {
+                densityMeasures = (List<Integer>) reachStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            reachStream.close();
+            assert densityMeasures != null;
+            return densityMeasures;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void storeDensities(String fileName, List<Integer> densityMeasures) {
+        try {
+            String sccName = getTrimmedFolderSCCName(fileName) + "-densities.tmp";
+            FileOutputStream fos = new FileOutputStream(sccName);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(densityMeasures);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static File selectMapFile(Stage stage) {
         if(true)
         return selectMapDirectory(stage);

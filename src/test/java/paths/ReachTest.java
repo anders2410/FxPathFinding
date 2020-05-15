@@ -45,6 +45,21 @@ public class ReachTest {
     }
 
     @Test
+    public void maltaReachSave() {
+        fileName = "malta-latest.osm.pbf";
+        BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
+        SSSP.setDistanceStrategy(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1, true);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        ReachProcessor reachProcessor = new ReachProcessor();
+        List<Double> arr = reachProcessor.computeReachBound(graph);
+        graphIO.saveReach(fileName, arr);
+        System.out.println(arr);
+    }
+
+    @Test
     public void testReachMainFunction() {
         ReachProcessor reachProcessor = new ReachProcessor();
         List<Double> arr = reachProcessor.computeReachBound(graph);

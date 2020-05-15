@@ -4,6 +4,7 @@ public enum AlgorithmMode {
     DIJKSTRA,
     BI_DIJKSTRA,
     BI_DIJKSTRA_SAME_DIST,
+    BI_DIJKSTRA_DENSITY,
     A_STAR,
     A_STAR_LANDMARKS,
     BI_A_STAR_SYMMETRIC,

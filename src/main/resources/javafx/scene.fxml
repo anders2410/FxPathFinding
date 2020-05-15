@@ -27,6 +27,7 @@
                     <MenuItem onAction="#handleDijkstraEvent" text="Dijkstra"/>
                     <MenuItem onAction="#handleBiDijkstraEvent" text="Bi-Dijkstra"/>
                     <MenuItem onAction="#handleBiDijkstraSameDistEvent" text="Bi-SameBalls"/>
+                    <MenuItem onAction="#handleBiDijkstraDensityEvent" text="Bi-Density"/>
                     <MenuItem onAction="#handleCHEvent" text="CH"/>
                 </items>
             </MenuButton>
@@ -61,6 +62,7 @@
                     <MenuItem onAction="#handleGenerateReachEvent" text="Generate Reach Bounds"/>
                     <MenuItem onAction="#handleGenerateCHEvent" text="Generate CH Graph"/>
                     <MenuItem onAction="#handleLoadInfo" text="Load Info"/>
+                    <MenuItem onAction="#handleGenerateDensities" text="Generate density measures"/>
                 </items>
             </MenuButton>
             <Separator styleClass="nav_separator"/>
@@ -95,6 +97,7 @@
                     <MenuItem onAction="#handleOverlayReach" text="ReachBounds"/>
                     <MenuItem onAction="#handleOverlayCH" text="CH-Rank" />
                     <MenuItem onAction="#handleOverlayNodes" text="NodePairs" />
+                    <MenuItem onAction="#handleOverlayDensity" text="Density" />
                     <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
                     <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>
                     <MenuItem onAction="#handleOverlaySurface" text="Surface" />
