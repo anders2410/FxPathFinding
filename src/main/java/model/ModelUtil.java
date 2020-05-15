@@ -1,6 +1,7 @@
 package model;
 
 import info_model.*;
+import paths.ShortestPathResult;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -80,6 +81,34 @@ public class ModelUtil {
         return amountScanned;
     }
 
+    public Map<Integer, Integer> SPTWithinRadius(int source, double radius) {
+        List<Double> nodeDist = new ArrayList<>();
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            nodeDist.add(Double.MAX_VALUE);
+        }
+        nodeDist.set(source, 0.0);
+        Map<Integer, Integer> pathMap = new HashMap<>();
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing(nodeDist::get));
+        /*for (Node node : graph.getNodeList()) {
+            if (node != null) priorityQueue.add(node.index);
+        }*/
+        priorityQueue.add(source);
+        List<Node> nList = graph.getNodeList();
+        while (!priorityQueue.isEmpty() && (nodeDist.get(priorityQueue.peek()) < radius)) {
+            Integer from = priorityQueue.poll();
+            for (Edge edge : graph.getAdjList().get(from)) {
+                if (nList.get(edge.to) == null) continue;
+                if (nodeDist.get(from) + edge.d < nodeDist.get(edge.to)) {
+                    nodeDist.set(edge.to, nodeDist.get(from) + edge.d);
+                    priorityQueue.remove(edge.to);
+                    priorityQueue.add(edge.to);
+                    pathMap.put(edge.to, edge.from);
+                }
+            }
+        }
+        return pathMap;
+    }
+
     boolean trace = false;
 
     private void trace(String msg) {
@@ -92,7 +121,7 @@ public class ModelUtil {
         if (progressListener != null) progressListener.accept(1L, 100L);
         int counter = 0;
         int n = graph.getNodeAmount();
-        long pn = 4 * n + n/100;
+        long pn = 4 * n + n / 100;
         List<List<Edge>> adjList = graph.getAdjList();
         int time = 0;
         Map<Integer, Integer> finishingTimes = new HashMap<>();
