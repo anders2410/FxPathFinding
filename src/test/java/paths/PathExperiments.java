@@ -31,8 +31,9 @@ public class PathExperiments {
 
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadPreAll(fileName);
-        graph = SSSP.getGraph();
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
     }
 
     @Test
@@ -231,8 +232,8 @@ public class PathExperiments {
 
     @Test
     public void DijkstraSpeedTest() {
-        setUp("malta-latest.osm.pbf");
-        int testSize = 1000;
+        setUp("denmark-latest.osm.pbf");
+        int testSize = 100;
         TestData data = new TestData();
         int j = 0;
         while (j < testSize) {
@@ -240,7 +241,7 @@ public class PathExperiments {
             ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
             /*resultArray[0][j] = res;*/
             if (res.path.size() > 20) {
-                data.addVisit(res.calculateAllUniqueVisits(graph));
+                data.addVisit(res.scannedNodesA.size());
                 data.addRuntime(res.runTime);
                 j++;
             }

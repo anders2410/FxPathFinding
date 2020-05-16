@@ -99,7 +99,7 @@ public class SSSP {
 
     private static double[] initHeuristicValues(int nodeAmount) {
         double[] arr = new double[nodeAmount];
-        Arrays.fill(arr, -1.0);
+        Arrays.fill(arr, Double.MAX_VALUE);
         return arr;
     }
 
@@ -185,7 +185,7 @@ public class SSSP {
         queueA.insert(source);
 
         long startTime = System.nanoTime();
-        while (!queueA.isEmpty()) {
+        while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             // if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(A);

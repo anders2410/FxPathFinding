@@ -26,12 +26,12 @@ public class BoundedOneToAll implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getEmptyStoppingStrategy();
+        return TerminationGenerator.getBoundedStoppingStrategy();
     }
 
     @Override
     public ScanPruningStrategy getScanPruningStrategy() {
-        return ScanPruningGenerator.getBoundsPruning();
+        return ScanPruningGenerator.getBasePruning();
     }
 
     @Override
