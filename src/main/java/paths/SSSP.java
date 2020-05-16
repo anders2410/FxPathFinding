@@ -28,6 +28,11 @@ public class SSSP {
     public static int seed = 0;
 
     private static Graph graph;
+
+    public static void setAdjList(List<List<Edge>> adjList) {
+        SSSP.adjList = adjList;
+    }
+
     private static List<List<Edge>> adjList;
     private static List<List<Edge>> revAdjList;
     private static Graph CHGraph;
@@ -99,7 +104,7 @@ public class SSSP {
 
     private static double[] initHeuristicValues(int nodeAmount) {
         double[] arr = new double[nodeAmount];
-        Arrays.fill(arr, -1.0);
+        Arrays.fill(arr, Double.MAX_VALUE);
         return arr;
     }
 
@@ -170,7 +175,7 @@ public class SSSP {
 
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
-        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL) {
+        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL && modeP != SINGLE_TO_ALL) {
             return new ShortestPathResult();
         }
         applyFactory(factoryMap.get(modeP));
@@ -185,7 +190,7 @@ public class SSSP {
         queueA.insert(source);
 
         long startTime = System.nanoTime();
-        while (!queueA.isEmpty()) {
+        while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             // if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(A);
@@ -228,8 +233,8 @@ public class SSSP {
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
-        applyFactory(new DijkstraFactory());
-        initFields(DIJKSTRA, sourceP, 0);
+        applyFactory(factoryMap.get(SINGLE_TO_ALL));
+        initFields(SINGLE_TO_ALL, sourceP, 0);
         initDataStructures();
         long startTime = System.nanoTime();
         adjList = graph.getAdjList();

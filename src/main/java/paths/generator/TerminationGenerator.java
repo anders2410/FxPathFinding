@@ -93,6 +93,10 @@ public class TerminationGenerator {
         return (goalDist) -> false;
     }
 
+    public static TerminationStrategy getBoundedStoppingStrategy() {
+        return goalDistance -> !(getNodeDist(A).get(getQueue(A).peek()) < SSSP.getSingleToAllBound());
+    }
+
     public static TerminationStrategy getStrongConHeuristicTermination() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();

@@ -3,6 +3,7 @@ package paths.preprocessing;
 import javafx.FXMLController;
 import model.Edge;
 import model.Graph;
+import model.ModelUtil;
 import model.Node;
 import paths.AlgorithmMode;
 import paths.SSSP;
@@ -11,6 +12,7 @@ import paths.ShortestPathResult;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 public class ReachProcessor {
@@ -48,7 +50,7 @@ public class ReachProcessor {
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
-        int[] bIterations = {0, 5, 6, 7, 8, 9, 10, 11, 14, 16, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 240, 280, 300};
+        int[] bIterations = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 16, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 240, 280, 300};
         Instant start = Instant.now();
 
         for (int i = 0; i < bIterations.length; i++) {
@@ -87,7 +89,7 @@ public class ReachProcessor {
         Graph connectiveGraph = createConnectiveGraph(mainGraph, subGraph);
         Map<Integer, Set<Integer>> nodesIngoingMap = computeGraphExclusiveIn(mainGraph, subGraph);
         SSSP.setGraph(connectiveGraph);
-
+        ModelUtil modelUtil = new ModelUtil(connectiveGraph);
         /*fcontroller.setGraph(connectiveGraph);
         fcontroller.setUpGraph();*/
 
@@ -108,14 +110,22 @@ public class ReachProcessor {
                 maxFirst = Math.max(maxFirst, e.d);
             }
             SSSP.setSingleToAllBound(2 * b + maxReachOriginalGraph + d + maxFirst);
-/*
-            Instant start = Instant.now();
-*/
-            ShortestPathResult SPTH = SSSP.findShortestPath(i, 300, AlgorithmMode.BOUNDED_SINGLE_TO_ALL);
-        /*   Instant end = Instant.now();
-           long timeElapsed = Duration.between(start, end).toMillis();*/
+       /*     long start1 = System.nanoTime();
+
+            long end1 = System.nanoTime();
+            long timeElapsed1 = TimeUnit.MILLISECONDS.convert(end1 - start1, TimeUnit.NANOSECONDS);*/
             Map<Integer, List<Integer>> leastCostTreeH = new HashMap<>();
-            for (Map.Entry<Integer, Integer> e : SPTH.pathMap.entrySet()) {
+/*
+            long start = System.nanoTime();
+*/
+            //ShortestPathResult SPTH = SSSP.findShortestPath(i, 300, AlgorithmMode.BOUNDED_SINGLE_TO_ALL);
+            Set<Map.Entry<Integer, Integer>> SPT = modelUtil.SPTWithinRadius(i, 2 * b + maxReachOriginalGraph + d + maxFirst).entrySet();
+     /*       long end = System.nanoTime();
+            long timeElapsed = TimeUnit.MILLISECONDS.convert(end - start, TimeUnit.NANOSECONDS);*/
+            /*System.out.println("SSP -> " + timeElapsed1);
+            System.out.println("SSPres -> " + TimeUnit.MILLISECONDS.convert(SPTH.runTime, TimeUnit.NANOSECONDS));
+            System.out.println("NotSSP  -> " + timeElapsed);*/
+            for (Map.Entry<Integer, Integer> e : SPT) {
                 List<Integer> list = leastCostTreeH.computeIfAbsent(e.getValue(), k -> new ArrayList<>());
                 list.add(e.getKey());
                 leastCostTreeH.replace(e.getValue(), list);

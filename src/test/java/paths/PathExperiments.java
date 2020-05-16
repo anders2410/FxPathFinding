@@ -32,8 +32,9 @@ public class PathExperiments {
 
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadPreAll(fileName);
-        graph = SSSP.getGraph();
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
     }
 
     @Test
@@ -257,29 +258,41 @@ public class PathExperiments {
             testAlgorithm(data);
             System.out.println(data);
         }
-
-        /*System.out.println(dijkstraData);
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(0, 50));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(51, 100));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(101, 150));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(151, 200));
-        System.out.println(dijkstraData.calculateValuesInPathLengthRange(201, Integer.MAX_VALUE));*/
     }
 
     private void testAlgorithm(TestDataExtra data) {
         int i = 0;
         while (i < 1000) {
+            if (i % 500 == 0) {
+                System.out.println("Running test nr: " + i);
+            }
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(data.getMode());
-            data.addVisit(res.scannedNodesA.size() + res.scannedNodesB.size(), res.path.size(), res.runTime);
+            data.addVisit(res);
             i++;
+        }
+    }
+
+    public void printInSections(TestDataExtra data, int initial, int second, int third, int fourth, int fifth, boolean isInKM) {
+        if (isInKM) {
+            System.out.println(data.calculateValuesInPathKMRange(initial, second));
+            System.out.println(data.calculateValuesInPathKMRange(second+1, third));
+            System.out.println(data.calculateValuesInPathKMRange(third+1, fourth));
+            System.out.println(data.calculateValuesInPathKMRange(fourth+1, fifth));
+            System.out.println(data.calculateValuesInPathKMRange(fifth+1, Integer.MAX_VALUE));
+        } else {
+            System.out.println(data.calculateValuesInPathSizeRange(initial, second));
+            System.out.println(data.calculateValuesInPathSizeRange(second+1, third));
+            System.out.println(data.calculateValuesInPathSizeRange(third+1, fourth));
+            System.out.println(data.calculateValuesInPathSizeRange(fourth+1, fifth));
+            System.out.println(data.calculateValuesInPathSizeRange(fifth+1, Integer.MAX_VALUE));
         }
     }
 
     @Test
     public void DijkstraSpeedTest() {
-        setUp("malta-latest.osm.pbf");
-        int testSize = 1000;
+        setUp("denmark-latest.osm.pbf");
+        int testSize = 100;
         TestData data = new TestData();
         int j = 0;
         while (j < testSize) {
@@ -287,7 +300,7 @@ public class PathExperiments {
             ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
             /*resultArray[0][j] = res;*/
             if (res.path.size() > 20) {
-                data.addVisit(res.calculateAllUniqueVisits(graph));
+                data.addVisit(res.scannedNodesA.size());
                 data.addRuntime(res.runTime);
                 j++;
             }
@@ -407,7 +420,8 @@ class TestData {
 class TestDataExtra {
     private int maxVisits;
     private long totalRuntime;
-    private final List<Integer> pathLengthList, nodesVisitedList;
+    private final List<Integer> pathLengthNodesList, nodesVisitedList;
+    private final List<Double> pathLengthKMList;
     private final String name;
     private final AlgorithmMode mode;
 
@@ -416,34 +430,60 @@ class TestDataExtra {
         this.mode = mode;
         maxVisits = 0;
         totalRuntime = 0;
-        pathLengthList = new ArrayList<>();
+        pathLengthNodesList = new ArrayList<>();
         nodesVisitedList = new ArrayList<>();
+        pathLengthKMList = new ArrayList<>();
     }
 
-    protected void addVisit(int nodesVisited, int pathLength, long runtime) {
+    protected void addVisit(ShortestPathResult res) {
+        int nodesVisited = res.scannedNodesA.size() + res.scannedNodesB.size();
         if (nodesVisited > maxVisits) maxVisits = nodesVisited;
-        totalRuntime += runtime;
+        totalRuntime += res.runTime;
         nodesVisitedList.add(nodesVisited);
-        pathLengthList.add(pathLength);
+        pathLengthNodesList.add(res.path.size());
+        pathLengthKMList.add(res.d);
     }
 
     protected Integer getAverageVisited() {
         int total = nodesVisitedList.stream().mapToInt(i -> i).sum();
-        return total / pathLengthList.size();
+        return total / pathLengthNodesList.size();
     }
 
     protected Long getAverageRuntime() {
-        return totalRuntime / pathLengthList.size();
+        return totalRuntime / pathLengthNodesList.size();
     }
 
-    protected String calculateValuesInPathLengthRange(int from, int to) {
+    protected String calculateValuesInPathSizeRange(int from, int to) {
         int total = 0;
         int count = 0;
         int max = 0;
-        for (int i = 0; i < pathLengthList.size(); i++) {
-            Integer pathLength = pathLengthList.get(i);
+        for (int i = 0; i < pathLengthNodesList.size(); i++) {
+            Integer pathLength = pathLengthNodesList.get(i);
             if (pathLength >= from && pathLength <= to) {
                 if (nodesVisitedList.get(i) > max) {
+                    max = nodesVisitedList.get(i);
+                }
+                total += nodesVisitedList.get(i);
+                count++;
+            }
+        }
+
+        return name +
+                " in range: " + from +
+                " to " + to +
+                "." + " average nodes visited: " +
+                (total/count) + ", max visited: " +
+                max;
+    }
+
+    protected String calculateValuesInPathKMRange(int from, int to) {
+        int total = 0;
+        int count = 0;
+        int max = 0;
+        for (int i = 0; i < pathLengthKMList.size(); i++) {
+            Double pathLength = pathLengthKMList.get(i);
+            if (pathLength >= from && pathLength <= to) {
+                if (pathLengthKMList.get(i) > max) {
                     max = nodesVisitedList.get(i);
                 }
                 total += nodesVisitedList.get(i);
