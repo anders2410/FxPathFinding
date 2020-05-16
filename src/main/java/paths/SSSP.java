@@ -175,7 +175,7 @@ public class SSSP {
 
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
-        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL) {
+        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL && modeP != SINGLE_TO_ALL) {
             return new ShortestPathResult();
         }
         applyFactory(factoryMap.get(modeP));
@@ -235,8 +235,8 @@ public class SSSP {
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
-        applyFactory(new DijkstraFactory());
-        initFields(DIJKSTRA, sourceP, 0);
+        applyFactory(factoryMap.get(SINGLE_TO_ALL));
+        initFields(SINGLE_TO_ALL, sourceP, 0);
         initDataStructures();
         long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
@@ -476,5 +476,21 @@ public class SSSP {
 
     public static List<Integer> getDensityMeasures() {
         return densityMeasures;
+    }
+
+    public static List<List<Edge>> getAdjList() {
+        return adjList;
+    }
+
+    public static void setAdjList(List<List<Edge>> adjList) {
+        SSSP.adjList = adjList;
+    }
+
+    public static List<List<Edge>> getRevAdjList() {
+        return revAdjList;
+    }
+
+    public static void setRevAdjList(List<List<Edge>> revAdjList) {
+        SSSP.revAdjList = revAdjList;
     }
 }

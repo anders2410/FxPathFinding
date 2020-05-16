@@ -141,14 +141,14 @@ public class SSSPPBFTest {
 
         CHResult CHResult = graphIO.loadCH(fileName);
         SSSP.setCHResult(CHResult);
-        testCases = 100;
+        testCases = 10000;
         runtimes = new double[algorithms][testCases];
 
         i = 0;
         failMap = new HashMap<>();
         seed = 0;
         while (i < testCases) {
-            if (i % 200 == 0) {
+            if (i % 100 == 0) {
                 System.out.println("Conducted " + i + " tests");
             }
             seed++;
