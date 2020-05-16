@@ -21,7 +21,7 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getBiDijkstraWithEdgePrune();
+        return RelaxGenerator.getBiDijkstra();
     }
 
     @Override

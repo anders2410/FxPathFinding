@@ -190,7 +190,7 @@ public class SSSP {
         queueA.insert(source);
 
         long startTime = System.nanoTime();
-        while (!queueA.isEmpty()) {
+        while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);

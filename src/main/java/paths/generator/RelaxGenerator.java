@@ -39,8 +39,9 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiDijkstraWithEdgePrune() {
         return (edge, dir) -> {
             if (!getScanned(revDir(dir)).contains(edge.to)) {
-                getBiDijkstra().relax(edge, dir);
+                getDijkstra().relax(edge, dir);
             }
+            updateGoalDist(edge, dir);
         };
     }
 
@@ -64,7 +65,6 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBiReachAStar() {
         return (edge, dir) -> {
-            if (getScanned(revDir(dir)).contains(edge.to)) return;
             /*List<Double> bounds = getReachBounds();
             double reachBound = bounds.get(edge.to);
             boolean distBiggerThanReach = getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(edge.from)) <= precision);
