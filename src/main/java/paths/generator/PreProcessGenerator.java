@@ -60,10 +60,10 @@ public class PreProcessGenerator {
             for (Integer landmarkIndex : landmarkSet) {
                 List<Double> forwardDistance = singleToAllPath(landmarkIndex).nodeDistances;
                 double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                SSSP.setAdjList(graph.getReverse(graph.getAdjList()));
+                graph.setAdjList(graph.getReverse(graph.getAdjList()));
                 List<Double> backDistance = singleToAllPath(landmarkIndex).nodeDistances;
                 double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
-                SSSP.setAdjList(originalList);
+                graph.setAdjList(originalList);
                 landmarkArray[index] = arrForward;
                 landmarkArray[index + 1] = arrBackward;
                 index += 2;

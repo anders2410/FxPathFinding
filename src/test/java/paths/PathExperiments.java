@@ -32,7 +32,7 @@ public class PathExperiments {
 
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadGraph(fileName);
+        graphIO.loadPreAll(fileName);
         graph = graphIO.getGraph();
         SSSP.setGraph(graph);
     }
@@ -57,7 +57,6 @@ public class PathExperiments {
         int testCases = 10000;
         setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-
                 BI_A_STAR_LANDMARKS
         );
         seed = 0;
@@ -168,9 +167,9 @@ public class PathExperiments {
             if (i % 100 == 0) {
                 System.out.println("Ran " + i + " shortest paths");
             }
-            if (i == 8644)
-            System.out.println("Ran " + i + " shortest paths");
-
+            if (i == 8533) {
+                System.out.println(i);
+            }
             Map<AlgorithmMode, TestManyRes> resMap = new HashMap<>();
             for (AlgorithmMode mode : modesToTest) {
                 resMap.put(mode, convertToTestManyRes(SSSP.randomPath(mode)));

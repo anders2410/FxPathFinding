@@ -28,16 +28,7 @@ public class SSSP {
     public static int seed = 0;
 
     private static Graph graph;
-
-    public static void setAdjList(List<List<Edge>> adjList) {
-        SSSP.adjList = adjList;
-    }
-
-    private static List<List<Edge>> adjList;
-    private static List<List<Edge>> revAdjList;
     private static Graph CHGraph;
-    private static List<List<Edge>> adjList_CH;
-    private static List<List<Edge>> revAdjList_CH;
     private static GraphInfo graphInfo;
     private static Landmarks landmarks;
     private static int source, target;
@@ -78,6 +69,8 @@ public class SSSP {
     private static double bestPathLengthSoFar;
     private static ScanPruningStrategy scanPruningStrategy;
     private static ResultPackingStrategy resultPackingStrategy;
+    private static List<List<Edge>> adjList;
+    private static List<List<Edge>> revAdjList;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -100,11 +93,18 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
+        if (mode == CONTRACTION_HIERARCHIES) {
+            adjList = CHGraph.getAdjList();
+            revAdjList = CHGraph.getReverse(adjList);
+        } else {
+            adjList = graph.getAdjList();
+            revAdjList = graph.getReverse(adjList);
+        }
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
         double[] arr = new double[nodeAmount];
-        Arrays.fill(arr, Double.MAX_VALUE);
+        Arrays.fill(arr, -1.0);
         return arr;
     }
 
@@ -175,7 +175,7 @@ public class SSSP {
 
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
-        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL && modeP != SINGLE_TO_ALL) {
+        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL) {
             return new ShortestPathResult();
         }
         applyFactory(factoryMap.get(modeP));
@@ -190,10 +190,10 @@ public class SSSP {
         queueA.insert(source);
 
         long startTime = System.nanoTime();
-        while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
-            // if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;
+        while (!queueA.isEmpty()) {
+            /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
-            takeStep(A);
+            takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
@@ -201,6 +201,8 @@ public class SSSP {
     }
 
     private static ShortestPathResult biDirectional() {
+
+
         long startTime = System.nanoTime();
 
         queueA.insert(source);
@@ -212,9 +214,9 @@ public class SSSP {
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {
-                takeStep(A);
+                takeStep(adjList, A);
             } else {
-                takeStep(B);
+                takeStep(revAdjList, B);
             }
         }
         long endTime = System.nanoTime();
@@ -222,25 +224,25 @@ public class SSSP {
         return resultPackingStrategy.packResult(duration);
     }
 
-    private static void takeStep(ABDir dir) {
+    private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
         Integer currentNode = getQueue(dir).poll();
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
-        for (Edge edge : getAdjList(dir, mode == CONTRACTION_HIERARCHIES).get(currentNode)) {
+        for (Edge edge : adjList.get(currentNode)) {
             /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);
         }
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
-        applyFactory(factoryMap.get(SINGLE_TO_ALL));
-        initFields(SINGLE_TO_ALL, sourceP, 0);
+        applyFactory(new DijkstraFactory());
+        initFields(DIJKSTRA, sourceP, 0);
         initDataStructures();
         long startTime = System.nanoTime();
-        adjList = graph.getAdjList();
+        List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
         while (!queueA.isEmpty()) {
-            takeStep(A);
+            takeStep(adjList, A);
         }
         List<Integer> shortestPath = extractPath(pathMapA, source, target);
         long endTime = System.nanoTime();
@@ -353,8 +355,6 @@ public class SSSP {
 
     public static void setGraph(Graph graph) {
         SSSP.graph = graph;
-        adjList = graph.getAdjList();
-        revAdjList = graph.getReverse(adjList);
     }
 
     public static void setGraphInfo(GraphInfo graphInfo) {
@@ -367,13 +367,6 @@ public class SSSP {
 
     public static void setLandmarkArray(double[][] pLandmarkArray) {
         landmarkArray = pLandmarkArray;
-    }
-
-    public static List<List<Edge>> getAdjList(ABDir dir, boolean isCH) {
-        if (isCH) {
-            return dir == A ? adjList_CH : revAdjList_CH;
-        }
-        return dir == A ? adjList : revAdjList;
     }
 
     public static RelaxStrategy getRelaxStrategy(ABDir dir) {
@@ -454,8 +447,6 @@ public class SSSP {
 
     public static void setCHGraph(Graph CHGraph) {
         SSSP.CHGraph = CHGraph;
-        adjList_CH = CHGraph.getAdjList();
-        revAdjList_CH = CHGraph.getReverse(adjList_CH);
     }
 
     public static double getBestPathLengthSoFar() {
@@ -479,11 +470,11 @@ public class SSSP {
         SSSP.edgeWeightStrategy = edgeWeightStrategy;
     }
 
-    public static List<Integer> getDensityMeasures() {
-        return densityMeasures;
-    }
-
     public static void setDensityMeasures(List<Integer> densityMeasures) {
         SSSP.densityMeasures = densityMeasures;
+    }
+
+    public static List<Integer> getDensityMeasures() {
+        return densityMeasures;
     }
 }
