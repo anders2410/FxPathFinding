@@ -53,6 +53,26 @@ public class PathExperiments {
     }
 
     @Test
+    public void testFindScanOverlap() {
+        int testCases = 10000;
+        setUp("malta-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                BI_DIJKSTRA,
+                BI_A_STAR_CONSISTENT,
+                BI_A_STAR_LANDMARKS,
+                BI_REACH,
+                BI_REACH_A_STAR,
+                BI_REACH_LANDMARKS,
+                CONTRACTION_HIERARCHIES
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        for (AlgorithmMode mode : modesToTest) {
+            System.out.println(Util.algorithmNames.get(mode) + " has an average overlap of: " + results.stream().map(r -> r.get(mode).overlap).reduce(Integer::sum).orElse(0)/testCases);
+        }
+    }
+
+    @Test
     public void testCorrelationBetweenRuntimeAndScans() {
         int testCases = 10000;
         setUp("malta-latest.osm.pbf");
@@ -167,9 +187,6 @@ public class PathExperiments {
             if (i % 100 == 0) {
                 System.out.println("Ran " + i + " shortest paths");
             }
-            if (i == 8533) {
-                System.out.println(i);
-            }
             Map<AlgorithmMode, TestManyRes> resMap = new HashMap<>();
             for (AlgorithmMode mode : modesToTest) {
                 resMap.put(mode, convertToTestManyRes(SSSP.randomPath(mode)));
@@ -220,7 +237,13 @@ public class PathExperiments {
         if (spRes.path.size() == 0) {
             return new TestManyRes(0, 0);
         }
-        return new TestManyRes(spRes.runTime, spRes.d, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.size(), spRes.path.get(0), spRes.path.get(spRes.path.size()-1));
+        int overlap = 0;
+        for (Integer integer : spRes.scannedNodesA) {
+            if (spRes.scannedNodesB.contains(integer)) {
+                overlap++;
+            }
+        }
+        return new TestManyRes(spRes.runTime, spRes.d, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.size(), overlap, spRes.path.get(0), spRes.path.get(spRes.path.size()-1));
     }
 
     @Test
@@ -511,14 +534,15 @@ class TestDataExtra {
 class TestManyRes {
     double runTime;
     double pathDistance;
-    int nodesScanned, nodesInPath;
+    int nodesScanned, nodesInPath, overlap;
     int from, to;
 
-    public TestManyRes(double runTime, double pathDistance, int nodesScanned, int nodesInPath, int from, int to) {
+    public TestManyRes(double runTime, double pathDistance, int nodesScanned, int nodesInPath, int overlap, int from, int to) {
         this.runTime = runTime;
         this.pathDistance = pathDistance;
         this.nodesScanned = nodesScanned;
         this.nodesInPath = nodesInPath;
+        this.overlap = overlap;
         this.from = from;
         this.to = to;
     }
