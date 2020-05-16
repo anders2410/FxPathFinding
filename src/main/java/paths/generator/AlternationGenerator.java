@@ -24,10 +24,20 @@ public class AlternationGenerator {
     }
 
     public static AlternationStrategy getDensityBasedStrategy() {
-        return () -> getDensityMeasures().get(getQueue(A).peek()) < getDensityMeasures().get(getQueue(B).peek());
+        return () -> {
+            Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
+            if (aPeek == null) return false;
+            if (bPeek == null) return true;
+            return getDensityMeasures().get(aPeek) < getDensityMeasures().get(bPeek);
+        };
     }
 
     public static AlternationStrategy getSameDistanceStrategy() {
-        return () -> getNodeDist(A).get(getQueue(A).peek()) < getNodeDist(B).get(getQueue(B).peek());
+        return () -> {
+            Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
+            if (aPeek == null) return false;
+            if (bPeek == null) return true;
+            return getNodeDist(A).get(aPeek) < getNodeDist(B).get(bPeek);
+        };
     }
 }

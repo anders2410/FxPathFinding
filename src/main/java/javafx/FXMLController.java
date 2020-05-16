@@ -238,6 +238,7 @@ public class FXMLController implements Initializable {
     }
 
     private ShortestPathResult combineResults(List<ShortestPathResult> results) {
+        //if (results == null) return new ShortestPathResult();
         return results.stream().reduce((res1, res2) -> {
             List<Integer> combinedPath = new ArrayList<>(res1.path);
             combinedPath.addAll(res2.path.subList(1, res2.path.size()));

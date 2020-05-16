@@ -3,6 +3,7 @@ package paths;
 import javafx.util.Pair;
 import load.GraphIO;
 import model.Graph;
+import model.ModelUtil;
 import model.Node;
 import org.junit.Test;
 import paths.preprocessing.LandmarkMode;
@@ -51,12 +52,31 @@ public class PathExperiments {
     }
 
     @Test
+    public void testCorrelationBetweenRuntimeAndScans() {
+        int testCases = 10000;
+        setUp("malta-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+
+                BI_A_STAR_LANDMARKS
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        for (AlgorithmMode mode : modesToTest) {
+            System.out.print(Util.algorithmNames.get(mode) + ": ");
+            results.forEach(r -> System.out.print(r.get(mode).nodesScanned + "," + r.get(mode).runTime + ":"));
+            System.out.println();
+        }
+
+    }
+
+    @Test
     public void testPrintListUniWins() {
         int testCases = 10000;
         setUp("estonia-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 A_STAR,
                 BI_A_STAR_CONSISTENT
+
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
@@ -147,6 +167,9 @@ public class PathExperiments {
             if (i % 100 == 0) {
                 System.out.println("Ran " + i + " shortest paths");
             }
+            if (i == 8644)
+            System.out.println("Ran " + i + " shortest paths");
+
             Map<AlgorithmMode, TestManyRes> resMap = new HashMap<>();
             for (AlgorithmMode mode : modesToTest) {
                 resMap.put(mode, convertToTestManyRes(SSSP.randomPath(mode)));
@@ -155,6 +178,42 @@ public class PathExperiments {
             seed++;
         }
         return results;
+    }
+
+    @Test
+    public void testCompareDensityRadius() {
+        int testCases = 1000;
+        double densityStep = 0.5, densityLower = 8, densityUpper = 12;
+        setUp("estonia-latest.osm.pbf");
+        List<List<Integer>> densityMeasures = new ArrayList<>();
+        for (double d = densityLower; d < densityUpper; d += densityStep) {
+            densityMeasures.add(new ModelUtil(graph).computeDensityMeasures(d));
+            System.out.println("Computed density measures for radius " + d);
+        }
+
+        System.out.println("Experiment on " + testCases + " cases begun.");
+        List<List<TestManyRes>> results = new ArrayList<>();
+        for (int i = 1; i < testCases + 1; i++) {
+            if (i % 100 == 0) {
+                System.out.println("Ran " + i + " shortest paths");
+            }
+            List<TestManyRes> resList = new ArrayList<>();
+            for (List<Integer> measures : densityMeasures) {
+                SSSP.setDensityMeasures(measures);
+                resList.add(convertToTestManyRes(SSSP.randomPath(BI_DIJKSTRA_DENSITY)));
+            }
+            results.add(resList);
+            seed++;
+        }
+
+        System.out.println("With a radius of x an average of y nodes were scanned.");
+
+        for (int i = 0; i < densityMeasures.size(); i++) {
+            int finalI = i;
+            double avg_scans = ((double) results.stream().map(r -> r.get(finalI).nodesScanned).reduce(Integer::sum).orElse(0)) / testCases;
+            System.out.print(((i + 1) * densityStep + densityLower) + "," + avg_scans + ":");
+        }
+        System.out.println();
     }
 
     private TestManyRes convertToTestManyRes(ShortestPathResult spRes) {

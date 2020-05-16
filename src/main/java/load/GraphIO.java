@@ -83,6 +83,8 @@ public class GraphIO {
         loadGraph(fileName);
         SSSP.setGraph(graph);
 
+        SSSP.setDensityMeasures(loadDensities(fileName));
+
         Landmarks landmarks = new Landmarks(graph);
         loadBestLandmarks(fileName, landmarks);
         SSSP.setLandmarks(landmarks);

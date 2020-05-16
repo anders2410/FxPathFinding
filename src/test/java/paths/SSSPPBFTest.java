@@ -94,6 +94,37 @@ public class SSSPPBFTest {
     Map<Integer, Integer> failMap;
 
     @Test
+    public void testDensityAlgorithms() {
+        int algorithms = 3;
+        matrix = new int[algorithms];
+        SSSP.setGraph(graph);
+        SSSP.setDensityMeasures(graphIO.loadDensities(fileName));
+        assert SSSP.getDensityMeasures().size() == graph.getNodeAmount();
+        testCases = 10000;
+        runtimes = new double[algorithms][testCases];
+        i = 0;
+        failMap = new HashMap<>();
+        seed = 0;
+        while (i < testCases) {
+            if (i % 200 == 0) {
+                System.out.println("Conducted " + i + " tests");
+            }
+            seed++;
+            ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            runtimes[0][i] = dijkRes.runTime;
+            double distDijk = dijkRes.d;
+            List<Integer> pathDijk = dijkRes.path;
+
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 1);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA_DENSITY, 2);
+            i++;
+        }
+        if (Arrays.equals(new int[algorithms], matrix)) {
+            System.out.println(Arrays.deepToString(runtimes));
+        } else fail();
+    }
+
+    @Test
     public void testAlgorithms() {
         int algorithms = 14;
         matrix = new int[algorithms];
@@ -148,13 +179,13 @@ public class SSSPPBFTest {
         } else fail();
     }
 
-    private void testSingle(double distDijk, List<Integer> pathDijk, AlgorithmMode aStar, int i2) {
-        ShortestPathResult aStarRes = SSSP.randomPath(aStar);
-        runtimes[i2][i] = aStarRes.runTime;
-        double distAstar = aStarRes.d;
-        List<Integer> pathAstar = aStarRes.path;
-        if (Math.abs(distAstar - distDijk) > 0.00000000001 || !pathAstar.equals(pathDijk)) {
-            System.out.println(aStar + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
+    private void testSingle(double distDijk, List<Integer> pathDijk, AlgorithmMode mode, int i2) {
+        ShortestPathResult result = SSSP.randomPath(mode);
+        runtimes[i2][i] = result.runTime;
+        double dist = result.d;
+        List<Integer> path = result.path;
+        if (Math.abs(dist - distDijk) > 0.00000000001 || !path.equals(pathDijk)) {
+            System.out.println(mode + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
             matrix[i2]++;
             failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size() - 1));
         }
