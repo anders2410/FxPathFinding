@@ -68,15 +68,18 @@ public class GraphIO {
 
     public void loadPreAll(String fileName) {
         loadPreREAL(fileName);
-        CHResult ch = loadCH(fileName);
-        SSSP.setCHResult(ch);
+        SSSP.setCHResult(loadCH(fileName));
+    }
+
+    public void loadPreCH(String fileName) {
+        loadGraph(fileName);
+        SSSP.setGraph(graph);
+        SSSP.setCHResult(loadCH(fileName));
     }
 
     public void loadPreREAL(String fileName) {
         loadPreALT(fileName);
-
-        List<Double> reachBounds = loadReach(fileName);
-        SSSP.setReachBounds(reachBounds);
+        SSSP.setReachBounds(loadReach(fileName));
     }
 
     public void loadPreALT(String fileName) {

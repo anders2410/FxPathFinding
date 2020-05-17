@@ -57,13 +57,7 @@ public class PathExperiments {
         int testCases = 10000;
         setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                BI_DIJKSTRA,
-                BI_A_STAR_CONSISTENT,
-                BI_A_STAR_LANDMARKS,
-                BI_REACH,
-                BI_REACH_A_STAR,
-                BI_REACH_LANDMARKS,
-                CONTRACTION_HIERARCHIES
+                BI_A_STAR_SYMMETRIC
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
@@ -75,13 +69,8 @@ public class PathExperiments {
     @Test
     public void testCorrelationBetweenRuntimeAndScans() {
         int testCases = 10000;
-        setUp("estonia-latest.osm.pbf");
+        setUp("denmark-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                DIJKSTRA,
-                BI_DIJKSTRA,
-                BI_A_STAR_CONSISTENT,
-                BI_A_STAR_LANDMARKS,
-                BI_REACH_LANDMARKS,
                 CONTRACTION_HIERARCHIES
         );
         seed = 0;
