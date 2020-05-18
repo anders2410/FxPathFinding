@@ -40,15 +40,15 @@ public class PathExperiments {
     @Test
     public void testPrintAllTests() {
         int testCases = 10000;
-        setUp("denmark-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 BI_REACH_LANDMARKS
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
-        checkResultsValid(results);
-        results.forEach(r -> printPair(r.get(DIJKSTRA)));
-        results.forEach(r -> System.out.print(r.get(DIJKSTRA).pathDistance + ", "));
+        results.forEach(r -> printPair(r.get(BI_REACH_LANDMARKS)));
+        System.out.println();
+        results.forEach(r -> System.out.print(r.get(BI_REACH_LANDMARKS).pathDistance + ", "));
         System.out.println();
     }
 
@@ -69,9 +69,21 @@ public class PathExperiments {
     @Test
     public void testCorrelationBetweenRuntimeAndScans() {
         int testCases = 10000;
-        setUp("denmark-latest.osm.pbf");
+        setUp("estonia-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                CONTRACTION_HIERARCHIES
+                DIJKSTRA,
+                BI_DIJKSTRA,
+                A_STAR,
+                BI_A_STAR_CONSISTENT,
+                A_STAR_LANDMARKS,
+                BI_A_STAR_LANDMARKS/*,
+                REACH,
+                BI_REACH,
+                REACH_A_STAR,
+                BI_REACH_A_STAR,
+                REACH_LANDMARKS,
+                BI_REACH_LANDMARKS,
+                CONTRACTION_HIERARCHIES*/
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
@@ -86,16 +98,15 @@ public class PathExperiments {
     @Test
     public void testPrintListUniWins() {
         int testCases = 10000;
-        setUp("estonia-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                A_STAR,
-                BI_A_STAR_CONSISTENT
-
+                DIJKSTRA,
+                BI_DIJKSTRA
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
-        List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(A_STAR).nodesScanned < r.get(BI_A_STAR_CONSISTENT).nodesScanned).collect(Collectors.toList());
-        ud_dijkstra_wins.forEach(r -> printPair(r.get(A_STAR)));
+        List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
+        ud_dijkstra_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
     }
 
     @Test
