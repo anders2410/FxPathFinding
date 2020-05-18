@@ -50,7 +50,7 @@ public class ReachProcessor {
         Collections.fill(bounds, Double.MAX_VALUE);
         setOriginalGraph(g);
         Graph subGraph = new Graph(g);
-        int[] bIterations = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 16, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 240, 280, 300};
+        int[] bIterations = {1, 12, 23, 36, 47, 60, 80, 100, 140, 180, 240, 300};
         Instant start = Instant.now();
 
         for (int i = 0; i < bIterations.length; i++) {

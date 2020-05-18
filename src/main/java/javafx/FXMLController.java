@@ -115,6 +115,7 @@ public class FXMLController implements Initializable {
      * @param fileName file to load.
      */
     private void loadNewGraph(String fileName) {
+        isSCCGraph = false;
         onRightClick();
         if (fileName == null || fileName.equals("")) {
             return;
