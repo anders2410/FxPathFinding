@@ -186,10 +186,15 @@ public class SSSP {
         return biDirectional ? biDirectional() : oneDirectional();
     }
 
-    private static ShortestPathResult oneDirectional() {
-        queueA.insert(source);
+    public static boolean allowFlip = false;
 
+    private static ShortestPathResult oneDirectional() {
+        if (allowFlip && densityMeasures != null && densityMeasures.get(source) > densityMeasures.get(target)) {
+            flipSearch();
+        }
+        queueA.insert(source);
         long startTime = System.nanoTime();
+
         while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
@@ -198,6 +203,15 @@ public class SSSP {
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
         return resultPackingStrategy.packResult(duration);
+    }
+
+    private static void flipSearch() {
+        List<List<Edge>> adjList = getAdjList();
+        setAdjList(revAdjList);
+        setRevAdjList(adjList);
+        int source = getSource();
+        target = source;
+        source = target;
     }
 
     private static ShortestPathResult biDirectional() {

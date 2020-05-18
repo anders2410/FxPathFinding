@@ -67,23 +67,39 @@ public class PathExperiments {
     }
 
     @Test
+    public void testOutDegrees() {
+        List<String> fileNames = Arrays.asList("faroe-islands","montenegro","malta","estonia","georgia");
+        for (String name : fileNames) {
+            name = name + "-latest";
+            graphIO = new GraphIO(true);
+            if (!graphIO.fileExtensionExists(name, "-graph.tmp")) {
+                System.out.println(name + " doesn't exist");
+                fail();
+            }
+            graphIO.loadGraph(name);
+            ModelUtil modelUtil = new ModelUtil(graphIO.getGraph());
+            System.out.println(name + ": " + modelUtil.averageOutDegree());
+        }
+    }
+
+    @Test
     public void testCorrelationBetweenRuntimeAndScans() {
         int testCases = 10000;
-        setUp("estonia-latest.osm.pbf");
+        setUp("montenegro-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                DIJKSTRA,
+                /*DIJKSTRA,
                 BI_DIJKSTRA,
                 A_STAR,
                 BI_A_STAR_CONSISTENT,
                 A_STAR_LANDMARKS,
-                BI_A_STAR_LANDMARKS/*,
+                BI_A_STAR_LANDMARKS,*/
                 REACH,
                 BI_REACH,
                 REACH_A_STAR,
                 BI_REACH_A_STAR,
                 REACH_LANDMARKS,
                 BI_REACH_LANDMARKS,
-                CONTRACTION_HIERARCHIES*/
+                CONTRACTION_HIERARCHIES
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
@@ -165,6 +181,38 @@ public class PathExperiments {
         System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("A* better than BiA* in " + astar_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("Done");
+    }
+
+    @Test
+    public void testFlipUniSearch() {
+        setUp("malta-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA);
+        int testCases = 10000;
+        System.out.println("Experiment on " + testCases + " cases begun.");
+        List<Map<AlgorithmMode, List<TestManyRes>>> results = new ArrayList<>();
+        for (int i = 1; i < testCases + 1; i++) {
+            if (i % 100 == 0) {
+                System.out.println("Ran " + i + " shortest paths");
+            }
+            Map<AlgorithmMode, List<TestManyRes>> resMap = new HashMap<>();
+            for (AlgorithmMode mode : modesToTest) {
+                List<TestManyRes> resList2 = new ArrayList<>();
+                SSSP.allowFlip = false;
+                resList2.add(convertToTestManyRes(SSSP.randomPath(mode)));
+                SSSP.allowFlip = true;
+                resList2.add(convertToTestManyRes(SSSP.randomPath(mode)));
+                resMap.put(mode, resList2);
+            }
+            results.add(resMap);
+            seed++;
+        }
+        for (AlgorithmMode mode : modesToTest) {
+            double avg_no_flip = (double) results.stream().map(r -> r.get(mode).get(0).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+            double avg_flip = (double) results.stream().map(r -> r.get(mode).get(1).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+            System.out.println(Util.algorithmNames.get(mode));
+            System.out.println("Without flip an average amount of " + avg_no_flip + " nodes were scanned");
+            System.out.println("With flip an average amount of " + avg_flip + " nodes were scanned");
+        }
     }
 
     private void printPair(TestManyRes res) {
