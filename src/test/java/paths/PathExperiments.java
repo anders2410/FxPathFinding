@@ -42,7 +42,7 @@ public class PathExperiments {
         int testCases = 10000;
         setUp("denmark-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                DIJKSTRA
+                BI_REACH_LANDMARKS
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
