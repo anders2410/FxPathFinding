@@ -72,12 +72,6 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                 cum_Dist += distanceStrategy.apply(intermediate, node2);
 
                 graph.addEdge(node1, node2, cum_Dist);
-                if (node1.index == 491) {
-                    System.out.println(node2.index);
-                    System.out.println(node1.latitude +", " + node1.longitude);
-                    System.out.println(distanceStrategy.apply(node1, node2));
-                    System.out.println(cum_Dist);
-                }
                 EdgeInfo edgeInfo = parseInfo ? getEdgeInfo(tags, node1, node2) : null;
                 if (parseInfo) {
                     graphInfo.addEdge(edgeInfo);
