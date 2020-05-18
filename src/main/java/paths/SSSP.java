@@ -93,6 +93,7 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
+
         if (mode == CONTRACTION_HIERARCHIES) {
             adjList = CHGraph.getAdjList();
             revAdjList = CHGraph.getReverse(adjList);
@@ -186,7 +187,6 @@ public class SSSP {
     }
 
     private static ShortestPathResult oneDirectional() {
-        List<List<Edge>> adjList = graph.getAdjList();
         queueA.insert(source);
 
         long startTime = System.nanoTime();
@@ -201,16 +201,13 @@ public class SSSP {
     }
 
     private static ShortestPathResult biDirectional() {
-
-
-        long startTime = System.nanoTime();
-
         queueA.insert(source);
         queueB.insert(target);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
 
+        long startTime = System.nanoTime();
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {

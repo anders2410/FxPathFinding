@@ -62,7 +62,7 @@ public class PathExperiments {
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
         for (AlgorithmMode mode : modesToTest) {
-            System.out.println(Util.algorithmNames.get(mode) + " has an average overlap of: " + results.stream().map(r -> r.get(mode).overlap).reduce(Integer::sum).orElse(0)/testCases);
+            System.out.println(Util.algorithmNames.get(mode) + " has an average overlap of: " + results.stream().map(r -> r.get(mode).overlap).reduce(Integer::sum).orElse(0) / testCases);
         }
     }
 
@@ -115,7 +115,7 @@ public class PathExperiments {
                 BI_REACH_A_STAR,
                 REACH_LANDMARKS,
                 BI_REACH_LANDMARKS
-                );
+        );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
         checkResultsValid(results);
@@ -237,11 +237,11 @@ public class PathExperiments {
                 overlap++;
             }
         }
-        return new TestManyRes(spRes.runTime, spRes.d, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.size(), overlap, spRes.path.get(0), spRes.path.get(spRes.path.size()-1));
+        return new TestManyRes(spRes.runTime, spRes.d, spRes.scannedNodesA.size() + spRes.scannedNodesB.size(), spRes.path.size(), overlap, spRes.path.get(0), spRes.path.get(spRes.path.size() - 1));
     }
 
     @Test
-    public void allSpeedTestOne(){
+    public void allSpeedTestOne() {
         setUp("malta-latest.osm.pbf");
         Instant start = Instant.now();
         SSSP.findShortestPath(500, 300, SINGLE_TO_ALL);
@@ -251,7 +251,7 @@ public class PathExperiments {
     }
 
     @Test
-    public void compareAllAlgorithmsOnDifferentParameters() {
+    public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
         setUp("malta-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
@@ -272,14 +272,14 @@ public class PathExperiments {
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testAlgorithm(data);
-            System.out.println(data);
+            printInSections(data, 0, 5, 10, 15, 20, true);
         }
     }
 
     private void testAlgorithm(TestDataExtra data) {
         int i = 0;
         while (i < 1000) {
-            if (i % 500 == 0) {
+            if (i % 1000 == 0) {
                 System.out.println("Running test nr: " + i);
             }
             SSSP.seed++;
@@ -292,16 +292,16 @@ public class PathExperiments {
     public void printInSections(TestDataExtra data, int initial, int second, int third, int fourth, int fifth, boolean isInKM) {
         if (isInKM) {
             System.out.println(data.calculateValuesInPathKMRange(initial, second));
-            System.out.println(data.calculateValuesInPathKMRange(second+1, third));
-            System.out.println(data.calculateValuesInPathKMRange(third+1, fourth));
-            System.out.println(data.calculateValuesInPathKMRange(fourth+1, fifth));
-            System.out.println(data.calculateValuesInPathKMRange(fifth+1, Integer.MAX_VALUE));
+            System.out.println(data.calculateValuesInPathKMRange(second + 1, third));
+            System.out.println(data.calculateValuesInPathKMRange(third + 1, fourth));
+            System.out.println(data.calculateValuesInPathKMRange(fourth + 1, fifth));
+            System.out.println(data.calculateValuesInPathKMRange(fifth + 1, Integer.MAX_VALUE - 1));
         } else {
             System.out.println(data.calculateValuesInPathSizeRange(initial, second));
-            System.out.println(data.calculateValuesInPathSizeRange(second+1, third));
-            System.out.println(data.calculateValuesInPathSizeRange(third+1, fourth));
-            System.out.println(data.calculateValuesInPathSizeRange(fourth+1, fifth));
-            System.out.println(data.calculateValuesInPathSizeRange(fifth+1, Integer.MAX_VALUE));
+            System.out.println(data.calculateValuesInPathSizeRange(second + 1, third));
+            System.out.println(data.calculateValuesInPathSizeRange(third + 1, fourth));
+            System.out.println(data.calculateValuesInPathSizeRange(fourth + 1, fifth));
+            System.out.println(data.calculateValuesInPathSizeRange(fifth + 1, Integer.MAX_VALUE - 1));
         }
     }
 
@@ -321,7 +321,7 @@ public class PathExperiments {
                 j++;
             }
         }
-        System.out.println(data.averageRuntime /testSize);
+        System.out.println(data.averageRuntime / testSize);
     }
 
 
@@ -475,7 +475,7 @@ class TestDataExtra {
         int max = 0;
         for (int i = 0; i < pathLengthNodesList.size(); i++) {
             Integer pathLength = pathLengthNodesList.get(i);
-            if (pathLength >= from && pathLength <= to) {
+            if (pathLength >= from && pathLength < to + 1) {
                 if (nodesVisitedList.get(i) > max) {
                     max = nodesVisitedList.get(i);
                 }
@@ -488,7 +488,7 @@ class TestDataExtra {
                 " in range: " + from +
                 " to " + to +
                 "." + " average nodes visited: " +
-                (total/count) + ", max visited: " +
+                (total / count) + ", max visited: " +
                 max;
     }
 
@@ -497,9 +497,9 @@ class TestDataExtra {
         int count = 0;
         int max = 0;
         for (int i = 0; i < pathLengthKMList.size(); i++) {
-            Double pathLength = pathLengthKMList.get(i);
-            if (pathLength >= from && pathLength <= to) {
-                if (pathLengthKMList.get(i) > max) {
+            Double pathLengthInKM = pathLengthKMList.get(i);
+            if (pathLengthInKM >= from && pathLengthInKM < to + 1) {
+                if (nodesVisitedList.get(i) > max) {
                     max = nodesVisitedList.get(i);
                 }
                 total += nodesVisitedList.get(i);
@@ -511,7 +511,7 @@ class TestDataExtra {
                 " in range: " + from +
                 " to " + to +
                 "." + " average nodes visited: " +
-                (total/count) + ", max visited: " +
+                (total / count) + ", max visited: " +
                 max;
     }
 
