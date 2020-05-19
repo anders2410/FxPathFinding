@@ -311,7 +311,7 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("malta-latest.osm.pbf");
+        setUp("estonia-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -331,13 +331,14 @@ public class PathExperiments {
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testAlgorithm(data);
-            printInSections(data, 0, 5, 10, 15, 20, true);
+            System.out.println(data);
+            printInSections(data, 0, 50, 100, 150, 200, true);
         }
     }
 
     private void testAlgorithm(TestDataExtra data) {
         int i = 0;
-        while (i < 1000) {
+        while (i < 10000) {
             if (i % 1000 == 0) {
                 System.out.println("Running test nr: " + i);
             }
@@ -351,10 +352,10 @@ public class PathExperiments {
     public void printInSections(TestDataExtra data, int initial, int second, int third, int fourth, int fifth, boolean isInKM) {
         if (isInKM) {
             System.out.println(data.calculateValuesInPathKMRange(initial, second));
-            System.out.println(data.calculateValuesInPathKMRange(second + 1, third));
-            System.out.println(data.calculateValuesInPathKMRange(third + 1, fourth));
-            System.out.println(data.calculateValuesInPathKMRange(fourth + 1, fifth));
-            System.out.println(data.calculateValuesInPathKMRange(fifth + 1, Integer.MAX_VALUE - 1));
+            System.out.println(data.calculateValuesInPathKMRange(second, third));
+            System.out.println(data.calculateValuesInPathKMRange(third, fourth));
+            System.out.println(data.calculateValuesInPathKMRange(fourth, fifth));
+            System.out.println(data.calculateValuesInPathKMRange(fifth, Integer.MAX_VALUE - 1));
         } else {
             System.out.println(data.calculateValuesInPathSizeRange(initial, second));
             System.out.println(data.calculateValuesInPathSizeRange(second + 1, third));
@@ -557,7 +558,7 @@ class TestDataExtra {
         int max = 0;
         for (int i = 0; i < pathLengthKMList.size(); i++) {
             Double pathLengthInKM = pathLengthKMList.get(i);
-            if (pathLengthInKM >= from && pathLengthInKM < to + 1) {
+            if (from <= pathLengthInKM && pathLengthInKM < to) {
                 if (nodesVisitedList.get(i) > max) {
                     max = nodesVisitedList.get(i);
                 }
