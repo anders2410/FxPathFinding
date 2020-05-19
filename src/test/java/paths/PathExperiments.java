@@ -40,7 +40,7 @@ public class PathExperiments {
     @Test
     public void testPrintAllTests() {
         int testCases = 10000;
-        setUp("malta-latest.osm.pbf");
+        setUp("denmark-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 BI_REACH_LANDMARKS
         );

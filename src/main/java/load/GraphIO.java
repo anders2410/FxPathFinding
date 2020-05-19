@@ -164,7 +164,8 @@ public class GraphIO {
         try {
             String name = getTrimmedFolderSCCName(fileName) + "-graph.tmp";
             FileOutputStream fos = new FileOutputStream(name);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            OutputStream buffer = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(buffer);
             oos.writeObject(graph);
             oos.close();
         } catch (IOException e) {
@@ -177,7 +178,8 @@ public class GraphIO {
             String graphFileName = name + "-graph.tmp";
             fileSize = Files.size(Paths.get(graphFileName));
             CountingInputStream input = new CountingInputStream(graphFileName, this);
-            ObjectInputStream objectStream = new ObjectInputStream(input);
+            InputStream buffer = new BufferedInputStream(input);
+            ObjectInputStream objectStream = new ObjectInputStream(buffer);
             graph = (Graph) objectStream.readObject();
             objectStream.close();
         } catch (ClassNotFoundException | IOException e) {
@@ -191,7 +193,8 @@ public class GraphIO {
         try {
             String name = getTrimmedFolderSCCName(fileName) + "-info.tmp";
             FileOutputStream fos = new FileOutputStream(name);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            OutputStream buffer = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(buffer);
             oos.writeObject(graphInfo);
             oos.close();
         } catch (IOException e) {
@@ -233,7 +236,8 @@ public class GraphIO {
         try {
             fileSize = Files.size(Paths.get(infoName));
             CountingInputStream input = new CountingInputStream(infoName, this);
-            ObjectInputStream objectStream = new ObjectInputStream(input);
+            InputStream buffer = new BufferedInputStream(input);
+            ObjectInputStream objectStream = new ObjectInputStream(buffer);
             graphInfo = (GraphInfo) objectStream.readObject();
             objectStream.close();
         } catch (ClassNotFoundException | IOException e) {
@@ -247,7 +251,8 @@ public class GraphIO {
         try {
             String name = getTrimmedFolderSCCName(fileName) + "-" + generationMode.toString() + "landmarks.tmp";
             FileOutputStream fos = new FileOutputStream(name);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            OutputStream buffer = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(buffer);
             oos.writeObject(landmarkSet);
             oos.close();
         } catch (IOException e) {
@@ -276,7 +281,8 @@ public class GraphIO {
         try {
             String name = getLandmarksFilePathName(fileName, mode);
             FileInputStream landmarksInput = new FileInputStream(name);
-            ObjectInputStream landmarksStream = new ObjectInputStream(landmarksInput);
+            InputStream buffer = new BufferedInputStream(landmarksInput);
+            ObjectInputStream landmarksStream = new ObjectInputStream(buffer);
 
             Set<Integer> landmarksSet = null;
 
@@ -306,7 +312,8 @@ public class GraphIO {
                 return null;
             }
             FileInputStream reachInput = new FileInputStream(reachFile);
-            ObjectInputStream reachStream = new ObjectInputStream(reachInput);
+            InputStream buffer = new BufferedInputStream(reachInput);
+            ObjectInputStream reachStream = new ObjectInputStream(buffer);
 
             List<Double> bounds = null;
 
@@ -328,7 +335,8 @@ public class GraphIO {
         try {
             String name = getTrimmedFolderSCCName(fileName) + "-reach-bounds.tmp";
             FileOutputStream fos = new FileOutputStream(name);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            OutputStream buffer = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(buffer);
             oos.writeObject(reachBounds);
             oos.close();
         } catch (IOException e) {
@@ -343,7 +351,8 @@ public class GraphIO {
                 return null;
             }
             FileInputStream chInput = new FileInputStream(chFile);
-            ObjectInputStream chStream = new ObjectInputStream(chInput);
+            InputStream buffer = new BufferedInputStream(chInput);
+            ObjectInputStream chStream = new ObjectInputStream(buffer);
 
             CHResult contractionHierarchies = null;
 
@@ -366,7 +375,8 @@ public class GraphIO {
         try {
             String name = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
             FileOutputStream fos = new FileOutputStream(name);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            OutputStream buffer = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(buffer);
             oos.writeObject(CHResult);
             oos.close();
         } catch (IOException e) {
@@ -381,7 +391,8 @@ public class GraphIO {
                 return null;
             }
             FileInputStream densityInput = new FileInputStream(densityFile);
-            ObjectInputStream reachStream = new ObjectInputStream(densityInput);
+            InputStream buffer = new BufferedInputStream(densityInput);
+            ObjectInputStream reachStream = new ObjectInputStream(buffer);
 
             List<Integer> densityMeasures = null;
 
@@ -403,7 +414,8 @@ public class GraphIO {
         try {
             String sccName = getTrimmedFolderSCCName(fileName) + "-densities.tmp";
             FileOutputStream fos = new FileOutputStream(sccName);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            OutputStream buffer = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(buffer);
             oos.writeObject(densityMeasures);
             oos.close();
         } catch (IOException e) {
