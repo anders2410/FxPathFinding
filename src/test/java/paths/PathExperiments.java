@@ -85,14 +85,14 @@ public class PathExperiments {
     @Test
     public void testCorrelationBetweenRuntimeAndScans() {
         int testCases = 10000;
-        setUp("montenegro-latest.osm.pbf");
+        setUp("estonia-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                /*DIJKSTRA,
+                DIJKSTRA,
                 BI_DIJKSTRA,
                 A_STAR,
                 BI_A_STAR_CONSISTENT,
                 A_STAR_LANDMARKS,
-                BI_A_STAR_LANDMARKS,*/
+                BI_A_STAR_LANDMARKS,
                 REACH,
                 BI_REACH,
                 REACH_A_STAR,
