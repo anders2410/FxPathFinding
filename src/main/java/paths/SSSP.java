@@ -157,6 +157,7 @@ public class SSSP {
         factoryMap.put(CONTRACTION_HIERARCHIES, new ContractionHierarchiesFactory());
         factoryMap.put(SINGLE_TO_ALL, new OneToAllDijkstra());
         factoryMap.put(BOUNDED_SINGLE_TO_ALL, new BoundedOneToAll());
+        factoryMap.put(CONTRACTION_HIERARCHIES_LANDMARKS, new ContractionHierarchiesLandmarksFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {

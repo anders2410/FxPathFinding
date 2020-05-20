@@ -973,11 +973,11 @@ public class FXMLController implements Initializable {
         chooseAlgorithm(BI_A_STAR_LANDMARKS);
     }
 
-    private void chooseAlgorithm(AlgorithmMode dijkstra) {
+    private void chooseAlgorithm(AlgorithmMode algorithmMode) {
         if (currentOverlay == OverlayType.REACH) {
             currentOverlay = OverlayType.NONE;
         }
-        algorithmMode = dijkstra;
+        this.algorithmMode = algorithmMode;
         runAlgorithm();
         setAlgorithmLabels();
     }
