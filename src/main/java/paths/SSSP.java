@@ -75,8 +75,14 @@ public class SSSP {
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
-        source = sourceP;
-        target = targetP;
+        if (allowFlip && densityMeasures != null && densityMeasures.get(sourceP) > densityMeasures.get(targetP)) {
+            SSSP.target = sourceP;
+            SSSP.source = targetP;
+        } else {
+            SSSP.source = sourceP;
+            SSSP.target = targetP;
+            allowFlip = false;
+        }
     }
 
     private static void initDataStructures() {
@@ -97,6 +103,11 @@ public class SSSP {
         if (mode == CONTRACTION_HIERARCHIES) {
             adjList = CHGraph.getAdjList();
             revAdjList = CHGraph.getReverse(adjList);
+        } else if (allowFlip) {
+            List<List<Edge>> adjList = getAdjList();
+            List<List<Edge>> revAdjList = getRevAdjList();
+            setAdjList(revAdjList);
+            setRevAdjList(adjList);
         } else {
             adjList = graph.getAdjList();
             revAdjList = graph.getReverse(adjList);
@@ -190,9 +201,6 @@ public class SSSP {
     public static boolean allowFlip = false;
 
     private static ShortestPathResult oneDirectional() {
-        if (allowFlip && densityMeasures != null && densityMeasures.get(source) > densityMeasures.get(target)) {
-            flipSearch();
-        }
         queueA.insert(source);
         long startTime = System.nanoTime();
 
@@ -204,15 +212,6 @@ public class SSSP {
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
         return resultPackingStrategy.packResult(duration);
-    }
-
-    private static void flipSearch() {
-        List<List<Edge>> adjList = getAdjList();
-        setAdjList(revAdjList);
-        setRevAdjList(adjList);
-        int source = getSource();
-        target = source;
-        source = target;
     }
 
     private static ShortestPathResult biDirectional() {

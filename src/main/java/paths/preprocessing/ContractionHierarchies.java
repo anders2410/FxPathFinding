@@ -99,6 +99,7 @@ public class ContractionHierarchies {
             numberOfContractedNodes++;
         }
 
+
         return new CHResult(graph, ranks, shortcuts);
     }
 
