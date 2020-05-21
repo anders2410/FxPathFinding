@@ -262,6 +262,20 @@ public class ModelUtil {
         return subGraph;
     }
 
+    public double averageOutDegree() {
+        return (double) edgeAmount() / graph.getNodeAmount();
+    }
+
+    public long edgeAmount() {
+        long c = 0;
+        for (List<Edge> edges : graph.getAdjList()) {
+            for (Edge edge : edges) {
+                c++;
+            }
+        }
+        return c;
+    }
+
     boolean traceStack = false;
 
     private void traceStack(String s, Stack<Integer> recursionStack) {

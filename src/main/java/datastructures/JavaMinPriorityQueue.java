@@ -41,7 +41,7 @@ public class JavaMinPriorityQueue extends PriorityQueue<Integer> implements MinP
         JavaMinPriorityQueue copy = new JavaMinPriorityQueue(this);
         StringBuilder s = new StringBuilder();
         while (copy.size() != 0) {
-            s.append(copy.poll() + ", ");
+            s.append(copy.poll()).append(", ");
         }
         return s.toString();
     }

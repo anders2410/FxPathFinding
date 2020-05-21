@@ -5,8 +5,6 @@ import datastructures.JavaMinPriorityQueue;
 import datastructures.TreeSetMinPriorityQueue;
 import paths.strategy.GetPQueueStrategy;
 
-import java.util.Comparator;
-
 public class GetPQueueGenerator {
 
     public static GetPQueueStrategy getJavaQueue() {

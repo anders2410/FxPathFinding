@@ -46,9 +46,9 @@ public class PathExperiments {
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
-        checkResultsValid(results);
-        results.forEach(r -> printPair(r.get(DIJKSTRA)));
-        results.forEach(r -> System.out.print(r.get(DIJKSTRA).pathDistance + ", "));
+        results.forEach(r -> printPair(r.get(BI_REACH_LANDMARKS)));
+        System.out.println();
+        results.forEach(r -> System.out.print(r.get(BI_REACH_LANDMARKS).pathDistance + ", "));
         System.out.println();
     }
 
@@ -67,10 +67,38 @@ public class PathExperiments {
     }
 
     @Test
+    public void testOutDegrees() {
+        List<String> fileNames = Arrays.asList("faroe-islands", "montenegro", "malta", "estonia", "georgia");
+        for (String name : fileNames) {
+            name = name + "-latest";
+            graphIO = new GraphIO(true);
+            if (!graphIO.fileExtensionExists(name, "-graph.tmp")) {
+                System.out.println(name + " doesn't exist");
+                fail();
+            }
+            graphIO.loadGraph(name);
+            ModelUtil modelUtil = new ModelUtil(graphIO.getGraph());
+            System.out.println(name + ": " + modelUtil.averageOutDegree());
+        }
+    }
+
+    @Test
     public void testCorrelationBetweenRuntimeAndScans() {
         int testCases = 10000;
-        setUp("denmark-latest.osm.pbf");
+        setUp("estonia-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
+                DIJKSTRA,
+                BI_DIJKSTRA,
+                A_STAR,
+                BI_A_STAR_CONSISTENT,
+                A_STAR_LANDMARKS,
+                BI_A_STAR_LANDMARKS,
+                REACH,
+                BI_REACH,
+                REACH_A_STAR,
+                BI_REACH_A_STAR,
+                REACH_LANDMARKS,
+                BI_REACH_LANDMARKS,
                 CONTRACTION_HIERARCHIES
         );
         seed = 0;
@@ -86,16 +114,15 @@ public class PathExperiments {
     @Test
     public void testPrintListUniWins() {
         int testCases = 10000;
-        setUp("estonia-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                A_STAR,
-                BI_A_STAR_CONSISTENT
-
+                DIJKSTRA,
+                BI_DIJKSTRA
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
-        List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(A_STAR).nodesScanned < r.get(BI_A_STAR_CONSISTENT).nodesScanned).collect(Collectors.toList());
-        ud_dijkstra_wins.forEach(r -> printPair(r.get(A_STAR)));
+        List<Map<AlgorithmMode, TestManyRes>> ud_dijkstra_wins = results.stream().filter(r -> r.get(DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
+        ud_dijkstra_wins.forEach(r -> printPair(r.get(DIJKSTRA)));
     }
 
     @Test
@@ -154,6 +181,47 @@ public class PathExperiments {
         System.out.println("Dijkstra better than BiDijkstra in " + dijkstra_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("A* better than BiA* in " + astar_lm_overlap.size() + " cases, where ALT better than BiALT");
         System.out.println("Done");
+    }
+
+    @Test
+    public void testFlipUniSearch() {
+        setUp("malta-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR);
+        int testCases = 5000;
+        System.out.println("Experiment on " + testCases + " cases begun.");
+
+        Map<AlgorithmMode, Pair<List<TestManyRes>, List<TestManyRes>>> resMap = new HashMap<>();
+        for (AlgorithmMode mode : modesToTest) {
+            resMap.put(mode, new Pair<>(new ArrayList<>(), new ArrayList<>()));
+        }
+
+        for (int i = 1; i < testCases + 1; i++) {
+            if (i % 200 == 0) {
+                System.out.println("Ran " + i + " shortest paths");
+            }
+            for (AlgorithmMode mode : modesToTest) {
+                Pair<List<TestManyRes>, List<TestManyRes>> individualPair = resMap.get(mode);
+                SSSP.allowFlip = false;
+                individualPair.getKey().add(convertToTestManyRes(SSSP.randomPath(mode)));
+                SSSP.allowFlip = true;
+                individualPair.getValue().add(convertToTestManyRes(SSSP.randomPath(mode)));
+                SSSP.allowFlip = false;
+            }
+            seed++;
+        }
+
+        final Map<AlgorithmMode, Pair<Integer, Integer>> avg_pair_result = new HashMap<>();
+        resMap.forEach((m, p) -> {
+            Integer avg_no_flip = p.getKey().stream().map(r -> r.nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+            Integer avg_flip = p.getValue().stream().map(r -> r.nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+            avg_pair_result.put(m, new Pair<>(avg_no_flip, avg_flip));
+        });
+
+        for (AlgorithmMode mode : modesToTest) {
+            System.out.println(Util.algorithmNames.get(mode));
+            System.out.println("Without flip an average amount of " + avg_pair_result.get(mode).getKey() + " nodes were scanned");
+            System.out.println("With flip an average amount of " + avg_pair_result.get(mode).getValue() + " nodes were scanned");
+        }
     }
 
     private void printPair(TestManyRes res) {
@@ -252,7 +320,7 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("malta-latest.osm.pbf");
+        setUp("poland-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -266,20 +334,22 @@ public class PathExperiments {
         pairList.add(biDijkstraPair);
         pairList.add(biAStarPair);
         pairList.add(ALTPair);
-        pairList.add(ReachPair);
+        //pairList.add(ReachPair);
         pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testAlgorithm(data);
-            printInSections(data, 0, 5, 10, 15, 20, true);
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            printInSections(data, 0, 125, 250, 375, 500);
         }
     }
 
     private void testAlgorithm(TestDataExtra data) {
         int i = 0;
-        while (i < 1000) {
-            if (i % 1000 == 0) {
+        while (i < 10000) {
+            if (i % 500 == 0) {
                 System.out.println("Running test nr: " + i);
             }
             SSSP.seed++;
@@ -289,20 +359,12 @@ public class PathExperiments {
         }
     }
 
-    public void printInSections(TestDataExtra data, int initial, int second, int third, int fourth, int fifth, boolean isInKM) {
-        if (isInKM) {
-            System.out.println(data.calculateValuesInPathKMRange(initial, second));
-            System.out.println(data.calculateValuesInPathKMRange(second + 1, third));
-            System.out.println(data.calculateValuesInPathKMRange(third + 1, fourth));
-            System.out.println(data.calculateValuesInPathKMRange(fourth + 1, fifth));
-            System.out.println(data.calculateValuesInPathKMRange(fifth + 1, Integer.MAX_VALUE - 1));
-        } else {
-            System.out.println(data.calculateValuesInPathSizeRange(initial, second));
-            System.out.println(data.calculateValuesInPathSizeRange(second + 1, third));
-            System.out.println(data.calculateValuesInPathSizeRange(third + 1, fourth));
-            System.out.println(data.calculateValuesInPathSizeRange(fourth + 1, fifth));
-            System.out.println(data.calculateValuesInPathSizeRange(fifth + 1, Integer.MAX_VALUE - 1));
-        }
+    public void printInSections(TestDataExtra data, int initial, int second, int third, int fourth, int fifth) {
+        System.out.println(data.calculateValuesInPathKMRange(initial, second));
+        System.out.println(data.calculateValuesInPathKMRange(second, third));
+        System.out.println(data.calculateValuesInPathKMRange(third, fourth));
+        System.out.println(data.calculateValuesInPathKMRange(fourth, fifth));
+        System.out.println(data.calculateValuesInPathKMRange(fifth, Integer.MAX_VALUE - 1));
     }
 
     @Test
@@ -460,19 +522,21 @@ class TestDataExtra {
         pathLengthKMList.add(res.d);
     }
 
-    protected Integer getAverageVisited() {
-        int total = nodesVisitedList.stream().mapToInt(i -> i).sum();
-        return total / pathLengthNodesList.size();
+    protected Long getAverageVisited() {
+        long total = nodesVisitedList.stream().mapToLong(i -> i).sum();
+        System.out.println(total);
+        System.out.println(nodesVisitedList.size());
+        return total / nodesVisitedList.size();
     }
 
     protected Long getAverageRuntime() {
         return totalRuntime / pathLengthNodesList.size();
     }
 
-    protected String calculateValuesInPathSizeRange(int from, int to) {
-        int total = 0;
-        int count = 0;
-        int max = 0;
+    /*protected String calculateValuesInPathSizeRange(int from, int to) {
+        long total = 0;
+        long count = 0;
+        long max = 0;
         for (int i = 0; i < pathLengthNodesList.size(); i++) {
             Integer pathLength = pathLengthNodesList.get(i);
             if (pathLength >= from && pathLength < to + 1) {
@@ -490,15 +554,15 @@ class TestDataExtra {
                 "." + " average nodes visited: " +
                 (total / count) + ", max visited: " +
                 max;
-    }
+    }*/
 
     protected String calculateValuesInPathKMRange(int from, int to) {
-        int total = 0;
-        int count = 0;
-        int max = 0;
+        long total = 0;
+        long count = 0;
+        long max = 0;
         for (int i = 0; i < pathLengthKMList.size(); i++) {
             Double pathLengthInKM = pathLengthKMList.get(i);
-            if (pathLengthInKM >= from && pathLengthInKM < to + 1) {
+            if (from <= pathLengthInKM && pathLengthInKM < to) {
                 if (nodesVisitedList.get(i) > max) {
                     max = nodesVisitedList.get(i);
                 }
@@ -506,7 +570,7 @@ class TestDataExtra {
                 count++;
             }
         }
-
+        System.out.println(count);
         return name +
                 " in range: " + from +
                 " to " + to +

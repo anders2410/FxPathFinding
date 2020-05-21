@@ -16,7 +16,7 @@ import static paths.SSSP.seed;
 
 public class ContractionHierarchiesTest {
     Graph originalGraph;
-    String fileName = "estonia-latest.osm.pbf";
+    String fileName = "malta-latest.osm.pbf";
     GraphIO graphIO;
     ContractionHierarchies contractionHierarchies;
     CHResult CHResult;

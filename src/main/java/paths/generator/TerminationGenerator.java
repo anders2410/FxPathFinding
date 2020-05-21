@@ -58,9 +58,7 @@ public class TerminationGenerator {
                     SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
                 return backwardsShouldStop && forwardShouldStop;
             }
-        }
-
-                ;
+        };
     }
 
     public static TerminationStrategy getKeyAboveGoalStrategy() {
