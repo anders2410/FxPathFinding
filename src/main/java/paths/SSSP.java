@@ -108,9 +108,11 @@ public class SSSP {
             List<List<Edge>> revAdjList = getRevAdjList();
             setAdjList(revAdjList);
             setRevAdjList(adjList);
-        } else {
+        } else if (biDirectional){
             adjList = graph.getAdjList();
             revAdjList = graph.getReverse(adjList);
+        } else {
+            adjList = graph.getAdjList();
         }
     }
 

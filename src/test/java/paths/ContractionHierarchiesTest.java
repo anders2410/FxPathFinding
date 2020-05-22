@@ -107,7 +107,7 @@ public class ContractionHierarchiesTest {
         int algorithms = 1;
         matrix = new int[algorithms];
 
-        testCases = 10000;
+        testCases = 4000;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failList = new ArrayList<>();
