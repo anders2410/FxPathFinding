@@ -185,9 +185,9 @@ public class PathExperiments {
 
     @Test
     public void testFlipUniSearch() {
-        setUp("malta-latest.osm.pbf");
-        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR);
-        int testCases = 5000;
+        setUp("estonia-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR, A_STAR_LANDMARKS, REACH, REACH_A_STAR, REACH_LANDMARKS);
+        int testCases = 10000;
         System.out.println("Experiment on " + testCases + " cases begun.");
 
         Map<AlgorithmMode, Pair<List<TestManyRes>, List<TestManyRes>>> resMap = new HashMap<>();
@@ -320,7 +320,7 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("poland-latest.osm.pbf");
+        setUp("estonia-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -330,11 +330,11 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        pairList.add(dijkstraPair);
-        pairList.add(biDijkstraPair);
-        pairList.add(biAStarPair);
-        pairList.add(ALTPair);
-        //pairList.add(ReachPair);
+//        pairList.add(dijkstraPair);
+//        pairList.add(biDijkstraPair);
+//        pairList.add(biAStarPair);
+//        pairList.add(ALTPair);
+        pairList.add(ReachPair);
         pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
@@ -342,13 +342,15 @@ public class PathExperiments {
             testAlgorithm(data);
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
-            printInSections(data, 0, 125, 250, 375, 500);
+            // printInSections(data, 0, 125, 250, 375, 500);
         }
     }
 
     private void testAlgorithm(TestDataExtra data) {
+        int testCases = 100;
         int i = 0;
-        while (i < 10000) {
+        SSSP.seed = 1653;
+        while (i < testCases) {
             if (i % 500 == 0) {
                 System.out.println("Running test nr: " + i);
             }
@@ -524,8 +526,6 @@ class TestDataExtra {
 
     protected Long getAverageVisited() {
         long total = nodesVisitedList.stream().mapToLong(i -> i).sum();
-        System.out.println(total);
-        System.out.println(nodesVisitedList.size());
         return total / nodesVisitedList.size();
     }
 

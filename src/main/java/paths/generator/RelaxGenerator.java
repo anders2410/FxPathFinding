@@ -131,13 +131,19 @@ public class RelaxGenerator {
         return (edge, dir) -> {
             List<Integer> ranks = getCHResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
+                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
                 if (getScanned(revDir(dir)).contains(edge.to)) {
-                    double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
-                    if (pathLength < SSSP.getBestPathLengthSoFar()) {
-                        SSSP.setBestPathLengthSoFar(pathLength);
+                    if (pathLength < getBestPathLengthSoFar()) {
+                        setBestPathLengthSoFar(pathLength);
                     }
                 }
-                getBiDijkstra().relax(edge, dir);
+
+                if (pathLength < getGoalDistance()) {
+                    setGoalDistance(pathLength);
+                    setMiddlePoint(edge.to);
+                }
+
+                getDijkstra().relax(edge, dir);
             }
         };
     }

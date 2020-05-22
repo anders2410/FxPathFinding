@@ -30,9 +30,10 @@ public class ContractionHierarchiesTest {
         originalGraph = graphIO.getGraph();
         SSSP.setGraph(originalGraph);
 
-        contractionHierarchies = new ContractionHierarchies(originalGraph);
+        graphIO.loadPreCH(fileName);
+        /*contractionHierarchies = new ContractionHierarchies(originalGraph);
         CHResult = contractionHierarchies.preprocess();
-        SSSP.setCHResult(CHResult);
+        SSSP.setCHResult(CHResult);*/
 
         System.out.println("------------------------------ ORIGINAL GRAPH ----------------------------------------------------");
         System.out.println("Number of nodes: " + originalGraph.getNodeAmount());
@@ -42,8 +43,8 @@ public class ContractionHierarchiesTest {
     @Test
     public void testContractionHierarchiesIntegrated() {
         System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
-        System.out.println("Number of nodes: " + CHResult.getGraph().getNodeAmount());
-        System.out.println("Number of edges: " + CHResult.getGraph().getEdgeAmount());
+        System.out.println("Number of nodes: " + SSSP.getCHResult().getGraph().getNodeAmount());
+        System.out.println("Number of edges: " + SSSP.getCHResult().getGraph().getEdgeAmount());
 
 
         System.out.println("------------------------------ TESTING VS. DIJKSTRA -----------------------------------------------");
@@ -72,8 +73,8 @@ public class ContractionHierarchiesTest {
     @Test
     public void testContractionHierarchiesSinglePathIntegrated() {
         System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
-        System.out.println("Number of nodes: " + CHResult.getGraph().getNodeAmount());
-        System.out.println("Number of edges: " + CHResult.getGraph().getEdgeAmount());
+        System.out.println("Number of nodes: " + SSSP.getCHResult().getGraph().getNodeAmount());
+        System.out.println("Number of edges: " + SSSP.getCHResult().getGraph().getEdgeAmount());
 
 
         System.out.println("--------------------------- SINGLE INTEGRATED VS. DIJKSTRA -------------------------------");
@@ -84,8 +85,8 @@ public class ContractionHierarchiesTest {
         /*int source = 7726, 3059, 4408, 5087, 14830;
         int target = 5703, 12090, 14897, 8548, 14830;*/
 
-        int source = 5640;
-        int target = 4779;
+        int source = 18551;
+        int target = 10114;
 
         dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
         CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
@@ -106,7 +107,7 @@ public class ContractionHierarchiesTest {
         int algorithms = 1;
         matrix = new int[algorithms];
 
-        testCases = 100;
+        testCases = 10000;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failList = new ArrayList<>();

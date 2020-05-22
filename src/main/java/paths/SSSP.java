@@ -240,7 +240,6 @@ public class SSSP {
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);
         }
     }
