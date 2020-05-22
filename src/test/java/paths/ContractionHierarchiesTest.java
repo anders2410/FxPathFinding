@@ -16,7 +16,7 @@ import static paths.SSSP.seed;
 
 public class ContractionHierarchiesTest {
     Graph originalGraph;
-    String fileName = "estonia-latest.osm.pbf";
+    String fileName = "malta-latest.osm.pbf";
     GraphIO graphIO;
     ContractionHierarchies contractionHierarchies;
     CHResult CHResult;
@@ -106,7 +106,7 @@ public class ContractionHierarchiesTest {
         int algorithms = 1;
         matrix = new int[algorithms];
 
-        testCases = 10000;
+        testCases = 100;
         runtimes = new double[algorithms][testCases];
         i = 0;
         failList = new ArrayList<>();

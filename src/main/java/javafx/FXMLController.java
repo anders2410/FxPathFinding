@@ -115,6 +115,7 @@ public class FXMLController implements Initializable {
      * @param fileName file to load.
      */
     private void loadNewGraph(String fileName) {
+        isSCCGraph = false;
         onRightClick();
         if (fileName == null || fileName.equals("")) {
             return;
@@ -972,11 +973,11 @@ public class FXMLController implements Initializable {
         chooseAlgorithm(BI_A_STAR_LANDMARKS);
     }
 
-    private void chooseAlgorithm(AlgorithmMode dijkstra) {
+    private void chooseAlgorithm(AlgorithmMode algorithmMode) {
         if (currentOverlay == OverlayType.REACH) {
             currentOverlay = OverlayType.NONE;
         }
-        algorithmMode = dijkstra;
+        this.algorithmMode = algorithmMode;
         runAlgorithm();
         setAlgorithmLabels();
     }
@@ -1340,6 +1341,19 @@ public class FXMLController implements Initializable {
             overlayNodes2.add(graph.getNodeList().get(toIndex));
         }
     }
+    private float displayGetRadiusDialog() {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Input radius");
+        dialog.setContentText("Input radius here: ");
+        TextField textField = new TextField();
+        textField.setPromptText("radius");
+        dialog.getDialogPane().setContent(textField);
+        ButtonType okButton = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().add(okButton);
+        dialog.setResultConverter(buttonType -> textField.getText());
+        dialog.showAndWait();
+        return Float.parseFloat(dialog.getResult());
+    }
 
     public void handleClearLandmarks() {
         landmarksGenerator.clearLandmarks();
@@ -1404,12 +1418,13 @@ public class FXMLController implements Initializable {
     }
 
     public void handleGenerateDensities() {
+        float radius = displayGetRadiusDialog();
         Task<List<Integer>> generateDensitiesTask = new Task<>() {
             @Override
             protected List<Integer> call() {
                 ModelUtil modelUtil = new ModelUtil(graph);
                 modelUtil.setProgressListener(this::updateProgress);
-                return modelUtil.computeDensityMeasures(2);
+                return modelUtil.computeDensityMeasures(radius);
             }
         };
         generateDensitiesTask.setOnSucceeded(e -> {

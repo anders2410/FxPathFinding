@@ -62,7 +62,6 @@ public class CollapsingStrategyFull implements CollapsingStrategy {
                     Node intermediateNode2 = nodeMap.get(Long.toString(way.getNodeId(j)));
                     lastNodeId = Long.toString(way.getNodeId(j));
                     cum_Dist += distanceStrategy.apply(intermediateNode1, intermediateNode2);
-                    cum_Dist += distanceStrategy.apply(intermediateNode1, intermediateNode2);
                     continue;
                 }
 

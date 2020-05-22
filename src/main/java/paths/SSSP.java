@@ -75,8 +75,14 @@ public class SSSP {
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
-        source = sourceP;
-        target = targetP;
+        if (allowFlip && densityMeasures != null && densityMeasures.get(sourceP) > densityMeasures.get(targetP)) {
+            SSSP.target = sourceP;
+            SSSP.source = targetP;
+        } else {
+            SSSP.source = sourceP;
+            SSSP.target = targetP;
+            allowFlip = false;
+        }
     }
 
     private static void initDataStructures() {
@@ -93,9 +99,15 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
+
         if (mode == CONTRACTION_HIERARCHIES) {
             adjList = CHGraph.getAdjList();
             revAdjList = CHGraph.getReverse(adjList);
+        } else if (allowFlip) {
+            List<List<Edge>> adjList = getAdjList();
+            List<List<Edge>> revAdjList = getRevAdjList();
+            setAdjList(revAdjList);
+            setRevAdjList(adjList);
         } else {
             adjList = graph.getAdjList();
             revAdjList = graph.getReverse(adjList);
@@ -156,6 +168,7 @@ public class SSSP {
         factoryMap.put(CONTRACTION_HIERARCHIES, new ContractionHierarchiesFactory());
         factoryMap.put(SINGLE_TO_ALL, new OneToAllDijkstra());
         factoryMap.put(BOUNDED_SINGLE_TO_ALL, new BoundedOneToAll());
+        factoryMap.put(CONTRACTION_HIERARCHIES_LANDMARKS, new ContractionHierarchiesLandmarksFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -185,11 +198,12 @@ public class SSSP {
         return biDirectional ? biDirectional() : oneDirectional();
     }
 
-    private static ShortestPathResult oneDirectional() {
-        List<List<Edge>> adjList = graph.getAdjList();
-        queueA.insert(source);
+    public static boolean allowFlip = false;
 
+    private static ShortestPathResult oneDirectional() {
+        queueA.insert(source);
         long startTime = System.nanoTime();
+
         while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
@@ -201,16 +215,13 @@ public class SSSP {
     }
 
     private static ShortestPathResult biDirectional() {
-
-
-        long startTime = System.nanoTime();
-
         queueA.insert(source);
         queueB.insert(target);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
 
+        long startTime = System.nanoTime();
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {
