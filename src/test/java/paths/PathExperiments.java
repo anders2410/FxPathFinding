@@ -40,7 +40,7 @@ public class PathExperiments {
     @Test
     public void testPrintAllTests() {
         int testCases = 10000;
-        setUp("denmark-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 BI_REACH_LANDMARKS
         );
@@ -102,7 +102,8 @@ public class PathExperiments {
                 CONTRACTION_HIERARCHIES
         );
         seed = 0;
-        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        List<Map<AlgorithmMode, TestManyRes>> results = testManyMinTime(modesToTest, testCases);
+
         for (AlgorithmMode mode : modesToTest) {
             System.out.print(Util.algorithmNames.get(mode) + ": ");
             results.forEach(r -> System.out.print(r.get(mode).nodesScanned + "," + r.get(mode).runTime + ":"));
@@ -186,7 +187,7 @@ public class PathExperiments {
     @Test
     public void testFlipUniSearch() {
         setUp("estonia-latest.osm.pbf");
-        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR, A_STAR_LANDMARKS, REACH, REACH_A_STAR, REACH_LANDMARKS);
+        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR);
         int testCases = 10000;
         System.out.println("Experiment on " + testCases + " cases begun.");
 
@@ -215,13 +216,30 @@ public class PathExperiments {
             Integer avg_no_flip = p.getKey().stream().map(r -> r.nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
             Integer avg_flip = p.getValue().stream().map(r -> r.nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
             avg_pair_result.put(m, new Pair<>(avg_no_flip, avg_flip));
-        });
 
-        for (AlgorithmMode mode : modesToTest) {
-            System.out.println(Util.algorithmNames.get(mode));
-            System.out.println("Without flip an average amount of " + avg_pair_result.get(mode).getKey() + " nodes were scanned");
-            System.out.println("With flip an average amount of " + avg_pair_result.get(mode).getValue() + " nodes were scanned");
-        }
+            System.out.println(Util.algorithmNames.get(m));
+            System.out.println("Without flip an average amount of " + avg_no_flip + " nodes were scanned. The following were better without flip:");
+            int counter = 0;
+            List<TestManyRes> key = p.getKey();
+            for (int i = 0; i < key.size(); i++) {
+                TestManyRes resNoFlip = key.get(i);
+                TestManyRes resFlip = p.getValue().get(i);
+                if (resNoFlip.nodesScanned < resFlip.nodesScanned) {
+                    counter++;
+                    printPair(resNoFlip);
+                }
+            }
+            System.out.println("\nWith flip an average amount of " + avg_flip + " nodes were scanned. The following were better with flip:");
+            for (int i = 0; i < key.size(); i++) {
+                TestManyRes resNoFlip = key.get(i);
+                TestManyRes resFlip = p.getValue().get(i);
+                if (resNoFlip.nodesScanned > resFlip.nodesScanned) {
+                    counter++;
+                    printPair(resNoFlip);
+                }
+            }
+            System.out.println();
+        });
     }
 
     private void printPair(TestManyRes res) {
@@ -240,6 +258,33 @@ public class PathExperiments {
                 }
             }
         }
+    }
+
+    private List<Map<AlgorithmMode, TestManyRes>> testManyMinTime(List<AlgorithmMode> modesToTest, int amount) {
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results1 = testMany(modesToTest, amount);
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results2 = testMany(modesToTest, amount);
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results3 = testMany(modesToTest, amount);
+
+        for (int i = 0; i < results1.size(); i++) {
+            Map<AlgorithmMode, TestManyRes> result1 = results1.get(i);
+            Map<AlgorithmMode, TestManyRes> result2 = results2.get(i);
+            Map<AlgorithmMode, TestManyRes> result3 = results3.get(i);
+            for (AlgorithmMode mode : modesToTest) {
+                assert result1.get(mode).from == result2.get(mode).from;
+                assert result2.get(mode).from == result3.get(mode).from;
+                assert result1.get(mode).to == result2.get(mode).to;
+                assert result2.get(mode).to == result3.get(mode).to;
+                double runTime1 = result1.get(mode).runTime;
+                double runTime2 = result2.get(mode).runTime;
+                double runTime3 = result3.get(mode).runTime;
+                result1.get(mode).runTime = Math.min(runTime1, Math.min(runTime2, runTime3));
+                assert result1.get(mode).runTime <= runTime1;
+            }
+        }
+        return results1;
     }
 
     private List<Map<AlgorithmMode, TestManyRes>> testMany(List<AlgorithmMode> modesToTest, int amount) {
