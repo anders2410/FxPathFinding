@@ -320,7 +320,7 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("estonia-latest.osm.pbf");
+        setUp("denmark-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -334,7 +334,7 @@ public class PathExperiments {
 //        pairList.add(biDijkstraPair);
 //        pairList.add(biAStarPair);
 //        pairList.add(ALTPair);
-        pairList.add(ReachPair);
+//        pairList.add(ReachPair);
         pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
@@ -347,9 +347,8 @@ public class PathExperiments {
     }
 
     private void testAlgorithm(TestDataExtra data) {
-        int testCases = 100;
+        int testCases = 10000;
         int i = 0;
-        SSSP.seed = 1653;
         while (i < testCases) {
             if (i % 500 == 0) {
                 System.out.println("Running test nr: " + i);

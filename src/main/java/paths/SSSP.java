@@ -28,7 +28,9 @@ public class SSSP {
     public static int seed = 0;
 
     private static Graph graph;
+    private static List<List<Edge>> originalRevAdjList;
     private static Graph CHGraph;
+    private static List<List<Edge>> CHRevAdjList;
     private static GraphInfo graphInfo;
     private static Landmarks landmarks;
     private static int source, target;
@@ -100,19 +102,17 @@ public class SSSP {
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
 
-        if (mode == CONTRACTION_HIERARCHIES) {
-            adjList = CHGraph.getAdjList();
-            revAdjList = CHGraph.getReverse(adjList);
-        } else if (allowFlip) {
+        if (allowFlip) {
             List<List<Edge>> adjList = getAdjList();
             List<List<Edge>> revAdjList = getRevAdjList();
             setAdjList(revAdjList);
             setRevAdjList(adjList);
-        } else if (biDirectional){
-            adjList = graph.getAdjList();
-            revAdjList = graph.getReverse(adjList);
+        } else if (mode == CONTRACTION_HIERARCHIES) {
+            adjList = CHGraph.getAdjList();
+            revAdjList = CHRevAdjList;
         } else {
             adjList = graph.getAdjList();
+            revAdjList = originalRevAdjList;
         }
     }
 
@@ -367,6 +367,8 @@ public class SSSP {
 
     public static void setGraph(Graph graph) {
         SSSP.graph = graph;
+        SSSP.adjList = graph.getAdjList();
+        SSSP.originalRevAdjList = graph.getReverse(adjList);
     }
 
     public static void setGraphInfo(GraphInfo graphInfo) {
@@ -455,6 +457,8 @@ public class SSSP {
 
     public static void setCHResult(CHResult chResult) {
         SSSP.chResult = chResult;
+        SSSP.CHGraph = chResult.getGraph();
+        SSSP.CHRevAdjList = CHGraph.getReverse(CHGraph.getAdjList());
     }
 
     public static void setCHGraph(Graph CHGraph) {

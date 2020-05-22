@@ -148,7 +148,7 @@ public class SSSPPBFTest {
         failMap = new HashMap<>();
         seed = 0;
         while (i < testCases) {
-            if (i % 100 == 0) {
+            if (i % 500 == 0) {
                 System.out.println("Conducted " + i + " tests");
             }
             seed++;
@@ -171,7 +171,7 @@ public class SSSPPBFTest {
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_LANDMARKS, 12);
             testSingle(distDijk, pathDijk, AlgorithmMode.CONTRACTION_HIERARCHIES, 13);
 
-            //Only interested in tests where path is atleast 100
+            //Only interested in tests where path is at least 100
             i++;
         }
         if (Arrays.equals(new int[algorithms], matrix)) {
@@ -184,7 +184,7 @@ public class SSSPPBFTest {
         runtimes[i2][i] = result.runTime;
         double dist = result.d;
         List<Integer> path = result.path;
-        if (Math.abs(dist - distDijk) > 0.00000000001 || !path.equals(pathDijk)) {
+        if (Math.abs(dist - distDijk) > 0.0000000000001 || !path.equals(pathDijk)) {
             System.out.println(mode + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
             matrix[i2]++;
             failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size() - 1));

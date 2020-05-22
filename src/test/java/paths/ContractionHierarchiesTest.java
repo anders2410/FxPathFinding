@@ -85,8 +85,8 @@ public class ContractionHierarchiesTest {
         /*int source = 7726, 3059, 4408, 5087, 14830;
         int target = 5703, 12090, 14897, 8548, 14830;*/
 
-        int source = 18551;
-        int target = 10114;
+        int source = 7726;
+        int target = 5703;
 
         dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
         CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
