@@ -186,7 +186,7 @@ public class PathExperiments {
 
     @Test
     public void testFlipUniSearch() {
-        setUp("estonia-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR);
         int testCases = 10000;
         System.out.println("Experiment on " + testCases + " cases begun.");
