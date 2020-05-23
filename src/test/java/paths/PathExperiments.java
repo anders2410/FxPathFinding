@@ -9,6 +9,10 @@ import org.junit.Test;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -64,6 +68,126 @@ public class PathExperiments {
         for (AlgorithmMode mode : modesToTest) {
             System.out.println(Util.algorithmNames.get(mode) + " has an average overlap of: " + results.stream().map(r -> r.get(mode).overlap).reduce(Integer::sum).orElse(0) / testCases);
         }
+    }
+
+    @Test
+    public void landmarkAmountExperiment() {
+        setUp("estonia-latest.osm.pbf");
+
+        int landmarksWanted = 1;
+        Landmarks lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 3;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 10;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 16;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 32;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 64 * 2;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 64 * 2 * 2;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 64 * 2 * 2;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+    }
+
+    private void testSaveGenerationMethod(int testSize, int landmarks, String landName) {
+        int j = 0;
+        String fileName = landName + landmarks + ".txt";
+        File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
+        f.getParentFile().mkdirs();
+        TestData data = new TestData();
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(f));
+            while (j < testSize) {
+                SSSP.seed++;
+                long minExecution = Long.MAX_VALUE;
+                ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+                ShortestPathResult res2 = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+                ShortestPathResult res3 = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+                minExecution = Math.min(minExecution, res.runTime);
+                minExecution = Math.min(minExecution, res2.runTime);
+                minExecution = Math.min(minExecution, res3.runTime);
+                data.addVisit(res.scannedNodesA.size());
+                data.addRuntime(minExecution);
+                String resultToSave = "(" + res.scannedNodesA.size() + "," + minExecution + "):";
+                out.write(resultToSave);
+                if (j % 10 == 0 && j != 0) out.newLine();
+                j++;
+            }
+            out.newLine();
+            out.write("Average Computation Time: " + data.getAverageRunningTime());
+            out.newLine();
+            out.write("Average Visits: " + data.getAverageVisits());
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Test
@@ -365,25 +489,25 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("malta-latest.osm.pbf");
+        setUp("denmark-latest.osm.pbf");
 
-        Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
-        Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
+        //Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
+        //Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
         Pair<String, AlgorithmMode> aStar = new Pair<>("ASTAR", A_STAR);
         Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
-        Pair<String, AlgorithmMode> ALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
-        Pair<String, AlgorithmMode> unitALT = new Pair<>("uniALT", A_STAR_LANDMARKS);
+        //Pair<String, AlgorithmMode> ALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
+        //Pair<String, AlgorithmMode> unitALT = new Pair<>("uniALT", A_STAR_LANDMARKS);
 
         //Pair<String, AlgorithmMode> ReachPair = new Pair<>("REAL", BI_REACH_LANDMARKS);
         // Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
         pairList.add(aStar);
-        pairList.add(dijkstraPair);
-        pairList.add(biDijkstraPair);
+        //pairList.add(dijkstraPair);
+        //pairList.add(biDijkstraPair);
         pairList.add(biAStarPair);
-        pairList.add(ALTPair);
-        pairList.add(unitALT);
+        //pairList.add(unitALT);
+        //pairList.add(ALTPair);
         //pairList.add(ReachPair);
         //pairList.add(CHPair);
 
@@ -399,6 +523,7 @@ public class PathExperiments {
     private void testAlgorithm(TestDataExtra data) {
         int testCases = 10000;
         int i = 0;
+        SSSP.seed = 0;
         while (i < testCases) {
             if (i % 500 == 0) {
                 System.out.println("Running test nr: " + i);
@@ -408,7 +533,6 @@ public class PathExperiments {
             data.addVisit(res);
             i++;
         }
-        SSSP.seed = 0;
     }
 
     public void printInSections(TestDataExtra data, int initial, int second, int third, int fourth, int fifth) {
