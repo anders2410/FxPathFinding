@@ -1,21 +1,21 @@
 package datastructures;
 
-public abstract interface MinPriorityQueue {
+public interface MinPriorityQueue {
 
-    public abstract boolean contains(Integer toFind);
+    boolean contains(Integer toFind);
 
-    public abstract int size();
+    int size();
 
-    public abstract boolean isEmpty();
+    boolean isEmpty();
 
-    public abstract Integer peek();
+    Integer peek();
 
-    public abstract Integer poll();
+    Integer poll();
 
-    public abstract void insert(Integer toAdd);
+    void insert(Integer toAdd);
 
-    public abstract void remove(Integer toDelete);
+    void remove(Integer toDelete);
 
-    public abstract void updatePriority(Integer toUpdate);
+    void updatePriority(Integer toUpdate);
 
 }

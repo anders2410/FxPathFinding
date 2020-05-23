@@ -3,7 +3,7 @@ package paths.factory;
 import paths.generator.*;
 import paths.strategy.*;
 
-public class BiLandmarksFactory implements AlgorithmFactory {
+public class ContractionHierarchiesLandmarksFactory implements AlgorithmFactory {
     @Override
     public boolean isBiDirectional() {
         return true;
@@ -21,31 +21,32 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public RelaxStrategy getRelaxStrategy() {
-        return RelaxGenerator.getBiDijkstra();
+        return RelaxGenerator.getCH();
     }
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getEmptyStoppingStrategy();
     }
+
     @Override
     public ScanPruningStrategy getScanPruningStrategy() {
-        return ScanPruningGenerator.getBasePruning();
+        return ScanPruningGenerator.getCHPruning();
     }
 
     @Override
     public ResultPackingStrategy getResultPackingStrategy() {
-        return ResultPackingGenerator.getStandardBiPack();
-
+        return ResultPackingGenerator.getCHPack();
     }
 
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
-        return PreProcessGenerator.getLandmarksPreStrategy();
+        return PreProcessGenerator.getCHLandmarksStrategy();
     }
 
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getAmountSeenStrategy();
+        return AlternationGenerator.getBiggestQueueStrategy();
     }
 }
+

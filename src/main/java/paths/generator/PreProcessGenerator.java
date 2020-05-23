@@ -25,6 +25,11 @@ public class PreProcessGenerator {
         };
     }
 
+    public static PreProcessStrategy getCHLandmarksStrategy() {
+        generateLandmarks();
+        return getCHPreStrategy();
+    }
+
     public static PreProcessStrategy getReachPreStrategy() {
         return () -> {
             if (SSSP.getReachBounds() == null) {

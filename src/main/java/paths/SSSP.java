@@ -28,7 +28,9 @@ public class SSSP {
     public static int seed = 0;
 
     private static Graph graph;
+    private static List<List<Edge>> originalRevAdjList;
     private static Graph CHGraph;
+    private static List<List<Edge>> CHRevAdjList;
     private static GraphInfo graphInfo;
     private static Landmarks landmarks;
     private static int source, target;
@@ -37,6 +39,8 @@ public class SSSP {
     private static int middlePoint;
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
+    private static List<Integer> densityMeasures;
+    private static List<Double> densityMeasuresNorm;
 
     // All the different strategies!
     private static boolean biDirectional;
@@ -68,12 +72,20 @@ public class SSSP {
     private static double bestPathLengthSoFar;
     private static ScanPruningStrategy scanPruningStrategy;
     private static ResultPackingStrategy resultPackingStrategy;
+    private static List<List<Edge>> adjList;
+    private static List<List<Edge>> revAdjList;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
-        source = sourceP;
-        target = targetP;
+        if (allowFlip && densityMeasuresNorm != null && densityMeasuresNorm.get(sourceP) > densityMeasuresNorm.get(targetP)) {
+            SSSP.target = sourceP;
+            SSSP.source = targetP;
+        } else {
+            SSSP.source = sourceP;
+            SSSP.target = targetP;
+            allowFlip = false;
+        }
     }
 
     private static void initDataStructures() {
@@ -90,6 +102,19 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
+
+        if (allowFlip) {
+            List<List<Edge>> adjList = getAdjList();
+            List<List<Edge>> revAdjList = getRevAdjList();
+            setAdjList(revAdjList);
+            setRevAdjList(adjList);
+        } else if (mode == CONTRACTION_HIERARCHIES) {
+            adjList = CHGraph.getAdjList();
+            revAdjList = CHRevAdjList;
+        } else {
+            adjList = graph.getAdjList();
+            revAdjList = originalRevAdjList;
+        }
     }
 
     private static double[] initHeuristicValues(int nodeAmount) {
@@ -131,6 +156,7 @@ public class SSSP {
         factoryMap.put(DIJKSTRA, new DijkstraFactory());
         factoryMap.put(BI_DIJKSTRA, new BiDijkstraFactory());
         factoryMap.put(BI_DIJKSTRA_SAME_DIST, new BiDijkstraSameDistFactory());
+        factoryMap.put(BI_DIJKSTRA_DENSITY, new BiDijkstraDensityFactory());
         factoryMap.put(A_STAR, new AStarFactory());
         factoryMap.put(BI_A_STAR_CONSISTENT, new BiAStarMakeConsistentFactory());
         factoryMap.put(BI_A_STAR_SYMMETRIC, new BiAStarSymmetricFactory());
@@ -145,6 +171,7 @@ public class SSSP {
         factoryMap.put(CONTRACTION_HIERARCHIES, new ContractionHierarchiesFactory());
         factoryMap.put(SINGLE_TO_ALL, new OneToAllDijkstra());
         factoryMap.put(BOUNDED_SINGLE_TO_ALL, new BoundedOneToAll());
+        factoryMap.put(CONTRACTION_HIERARCHIES_LANDMARKS, new ContractionHierarchiesLandmarksFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -164,7 +191,7 @@ public class SSSP {
 
     // Path finding
     public static ShortestPathResult findShortestPath(int sourceP, int targetP, AlgorithmMode modeP) {
-        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL) {
+        if (sourceP == targetP && modeP != BOUNDED_SINGLE_TO_ALL && modeP != SINGLE_TO_ALL) {
             return new ShortestPathResult();
         }
         applyFactory(factoryMap.get(modeP));
@@ -174,42 +201,30 @@ public class SSSP {
         return biDirectional ? biDirectional() : oneDirectional();
     }
 
-    private static ShortestPathResult oneDirectional() {
-        long startTime = System.nanoTime();
-        List<List<Edge>> adjList = graph.getAdjList();
-        queueA.insert(source);
+    public static boolean allowFlip = false;
 
-        while (!queueA.isEmpty()) {
+    private static ShortestPathResult oneDirectional() {
+        queueA.insert(source);
+        long startTime = System.nanoTime();
+
+        while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
             if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = endTime - startTime;
         return resultPackingStrategy.packResult(duration);
     }
 
     private static ShortestPathResult biDirectional() {
-        long startTime = System.nanoTime();
-
-        List<List<Edge>> adjList;
-        List<List<Edge>> revAdjList;
-
-        // TODO: 11/05/2020 Should we fix this?
-        if (mode == CONTRACTION_HIERARCHIES) {
-            adjList = CHGraph.getAdjList();
-            revAdjList = CHGraph.getReverse(adjList);
-        } else {
-            adjList = graph.getAdjList();
-            revAdjList = graph.getReverse(adjList);
-        }
-
         queueA.insert(source);
         queueB.insert(target);
 
         goalDistance = Double.MAX_VALUE;
         middlePoint = -1;
 
+        long startTime = System.nanoTime();
         // Both queues need to be empty or an intersection has to be found in order to exit the while loop.
         while (!terminationStrategy.checkTermination(goalDistance) && (!queueA.isEmpty() || !queueB.isEmpty())) {
             if (alternationStrategy.check()) {
@@ -219,7 +234,7 @@ public class SSSP {
             }
         }
         long endTime = System.nanoTime();
-        long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
+        long duration = endTime - startTime;
         return resultPackingStrategy.packResult(duration);
     }
 
@@ -228,14 +243,13 @@ public class SSSP {
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
-            /*assert !getScanned(revDir(dir)).contains(edge.to);*/ // By no scan overlap-theorem
             getRelaxStrategy(dir).relax(edge, dir);
         }
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
-        applyFactory(new DijkstraFactory());
-        initFields(DIJKSTRA, sourceP, 0);
+        applyFactory(factoryMap.get(SINGLE_TO_ALL));
+        initFields(SINGLE_TO_ALL, sourceP, 0);
         initDataStructures();
         long startTime = System.nanoTime();
         List<List<Edge>> adjList = graph.getAdjList();
@@ -243,9 +257,9 @@ public class SSSP {
         while (!queueA.isEmpty()) {
             takeStep(adjList, A);
         }
+        List<Integer> shortestPath = extractPath(pathMapA, source, target);
         long endTime = System.nanoTime();
         long duration = TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS);
-        List<Integer> shortestPath = extractPath(pathMapA, source, target);
         return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
     }
 
@@ -354,6 +368,8 @@ public class SSSP {
 
     public static void setGraph(Graph graph) {
         SSSP.graph = graph;
+        SSSP.adjList = graph.getAdjList();
+        SSSP.originalRevAdjList = graph.getReverse(adjList);
     }
 
     public static void setGraphInfo(GraphInfo graphInfo) {
@@ -442,6 +458,8 @@ public class SSSP {
 
     public static void setCHResult(CHResult chResult) {
         SSSP.chResult = chResult;
+        SSSP.CHGraph = chResult.getGraph();
+        SSSP.CHRevAdjList = CHGraph.getReverse(CHGraph.getAdjList());
     }
 
     public static void setCHGraph(Graph CHGraph) {
@@ -467,5 +485,38 @@ public class SSSP {
     public static void setEdgeWeightStrategy(Function<Edge, Double> edgeWeightStrategy) {
         RelaxGenerator.setEdgeWeightStrategy(edgeWeightStrategy);
         SSSP.edgeWeightStrategy = edgeWeightStrategy;
+    }
+
+    public static void setDensityMeasures(List<Integer> densityMeasures) {
+        SSSP.densityMeasures = densityMeasures;
+        int maxDens = densityMeasures.stream().max(Integer::compareTo).orElse(1);
+        densityMeasuresNorm = new ArrayList<>();
+        for (int density : densityMeasures) {
+            densityMeasuresNorm.add((double)density/maxDens);
+        }
+    }
+
+    public static List<Integer> getDensityMeasures() {
+        return densityMeasures;
+    }
+
+    public static List<Double> getDensityMeasuresNorm() {
+        return densityMeasuresNorm;
+    }
+
+    public static List<List<Edge>> getAdjList() {
+        return adjList;
+    }
+
+    public static void setAdjList(List<List<Edge>> adjList) {
+        SSSP.adjList = adjList;
+    }
+
+    public static List<List<Edge>> getRevAdjList() {
+        return revAdjList;
+    }
+
+    public static void setRevAdjList(List<List<Edge>> revAdjList) {
+        SSSP.revAdjList = revAdjList;
     }
 }

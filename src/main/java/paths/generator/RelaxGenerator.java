@@ -39,8 +39,9 @@ public class RelaxGenerator {
     public static RelaxStrategy getBiDijkstraWithEdgePrune() {
         return (edge, dir) -> {
             if (!getScanned(revDir(dir)).contains(edge.to)) {
-                getBiDijkstra().relax(edge, dir);
+                getDijkstra().relax(edge, dir);
             }
+            updateGoalDist(edge, dir);
         };
     }
 
@@ -64,7 +65,6 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBiReachAStar() {
         return (edge, dir) -> {
-            if (getScanned(revDir(dir)).contains(edge.to)) return;
             /*List<Double> bounds = getReachBounds();
             double reachBound = bounds.get(edge.to);
             boolean distBiggerThanReach = getNodeDist(dir).get(edge.from) > reachBound && !(Math.abs(reachBound - getNodeDist(dir).get(edge.from)) <= precision);
@@ -131,13 +131,19 @@ public class RelaxGenerator {
         return (edge, dir) -> {
             List<Integer> ranks = getCHResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
+                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
                 if (getScanned(revDir(dir)).contains(edge.to)) {
-                    double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
-                    if (pathLength < SSSP.getBestPathLengthSoFar()) {
-                        SSSP.setBestPathLengthSoFar(pathLength);
+                    if (pathLength < getBestPathLengthSoFar()) {
+                        setBestPathLengthSoFar(pathLength);
                     }
                 }
-                getBiDijkstra().relax(edge, dir);
+
+                if (pathLength < getGoalDistance()) {
+                    setGoalDistance(pathLength);
+                    setMiddlePoint(edge.to);
+                }
+
+                getDijkstra().relax(edge, dir);
             }
         };
     }

@@ -58,9 +58,7 @@ public class TerminationGenerator {
                     SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
                 return backwardsShouldStop && forwardShouldStop;
             }
-        }
-
-                ;
+        };
     }
 
     public static TerminationStrategy getKeyAboveGoalStrategy() {
@@ -91,6 +89,10 @@ public class TerminationGenerator {
 
     public static TerminationStrategy getEmptyStoppingStrategy() {
         return (goalDist) -> false;
+    }
+
+    public static TerminationStrategy getBoundedStoppingStrategy() {
+        return goalDistance -> !(getNodeDist(A).get(getQueue(A).peek()) < SSSP.getSingleToAllBound());
     }
 
     public static TerminationStrategy getStrongConHeuristicTermination() {
