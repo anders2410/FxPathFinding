@@ -185,10 +185,20 @@ public class PathExperiments {
     }
 
     @Test
+    public void testGenReachDensity() {
+        setUp("estonia-latest.osm.pbf");
+        ModelUtil modelUtil = new ModelUtil(graph);
+        List<Integer> reachDensities = modelUtil.computeDensityMeasuresReach(8, SSSP.getReachBounds());
+        GraphIO graphIO = new GraphIO(true);
+        graphIO.storeDensitiesReach(fileName, reachDensities);
+    }
+
+    @Test
     public void testFlipUniSearch() {
-        setUp("malta-latest.osm.pbf");
-        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR);
-        int testCases = 10000;
+        setUp("estonia-latest.osm.pbf");
+        SSSP.setDensityMeasures(new GraphIO(true).loadDensitiesReach(fileName));
+        List<AlgorithmMode> modesToTest = Arrays.asList(REACH);
+        int testCases = 1000;
         System.out.println("Experiment on " + testCases + " cases begun.");
 
         Map<AlgorithmMode, Pair<List<TestManyRes>, List<TestManyRes>>> resMap = new HashMap<>();
@@ -240,6 +250,30 @@ public class PathExperiments {
             }
             System.out.println();
         });
+    }
+
+    @Test
+    public void testBiDirDensity() {
+        int testCases = 1000;
+        setUp("estonia-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                BI_DIJKSTRA,
+                BI_DIJKSTRA_DENSITY
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        List<Map<AlgorithmMode, TestManyRes>> density_wins = results.stream().filter(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> amount_wins = results.stream().filter(r -> r.get(BI_DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA_DENSITY).nodesScanned).collect(Collectors.toList());
+        double avg_dens = (double) results.stream().map(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+        System.out.println("Bidijkstra with density and amount alternation won " + (float) 100*density_wins.size()/testCases + "%");
+        System.out.println("and scanned " + avg_dens + " nodes on average.");
+        density_wins.forEach(r -> printPair(r.get(BI_DIJKSTRA)));
+        System.out.println();
+        double avg_amount = (double) results.stream().map(r -> r.get(BI_DIJKSTRA).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+        System.out.println("Bidijkstra with amount alternation won " + (float) 100*amount_wins.size()/testCases + "%");
+        System.out.println("and scanned " + avg_amount + " nodes on average.");
+        amount_wins.forEach(r -> printPair(r.get(BI_DIJKSTRA)));
+        System.out.println();
     }
 
     private void printPair(TestManyRes res) {

@@ -32,7 +32,18 @@ public class AlternationGenerator {
             Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
             if (aPeek == null) return false;
             if (bPeek == null) return true;
-            return getDensityMeasures().get(aPeek) < getDensityMeasures().get(bPeek);
+            return getDensityMeasuresNorm().get(aPeek) < getDensityMeasuresNorm().get(bPeek);
+        };
+    }
+
+    public static AlternationStrategy getDensityTimesAmountSeenStrategy(double densityInfluence) {
+        return () -> {
+            Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
+            if (aPeek == null) return false;
+            if (bPeek == null) return true;
+            double measureA = Math.sqrt(getQueue(A).size() + getScanned(A).size())*(1 - densityInfluence + densityInfluence * getDensityMeasuresNorm().get(aPeek));
+            double measureB = Math.sqrt(getQueue(B).size() + getScanned(B).size())*(1 - densityInfluence + densityInfluence * getDensityMeasuresNorm().get(bPeek));
+            return measureA < measureB;
         };
     }
 

@@ -423,6 +423,45 @@ public class GraphIO {
         }
     }
 
+    public List<Integer> loadDensitiesReach(String fileName) {
+        try {
+            String densityFile = getTrimmedFolderSCCName(fileName) + "-rdensities.tmp";
+            if (!new File(densityFile).exists()) {
+                return null;
+            }
+            FileInputStream densityInput = new FileInputStream(densityFile);
+            InputStream buffer = new BufferedInputStream(densityInput);
+            ObjectInputStream reachStream = new ObjectInputStream(buffer);
+
+            List<Integer> densityMeasures = null;
+
+            try {
+                densityMeasures = (List<Integer>) reachStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            reachStream.close();
+            assert densityMeasures != null;
+            return densityMeasures;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void storeDensitiesReach(String fileName, List<Integer> densityMeasures) {
+        try {
+            String sccName = getTrimmedFolderSCCName(fileName) + "-rdensities.tmp";
+            FileOutputStream fos = new FileOutputStream(sccName);
+            OutputStream buffer = new BufferedOutputStream(fos);
+            ObjectOutputStream oos = new ObjectOutputStream(buffer);
+            oos.writeObject(densityMeasures);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static File selectMapFile(Stage stage) {
         if(true)
         return selectMapDirectory(stage);
