@@ -127,7 +127,7 @@ public class PathExperiments {
 
     @Test
     public void testCompareUniAndBiDir() {
-        int testCases = 10000;
+        int testCases = 1000;
         setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
@@ -320,29 +320,34 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("poland-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
+        Pair<String, AlgorithmMode> aStar = new Pair<>("ASTAR", A_STAR);
         Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
         Pair<String, AlgorithmMode> ALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
-        Pair<String, AlgorithmMode> ReachPair = new Pair<>("REAL", BI_REACH_LANDMARKS);
-        Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> unitALT = new Pair<>("uniALT", A_STAR_LANDMARKS);
+
+        //Pair<String, AlgorithmMode> ReachPair = new Pair<>("REAL", BI_REACH_LANDMARKS);
+        // Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
+        pairList.add(aStar);
         pairList.add(dijkstraPair);
         pairList.add(biDijkstraPair);
         pairList.add(biAStarPair);
         pairList.add(ALTPair);
+        pairList.add(unitALT);
         //pairList.add(ReachPair);
-        pairList.add(CHPair);
+        //pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testAlgorithm(data);
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
-            printInSections(data, 0, 125, 250, 375, 500);
+            // printInSections(data, 0, 125, 250, 375, 500);
         }
     }
 
@@ -357,6 +362,7 @@ public class PathExperiments {
             data.addVisit(res);
             i++;
         }
+        SSSP.seed = 0;
     }
 
     public void printInSections(TestDataExtra data, int initial, int second, int third, int fourth, int fifth) {
@@ -383,14 +389,15 @@ public class PathExperiments {
                 j++;
             }
         }
-        System.out.println(data.averageRuntime / testSize);
+        System.out.println(data.totalRunningTime / testSize);
     }
 
 
     @Test
     public void landmarksComparisonTest() {
         setUp("malta-latest.osm.pbf");
-        int testSize = 10000;
+        SSSP.setLandmarkArray(null);
+        int testSize = 1000;
 
         TestData maxData = new TestData();
         TestData avoidData = new TestData();
@@ -398,21 +405,48 @@ public class PathExperiments {
         TestData randomData = new TestData();
 
         Landmarks lm = new Landmarks(graph);
-        initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(300, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, randomData);
 
-        initTestParameters(lm, LandmarkMode.FARTHEST);
+        //initTestParameters(lm, LandmarkMode.FARTHEST);
+        lm.clearLandmarks();
+
+        lm.landmarksFarthest(300, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, farthestData);
 
-        initTestParameters(lm, LandmarkMode.AVOID);
+        // initTestParameters(lm, LandmarkMode.AVOID);
+        lm.clearLandmarks();
+
+        lm.landmarksAvoid(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, avoidData);
 
-        initTestParameters(lm, LandmarkMode.MAXCOVER);
+        //initTestParameters(lm, LandmarkMode.MAXCOVER);
+        lm.clearLandmarks();
+        lm.landmarksMaxCover(1, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, maxData);
-        System.out.println(maxData.averageVisit);
-        System.out.println(avoidData.averageVisit);
-        System.out.println(randomData.averageVisit);
-        System.out.println(farthestData.averageVisit);
+        System.out.println(maxData.getAverageRunningTime());
+        System.out.println(avoidData.getAverageRunningTime());
+        System.out.println(randomData.getAverageRunningTime());
+        System.out.println(farthestData.getAverageRunningTime());
+
+        System.out.println(maxData.getAverageVisits());
+        System.out.println(avoidData.getAverageVisits());
+        System.out.println(randomData.getAverageVisits());
+        System.out.println(farthestData.getAverageVisits());
     }
 
     private void initTestParameters(Landmarks lm, LandmarkMode maxcover) {
@@ -433,7 +467,7 @@ public class PathExperiments {
                 if (j % 1000 == 0) {
                     System.out.println("Runtime for case " + j + "(seed = " + SSSP.seed + ") = " + res.runTime);
                 }
-                data.addVisit(res.calculateAllUniqueVisits(graph));
+                data.addVisit(res.scannedNodesA.size());
                 data.addRuntime(res.runTime);
                 j++;
             }
@@ -468,26 +502,37 @@ public class PathExperiments {
 }
 
 class TestData {
-    protected int minVisits, maxVisits, averageVisit;
-    protected long averageRuntime;
+    protected int minVisits, maxVisits, visits;
+    protected long totalRunningTime;
     protected List<Integer> pathStartList;
+    private int runs;
 
     public TestData() {
         minVisits = Integer.MAX_VALUE;
+        runs = 0;
         maxVisits = 0;
-        averageVisit = 0;
-        averageRuntime = 0;
+        visits = 0;
+        totalRunningTime = 0;
         pathStartList = new ArrayList<>();
     }
 
     public void addVisit(int size) {
         if (size < minVisits && size != 0) minVisits = size;
         if (size > maxVisits) maxVisits = size;
-        averageVisit += size;
+        runs++;
+        visits += size;
+    }
+
+    public int getAverageVisits() {
+        return visits / runs;
+    }
+
+    public long getAverageRunningTime() {
+        return totalRunningTime / runs;
     }
 
     public void addRuntime(long runTime) {
-        averageRuntime += runTime;
+        totalRunningTime += runTime;
     }
 
     public void addStartingPoint(Integer integer) {
