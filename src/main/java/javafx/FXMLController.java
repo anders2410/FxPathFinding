@@ -315,13 +315,13 @@ public class FXMLController implements Initializable {
     private void drawOverlayNodes() {
         if (currentOverlay == OverlayType.NODEPAIRS) {
             gc.setStroke(Color.BLACK);
-            gc.setFill(Color.GREEN);
-            for (Node node : overlayNodes) {
-                drawNode(node);
-            }
-            gc.setFill(Color.DARKRED);
-            for (Node node : overlayNodes2) {
-                drawNode(node);
+            for (int i = 0; i < overlayNodes.size(); i++) {
+                gc.setFill(Color.GREEN);
+                drawNode(overlayNodes.get(i));
+                gc.setFill(Color.DARKRED);
+                if (i < overlayNodes2.size()) {
+                    drawNode(overlayNodes2.get(i));
+                }
             }
         }
     }
@@ -541,7 +541,7 @@ public class FXMLController implements Initializable {
     }
 
     private Color graduateColorHue(Color color, double amount, double max) {
-        return color.deriveColor(120 * (amount / max), 1, 1, 1);
+        return color.deriveColor(120 * (Math.sqrt(amount) / Math.sqrt(max)), 1, 1, 1);
     }
 
     private Edge findOppositeEdge(List<List<Edge>> adjList, int i, Edge edge) {

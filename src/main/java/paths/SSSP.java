@@ -40,6 +40,7 @@ public class SSSP {
     private static double[][] landmarkArray;
     private static List<Double> reachBounds;
     private static List<Integer> densityMeasures;
+    private static List<Double> densityMeasuresNorm;
 
     // All the different strategies!
     private static boolean biDirectional;
@@ -77,7 +78,7 @@ public class SSSP {
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
         mode = modeP;
-        if (allowFlip && densityMeasures != null && densityMeasures.get(sourceP) > densityMeasures.get(targetP)) {
+        if (allowFlip && densityMeasuresNorm != null && densityMeasuresNorm.get(sourceP) > densityMeasuresNorm.get(targetP)) {
             SSSP.target = sourceP;
             SSSP.source = targetP;
         } else {
@@ -488,10 +489,19 @@ public class SSSP {
 
     public static void setDensityMeasures(List<Integer> densityMeasures) {
         SSSP.densityMeasures = densityMeasures;
+        int maxDens = densityMeasures.stream().max(Integer::compareTo).orElse(1);
+        densityMeasuresNorm = new ArrayList<>();
+        for (int density : densityMeasures) {
+            densityMeasuresNorm.add((double)density/maxDens);
+        }
     }
 
     public static List<Integer> getDensityMeasures() {
         return densityMeasures;
+    }
+
+    public static List<Double> getDensityMeasuresNorm() {
+        return densityMeasuresNorm;
     }
 
     public static List<List<Edge>> getAdjList() {

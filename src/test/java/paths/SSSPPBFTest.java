@@ -130,18 +130,8 @@ public class SSSPPBFTest {
         matrix = new int[algorithms];
 //        List<Graph> graphs = new GraphUtil(graph).scc();
 //        graph = graphs.get(0);
-        SSSP.setGraph(graph);
-        Landmarks lm = new Landmarks(graph);
-        SSSP.setLandmarks(lm);
-        lm.landmarksMaxCover(16, true);
-        SSSP.setLandmarks(lm);
-
-        List<Double> bounds = graphIO.loadReach(fileName);
-        SSSP.setReachBounds(bounds);
-
-        CHResult CHResult = graphIO.loadCH(fileName);
-        SSSP.setCHResult(CHResult);
-        testCases = 10000;
+        new GraphIO(true).loadPreAll(fileName);
+        testCases = 1000;
         runtimes = new double[algorithms][testCases];
 
         i = 0;

@@ -1,12 +1,15 @@
 package model;
 
 import info_model.*;
+import paths.ABDir;
 import paths.ShortestPathResult;
+import paths.Util;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
 import static java.lang.Integer.max;
+import static paths.SSSP.*;
 
 public class ModelUtil {
 
@@ -64,14 +67,55 @@ public class ModelUtil {
         }
         nodeDist.set(source, 0.0);
         PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing(nodeDist::get));
-        for (Node node : graph.getNodeList()) {
-            priorityQueue.add(node.index);
-        }
+        priorityQueue.add(source);
         while (!priorityQueue.isEmpty() && (nodeDist.get(priorityQueue.peek()) < radius)) {
             Integer from = priorityQueue.poll();
             amountScanned++;
             for (Edge edge : graph.getAdjList().get(from)) {
                 if (nodeDist.get(from) + edge.d < nodeDist.get(edge.to)) {
+                    nodeDist.set(edge.to, nodeDist.get(from) + edge.d);
+                    priorityQueue.remove(edge.to);
+                    priorityQueue.add(edge.to);
+                }
+            }
+        }
+        return amountScanned;
+    }
+
+    /**
+     * @param radius to scan in kilometer from the nodes.
+     * @return list of amount of neighbours in radius for all nodes.
+     */
+    public List<Integer> computeDensityMeasuresReach(double radius, List<Double> reachBounds) {
+        List<Integer> densityMeasures = new ArrayList<>();
+        int nodeListSize = graph.getNodeAmount();
+        for (int i = 0; i < nodeListSize; i++) {
+            progressListener.accept((long) i, (long) nodeListSize);
+            densityMeasures.add(nodesWithinRadiusReach(i, radius, reachBounds));
+        }
+        return densityMeasures;
+    }
+
+    public int nodesWithinRadiusReach(int source, double radius, List<Double> reachBounds) {
+        int amountScanned = 0;
+        List<Double> nodeDist = new ArrayList<>();
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            nodeDist.add(Double.MAX_VALUE);
+        }
+        nodeDist.set(source, 0.0);
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing(nodeDist::get));
+        priorityQueue.add(source);
+        while (!priorityQueue.isEmpty() && (nodeDist.get(priorityQueue.peek()) < radius)) {
+            Integer from = priorityQueue.poll();
+            amountScanned++;
+            for (Edge edge : graph.getAdjList().get(from)) {
+                double newDist = nodeDist.get(from) + edge.d;
+                double reachBound = reachBounds.get(edge.to);
+                double projectedDistance = Util.sphericalDistance(graph.getNodeList().get(edge.to), graph.getNodeList().get(getTarget()));
+                double precision = 0.00000000000001;
+                boolean newDistanceValid = reachBound > newDist || Math.abs(reachBound - newDist) <= precision;
+                boolean projectedDistanceValid = reachBound > projectedDistance || Math.abs(reachBound - projectedDistance) <= precision;
+                if ((newDistanceValid || projectedDistanceValid) && newDist < nodeDist.get(edge.to)) {
                     nodeDist.set(edge.to, nodeDist.get(from) + edge.d);
                     priorityQueue.remove(edge.to);
                     priorityQueue.add(edge.to);

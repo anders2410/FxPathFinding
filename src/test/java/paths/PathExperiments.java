@@ -33,7 +33,7 @@ public class PathExperiments {
 
     private void setUp(String fileName) {
         SSSP.setDistanceStrategy(distanceStrategy);
-
+        this.fileName = fileName;
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
         graphIO.loadPreAll(fileName);
@@ -252,7 +252,7 @@ public class PathExperiments {
 
     @Test
     public void testCompareUniAndBiDir() {
-        int testCases = 1000;
+        int testCases = 10000;
         setUp("malta-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
@@ -309,10 +309,20 @@ public class PathExperiments {
     }
 
     @Test
+    public void testGenReachDensity() {
+        setUp("estonia-latest.osm.pbf");
+        ModelUtil modelUtil = new ModelUtil(graph);
+        List<Integer> reachDensities = modelUtil.computeDensityMeasuresReach(8, SSSP.getReachBounds());
+        GraphIO graphIO = new GraphIO(true);
+        graphIO.storeDensitiesReach(fileName, reachDensities);
+    }
+
+    @Test
     public void testFlipUniSearch() {
-        setUp("malta-latest.osm.pbf");
-        List<AlgorithmMode> modesToTest = Arrays.asList(DIJKSTRA, A_STAR);
-        int testCases = 5000;
+        setUp("estonia-latest.osm.pbf");
+        SSSP.setDensityMeasures(new GraphIO(true).loadDensitiesReach(fileName));
+        List<AlgorithmMode> modesToTest = Arrays.asList(REACH);
+        int testCases = 1000;
         System.out.println("Experiment on " + testCases + " cases begun.");
 
         Map<AlgorithmMode, Pair<List<TestManyRes>, List<TestManyRes>>> resMap = new HashMap<>();
@@ -364,6 +374,31 @@ public class PathExperiments {
             }
             System.out.println();
         });
+    }
+
+    @Test
+    public void testBiDirDensity() {
+        int testCases = 1000;
+        setUp("estonia-latest.osm.pbf");
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                BI_A_STAR_LANDMARKS
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        /*List<Map<AlgorithmMode, TestManyRes>> density_wins = results.stream().filter(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
+        List<Map<AlgorithmMode, TestManyRes>> amount_wins = results.stream().filter(r -> r.get(BI_DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA_DENSITY).nodesScanned).collect(Collectors.toList());
+        double avg_dens = (double) results.stream().map(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+        System.out.println("Bidijkstra with density and amount alternation won " + (float) 100*density_wins.size()/testCases + "%");
+        System.out.println("and scanned " + avg_dens + " nodes on average.");
+        density_wins.forEach(r -> printPair(r.get(BI_DIJKSTRA)));
+        System.out.println();
+        double avg_amount = (double) results.stream().map(r -> r.get(BI_DIJKSTRA).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+        System.out.println("Bidijkstra with amount alternation won " + (float) 100*amount_wins.size()/testCases + "%");
+        System.out.println("and scanned " + avg_amount + " nodes on average.");
+        amount_wins.forEach(r -> printPair(r.get(BI_DIJKSTRA)));
+        System.out.println();*/
+        double avg_dens_alt = (double) results.stream().map(r -> r.get(BI_A_STAR_LANDMARKS).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+        System.out.println("BiALT with density and amount alternation scanned " + avg_dens_alt + " nodes on average.");
     }
 
     private void printPair(TestManyRes res) {
@@ -491,25 +526,20 @@ public class PathExperiments {
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
         setUp("denmark-latest.osm.pbf");
 
-        //Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
-        //Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
-        Pair<String, AlgorithmMode> aStar = new Pair<>("ASTAR", A_STAR);
+        Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
+        Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
         Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
-        //Pair<String, AlgorithmMode> ALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
-        //Pair<String, AlgorithmMode> unitALT = new Pair<>("uniALT", A_STAR_LANDMARKS);
-
-        //Pair<String, AlgorithmMode> ReachPair = new Pair<>("REAL", BI_REACH_LANDMARKS);
-        // Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> ALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> ReachPair = new Pair<>("REAL", BI_REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        pairList.add(aStar);
-        //pairList.add(dijkstraPair);
-        //pairList.add(biDijkstraPair);
-        pairList.add(biAStarPair);
-        //pairList.add(unitALT);
-        //pairList.add(ALTPair);
-        //pairList.add(ReachPair);
-        //pairList.add(CHPair);
+//        pairList.add(dijkstraPair);
+//        pairList.add(biDijkstraPair);
+//        pairList.add(biAStarPair);
+//        pairList.add(ALTPair);
+//        pairList.add(ReachPair);
+        pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
