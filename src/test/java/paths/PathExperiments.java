@@ -29,7 +29,7 @@ public class PathExperiments {
 
     private void setUp(String fileName) {
         SSSP.setDistanceStrategy(distanceStrategy);
-
+        this.fileName = fileName;
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
         graphIO.loadPreAll(fileName);
@@ -257,12 +257,11 @@ public class PathExperiments {
         int testCases = 1000;
         setUp("estonia-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                BI_DIJKSTRA,
-                BI_DIJKSTRA_DENSITY
+                BI_A_STAR_LANDMARKS
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
-        List<Map<AlgorithmMode, TestManyRes>> density_wins = results.stream().filter(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
+        /*List<Map<AlgorithmMode, TestManyRes>> density_wins = results.stream().filter(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned < r.get(BI_DIJKSTRA).nodesScanned).collect(Collectors.toList());
         List<Map<AlgorithmMode, TestManyRes>> amount_wins = results.stream().filter(r -> r.get(BI_DIJKSTRA).nodesScanned < r.get(BI_DIJKSTRA_DENSITY).nodesScanned).collect(Collectors.toList());
         double avg_dens = (double) results.stream().map(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
         System.out.println("Bidijkstra with density and amount alternation won " + (float) 100*density_wins.size()/testCases + "%");
@@ -273,7 +272,9 @@ public class PathExperiments {
         System.out.println("Bidijkstra with amount alternation won " + (float) 100*amount_wins.size()/testCases + "%");
         System.out.println("and scanned " + avg_amount + " nodes on average.");
         amount_wins.forEach(r -> printPair(r.get(BI_DIJKSTRA)));
-        System.out.println();
+        System.out.println();*/
+        double avg_dens_alt = (double) results.stream().map(r -> r.get(BI_A_STAR_LANDMARKS).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+        System.out.println("BiALT with density and amount alternation scanned " + avg_dens_alt + " nodes on average.");
     }
 
     private void printPair(TestManyRes res) {
