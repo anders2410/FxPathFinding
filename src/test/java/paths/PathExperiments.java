@@ -9,6 +9,10 @@ import org.junit.Test;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -64,6 +68,126 @@ public class PathExperiments {
         for (AlgorithmMode mode : modesToTest) {
             System.out.println(Util.algorithmNames.get(mode) + " has an average overlap of: " + results.stream().map(r -> r.get(mode).overlap).reduce(Integer::sum).orElse(0) / testCases);
         }
+    }
+
+    @Test
+    public void landmarkAmountExperiment() {
+        setUp("estonia-latest.osm.pbf");
+
+        int landmarksWanted = 1;
+        Landmarks lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 3;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 10;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 16;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 32;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 64 * 2;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 64 * 2 * 2;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+
+        landmarksWanted = 64 * 2 * 2;
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(landmarksWanted, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+    }
+
+    private void testSaveGenerationMethod(int testSize, int landmarks, String landName) {
+        int j = 0;
+        String fileName = landName + landmarks + ".txt";
+        File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
+        f.getParentFile().mkdirs();
+        TestData data = new TestData();
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(f));
+            while (j < testSize) {
+                SSSP.seed++;
+                long minExecution = Long.MAX_VALUE;
+                ShortestPathResult res = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+                ShortestPathResult res2 = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+                ShortestPathResult res3 = SSSP.randomPath(AlgorithmMode.A_STAR_LANDMARKS);
+                minExecution = Math.min(minExecution, res.runTime);
+                minExecution = Math.min(minExecution, res2.runTime);
+                minExecution = Math.min(minExecution, res3.runTime);
+                data.addVisit(res.scannedNodesA.size());
+                data.addRuntime(minExecution);
+                String resultToSave = "(" + res.scannedNodesA.size() + "," + minExecution + "):";
+                out.write(resultToSave);
+                if (j % 10 == 0 && j != 0) out.newLine();
+                j++;
+            }
+            out.newLine();
+            out.write("Average Computation Time: " + data.getAverageRunningTime());
+            out.newLine();
+            out.write("Average Visits: " + data.getAverageVisits());
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Test
@@ -487,14 +611,15 @@ public class PathExperiments {
                 j++;
             }
         }
-        System.out.println(data.averageRuntime / testSize);
+        System.out.println(data.totalRunningTime / testSize);
     }
 
 
     @Test
     public void landmarksComparisonTest() {
         setUp("malta-latest.osm.pbf");
-        int testSize = 10000;
+        SSSP.setLandmarkArray(null);
+        int testSize = 1000;
 
         TestData maxData = new TestData();
         TestData avoidData = new TestData();
@@ -502,21 +627,48 @@ public class PathExperiments {
         TestData randomData = new TestData();
 
         Landmarks lm = new Landmarks(graph);
-        initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(300, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, randomData);
 
-        initTestParameters(lm, LandmarkMode.FARTHEST);
+        //initTestParameters(lm, LandmarkMode.FARTHEST);
+        lm.clearLandmarks();
+
+        lm.landmarksFarthest(300, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, farthestData);
 
-        initTestParameters(lm, LandmarkMode.AVOID);
+        // initTestParameters(lm, LandmarkMode.AVOID);
+        lm.clearLandmarks();
+
+        lm.landmarksAvoid(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, avoidData);
 
-        initTestParameters(lm, LandmarkMode.MAXCOVER);
+        //initTestParameters(lm, LandmarkMode.MAXCOVER);
+        lm.clearLandmarks();
+        lm.landmarksMaxCover(1, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
         testGenerationMethod(testSize, maxData);
-        System.out.println(maxData.averageVisit);
-        System.out.println(avoidData.averageVisit);
-        System.out.println(randomData.averageVisit);
-        System.out.println(farthestData.averageVisit);
+        System.out.println(maxData.getAverageRunningTime());
+        System.out.println(avoidData.getAverageRunningTime());
+        System.out.println(randomData.getAverageRunningTime());
+        System.out.println(farthestData.getAverageRunningTime());
+
+        System.out.println(maxData.getAverageVisits());
+        System.out.println(avoidData.getAverageVisits());
+        System.out.println(randomData.getAverageVisits());
+        System.out.println(farthestData.getAverageVisits());
     }
 
     private void initTestParameters(Landmarks lm, LandmarkMode maxcover) {
@@ -537,7 +689,7 @@ public class PathExperiments {
                 if (j % 1000 == 0) {
                     System.out.println("Runtime for case " + j + "(seed = " + SSSP.seed + ") = " + res.runTime);
                 }
-                data.addVisit(res.calculateAllUniqueVisits(graph));
+                data.addVisit(res.scannedNodesA.size());
                 data.addRuntime(res.runTime);
                 j++;
             }
@@ -572,26 +724,37 @@ public class PathExperiments {
 }
 
 class TestData {
-    protected int minVisits, maxVisits, averageVisit;
-    protected long averageRuntime;
+    protected int minVisits, maxVisits, visits;
+    protected long totalRunningTime;
     protected List<Integer> pathStartList;
+    private int runs;
 
     public TestData() {
         minVisits = Integer.MAX_VALUE;
+        runs = 0;
         maxVisits = 0;
-        averageVisit = 0;
-        averageRuntime = 0;
+        visits = 0;
+        totalRunningTime = 0;
         pathStartList = new ArrayList<>();
     }
 
     public void addVisit(int size) {
         if (size < minVisits && size != 0) minVisits = size;
         if (size > maxVisits) maxVisits = size;
-        averageVisit += size;
+        runs++;
+        visits += size;
+    }
+
+    public int getAverageVisits() {
+        return visits / runs;
+    }
+
+    public long getAverageRunningTime() {
+        return totalRunningTime / runs;
     }
 
     public void addRuntime(long runTime) {
-        averageRuntime += runTime;
+        totalRunningTime += runTime;
     }
 
     public void addStartingPoint(Integer integer) {

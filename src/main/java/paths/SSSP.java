@@ -319,7 +319,7 @@ public class SSSP {
      * @return a list of integers with max values in every entry, but that of the source node which is 0.
      */
     private static List<Double> initNodeDist(int from, int size) {
-        List<Double> nodeDist = new ArrayList<>();
+        List<Double> nodeDist = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             nodeDist.add(Double.MAX_VALUE);
         }
