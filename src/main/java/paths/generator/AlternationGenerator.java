@@ -41,8 +41,8 @@ public class AlternationGenerator {
             Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
             if (aPeek == null) return false;
             if (bPeek == null) return true;
-            double measureA = Math.sqrt(getQueue(A).size() + getScanned(A).size())*(1 - densityInfluence + densityInfluence * getDensityMeasuresNorm().get(aPeek));
-            double measureB = Math.sqrt(getQueue(B).size() + getScanned(B).size())*(1 - densityInfluence + densityInfluence * getDensityMeasuresNorm().get(bPeek));
+            double measureA = getQueue(A).size() + getScanned(A).size()*(1 - densityInfluence + densityInfluence * getDensityMeasuresNorm().get(aPeek));
+            double measureB = getQueue(B).size() + getScanned(B).size()*(1 - densityInfluence + densityInfluence * getDensityMeasuresNorm().get(bPeek));
             return measureA < measureB;
         };
     }
