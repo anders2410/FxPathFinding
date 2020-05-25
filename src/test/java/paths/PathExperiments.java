@@ -81,7 +81,7 @@ public class PathExperiments {
         Landmarks lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
@@ -91,67 +91,72 @@ public class PathExperiments {
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
-
+        System.out.println("----");
         landmarksWanted = 10;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 16;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 32;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 64 * 2;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 64 * 2 * 2;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 64 * 2 * 2;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
@@ -160,7 +165,7 @@ public class PathExperiments {
 
     private void testSaveGenerationMethod(int testSize, int landmarks, String landName) {
         int j = 0;
-        String fileName = landName + landmarks + ".txt";
+        String fileName = landName + landmarks + "avoid.txt";
         File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
         f.getParentFile().mkdirs();
         TestData data = new TestData();
@@ -222,7 +227,7 @@ public class PathExperiments {
     @Test
     public void testCorrelationBetweenRuntimeAndScans() {
         int testCases = 10000;
-        setUp("estonia-latest.osm.pbf");
+        setUp("faroe-islands-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
                 DIJKSTRA,
                 BI_DIJKSTRA,
@@ -323,18 +328,18 @@ public class PathExperiments {
 
     @Test
     public void testGenReachDensity() {
-        setUp("estonia-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
         ModelUtil modelUtil = new ModelUtil(graph);
-        List<Integer> reachDensities = modelUtil.computeDensityMeasuresReach(8, SSSP.getReachBounds());
+        List<Integer> reachDensities = modelUtil.computeDensityMeasuresReach(3, SSSP.getReachBounds());
         GraphIO graphIO = new GraphIO(true);
         graphIO.storeDensitiesReach(fileName, reachDensities);
     }
 
     @Test
     public void testFlipUniSearch() {
-        setUp("estonia-latest.osm.pbf");
+        setUp("denmark-latest.osm.pbf");
         SSSP.setDensityMeasures(new GraphIO(true).loadDensitiesReach(fileName));
-        List<AlgorithmMode> modesToTest = Arrays.asList(REACH);
+        List<AlgorithmMode> modesToTest = Arrays.asList(REACH_LANDMARKS);
         int testCases = 1000;
         System.out.println("Experiment on " + testCases + " cases begun.");
 
@@ -344,7 +349,7 @@ public class PathExperiments {
         }
 
         for (int i = 1; i < testCases + 1; i++) {
-            if (i % 200 == 0) {
+            if (i % 100 == 0) {
                 System.out.println("Ran " + i + " shortest paths");
             }
             for (AlgorithmMode mode : modesToTest) {
@@ -392,9 +397,9 @@ public class PathExperiments {
     @Test
     public void testBiDirDensity() {
         int testCases = 1000;
-        setUp("estonia-latest.osm.pbf");
+        setUp("denmark-latest.osm.pbf");
         List<AlgorithmMode> modesToTest = Arrays.asList(
-                BI_A_STAR_LANDMARKS
+                BI_DIJKSTRA_DENSITY
         );
         seed = 0;
         List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
@@ -410,8 +415,8 @@ public class PathExperiments {
         System.out.println("and scanned " + avg_amount + " nodes on average.");
         amount_wins.forEach(r -> printPair(r.get(BI_DIJKSTRA)));
         System.out.println();*/
-        double avg_dens_alt = (double) results.stream().map(r -> r.get(BI_A_STAR_LANDMARKS).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
-        System.out.println("BiALT with density and amount alternation scanned " + avg_dens_alt + " nodes on average.");
+        double avg_dens_alt = (double) results.stream().map(r -> r.get(BI_DIJKSTRA_DENSITY).nodesScanned).reduce(Integer::sum).orElse(0) / testCases;
+        System.out.println("BiDijk with density and amount alternation scanned " + avg_dens_alt + " nodes on average.");
     }
 
     private void printPair(TestManyRes res) {
@@ -563,10 +568,32 @@ public class PathExperiments {
         }
     }
 
+    @Test
+    public void compareSelectedAlgorithmsOnNodesVisitedAndSpeedREACH() {
+        setUp("denmark-latest.osm.pbf");
+
+        Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Bi-Reach", BI_REACH);
+        Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Reach-AStar", BI_REACH_A_STAR);
+        Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-REAL", BI_REACH_LANDMARKS);
+
+        List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
+        pairList.add(dijkstraPair);
+        pairList.add(biDijkstraPair);
+        pairList.add(biAStarPair);
+
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testAlgorithm(data);
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+    }
+
     private void testAlgorithm(TestDataExtra data) {
         int testCases = 10000;
         int i = 0;
-        SSSP.seed = 0;
+        seed = 0;
         while (i < testCases) {
             if (i % 500 == 0) {
                 System.out.println("Running test nr: " + i);

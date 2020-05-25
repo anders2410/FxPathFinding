@@ -10,7 +10,7 @@ import paths.strategy.TerminationStrategy;
 public class BiDijkstraDensityFactory extends BiDijkstraFactory {
     @Override
     public AlternationStrategy getAlternationStrategy() {
-        return AlternationGenerator.getDensityTimesAmountSeenStrategy(0.75);
+        return AlternationGenerator.getDensityTimesAmountSeenStrategy(0.2);
     }
     @Override
     public TerminationStrategy getTerminationStrategy() {
