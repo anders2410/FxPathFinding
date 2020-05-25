@@ -13,6 +13,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -187,7 +190,17 @@ public class PathExperiments {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    @Test
+    public void deleteSpaces() {
+        try {
+            String t = Files.readString(Paths.get(System.getProperty("user.dir") + "/src/test/experimentsaves/Estonia256.txt"), StandardCharsets.UTF_8);
+            t = t.replace("\n", "").replace("\r","");
+            System.out.println(t);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
