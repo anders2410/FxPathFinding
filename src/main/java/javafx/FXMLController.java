@@ -328,7 +328,7 @@ public class FXMLController implements Initializable {
 
     private void drawNode(Node node) {
         PixelPoint np = toScreenPos(node);
-        double radius = 6;
+        double radius = 8;
         double shift = radius / 2;
         gc.fillOval(np.x - shift, np.y - shift, radius, radius);
         gc.strokeOval(np.x - shift, np.y - shift, radius, radius);
@@ -380,7 +380,9 @@ public class FXMLController implements Initializable {
         }
         if (currentOverlay == OverlayType.DENSITY && densityMeasures != null) {
             findMaxDensity();
-            color = graduateColorHue(Color.RED, densityMeasures.get(edge.from), maxDensity);
+            if (color == Color.RED) return Color.BLACK;
+            color = color == Color.BLACK ? Color.RED : color;
+            color = graduateColorHue(color, densityMeasures.get(edge.from), maxDensity);
         }
         if (graphInfo != null) {
             EdgeInfo edgeInfo = graphInfo.getEdge(edge);
