@@ -78,7 +78,7 @@ public class PathExperiments {
         Landmarks lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
@@ -88,67 +88,72 @@ public class PathExperiments {
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
-
+        System.out.println("----");
         landmarksWanted = 10;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 16;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 32;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 64 * 2;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 64 * 2 * 2;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
         testSaveGenerationMethod(10000, landmarksWanted, "Estonia");
+        System.out.println("----");
 
         landmarksWanted = 64 * 2 * 2;
         lm = new Landmarks(graph);
         lm.clearLandmarks();
         //initTestParameters(lm, LandmarkMode.RANDOM);
-        lm.landmarksRandom(landmarksWanted, false);
+        lm.landmarksAvoid(landmarksWanted, false);
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
@@ -157,7 +162,7 @@ public class PathExperiments {
 
     private void testSaveGenerationMethod(int testSize, int landmarks, String landName) {
         int j = 0;
-        String fileName = landName + landmarks + ".txt";
+        String fileName = landName + landmarks + "avoid.txt";
         File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
         f.getParentFile().mkdirs();
         TestData data = new TestData();
