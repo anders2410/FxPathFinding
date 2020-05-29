@@ -6,6 +6,7 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.ContractionHierarchies;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
@@ -125,6 +126,48 @@ public class SSSPPBFTest {
     }
 
     @Test
+    public void testAlgorithmsEdgeWeight() {
+        fileName = "estonia-latest.osm.pbf";
+        int algorithms = 7;
+        matrix = new int[algorithms];
+        new GraphIO(true).loadPreAll(fileName);
+        GraphIO graphIO = new GraphIO(true);
+        graphIO.loadGraphInfo(fileName);
+        SSSP.setGraphInfo(graphIO.getGraphInfo());
+        testCases = 1000;
+        runtimes = new double[algorithms][testCases];
+
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getMaxSpeedTime());
+
+        i = 0;
+        failMap = new HashMap<>();
+        seed = 0;
+        while (i < testCases) {
+            if (i % 100 == 0) {
+                System.out.println("Conducted " + i + " tests");
+            }
+            seed++;
+            ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
+            runtimes[0][i] = dijkRes.runTime;
+            double distDijk = dijkRes.d;
+            List<Integer> pathDijk = dijkRes.path;
+
+            testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
+            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 3);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 5);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.CONTRACTION_HIERARCHIES, 6);
+
+            //Only interested in tests where path is at least 100
+            i++;
+        }
+        if (Arrays.equals(new int[algorithms], matrix)) {
+            System.out.println(Arrays.deepToString(runtimes));
+        } else fail();
+    }
+
+    @Test
     public void testAlgorithms() {
         int algorithms = 14;
         matrix = new int[algorithms];
@@ -175,7 +218,7 @@ public class SSSPPBFTest {
         double dist = result.d;
         List<Integer> path = result.path;
         if (Math.abs(dist - distDijk) > 0.0000000000001 || !path.equals(pathDijk)) {
-            System.out.println(mode + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
+            //System.out.println(mode + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
             matrix[i2]++;
             failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size() - 1));
         }
