@@ -7,6 +7,8 @@ import model.Graph;
 import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
+import paths.factory.BiReachLandmarksFactory;
+import paths.factory.DuplicateFactories.*;
 import paths.generator.RelaxGenerator;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.Landmarks;
@@ -20,7 +22,6 @@ import java.util.function.Function;
 import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
-import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
     public static boolean trace = false;
@@ -169,7 +170,6 @@ public class SSSP {
 
     static {
         factoryMap.put(DIJKSTRA, new DijkstraFactory());
-        factoryMap.put(DUPLICATE_DIJKSTRA, new DijkstraDuplicateQueueFactory());
         factoryMap.put(BI_DIJKSTRA, new BiDijkstraFactory());
         factoryMap.put(BI_DIJKSTRA_SAME_DIST, new BiDijkstraSameDistFactory());
         factoryMap.put(BI_DIJKSTRA_DENSITY, new BiDijkstraDensityFactory());
@@ -188,6 +188,19 @@ public class SSSP {
         factoryMap.put(SINGLE_TO_ALL, new OneToAllDijkstra());
         factoryMap.put(BOUNDED_SINGLE_TO_ALL, new BoundedOneToAll());
         factoryMap.put(CONTRACTION_HIERARCHIES_LANDMARKS, new ContractionHierarchiesLandmarksFactory());
+        factoryMap.put(DUPLICATE_DIJKSTRA, new DijkstraDuplicateQueueFactory());
+        factoryMap.put(DUPLICATE_A_STAR, new AStarDuplicate());
+        factoryMap.put(DUPLICATE_A_STAR_LANDMARKS, new LandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_A_STAR_CONSISTENT, new BiAstarConsistenDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_A_STAR_LANDMARKS, new BiLandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_DIJKSTRA, new BiDijkstraDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_REACH, new BiReachDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_REACH_A_STAR, new BiReachAstarDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_REACH_LANDMARKS, new BiReachLandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_REACH, new ReachDuplicateFactory());
+        factoryMap.put(DUPLICATE_REACH_A_STAR, new ReachAstarDuplicateFactory());
+        factoryMap.put(DUPLICATE_REACH_LANDMARKS, new ReachLandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_CONTRACTION_HIERARCHIES, new ContractionHierarchiesDuplicateFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {

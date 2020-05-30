@@ -6,6 +6,7 @@ import model.Graph;
 import model.ModelUtil;
 import model.Node;
 import org.junit.Test;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -540,6 +541,138 @@ public class PathExperiments {
         Instant end = Instant.now();
         long timeElapsed = Duration.between(start, end).toMillis();
         System.out.println(timeElapsed);
+    }
+
+    @Test
+    public void massTestSave() {
+        setUp("malta-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
+        Pair<String, AlgorithmMode> dijkstraDubPair = new Pair<>("DijkstraDub", DUPLICATE_DIJKSTRA);
+
+        Pair<String, AlgorithmMode> aStarPair = new Pair<>("A*", A_STAR);
+        Pair<String, AlgorithmMode> aStarDubPair = new Pair<>("A*Dub", DUPLICATE_A_STAR);
+
+        Pair<String, AlgorithmMode> ALTPair = new Pair<>("ALT", A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> ALTDubPair = new Pair<>("ALTDub", DUPLICATE_A_STAR_LANDMARKS);
+
+        Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
+        Pair<String, AlgorithmMode> biDijkstraDubPair = new Pair<>("Bi-DijkstraDub", DUPLICATE_BI_DIJKSTRA);
+
+        Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
+        Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", BI_A_STAR_CONSISTENT);
+
+        Pair<String, AlgorithmMode> BIALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> BIALTDubPair = new Pair<>("BiALTDub", BI_A_STAR_LANDMARKS);
+
+        Pair<String, AlgorithmMode> BiReachALTPair = new Pair<>("BiREAL", BI_REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> BiReachALTDubPair = new Pair<>("BiREALDub", BI_REACH_LANDMARKS);
+
+        Pair<String, AlgorithmMode> BiReachPair = new Pair<>("BiReach", BI_REACH);
+        Pair<String, AlgorithmMode> BiReachDubPair = new Pair<>("BiReachDub", DUPLICATE_BI_REACH);
+
+        Pair<String, AlgorithmMode> ReachPair = new Pair<>("Reach", REACH);
+        Pair<String, AlgorithmMode> ReachDubPair = new Pair<>("ReachDub", DUPLICATE_REACH);
+
+        Pair<String, AlgorithmMode> ReachAstarPair = new Pair<>("ReachA*", REACH_A_STAR);
+        Pair<String, AlgorithmMode> ReachAstarDubPair = new Pair<>("ReachA*Dub", DUPLICATE_REACH_A_STAR);
+
+        Pair<String, AlgorithmMode> ReachALTPair = new Pair<>("ReachALT", REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> ReachALTDubPair = new Pair<>("ReachALTDub", DUPLICATE_REACH_LANDMARKS);
+
+        Pair<String, AlgorithmMode> BiReachAStarPair = new Pair<>("BiReachA*", BI_REACH_A_STAR);
+        Pair<String, AlgorithmMode> BiReachAStarDubPair = new Pair<>("BiReachA*Dub", DUPLICATE_BI_REACH_A_STAR);
+
+
+        Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> CHDubPair = new Pair<>("CHDub", CONTRACTION_HIERARCHIES);
+
+
+        List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
+        pairList.add(dijkstraPair);
+        pairList.add(dijkstraDubPair);
+        pairList.add(aStarPair);
+        pairList.add(aStarDubPair);
+        pairList.add(biDijkstraPair);
+        pairList.add(biDijkstraDubPair);
+        pairList.add(biAStarPair);
+        pairList.add(biAStarDubPair);
+        pairList.add(BIALTPair);
+        pairList.add(BIALTDubPair);
+        pairList.add(BiReachALTPair);
+        pairList.add(BiReachALTDubPair);
+        pairList.add(BiReachPair);
+        pairList.add(BiReachDubPair);
+        pairList.add(ALTPair);
+        pairList.add(ALTDubPair);
+        pairList.add(ReachPair);
+        pairList.add(ReachDubPair);
+        pairList.add(ReachAstarPair);
+        pairList.add(ReachAstarDubPair);
+        pairList.add(ReachALTPair);
+        pairList.add(ReachALTDubPair);
+        pairList.add(BiReachAStarPair);
+        pairList.add(BiReachAStarDubPair);
+        pairList.add(CHPair);
+        pairList.add(CHDubPair);
+
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testSaveAlgorithm(data, "Malta");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+
+        setUp("denmark-latest.osm.pbf");
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testSaveAlgorithm(data, "Malta");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+    }
+
+    private void testSaveAlgorithm(TestDataExtra data, String country) {
+        int testCases = 1;
+        int i = 0;
+        int failCounter = 0;
+        seed = 0;
+        String fileName = country + data.getMode().toString() + testCases + ".txt";
+        File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
+        f.getParentFile().mkdirs();
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(f));
+
+            while (i < testCases) {
+               /* if (i % 500 == 0) {
+                    System.out.println("Running test nr: " + i);
+                }*/
+                SSSP.seed++;
+                ShortestPathResult res = SSSP.randomPath(data.getMode());
+                ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
+                data.addVisit(res);
+                String resultToSave;
+                if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
+                    failCounter++;
+                    resultToSave = "( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):";
+                } else {
+                    resultToSave = "(" + res.scannedNodesA.size() + "," + res.runTime + "):";
+                }
+                out.write(resultToSave);
+                i++;
+            }
+            out.newLine();
+            out.write("Average Computation Time: " + data.getAverageRuntime());
+            out.newLine();
+            out.write("Average Visits: " + data.getAverageVisited());
+            out.newLine();
+            out.write("Fails: " + failCounter);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
