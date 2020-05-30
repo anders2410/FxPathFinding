@@ -21,6 +21,21 @@ public class JavaMinPriorityQueue extends PriorityQueue<Integer> implements MinP
     }
 
     @Override
+    public Integer nodePeek() {
+        return super.peek();
+    }
+
+    @Override
+    public Integer nodePoll() {
+        return super.poll();
+    }
+
+    @Override
+    public void insert(DuplicatePriorityQueueNode n) {
+
+    }
+
+    @Override
     public void insert(Integer toAdd) {
         super.add(toAdd);
     }

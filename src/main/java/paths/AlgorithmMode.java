@@ -2,6 +2,7 @@ package paths;
 
 public enum AlgorithmMode {
     DIJKSTRA,
+    DUPLICATE_DIJKSTRA,
     BI_DIJKSTRA,
     BI_DIJKSTRA_SAME_DIST,
     BI_DIJKSTRA_DENSITY,

@@ -16,9 +16,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Time;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -200,8 +202,8 @@ public class PathExperiments {
     @Test
     public void deleteSpaces() {
         try {
-            String t = Files.readString(Paths.get(System.getProperty("user.dir") + "/src/test/experimentsaves/Estonia256.txt"), StandardCharsets.UTF_8);
-            t = t.replace("\n", "").replace("\r","");
+            String t = Files.readString(Paths.get(System.getProperty("user.dir") + "/src/test/experimentsaves/Estonia256avoid.txt"), StandardCharsets.UTF_8);
+            t = t.replace("\n", "").replace("\r", "");
             System.out.println(t);
         } catch (IOException e) {
             e.printStackTrace();
@@ -542,7 +544,7 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("denmark-latest.osm.pbf");
+        setUp("malta-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -552,11 +554,11 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-//        pairList.add(dijkstraPair);
-//        pairList.add(biDijkstraPair);
-//        pairList.add(biAStarPair);
-//        pairList.add(ALTPair);
-//        pairList.add(ReachPair);
+        pairList.add(dijkstraPair);
+        pairList.add(biDijkstraPair);
+        pairList.add(biAStarPair);
+        pairList.add(ALTPair);
+        pairList.add(ReachPair);
         pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
@@ -615,21 +617,31 @@ public class PathExperiments {
 
     @Test
     public void DijkstraSpeedTest() {
-        setUp("denmark-latest.osm.pbf");
-        int testSize = 100;
+        setUp("malta-latest.osm.pbf");
+        int testSize = 10000;
         TestData data = new TestData();
+        TestData data2 = new TestData();
+
         int j = 0;
         while (j < testSize) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
+            ShortestPathResult res2 = SSSP.randomPath(DUPLICATE_DIJKSTRA);
             /*resultArray[0][j] = res;*/
             if (res.path.size() > 20) {
+                if (j % 100 == 0) {
+                    System.out.println("Runtime for case " + j + "(seed = " + SSSP.seed + ") = " + res.runTime);
+                }
                 data.addVisit(res.scannedNodesA.size());
                 data.addRuntime(res.runTime);
+                data2.addVisit(res2.scannedNodesA.size());
+                data2.addRuntime(res2.runTime);
                 j++;
             }
         }
         System.out.println(data.totalRunningTime / testSize);
+        System.out.println(data2.totalRunningTime / testSize);
+
     }
 
 
@@ -695,6 +707,48 @@ public class PathExperiments {
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
+    }
+
+    @Test
+    public void testLMGenerationTimes() {
+        setUp("poland-latest.osm.pbf");
+
+        long startAvoid = System.nanoTime();
+        Landmarks lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksAvoid(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        long endAvoid = System.nanoTime();
+
+        long startRandom = System.nanoTime();
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        long endRandom = System.nanoTime();
+
+        long startFarthest = System.nanoTime();
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksFarthest(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        long endFarthest = System.nanoTime();
+
+        long durationAvoid = TimeUnit.MILLISECONDS.convert(endAvoid - startAvoid, TimeUnit.NANOSECONDS);
+        long durationRandom = TimeUnit.MILLISECONDS.convert(endRandom - startRandom, TimeUnit.NANOSECONDS);
+        long durationFarthest = TimeUnit.MILLISECONDS.convert(endFarthest - startFarthest, TimeUnit.NANOSECONDS);
+        System.out.println(durationAvoid);
+        System.out.println(durationFarthest);
+        System.out.println(durationRandom);
     }
 
     private void testGenerationMethod(int testSize, TestData data) {

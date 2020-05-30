@@ -74,6 +74,8 @@ public class SSSP {
     private static ResultPackingStrategy resultPackingStrategy;
     private static List<List<Edge>> adjList;
     private static List<List<Edge>> revAdjList;
+    private static QueueUpdatingStrategy updatePriorityQueueStrategy;
+    private static QueuePollingStrategy pollPriorityQueueStrategy;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -123,10 +125,24 @@ public class SSSP {
         return arr;
     }
 
+    public static double[] getHeuristicValuesA() {
+        return heuristicValuesA;
+    }
+
+    public static double[] getHeuristicValuesB() {
+        return heuristicValuesB;
+    }
+
+    public static PriorityStrategy getPriorityStrategyA() {
+        return priorityStrategyA;
+    }
+
+    public static PriorityStrategy getPriorityStrategyB() {
+        return priorityStrategyB;
+    }
+
     public static void updatePriority(int nodeToUpdate, ABDir dir) {
-        if (dir == A) heuristicValuesA[nodeToUpdate] = priorityStrategyA.apply(nodeToUpdate, dir);
-        else heuristicValuesB[nodeToUpdate] = priorityStrategyB.apply(nodeToUpdate, dir);
-        getQueue(dir).updatePriority(nodeToUpdate);
+        updatePriorityQueueStrategy.updatePriority(nodeToUpdate, dir);
     }
 
     private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
@@ -146,7 +162,6 @@ public class SSSP {
                     return Double.compare(heuristicValuesB[i], heuristicValuesB[j]);
                 }
             }
-
         };
     }
 
@@ -154,6 +169,7 @@ public class SSSP {
 
     static {
         factoryMap.put(DIJKSTRA, new DijkstraFactory());
+        factoryMap.put(DUPLICATE_DIJKSTRA, new DijkstraDuplicateQueueFactory());
         factoryMap.put(BI_DIJKSTRA, new BiDijkstraFactory());
         factoryMap.put(BI_DIJKSTRA_SAME_DIST, new BiDijkstraSameDistFactory());
         factoryMap.put(BI_DIJKSTRA_DENSITY, new BiDijkstraDensityFactory());
@@ -183,10 +199,11 @@ public class SSSP {
         relaxStrategyB = factory.getRelaxStrategy();
         priorityStrategyA = factory.getPriorityStrategy();
         priorityStrategyB = factory.getPriorityStrategy();
-        priorityQueueGetter = getJavaQueue();
+        priorityQueueGetter = factory.getQueue();
         alternationStrategy = factory.getAlternationStrategy();
         scanPruningStrategy = factory.getScanPruningStrategy();
         resultPackingStrategy = factory.getResultPackingStrategy();
+        updatePriorityQueueStrategy = factory.getQueueUpdatingStrategy();
     }
 
     // Path finding
@@ -209,7 +226,7 @@ public class SSSP {
 
         while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
-            if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
+            if (queueA.nodePeek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
@@ -239,12 +256,16 @@ public class SSSP {
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
-        Integer currentNode = getQueue(dir).poll();
+        Integer currentNode = extractMinNode(dir);
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             getRelaxStrategy(dir).relax(edge, dir);
         }
+    }
+
+    private static Integer extractMinNode(ABDir dir) {
+        return getQueue(dir).nodePoll();
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
@@ -492,7 +513,7 @@ public class SSSP {
         int maxDens = densityMeasures.stream().max(Integer::compareTo).orElse(1);
         densityMeasuresNorm = new ArrayList<>();
         for (int density : densityMeasures) {
-            densityMeasuresNorm.add((double)density/maxDens);
+            densityMeasuresNorm.add((double) density / maxDens);
         }
     }
 

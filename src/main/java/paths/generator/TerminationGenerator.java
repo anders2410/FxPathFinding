@@ -10,8 +10,8 @@ import static paths.SSSP.*;
 public class TerminationGenerator {
     public static TerminationStrategy getStrongNonConHeuristicTermination() {
         return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
+            Integer topA = getQueue(A).nodePeek();
+            Integer topB = getQueue(B).nodePeek();
             if (topA != null && topB != null) {
                 double forwardKeyVal = getPriorityStrategy().apply(topA, A);
                 double backwardKeyVal = getPriorityStrategy().apply(topB, B);
@@ -27,8 +27,8 @@ public class TerminationGenerator {
 
     public static TerminationStrategy getSearchMeetTermination() {
         return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
+            Integer topA = getQueue(A).nodePeek();
+            Integer topB = getQueue(B).nodePeek();
             if (topA != null && topB != null) {
                 return getScanned(B).contains(topA) || getScanned(A).contains(topB);
             }
@@ -38,8 +38,8 @@ public class TerminationGenerator {
 
     public static TerminationStrategy getBiReachTermination() {
         return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
+            Integer topA = getQueue(A).nodePeek();
+            Integer topB = getQueue(B).nodePeek();
             if (topA == null && topB == null) return false;
             if (topA == null) {
                 SSSP.setAlternationStrategy(AlternationGenerator.getReverseOneDirectional());
@@ -63,8 +63,8 @@ public class TerminationGenerator {
 
     public static TerminationStrategy getKeyAboveGoalStrategy() {
         return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
+            Integer topA = getQueue(A).nodePeek();
+            Integer topB = getQueue(B).nodePeek();
             if (topA != null && topB != null) {
                 double keyValueForward = getPriorityStrategy().apply(topA, A);
                 double keyValueBackwards = getPriorityStrategy().apply(topB, B);
@@ -76,8 +76,8 @@ public class TerminationGenerator {
 
     public static TerminationStrategy getSymmetricStrategy() {
         return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
+            Integer topA = getQueue(A).nodePeek();
+            Integer topB = getQueue(B).nodePeek();
             if (topA != null && topB != null) {
                 double keyValueForward = getPriorityStrategy().apply(topA, A);
                 double keyValueBackwards = getPriorityStrategy().apply(topB, B);
@@ -92,13 +92,13 @@ public class TerminationGenerator {
     }
 
     public static TerminationStrategy getBoundedStoppingStrategy() {
-        return goalDistance -> !(getNodeDist(A).get(getQueue(A).peek()) < SSSP.getSingleToAllBound());
+        return goalDistance -> !(getNodeDist(A).get(getQueue(A).nodePeek()) < SSSP.getSingleToAllBound());
     }
 
     public static TerminationStrategy getStrongConHeuristicTermination() {
         return (goalDist) -> {
-            Integer topA = getQueue(A).peek();
-            Integer topB = getQueue(B).peek();
+            Integer topA = getQueue(A).nodePeek();
+            Integer topB = getQueue(B).nodePeek();
             if (topA != null && topB != null) {
                 double forwardKeyVal = getPriorityStrategy().apply(topA, A);
                 double backwardKeyVal = getPriorityStrategy().apply(topB, B);
