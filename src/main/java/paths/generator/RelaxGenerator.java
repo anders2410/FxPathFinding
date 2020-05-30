@@ -5,21 +5,23 @@ import model.Node;
 import paths.ABDir;
 import paths.SSSP;
 import paths.Util;
+import paths.strategy.EdgeWeightStrategy;
 import paths.strategy.RelaxStrategy;
 
 import java.util.List;
 import java.util.function.Function;
 
+import static paths.ABDir.A;
 import static paths.SSSP.*;
 import static paths.Util.revDir;
 
 public class RelaxGenerator {
 
-    private static Function<Edge, Double> edgeWeightStrategy = EdgeWeightGenerator.getDistanceWeights();
+    private static EdgeWeightStrategy edgeWeightStrategy = EdgeWeightGenerator.getDistanceWeights();
 
     public static RelaxStrategy getDijkstra() {
         return (edge, dir) -> {
-            double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge);
+            double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir);
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
                 updatePriority(edge.to, dir);
@@ -46,7 +48,7 @@ public class RelaxGenerator {
     }
 
     private static boolean updateGoalDist(Edge edge, ABDir dir) {
-        double newPathDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
+        double newPathDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir) + getNodeDist(revDir(dir)).get(edge.to);
         if (newPathDist < getGoalDistance()) {
             setGoalDistance(newPathDist);
             setMiddlePoint(edge.to);
@@ -80,7 +82,7 @@ public class RelaxGenerator {
             List<Double> bounds = getReachBounds();
             double reachBound = bounds.get(edge.from);
             double nodePotential;
-            if (dir == ABDir.A) {
+            if (dir == A) {
                 nodePotential = ((getHeuristicFunction().apply(edge.from, getTarget()) - getHeuristicFunction().apply(getSource(), edge.from)) / 2) + getHeuristicFunction().apply(getSource(), getTarget()) / 2;
             } else {
                 nodePotential = ((getHeuristicFunction().apply(getSource(), edge.from) - getHeuristicFunction().apply(edge.from, getTarget())) / 2) + getHeuristicFunction().apply(getSource(), getTarget()) / 2;
@@ -98,7 +100,7 @@ public class RelaxGenerator {
     private static double precision = 0.00000000000001;
 
     private static boolean reachValid(Edge edge, ABDir dir) {
-        double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge);
+        double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir);
         List<Double> bounds = getReachBounds();
         double reachBound = bounds.get(edge.to);
         List<Node> nodeList = getGraph().getNodeList();
@@ -131,7 +133,7 @@ public class RelaxGenerator {
         return (edge, dir) -> {
             List<Integer> ranks = getCHResult().getRanks();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
-                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge) + getNodeDist(revDir(dir)).get(edge.to);
+                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir) + getNodeDist(revDir(dir)).get(edge.to);
                 if (getScanned(revDir(dir)).contains(edge.to)) {
                     if (pathLength < getBestPathLengthSoFar()) {
                         setBestPathLengthSoFar(pathLength);
@@ -150,7 +152,7 @@ public class RelaxGenerator {
 
     public static RelaxStrategy getBoundedDijkstra() {
         return (edge, dir) -> {
-            double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.apply(edge);
+            double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir);
             /*if (getNodeDist(dir).get(edge.from) > SSSP.getSingleToAllBound()) return;*/
             if (newDist < getNodeDist(dir).get(edge.to)) {
                 getNodeDist(dir).set(edge.to, newDist);
@@ -161,7 +163,7 @@ public class RelaxGenerator {
         };
     }
 
-    public static void setEdgeWeightStrategy(Function<Edge, Double> edgeWeightStrategy) {
+    public static void setEdgeWeightStrategy(EdgeWeightStrategy edgeWeightStrategy) {
         RelaxGenerator.edgeWeightStrategy = edgeWeightStrategy;
     }
 

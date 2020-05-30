@@ -97,6 +97,7 @@
                     <MenuItem onAction="#handleOverlayReach" text="ReachBounds"/>
                     <MenuItem onAction="#handleOverlayCH" text="CH-Rank" />
                     <MenuItem onAction="#handleOverlayNodes" text="NodePairs" />
+                    <MenuItem onAction="#handleOverlayNodeDist" text="DistValues"/>
                     <MenuItem onAction="#handleOverlayDensity" text="Density" />
                     <MenuItem onAction="#handleOverlaySpeed" text="SpeedMarks"/>
                     <MenuItem onAction="#handleOverlaySpeedLimits" text="SpeedLimits"/>

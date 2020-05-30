@@ -25,7 +25,7 @@ public class TerminationGenerator {
     }
 
 
-    public static TerminationStrategy getSearchMeetTermination() {
+    public static TerminationStrategy getSameScannedTermination() {
         return (goalDist) -> {
             Integer topA = getQueue(A).peek();
             Integer topB = getQueue(B).peek();

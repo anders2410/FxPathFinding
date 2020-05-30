@@ -2,20 +2,43 @@ package paths.generator;
 
 import model.Edge;
 import info_model.EdgeInfo;
+import model.Node;
+import paths.ABDir;
 import paths.SSSP;
+import paths.strategy.EdgeWeightStrategy;
 
 import java.util.function.Function;
 
+import static paths.ABDir.A;
+
 public class EdgeWeightGenerator {
 
-    public static Function<Edge, Double> getDistanceWeights() {
-        return (e) -> e.d;
+    public static EdgeWeightStrategy getDistanceWeights() {
+        return new EdgeWeightStrategy() {
+            @Override
+            public double getWeight(Edge edge, ABDir dir) {
+                return edge.d;
+            }
+
+            @Override
+            public double lowerBoundDistance(Node node1, Node node2) {
+                return SSSP.getDistanceStrategy().apply(node1, node2);
+            }
+        };
     }
 
-    public static Function<Edge, Double> getMaxSpeedTime() {
-        return (e) -> {
-            EdgeInfo info = SSSP.getGraphInfo().getEdge(e);
-            return e.d / (info.getMaxSpeed() == -1 ? 50 : info.getMaxSpeed());
+    public static EdgeWeightStrategy getMaxSpeedTime() {
+        return new EdgeWeightStrategy() {
+            @Override
+            public double getWeight(Edge e, ABDir dir) {
+                EdgeInfo info = SSSP.getGraphInfo().getEdge(dir == A ? e : e.getReverse());
+                return e.d / (info.getMaxSpeed() == -1 ? 50 : info.getMaxSpeed());
+            }
+
+            @Override
+            public double lowerBoundDistance(Node node1, Node node2) {
+                return SSSP.getDistanceStrategy().apply(node1, node2) / 130;
+            }
         };
     }
 

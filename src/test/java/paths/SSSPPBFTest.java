@@ -162,9 +162,10 @@ public class SSSPPBFTest {
             //Only interested in tests where path is at least 100
             i++;
         }
-        if (Arrays.equals(new int[algorithms], matrix)) {
-            System.out.println(Arrays.deepToString(runtimes));
-        } else fail();
+        for (int i : matrix) {
+            System.out.print(i + ", ");
+        }
+        System.out.println();
     }
 
     @Test
@@ -218,7 +219,9 @@ public class SSSPPBFTest {
         double dist = result.d;
         List<Integer> path = result.path;
         if (Math.abs(dist - distDijk) > 0.0000000000001 || !path.equals(pathDijk)) {
-            //System.out.println(mode + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
+            System.out.println(mode + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
+            System.out.println(dist);
+            System.out.println(distDijk);
             matrix[i2]++;
             failMap.put(pathDijk.get(0), pathDijk.get(pathDijk.size() - 1));
         }

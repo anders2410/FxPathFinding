@@ -284,9 +284,29 @@ public class FXMLController implements Initializable {
     private void redrawGraph() {
         clearCanvas();
         drawAllEdges();
+        if (currentOverlay == OverlayType.NODEDIST)
+        drawAllNodeDist();
         drawSelectedNodes();
         drawOverlayNodes();
         drawAllLandmarks();
+    }
+
+    private void drawAllNodeDist() {
+        if (SSSP.getNodeDist(ABDir.B) == null)
+            return;
+        for (Node node : graph.getNodeList()) {
+            double distB = SSSP.getNodeDist(ABDir.B).get(node.index);
+            PixelPoint np = toScreenPos(node);
+            if (distB < 1000000) {
+                gc.setStroke(Color.CYAN);
+                gc.strokeText(""+Math.round(distB*10000)/10000.0, np.x, np.y);
+            }
+            double distA = SSSP.getNodeDist(ABDir.A).get(node.index);
+            if (distA < 1000000) {
+                gc.setStroke(Color.BLUE);
+                gc.strokeText(""+Math.round(distA*10000)/10000.0, np.x, np.y + 15);
+            }
+        }
     }
 
     private void drawSelectedNodes() {
@@ -1593,5 +1613,10 @@ public class FXMLController implements Initializable {
 
     public void handleWeightTrees() {
         System.out.println("Not implemented");
+    }
+
+    public void handleOverlayNodeDist() {
+        currentOverlay = OverlayType.NODEDIST;
+        redrawGraph();
     }
 }

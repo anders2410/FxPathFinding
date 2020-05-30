@@ -7,6 +7,7 @@ import model.Graph;
 import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
+import paths.generator.EdgeWeightGenerator;
 import paths.generator.RelaxGenerator;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.Landmarks;
@@ -45,7 +46,7 @@ public class SSSP {
     // All the different strategies!
     private static boolean biDirectional;
     private static BiFunction<Node, Node, Double> distanceStrategy;
-    private static Function<Edge, Double> edgeWeightStrategy;
+    private static EdgeWeightStrategy edgeWeightStrategy = EdgeWeightGenerator.getDistanceWeights();
     private static HeuristicFunction heuristicFunction;
     private static TerminationStrategy terminationStrategy;
     private static AlternationStrategy alternationStrategy;
@@ -329,7 +330,7 @@ public class SSSP {
 
     private static void traceRelax(Integer currentNode, Edge edge) {
         if (trace) {
-            System.out.println("From " + currentNode + " to " + edge.to + " d = " + edge.d);
+            System.out.println("From " + currentNode + " to " + edge.to + " d = " + edgeWeightStrategy.getWeight(edge, A));
         }
     }
 
@@ -478,11 +479,11 @@ public class SSSP {
         return middlePoint;
     }
 
-    public static Function<Edge, Double> getEdgeWeightStrategy() {
+    public static EdgeWeightStrategy getEdgeWeightStrategy() {
         return edgeWeightStrategy;
     }
 
-    public static void setEdgeWeightStrategy(Function<Edge, Double> edgeWeightStrategy) {
+    public static void setEdgeWeightStrategy(EdgeWeightStrategy edgeWeightStrategy) {
         RelaxGenerator.setEdgeWeightStrategy(edgeWeightStrategy);
         SSSP.edgeWeightStrategy = edgeWeightStrategy;
     }
