@@ -59,15 +59,20 @@ public class BinaryHeapPriorityQueue implements MinPriorityQueue {
     }
 
     @Override
-    public Integer peek() {
+    public Integer nodePeek() {
         return binHeap[0];
     }
 
     @Override
-    public Integer poll() {
+    public Integer nodePoll() {
         int min = binHeap[0];
         delete(0);
         return min;
+    }
+
+    @Override
+    public void insert(DuplicatePriorityQueueNode n) {
+
     }
 
     @Override

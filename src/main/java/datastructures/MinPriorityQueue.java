@@ -8,9 +8,11 @@ public interface MinPriorityQueue {
 
     boolean isEmpty();
 
-    Integer peek();
+    Integer nodePeek();
 
-    Integer poll();
+    Integer nodePoll();
+
+    void insert(DuplicatePriorityQueueNode n);
 
     void insert(Integer toAdd);
 

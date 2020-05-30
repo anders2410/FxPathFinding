@@ -6,6 +6,7 @@ import model.Graph;
 import model.ModelUtil;
 import model.Node;
 import org.junit.Test;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
@@ -13,9 +14,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Time;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -192,7 +198,17 @@ public class PathExperiments {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    @Test
+    public void deleteSpaces() {
+        try {
+            String t = Files.readString(Paths.get(System.getProperty("user.dir") + "/src/test/experimentsaves/Estonia256avoid.txt"), StandardCharsets.UTF_8);
+            t = t.replace("\n", "").replace("\r", "");
+            System.out.println(t);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -528,8 +544,140 @@ public class PathExperiments {
     }
 
     @Test
-    public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
+    public void massTestSave() {
+        setUp("malta-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
+        Pair<String, AlgorithmMode> dijkstraDubPair = new Pair<>("DijkstraDub", DUPLICATE_DIJKSTRA);
+
+        Pair<String, AlgorithmMode> aStarPair = new Pair<>("A*", A_STAR);
+        Pair<String, AlgorithmMode> aStarDubPair = new Pair<>("A*Dub", DUPLICATE_A_STAR);
+
+        Pair<String, AlgorithmMode> ALTPair = new Pair<>("ALT", A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> ALTDubPair = new Pair<>("ALTDub", DUPLICATE_A_STAR_LANDMARKS);
+
+        Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
+        Pair<String, AlgorithmMode> biDijkstraDubPair = new Pair<>("Bi-DijkstraDub", DUPLICATE_BI_DIJKSTRA);
+
+        Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
+        Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", BI_A_STAR_CONSISTENT);
+
+        Pair<String, AlgorithmMode> BIALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> BIALTDubPair = new Pair<>("BiALTDub", BI_A_STAR_LANDMARKS);
+
+        Pair<String, AlgorithmMode> BiReachALTPair = new Pair<>("BiREAL", BI_REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> BiReachALTDubPair = new Pair<>("BiREALDub", BI_REACH_LANDMARKS);
+
+        Pair<String, AlgorithmMode> BiReachPair = new Pair<>("BiReach", BI_REACH);
+        Pair<String, AlgorithmMode> BiReachDubPair = new Pair<>("BiReachDub", DUPLICATE_BI_REACH);
+
+        Pair<String, AlgorithmMode> ReachPair = new Pair<>("Reach", REACH);
+        Pair<String, AlgorithmMode> ReachDubPair = new Pair<>("ReachDub", DUPLICATE_REACH);
+
+        Pair<String, AlgorithmMode> ReachAstarPair = new Pair<>("ReachA*", REACH_A_STAR);
+        Pair<String, AlgorithmMode> ReachAstarDubPair = new Pair<>("ReachA*Dub", DUPLICATE_REACH_A_STAR);
+
+        Pair<String, AlgorithmMode> ReachALTPair = new Pair<>("ReachALT", REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> ReachALTDubPair = new Pair<>("ReachALTDub", DUPLICATE_REACH_LANDMARKS);
+
+        Pair<String, AlgorithmMode> BiReachAStarPair = new Pair<>("BiReachA*", BI_REACH_A_STAR);
+        Pair<String, AlgorithmMode> BiReachAStarDubPair = new Pair<>("BiReachA*Dub", DUPLICATE_BI_REACH_A_STAR);
+
+
+        Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> CHDubPair = new Pair<>("CHDub", CONTRACTION_HIERARCHIES);
+
+
+        List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
+        pairList.add(dijkstraPair);
+        pairList.add(dijkstraDubPair);
+        pairList.add(aStarPair);
+        pairList.add(aStarDubPair);
+        pairList.add(biDijkstraPair);
+        pairList.add(biDijkstraDubPair);
+        pairList.add(biAStarPair);
+        pairList.add(biAStarDubPair);
+        pairList.add(BIALTPair);
+        pairList.add(BIALTDubPair);
+        pairList.add(BiReachALTPair);
+        pairList.add(BiReachALTDubPair);
+        pairList.add(BiReachPair);
+        pairList.add(BiReachDubPair);
+        pairList.add(ALTPair);
+        pairList.add(ALTDubPair);
+        pairList.add(ReachPair);
+        pairList.add(ReachDubPair);
+        pairList.add(ReachAstarPair);
+        pairList.add(ReachAstarDubPair);
+        pairList.add(ReachALTPair);
+        pairList.add(ReachALTDubPair);
+        pairList.add(BiReachAStarPair);
+        pairList.add(BiReachAStarDubPair);
+        pairList.add(CHPair);
+        pairList.add(CHDubPair);
+
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testSaveAlgorithm(data, "Malta");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+
         setUp("denmark-latest.osm.pbf");
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testSaveAlgorithm(data, "Malta");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+    }
+
+    private void testSaveAlgorithm(TestDataExtra data, String country) {
+        int testCases = 1;
+        int i = 0;
+        int failCounter = 0;
+        seed = 0;
+        String fileName = country + data.getMode().toString() + testCases + ".txt";
+        File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
+        f.getParentFile().mkdirs();
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(f));
+
+            while (i < testCases) {
+               /* if (i % 500 == 0) {
+                    System.out.println("Running test nr: " + i);
+                }*/
+                SSSP.seed++;
+                ShortestPathResult res = SSSP.randomPath(data.getMode());
+                ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
+                data.addVisit(res);
+                String resultToSave;
+                if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
+                    failCounter++;
+                    resultToSave = "( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):";
+                } else {
+                    resultToSave = "(" + res.scannedNodesA.size() + "," + res.runTime + "):";
+                }
+                out.write(resultToSave);
+                i++;
+            }
+            out.newLine();
+            out.write("Average Computation Time: " + data.getAverageRuntime());
+            out.newLine();
+            out.write("Average Visits: " + data.getAverageVisited());
+            out.newLine();
+            out.write("Fails: " + failCounter);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
+        setUp("malta-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -539,11 +687,11 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-//        pairList.add(dijkstraPair);
-//        pairList.add(biDijkstraPair);
-//        pairList.add(biAStarPair);
-//        pairList.add(ALTPair);
-//        pairList.add(ReachPair);
+        pairList.add(dijkstraPair);
+        pairList.add(biDijkstraPair);
+        pairList.add(biAStarPair);
+        pairList.add(ALTPair);
+        pairList.add(ReachPair);
         pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
@@ -602,21 +750,31 @@ public class PathExperiments {
 
     @Test
     public void DijkstraSpeedTest() {
-        setUp("denmark-latest.osm.pbf");
-        int testSize = 100;
+        setUp("malta-latest.osm.pbf");
+        int testSize = 10000;
         TestData data = new TestData();
+        TestData data2 = new TestData();
+
         int j = 0;
         while (j < testSize) {
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(DIJKSTRA);
+            ShortestPathResult res2 = SSSP.randomPath(DUPLICATE_DIJKSTRA);
             /*resultArray[0][j] = res;*/
             if (res.path.size() > 20) {
+                if (j % 100 == 0) {
+                    System.out.println("Runtime for case " + j + "(seed = " + SSSP.seed + ") = " + res.runTime);
+                }
                 data.addVisit(res.scannedNodesA.size());
                 data.addRuntime(res.runTime);
+                data2.addVisit(res2.scannedNodesA.size());
+                data2.addRuntime(res2.runTime);
                 j++;
             }
         }
         System.out.println(data.totalRunningTime / testSize);
+        System.out.println(data2.totalRunningTime / testSize);
+
     }
 
 
@@ -682,6 +840,48 @@ public class PathExperiments {
         SSSP.setLandmarks(lm);
         SSSP.seed = 0;
         SSSP.setLandmarkArray(null);
+    }
+
+    @Test
+    public void testLMGenerationTimes() {
+        setUp("poland-latest.osm.pbf");
+
+        long startAvoid = System.nanoTime();
+        Landmarks lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksAvoid(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        long endAvoid = System.nanoTime();
+
+        long startRandom = System.nanoTime();
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksRandom(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        long endRandom = System.nanoTime();
+
+        long startFarthest = System.nanoTime();
+        lm = new Landmarks(graph);
+        lm.clearLandmarks();
+        //initTestParameters(lm, LandmarkMode.RANDOM);
+        lm.landmarksFarthest(16, false);
+        SSSP.setLandmarks(lm);
+        SSSP.seed = 0;
+        SSSP.setLandmarkArray(null);
+        long endFarthest = System.nanoTime();
+
+        long durationAvoid = TimeUnit.MILLISECONDS.convert(endAvoid - startAvoid, TimeUnit.NANOSECONDS);
+        long durationRandom = TimeUnit.MILLISECONDS.convert(endRandom - startRandom, TimeUnit.NANOSECONDS);
+        long durationFarthest = TimeUnit.MILLISECONDS.convert(endFarthest - startFarthest, TimeUnit.NANOSECONDS);
+        System.out.println(durationAvoid);
+        System.out.println(durationFarthest);
+        System.out.println(durationRandom);
     }
 
     private void testGenerationMethod(int testSize, TestData data) {

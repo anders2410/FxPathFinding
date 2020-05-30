@@ -34,7 +34,7 @@ public class BinHeapTest {
                     break;
                 case 2:
                     try {
-                        System.out.println("Min Element : " + bh.poll());
+                        System.out.println("Min Element : " + bh.nodePoll());
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }

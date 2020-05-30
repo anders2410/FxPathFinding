@@ -28,6 +28,7 @@ public class DijkstraFactory implements AlgorithmFactory {
     public TerminationStrategy getTerminationStrategy() {
         return TerminationGenerator.getSameScannedTermination();
     }
+
     @Override
     public ScanPruningStrategy getScanPruningStrategy() {
         return ScanPruningGenerator.getBasePruning();
@@ -41,7 +42,8 @@ public class DijkstraFactory implements AlgorithmFactory {
 
     @Override
     public PreProcessStrategy getPreProcessStrategy() {
-        return () -> {};
+        return () -> {
+        };
     }
 
     @Override

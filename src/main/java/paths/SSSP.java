@@ -8,6 +8,8 @@ import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
 import paths.generator.EdgeWeightGenerator;
+import paths.factory.BiReachLandmarksFactory;
+import paths.factory.DuplicateFactories.*;
 import paths.generator.RelaxGenerator;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.Landmarks;
@@ -21,7 +23,6 @@ import java.util.function.Function;
 import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
-import static paths.generator.GetPQueueGenerator.getJavaQueue;
 
 public class SSSP {
     public static boolean trace = false;
@@ -75,6 +76,8 @@ public class SSSP {
     private static ResultPackingStrategy resultPackingStrategy;
     private static List<List<Edge>> adjList;
     private static List<List<Edge>> revAdjList;
+    private static QueueUpdatingStrategy updatePriorityQueueStrategy;
+    private static QueuePollingStrategy pollPriorityQueueStrategy;
 
     // Initialization
     private static void initFields(AlgorithmMode modeP, int sourceP, int targetP) {
@@ -124,10 +127,24 @@ public class SSSP {
         return arr;
     }
 
+    public static double[] getHeuristicValuesA() {
+        return heuristicValuesA;
+    }
+
+    public static double[] getHeuristicValuesB() {
+        return heuristicValuesB;
+    }
+
+    public static PriorityStrategy getPriorityStrategyA() {
+        return priorityStrategyA;
+    }
+
+    public static PriorityStrategy getPriorityStrategyB() {
+        return priorityStrategyB;
+    }
+
     public static void updatePriority(int nodeToUpdate, ABDir dir) {
-        if (dir == A) heuristicValuesA[nodeToUpdate] = priorityStrategyA.apply(nodeToUpdate, dir);
-        else heuristicValuesB[nodeToUpdate] = priorityStrategyB.apply(nodeToUpdate, dir);
-        getQueue(dir).updatePriority(nodeToUpdate);
+        updatePriorityQueueStrategy.updatePriority(nodeToUpdate, dir);
     }
 
     private static Comparator<Integer> getComparator(PriorityStrategy priorityStrategy, ABDir dir) {
@@ -147,7 +164,6 @@ public class SSSP {
                     return Double.compare(heuristicValuesB[i], heuristicValuesB[j]);
                 }
             }
-
         };
     }
 
@@ -173,6 +189,19 @@ public class SSSP {
         factoryMap.put(SINGLE_TO_ALL, new OneToAllDijkstra());
         factoryMap.put(BOUNDED_SINGLE_TO_ALL, new BoundedOneToAll());
         factoryMap.put(CONTRACTION_HIERARCHIES_LANDMARKS, new ContractionHierarchiesLandmarksFactory());
+        factoryMap.put(DUPLICATE_DIJKSTRA, new DijkstraDuplicateQueueFactory());
+        factoryMap.put(DUPLICATE_A_STAR, new AStarDuplicate());
+        factoryMap.put(DUPLICATE_A_STAR_LANDMARKS, new LandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_A_STAR_CONSISTENT, new BiAstarConsistenDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_A_STAR_LANDMARKS, new BiLandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_DIJKSTRA, new BiDijkstraDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_REACH, new BiReachDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_REACH_A_STAR, new BiReachAstarDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_REACH_LANDMARKS, new BiReachLandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_REACH, new ReachDuplicateFactory());
+        factoryMap.put(DUPLICATE_REACH_A_STAR, new ReachAstarDuplicateFactory());
+        factoryMap.put(DUPLICATE_REACH_LANDMARKS, new ReachLandmarksDuplicateFactory());
+        factoryMap.put(DUPLICATE_CONTRACTION_HIERARCHIES, new ContractionHierarchiesDuplicateFactory());
     }
 
     public static void applyFactory(AlgorithmFactory factory) {
@@ -184,10 +213,11 @@ public class SSSP {
         relaxStrategyB = factory.getRelaxStrategy();
         priorityStrategyA = factory.getPriorityStrategy();
         priorityStrategyB = factory.getPriorityStrategy();
-        priorityQueueGetter = getJavaQueue();
+        priorityQueueGetter = factory.getQueue();
         alternationStrategy = factory.getAlternationStrategy();
         scanPruningStrategy = factory.getScanPruningStrategy();
         resultPackingStrategy = factory.getResultPackingStrategy();
+        updatePriorityQueueStrategy = factory.getQueueUpdatingStrategy();
     }
 
     // Path finding
@@ -210,7 +240,7 @@ public class SSSP {
 
         while (!queueA.isEmpty() && !terminationStrategy.checkTermination(getGoalDistance())) {
             /*if (queueA.peek() == target || pathMapA.size() > adjList.size()) break;*/
-            if (queueA.peek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
+            if (queueA.nodePeek() == target && (mode != BOUNDED_SINGLE_TO_ALL && mode != SINGLE_TO_ALL)) break;
             takeStep(adjList, A);
         }
         long endTime = System.nanoTime();
@@ -240,12 +270,16 @@ public class SSSP {
     }
 
     private static void takeStep(List<List<Edge>> adjList, ABDir dir) {
-        Integer currentNode = getQueue(dir).poll();
+        Integer currentNode = extractMinNode(dir);
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
         for (Edge edge : adjList.get(currentNode)) {
             getRelaxStrategy(dir).relax(edge, dir);
         }
+    }
+
+    private static Integer extractMinNode(ABDir dir) {
+        return getQueue(dir).nodePoll();
     }
 
     public static ShortestPathResult singleToAllPath(int sourceP) {
@@ -493,7 +527,7 @@ public class SSSP {
         int maxDens = densityMeasures.stream().max(Integer::compareTo).orElse(1);
         densityMeasuresNorm = new ArrayList<>();
         for (int density : densityMeasures) {
-            densityMeasuresNorm.add((double)density/maxDens);
+            densityMeasuresNorm.add((double) density / maxDens);
         }
     }
 

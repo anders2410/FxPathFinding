@@ -25,13 +25,18 @@ public class TreeSetMinPriorityQueue extends TreeSet<Integer> implements MinPrio
     }
 
     @Override
-    public Integer peek() {
+    public Integer nodePeek() {
         return super.first();
     }
 
     @Override
-    public Integer poll() {
+    public Integer nodePoll() {
         return super.pollFirst();
+    }
+
+    @Override
+    public void insert(DuplicatePriorityQueueNode n) {
+
     }
 
     @Override

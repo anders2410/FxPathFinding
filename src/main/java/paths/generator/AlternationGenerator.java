@@ -29,7 +29,7 @@ public class AlternationGenerator {
 
     public static AlternationStrategy getDensityBasedStrategy() {
         return () -> {
-            Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
+            Integer aPeek = getQueue(A).nodePeek(), bPeek = getQueue(B).nodePeek();
             if (aPeek == null) return false;
             if (bPeek == null) return true;
             return getDensityMeasuresNorm().get(aPeek) < getDensityMeasuresNorm().get(bPeek);
@@ -38,7 +38,7 @@ public class AlternationGenerator {
 
     public static AlternationStrategy getDensityTimesAmountSeenStrategy(double densityInfluence) {
         return () -> {
-            Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
+            Integer aPeek = getQueue(A).nodePeek(), bPeek = getQueue(B).nodePeek();
             if (aPeek == null) return false;
             if (bPeek == null) return true;
             double measureA = getQueue(A).size() + getScanned(A).size()*(1 - densityInfluence + densityInfluence * getDensityMeasuresNorm().get(aPeek));
@@ -49,7 +49,7 @@ public class AlternationGenerator {
 
     public static AlternationStrategy getSameDistanceStrategy() {
         return () -> {
-            Integer aPeek = getQueue(A).peek(), bPeek = getQueue(B).peek();
+            Integer aPeek = getQueue(A).nodePeek(), bPeek = getQueue(B).nodePeek();
             if (aPeek == null) return false;
             if (bPeek == null) return true;
             return getNodeDist(A).get(aPeek) < getNodeDist(B).get(bPeek);
