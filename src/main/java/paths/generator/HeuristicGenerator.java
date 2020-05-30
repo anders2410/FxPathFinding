@@ -10,8 +10,9 @@ public class HeuristicGenerator {
 
     public static HeuristicFunction getDistance() {
         return (from, to) -> {
+            boolean isSpeed = SSSP.getEdgeWeightStrategy().equals(EdgeWeightGenerator.getMaxSpeedTime());
             List<Node> nodeList = SSSP.getGraph().getNodeList();
-            return SSSP.getDistanceStrategy().apply(nodeList.get(from), nodeList.get(to));
+            return SSSP.getDistanceStrategy().apply(nodeList.get(from), nodeList.get(to)) / (isSpeed ? 130 : 1);
         };
     }
 
