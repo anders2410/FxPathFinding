@@ -9,8 +9,10 @@ import model.Node;
 import load.pbfparsing.PBFParser;
 import load.xml.XMLFilter;
 import load.xml.XMLGraphExtractor;
+import paths.ABDir;
 import paths.AlgorithmMode;
 import paths.SSSP;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.LandmarkMode;
 import paths.Util;
@@ -24,6 +26,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
+import static paths.SSSP.getEdgeWeightStrategy;
 import static paths.preprocessing.LandmarkMode.*;
 
 public class GraphIO {
@@ -346,7 +349,7 @@ public class GraphIO {
 
     public CHResult loadCH(String fileName) {
         try {
-            String chFile = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
+            String chFile = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies" + getEdgeWeightStrategy().getFileSuffix() + ".tmp";
             if (!new File(chFile).exists()) {
                 return null;
             }
@@ -373,7 +376,7 @@ public class GraphIO {
 
     public void saveCH(String fileName, CHResult CHResult) {
         try {
-            String name = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies.tmp";
+            String name = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies" + getEdgeWeightStrategy().getFileSuffix() + ".tmp";
             FileOutputStream fos = new FileOutputStream(name);
             OutputStream buffer = new BufferedOutputStream(fos);
             ObjectOutputStream oos = new ObjectOutputStream(buffer);

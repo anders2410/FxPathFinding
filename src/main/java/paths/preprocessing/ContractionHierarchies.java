@@ -5,9 +5,12 @@ import javafx.util.Pair;
 import model.Edge;
 import model.Graph;
 import model.Node;
+import paths.ABDir;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+
+import static paths.SSSP.getEdgeWeightStrategy;
 
 /**
  * This class implements the pre-processing part of Contraction Hierarchies returning the augmented Graph and
@@ -128,8 +131,8 @@ public class ContractionHierarchies {
             if (contracted.get(inEdge.from)) {
                 continue;
             }
-            if (inMax < inEdge.d) {
-                inMax = inEdge.d;
+            if (inMax < getEdgeWeightStrategy().getWeight(inEdge, ABDir.A)) {
+                inMax = getEdgeWeightStrategy().getWeight(inEdge, ABDir.A);
             }
         }
 
@@ -138,8 +141,8 @@ public class ContractionHierarchies {
             if (contracted.get(outEdge.to)) {
                 continue;
             }
-            if (outMax < outEdge.d) {
-                outMax = outEdge.d;
+            if (outMax < getEdgeWeightStrategy().getWeight(outEdge, ABDir.A)) {
+                outMax = getEdgeWeightStrategy().getWeight(outEdge, ABDir.A);
             }
         }
 
@@ -148,7 +151,7 @@ public class ContractionHierarchies {
         // Iterating over all the incoming nodes
         for (Edge inEdge : inEdgeList) {
             int inNodeIndex = inEdge.from;
-            double inCost = inEdge.d;
+            double inCost = getEdgeWeightStrategy().getWeight(inEdge, ABDir.A);
 
             // If the node has already been contracted we will ignore it.
             if (contracted.get(inNodeIndex)) {
@@ -161,7 +164,7 @@ public class ContractionHierarchies {
             // This adds shortcuts if no witness path was found.
             for (Edge outEdge : outEdgeList) {
                 int outNodeIndex = outEdge.to;
-                double outCost = outEdge.d;
+                double outCost = getEdgeWeightStrategy().getWeight(outEdge, ABDir.A);
 
                 // If the node has already been contracted we will ignore it.
                 if (contracted.get(outNodeIndex) || inNodeIndex == outNodeIndex) {
@@ -187,7 +190,7 @@ public class ContractionHierarchies {
                         }
 
                         if (alreadyHasEdge) {
-                            if (alreadyEdge.getKey().d > totalCost) {
+                            if (getEdgeWeightStrategy().getWeight(alreadyEdge.getKey(), ABDir.A) > totalCost) {
                                 graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
                                 Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
@@ -242,7 +245,7 @@ public class ContractionHierarchies {
 
             for (Edge edge : graph.getAdjList().get(node)) {
                 int temp = edge.to;
-                double cost = edge.d;
+                double cost = getEdgeWeightStrategy().getWeight(edge, ABDir.A);
 
                 if (contracted.get(temp) || contractedNode == temp) {
                     continue;

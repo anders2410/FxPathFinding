@@ -24,6 +24,11 @@ public class EdgeWeightGenerator {
             public double lowerBoundDistance(Node node1, Node node2) {
                 return SSSP.getDistanceStrategy().apply(node1, node2);
             }
+
+            @Override
+            public String getFileSuffix() {
+                return "";
+            }
         };
     }
 
@@ -38,6 +43,11 @@ public class EdgeWeightGenerator {
             @Override
             public double lowerBoundDistance(Node node1, Node node2) {
                 return SSSP.getDistanceStrategy().apply(node1, node2) / 130;
+            }
+
+            @Override
+            public String getFileSuffix() {
+                return "-speed";
             }
         };
     }
