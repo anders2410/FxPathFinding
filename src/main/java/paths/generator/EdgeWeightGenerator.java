@@ -36,7 +36,7 @@ public class EdgeWeightGenerator {
         return new EdgeWeightStrategy() {
             @Override
             public double getWeight(Edge e, ABDir dir) {
-                EdgeInfo info = SSSP.getGraphInfo().getEdge(dir == A ? e : e.getReverse());
+                EdgeInfo info = SSSP.getGraphInfo().getEdge(dir == A && !SSSP.reverseMe ? e : e.getReverse());
                 return e.d / (info.getMaxSpeed() == -1 ? 50 : info.getMaxSpeed());
             }
 

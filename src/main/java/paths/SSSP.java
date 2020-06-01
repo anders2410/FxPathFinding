@@ -282,6 +282,8 @@ public class SSSP {
         return getQueue(dir).nodePoll();
     }
 
+    public static boolean reverseMe = false;
+
     public static ShortestPathResult singleToAllPath(int sourceP) {
         applyFactory(factoryMap.get(SINGLE_TO_ALL));
         initFields(SINGLE_TO_ALL, sourceP, 0);
@@ -520,6 +522,7 @@ public class SSSP {
     public static void setEdgeWeightStrategy(EdgeWeightStrategy edgeWeightStrategy) {
         RelaxGenerator.setEdgeWeightStrategy(edgeWeightStrategy);
         SSSP.edgeWeightStrategy = edgeWeightStrategy;
+        setLandmarkArray(null);
     }
 
     public static void setDensityMeasures(List<Integer> densityMeasures) {

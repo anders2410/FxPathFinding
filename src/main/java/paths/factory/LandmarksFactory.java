@@ -36,7 +36,6 @@ public class LandmarksFactory implements AlgorithmFactory {
     @Override
     public ResultPackingStrategy getResultPackingStrategy() {
         return ResultPackingGenerator.getOneDirectionalPack();
-
     }
 
     @Override

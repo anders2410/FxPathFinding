@@ -54,7 +54,6 @@ public class PreProcessGenerator {
 
     private static void generateLandmarks() {
         double[][] landmarkArray = getLandmarkArray();
-        int target = getTarget(), source = getSource();
         Graph graph = getGraph();
         Set<Integer> landmarkSet = getLandmarks().getLandmarkSet();
 
@@ -66,9 +65,11 @@ public class PreProcessGenerator {
                 List<Double> forwardDistance = singleToAllPath(landmarkIndex).nodeDistances;
                 double[] arrForward = forwardDistance.stream().mapToDouble(Double::doubleValue).toArray();
                 graph.setAdjList(graph.getReverse(graph.getAdjList()));
+                reverseMe = true;
                 List<Double> backDistance = singleToAllPath(landmarkIndex).nodeDistances;
                 double[] arrBackward = backDistance.stream().mapToDouble(Double::doubleValue).toArray();
                 graph.setAdjList(originalList);
+                reverseMe = false;
                 landmarkArray[index] = arrForward;
                 landmarkArray[index + 1] = arrBackward;
                 index += 2;
