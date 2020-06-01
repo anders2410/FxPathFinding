@@ -1618,7 +1618,8 @@ public class FXMLController implements Initializable {
     }
 
     public void handleWeightTrees() {
-        System.out.println("Not implemented");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getNatural());
+        runAlgorithm();
     }
 
     public void handleOverlayNodeDist() {
