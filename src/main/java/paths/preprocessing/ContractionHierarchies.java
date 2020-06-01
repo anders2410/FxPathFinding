@@ -175,6 +175,7 @@ public class ContractionHierarchies {
 
                 // Checks if a witness path exists. If it doesnt we will add a shortcut bypassing node n.
                 if (distanceList.get(outNodeIndex) > totalCost) {
+                    // A switch depending on whether it should only calculate how many shortcuts.
                     if (computeNumberOfShortcuts) {
                         numberOfShortcuts++;
                     } else {
@@ -218,7 +219,7 @@ public class ContractionHierarchies {
     }
 
     // Is used in the witness search. It is a standard Dijkstra implementation where, the node we are about to
-    // contract, is excluded from the search. As we want to find the shortest path bypassing it.
+    // contract, is excluded from the search. As we want to find the shortest path bypassing it, if it exist.
     private List<Double> dijkstra(int contractedNode, int inNode, double maxCost) {
         for (Integer i : dijkstraVisited) {
             dijkstraDistanceList.set(i, Double.MAX_VALUE);

@@ -1152,9 +1152,11 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateCHEvent() {
         GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-        if (!graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
-            generateContractionHierarchies();
+        if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
+            if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies-speed.tmp"))
+                return;
         }
+        generateContractionHierarchies();
     }
 
     private void generateContractionHierarchies() {
@@ -1601,6 +1603,10 @@ public class FXMLController implements Initializable {
     public void handleWeightSpeed() {
         if (graphInfo != null) {
             SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getMaxSpeedTime());
+            GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+            if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies-speed.tmp")) {
+                SSSP.setCHResult(graphIO.loadCH(fileName));
+            }
             runAlgorithm();
         } else {
             System.out.println("Info hasn't been generated for this map: " + fileName);
