@@ -194,7 +194,7 @@ public class FXMLController implements Initializable {
                 graphIO.setProgressListener(this::updateProgress);
                 LoadType loadType = graphIO.parseGraphInfo(fileName);
                 graphInfo = graphIO.getGraphInfo();
-                updateProgress(1,1);
+                updateProgress(1, 1);
                 return loadType;
             }
         };
@@ -285,7 +285,7 @@ public class FXMLController implements Initializable {
         clearCanvas();
         drawAllEdges();
         if (currentOverlay == OverlayType.NODEDIST)
-        drawAllNodeDist();
+            drawAllNodeDist();
         drawSelectedNodes();
         drawOverlayNodes();
         drawAllLandmarks();
@@ -299,12 +299,12 @@ public class FXMLController implements Initializable {
             PixelPoint np = toScreenPos(node);
             if (distB < 1000000) {
                 gc.setStroke(Color.CYAN);
-                gc.strokeText(""+Math.round(distB*10000)/10000.0, np.x, np.y);
+                gc.strokeText("" + Math.round(distB * 10000) / 10000.0, np.x, np.y);
             }
             double distA = SSSP.getNodeDist(ABDir.A).get(node.index);
             if (distA < 1000000) {
                 gc.setStroke(Color.BLUE);
-                gc.strokeText(""+Math.round(distA*10000)/10000.0, np.x, np.y + 15);
+                gc.strokeText("" + Math.round(distA * 10000) / 10000.0, np.x, np.y + 15);
             }
         }
     }
@@ -1152,9 +1152,8 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateCHEvent() {
         GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-        if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
-            if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies-speed.tmp"))
-                return;
+        if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies" + SSSP.getEdgeWeightStrategy().getFileSuffix() + ".tmp")) {
+            return;
         }
         generateContractionHierarchies();
     }
@@ -1365,6 +1364,7 @@ public class FXMLController implements Initializable {
             overlayNodes2.add(graph.getNodeList().get(toIndex));
         }
     }
+
     private float displayGetRadiusDialog() {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Input radius");
@@ -1623,6 +1623,10 @@ public class FXMLController implements Initializable {
 
     public void handleWeightTrees() {
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getNatural());
+        GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+        if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
+            SSSP.setCHResult(graphIO.loadCH(fileName));
+        }
         runAlgorithm();
     }
 
