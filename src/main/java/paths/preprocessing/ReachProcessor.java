@@ -131,13 +131,16 @@ public class ReachProcessor {
             }
             if (leastCostTreeH.size() == 0) continue;
 
-            //long traverseTime = System.nanoTime();
+            long traverseTime = System.nanoTime();
             traverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d);
             //nonRetardTraverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d, boundedSPTResult, i);
-            //long traverseEnd = System.nanoTime();
-            //long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
-            //System.out.println("---");
-            //System.out.println("oneToAll -> " + timeElapsed);
+            long traverseEnd = System.nanoTime();
+            long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
+            /*if (b > 2) {
+                System.out.println("---");
+                System.out.println("b :" + b + " oneToAll -> " + timeElapsed);
+                System.out.println("b :" + b + " TreeTraverse -> " + timeElapsed2);
+            }*/
             //if (b > 2) System.out.println("treeTraverse -> " + timeElapsed2);
 //            int a = 1 + 1;
         }
@@ -219,6 +222,7 @@ public class ReachProcessor {
             if (!SPTRes.pathMap.containsKey(i)) continue;
             nonRetardedUpdateBoundsSubTree(leastCostTreeH, SPTRes.pathMap.get(i), i, upperBoundPaths, graph, g, SPTRes, treeRoot);
         }
+
        /* long traverseTime = System.nanoTime();
         long traverseEnd = System.nanoTime();
         long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
@@ -279,10 +283,11 @@ public class ReachProcessor {
                 rt = bounds.get(node);
             }
 
-            // long traverseTime = System.nanoTime();
+
+            long traverseTime = System.nanoTime();
             List<Integer> nodesInPathList = findNodesInPath(SPTRes.pathMap, treeRoot, node);
             if (pathTooLong) lengthToLeaf -= reachMetricLast;
-            /*long traverseEnd = System.nanoTime();
+           /* long traverseEnd = System.nanoTime();
             long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
             if (timeElapsed2 >= 1) {
                 System.out.println(timeElapsed2);
