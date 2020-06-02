@@ -627,7 +627,7 @@ public class PathExperiments {
         setUp("denmark-latest.osm.pbf");
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testSaveAlgorithm(data, "Malta");
+            testSaveAlgorithm(data, "Denmark");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
@@ -635,7 +635,7 @@ public class PathExperiments {
     }
 
     private void testSaveAlgorithm(TestDataExtra data, String country) {
-        int testCases = 1;
+        int testCases = 10000;
         int i = 0;
         int failCounter = 0;
         seed = 0;
@@ -654,7 +654,7 @@ public class PathExperiments {
                 ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
                 data.addVisit(res);
                 String resultToSave;
-                if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
+                if (Math.abs(res.d - resDijk.d) > 0.00000000001 || !res.path.equals(resDijk.path)) {
                     failCounter++;
                     resultToSave = "( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):";
                 } else {
