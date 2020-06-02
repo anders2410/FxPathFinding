@@ -1597,6 +1597,10 @@ public class FXMLController implements Initializable {
 
     public void handleWeightDistance() {
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+        if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
+            SSSP.setCHResult(graphIO.loadCH(fileName));
+        }
         runAlgorithm();
     }
 

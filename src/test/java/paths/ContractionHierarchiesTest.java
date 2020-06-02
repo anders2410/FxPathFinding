@@ -5,6 +5,7 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.ContractionHierarchies;
 import paths.preprocessing.CHResult;
 
@@ -42,6 +43,41 @@ public class ContractionHierarchiesTest {
 
     @Test
     public void testContractionHierarchiesIntegrated() {
+        System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
+        System.out.println("Number of nodes: " + SSSP.getCHResult().getGraph().getNodeAmount());
+        System.out.println("Number of edges: " + SSSP.getCHResult().getGraph().getEdgeAmount());
+
+
+        System.out.println("------------------------------ TESTING VS. DIJKSTRA -----------------------------------------------");
+        ShortestPathResult dijkstraResult;
+        ShortestPathResult CHResult;
+
+        int seed = 0;
+        for (int i = 0; i < 10; i++) {
+            Random random = new Random(seed);
+            int source = random.nextInt(originalGraph.getNodeAmount());
+            int target = random.nextInt(originalGraph.getNodeAmount());
+
+            dijkstraResult = SSSP.findShortestPath(source, target, AlgorithmMode.DIJKSTRA);
+            CHResult = SSSP.findShortestPath(source, target, AlgorithmMode.CONTRACTION_HIERARCHIES);
+
+            System.out.println(dijkstraResult.path);
+            System.out.println(CHResult.path);
+            System.out.println("Dijkstra distance: " + dijkstraResult.d);
+            System.out.println("CH distance: " + CHResult.d);
+            System.out.println();
+
+            seed++;
+        }
+    }
+
+    @Test
+    public void testContractionHierarchiesIntegratedSpeed() {
+        graphIO.loadGraphInfo(fileName);
+        SSSP.setGraphInfo(graphIO.getGraphInfo());
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getMaxSpeedTime());
+        graphIO.loadPreCH(fileName);
+
         System.out.println("------------------------------ AUGMENTED GRAPH ----------------------------------------------------");
         System.out.println("Number of nodes: " + SSSP.getCHResult().getGraph().getNodeAmount());
         System.out.println("Number of edges: " + SSSP.getCHResult().getGraph().getEdgeAmount());

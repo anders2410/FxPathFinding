@@ -347,7 +347,7 @@ public class GraphIO {
         }
     }
 
-    public CHResult loadCH(String fileName) {
+    public CHResult  loadCH(String fileName) {
         try {
             String chFile = getTrimmedFolderSCCName(fileName) + "-contraction-hierarchies" + getEdgeWeightStrategy().getFileSuffix() + ".tmp";
             System.out.println("Loaded " + chFile);

@@ -1,5 +1,6 @@
 package paths.generator;
 
+import javafx.util.Pair;
 import model.Edge;
 import model.Node;
 import paths.ABDir;
@@ -9,6 +10,7 @@ import paths.strategy.EdgeWeightStrategy;
 import paths.strategy.RelaxStrategy;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static paths.ABDir.A;
@@ -132,8 +134,17 @@ public class RelaxGenerator {
     public static RelaxStrategy getCH() {
         return (edge, dir) -> {
             List<Integer> ranks = getCHResult().getRanks();
+            Map<Pair<Integer, Integer>, Integer> shortcuts = getCHResult().getShortcuts();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
-                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir) + getNodeDist(revDir(dir)).get(edge.to);
+                Pair<Integer, Integer> pair;
+                if (dir == ABDir.A) {
+                    pair = new Pair<>(edge.from, edge.to);
+                } else {
+                    pair = new Pair<>(edge.to, edge.from);
+                }
+
+                double edgeWeight = shortcuts.containsKey(pair) ? edge.d : edgeWeightStrategy.getWeight(edge, dir);
+                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeight + getNodeDist(revDir(dir)).get(edge.to);
                 if (getScanned(revDir(dir)).contains(edge.to)) {
                     if (pathLength < getBestPathLengthSoFar()) {
                         setBestPathLengthSoFar(pathLength);
@@ -145,7 +156,13 @@ public class RelaxGenerator {
                     setMiddlePoint(edge.to);
                 }
 
-                getDijkstra().relax(edge, dir);
+                double newDist = getNodeDist(dir).get(edge.from) + edgeWeight;
+                if (newDist < getNodeDist(dir).get(edge.to)) {
+                    getNodeDist(dir).set(edge.to, newDist);
+                    updatePriority(edge.to, dir);
+                    getPathMap(dir).put(edge.to, edge.from);
+                    putRelaxedEdge(dir, edge);
+                }
             }
         };
     }
