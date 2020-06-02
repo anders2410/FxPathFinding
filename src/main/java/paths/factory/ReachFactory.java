@@ -35,7 +35,7 @@ public class ReachFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getSameScannedTermination();
     }
 
     @Override

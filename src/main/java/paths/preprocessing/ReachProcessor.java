@@ -3,11 +3,8 @@ package paths.preprocessing;
 import javafx.FXMLController;
 import model.Edge;
 import model.Graph;
-import model.ModelUtil;
 import model.Node;
-import paths.AlgorithmMode;
 import paths.SSSP;
-import paths.ShortestPathResult;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,6 +20,7 @@ public class ReachProcessor {
     private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
     };
     private FXMLController fcontroller;
+    private double[] nodeDistLCPT;
 
     double reachMetric(Edge e) {
         //First parameter not useful now, but saved because we might need to do projection later into geometric space (if spherical distance is not provably correct as assumed)
@@ -130,14 +128,17 @@ public class ReachProcessor {
                 leastCostTreeH.replace(e.getValue(), list);
             }
             if (leastCostTreeH.size() == 0) continue;
-
-            //long traverseTime = System.nanoTime();
+            nodeDistLCPT = boundedSPTResult.nodeDist;
+            long traverseTime = System.nanoTime();
             traverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d);
             //nonRetardTraverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d, boundedSPTResult, i);
-            //long traverseEnd = System.nanoTime();
-            //long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
-            //System.out.println("---");
-            //System.out.println("oneToAll -> " + timeElapsed);
+            long traverseEnd = System.nanoTime();
+            long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
+            /*if (b > 2) {
+                System.out.println("---");
+                System.out.println("b :" + b + " oneToAll -> " + timeElapsed);
+                System.out.println("b :" + b + " TreeTraverse -> " + timeElapsed2);
+            }*/
             //if (b > 2) System.out.println("treeTraverse -> " + timeElapsed2);
 //            int a = 1 + 1;
         }
@@ -167,24 +168,24 @@ public class ReachProcessor {
     }
 
     public BoundedSPTResult SPTWithinRadius(int source, double radius, Graph graph) {
-        List<Double> nodeDist = new ArrayList<>();
+        double[] nodeDist = new double[graph.getNodeAmount()];
         for (int i = 0; i < graph.getNodeAmount(); i++) {
-            nodeDist.add(Double.MAX_VALUE);
+            nodeDist[i] = Double.MAX_VALUE;
         }
-        nodeDist.set(source, 0.0);
+        nodeDist[source] = 0.0;
         Map<Integer, Integer> pathMap = new HashMap<>();
-        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing(nodeDist::get));
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing((integer -> nodeDist[integer])));
         /*for (Node node : graph.getNodeList()) {
             if (node != null) priorityQueue.add(node.index);
         }*/
         priorityQueue.add(source);
         List<Node> nList = graph.getNodeList();
-        while (!priorityQueue.isEmpty() && (nodeDist.get(priorityQueue.peek()) < radius)) {
+        while (!priorityQueue.isEmpty() && (nodeDist[priorityQueue.peek()]) < radius) {
             Integer from = priorityQueue.poll();
             for (Edge edge : graph.getAdjList().get(from)) {
                 if (nList.get(edge.to) == null) continue;
-                if (nodeDist.get(from) + edge.d < nodeDist.get(edge.to)) {
-                    nodeDist.set(edge.to, nodeDist.get(from) + edge.d);
+                if (nodeDist[from] + edge.d < nodeDist[edge.to]) {
+                    nodeDist[edge.to] = nodeDist[from] + edge.d;
                     priorityQueue.remove(edge.to);
                     priorityQueue.add(edge.to);
                     pathMap.put(edge.to, edge.from);
@@ -200,9 +201,9 @@ public class ReachProcessor {
         for (Integer i : leastCostTreeH.get(rootNode)) {
             metricFirstEdge = reachMetric(getEdge(i, getOriginalGraph().getAdjList().get(rootNode)));
             double upperBoundPaths = 2 * b + c + d + metricFirstEdge;
-            HashMap<Integer, Double> sourceNodeMap = new HashMap<>();
-            sourceNodeMap.put(rootNode, 0.0);
-            updateBoundsSubTree(leastCostTreeH, rootNode, i, runningMetric, upperBoundPaths, graph, g, sourceNodeMap);
+            List<Integer> nodesInPathSet = new ArrayList<>();
+            nodesInPathSet.add(rootNode);
+            updateBoundsSubTree(leastCostTreeH, rootNode, i, runningMetric, upperBoundPaths, graph, g, nodesInPathSet);
         }
     }
 
@@ -219,16 +220,17 @@ public class ReachProcessor {
             if (!SPTRes.pathMap.containsKey(i)) continue;
             nonRetardedUpdateBoundsSubTree(leastCostTreeH, SPTRes.pathMap.get(i), i, upperBoundPaths, graph, g, SPTRes, treeRoot);
         }
+
        /* long traverseTime = System.nanoTime();
         long traverseEnd = System.nanoTime();
         long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
         if (b > 3) System.out.println("treeTraverse -> " + timeElapsed2);*/
     }
 
-    private double updateBoundsSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double runningMetric, double upperBoundPaths, Graph subGraph, double g, HashMap<Integer, Double> sourceNodeMap) {
+    private double updateBoundsSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double runningMetric, double upperBoundPaths, Graph subGraph, double g, List<Integer> nodesInPath) {
         double reachMetricLast = reachMetric(getEdge(node, getOriginalGraph().getAdjList().get(parentNode)));
-        boolean pathTooLong = runningMetric >= upperBoundPaths + reachMetricLast && sourceNodeMap.size() >= 1;
-        boolean endOfPossiblePath = leastCostTreeH.get(node) == null && sourceNodeMap.size() >= 1;
+        boolean pathTooLong = runningMetric >= upperBoundPaths + reachMetricLast && nodesInPath.size() >= 1;
+        boolean endOfPossiblePath = leastCostTreeH.get(node) == null && nodesInPath.size() >= 1;
         if (pathTooLong || endOfPossiblePath) {
             if (endOfPossiblePath) runningMetric += reachMetricLast;
             // runningMetric -= reachMetricLast;
@@ -238,17 +240,27 @@ public class ReachProcessor {
                 // leaf is in Supergraph but not subgraph
                 rt = bounds.get(node);
             }
-
-            for (Map.Entry<Integer, Double> entry : sourceNodeMap.entrySet()) {
-                int key = entry.getKey();
-                double value = entry.getValue();
-                double nodeToLeaf = runningMetric - value;
-                double rb = Math.min(g + value, rt + nodeToLeaf);
-                if (rb > bounds.get(key)) {
-                    bounds.set(key, rb);
+            double lengthToLeaf = nodeDistLCPT[node];
+            /*nodesInPath.parallelStream().forEach(nodeInPath -> {
+                double rootToNode = nodeDistLCPT[nodeInPath];
+                double nodeToLeaf = lengthToLeaf - rootToNode;
+                double rb = Math.min(g + rootToNode, finalRt + nodeToLeaf);
+                if (rb > bounds.get(nodeInPath)) {
+                    bounds.set(nodeInPath, rb);
                 }
-                double min = Math.min(value, nodeToLeaf);
-                if (min > reachLCPT[key]) reachLCPT[key] = min;
+                double min = Math.min(rootToNode, nodeToLeaf);
+                if (min > reachLCPT[nodeInPath]) reachLCPT[nodeInPath] = min;
+            });*/
+            for (int i = 0; i < nodesInPath.size(); i++) {
+                int nodeInPath = nodesInPath.get(i);
+                double rootToNode = nodeDistLCPT[nodeInPath];
+                double nodeToLeaf = lengthToLeaf - rootToNode;
+                double rb = Math.min(g + rootToNode, rt + nodeToLeaf);
+                if (rb > bounds.get(nodeInPath)) {
+                    bounds.set(nodeInPath, rb);
+                }
+                double min = Math.min(rootToNode, nodeToLeaf);
+                if (min > reachLCPT[nodeInPath]) reachLCPT[nodeInPath] = min;
             }
             return runningMetric;
         }
@@ -257,17 +269,17 @@ public class ReachProcessor {
         }
         runningMetric += reachMetricLast;
 
-        sourceNodeMap.put(node, runningMetric);
+        nodesInPath.add(node);
         for (Integer i : leastCostTreeH.get(node)) {
-            HashMap<Integer, Double> newsourceNodeMap = new HashMap<>(sourceNodeMap);
-            updateBoundsSubTree(leastCostTreeH, node, i, runningMetric, upperBoundPaths, subGraph, g, newsourceNodeMap);
+            List<Integer> newNodesInPathSet = new ArrayList<>(nodesInPath);
+            updateBoundsSubTree(leastCostTreeH, node, i, runningMetric, upperBoundPaths, subGraph, g, newNodesInPathSet);
         }
         return 0;
     }
 
     private void nonRetardedUpdateBoundsSubTree(Map<Integer, List<Integer>> leastCostTreeH, int parentNode, Integer node, double upperBoundPaths, Graph subGraph, double g, BoundedSPTResult SPTRes, Integer treeRoot) {
         double reachMetricLast = getEdge(node, getOriginalGraph().getAdjList().get(parentNode)).d;
-        Double lengthToLeaf = SPTRes.nodeDist.get(node);
+        Double lengthToLeaf = SPTRes.nodeDist[node];
         boolean pathTooLong = lengthToLeaf >= upperBoundPaths + reachMetricLast;
         boolean endOfPossiblePath = leastCostTreeH.get(node) == null;
         if (pathTooLong || endOfPossiblePath) {
@@ -279,17 +291,18 @@ public class ReachProcessor {
                 rt = bounds.get(node);
             }
 
-            // long traverseTime = System.nanoTime();
+
+            long traverseTime = System.nanoTime();
             List<Integer> nodesInPathList = findNodesInPath(SPTRes.pathMap, treeRoot, node);
             if (pathTooLong) lengthToLeaf -= reachMetricLast;
-            /*long traverseEnd = System.nanoTime();
+           /* long traverseEnd = System.nanoTime();
             long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
             if (timeElapsed2 >= 1) {
                 System.out.println(timeElapsed2);
             }*/
 
             for (Integer nodeInPath : nodesInPathList) {
-                double rootToNode = SPTRes.nodeDist.get(nodeInPath);
+                double rootToNode = SPTRes.nodeDist[nodeInPath];
                 double nodeToLeaf = lengthToLeaf - rootToNode;
                 double rb = Math.min(g + rootToNode, rt + nodeToLeaf);
                 if (rb > bounds.get(nodeInPath)) {
@@ -380,9 +393,9 @@ public class ReachProcessor {
 
     private class BoundedSPTResult {
         Map<Integer, Integer> pathMap;
-        List<Double> nodeDist;
+        double[] nodeDist;
 
-        public BoundedSPTResult(Map<Integer, Integer> pathMap, List<Double> nodeDist) {
+        public BoundedSPTResult(Map<Integer, Integer> pathMap, double[] nodeDist) {
             this.pathMap = pathMap;
             this.nodeDist = nodeDist;
         }

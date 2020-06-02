@@ -26,7 +26,7 @@ public class LandmarksFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getSameScannedTermination();
     }
     @Override
     public ScanPruningStrategy getScanPruningStrategy() {
@@ -36,7 +36,6 @@ public class LandmarksFactory implements AlgorithmFactory {
     @Override
     public ResultPackingStrategy getResultPackingStrategy() {
         return ResultPackingGenerator.getOneDirectionalPack();
-
     }
 
     @Override

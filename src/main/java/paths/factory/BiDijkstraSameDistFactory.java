@@ -1,10 +1,8 @@
 package paths.factory;
 
 import paths.generator.AlternationGenerator;
-import paths.generator.ScanPruningGenerator;
 import paths.generator.TerminationGenerator;
 import paths.strategy.AlternationStrategy;
-import paths.strategy.ScanPruningStrategy;
 import paths.strategy.TerminationStrategy;
 
 public class BiDijkstraSameDistFactory extends BiDijkstraFactory {
@@ -15,6 +13,6 @@ public class BiDijkstraSameDistFactory extends BiDijkstraFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSearchMeetTermination();
+        return TerminationGenerator.getSameScannedTermination();
     }
 }

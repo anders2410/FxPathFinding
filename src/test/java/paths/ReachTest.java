@@ -42,8 +42,8 @@ public class ReachTest {
         SSSP.setGraph(graph);
         ReachProcessor reachProcessor = new ReachProcessor();
         List<Double> arr = reachProcessor.computeReachBound(graph);
-        /*graphIO.saveReach(fileName, arr);
-        System.out.println(arr);*/
+        graphIO.saveReach(fileName, arr);
+        System.out.println(arr);
     }
 
     @Test
@@ -57,8 +57,8 @@ public class ReachTest {
         SSSP.setGraph(graph);
         ReachProcessor reachProcessor = new ReachProcessor();
         List<Double> arr = reachProcessor.computeReachBound(graph);
-        /*graphIO.saveReach(fileName, arr);
-        System.out.println(arr);*/
+        graphIO.saveReach(fileName, arr);
+        System.out.println(arr);
     }
 
     @Test

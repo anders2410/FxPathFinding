@@ -284,9 +284,29 @@ public class FXMLController implements Initializable {
     private void redrawGraph() {
         clearCanvas();
         drawAllEdges();
+        if (currentOverlay == OverlayType.NODEDIST)
+        drawAllNodeDist();
         drawSelectedNodes();
         drawOverlayNodes();
         drawAllLandmarks();
+    }
+
+    private void drawAllNodeDist() {
+        if (SSSP.getNodeDist(ABDir.B) == null)
+            return;
+        for (Node node : graph.getNodeList()) {
+            double distB = SSSP.getNodeDist(ABDir.B).get(node.index);
+            PixelPoint np = toScreenPos(node);
+            if (distB < 1000000) {
+                gc.setStroke(Color.CYAN);
+                gc.strokeText(""+Math.round(distB*10000)/10000.0, np.x, np.y);
+            }
+            double distA = SSSP.getNodeDist(ABDir.A).get(node.index);
+            if (distA < 1000000) {
+                gc.setStroke(Color.BLUE);
+                gc.strokeText(""+Math.round(distA*10000)/10000.0, np.x, np.y + 15);
+            }
+        }
     }
 
     private void drawSelectedNodes() {
@@ -1132,9 +1152,11 @@ public class FXMLController implements Initializable {
 
     public void handleGenerateCHEvent() {
         GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
-        if (!graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
-            generateContractionHierarchies();
+        if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies.tmp")) {
+            if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies-speed.tmp"))
+                return;
         }
+        generateContractionHierarchies();
     }
 
     private void generateContractionHierarchies() {
@@ -1581,6 +1603,10 @@ public class FXMLController implements Initializable {
     public void handleWeightSpeed() {
         if (graphInfo != null) {
             SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getMaxSpeedTime());
+            GraphIO graphIO = new GraphIO(distanceStrategy, isSCCGraph);
+            if (graphIO.fileExtensionExists(fileName, "-contraction-hierarchies-speed.tmp")) {
+                SSSP.setCHResult(graphIO.loadCH(fileName));
+            }
             runAlgorithm();
         } else {
             System.out.println("Info hasn't been generated for this map: " + fileName);
@@ -1592,6 +1618,12 @@ public class FXMLController implements Initializable {
     }
 
     public void handleWeightTrees() {
-        System.out.println("Not implemented");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getNatural());
+        runAlgorithm();
+    }
+
+    public void handleOverlayNodeDist() {
+        currentOverlay = OverlayType.NODEDIST;
+        redrawGraph();
     }
 }
