@@ -4,7 +4,6 @@ import datastructures.DuplicatePriorityQueueNode;
 import datastructures.JavaDuplicateMinPriorityQueue;
 import model.Edge;
 import model.Graph;
-import model.Node;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -32,17 +31,24 @@ public class ArcFlags {
     }
 
     public void preprocess(int k) {
+        // Step 1: Compute and store all backward-shortest-path trees
         initializeFlags();
+        // Step 2: Initialize cell difference and partition
         initialiseCellDifferences();
 
         List<Set<Integer>> partition = new ArrayList<>();
         for (int i = 0; i < graph.getNodeAmount(); i++) {
-            partition.add(new HashSet<>(i));
+            Set<Integer> pis = new HashSet<>();
+            pis.add(i);
+            partition.add(pis);
         }
+
+        // Step 3: Greedy minimization of cell difference
         while (partition.size() > k) {
             double minDiff = Double.MAX_VALUE;
-            int i2;
-            int i1 = i2 = -1;
+            int i1, i2;
+            i1 = i2 = 0;
+
             Set<Integer> mergedMinPartition;
             for (int i = 0; i < partition.size(); i++) {
                 for (int j = 0; j < partition.size(); j++) {
@@ -53,11 +59,20 @@ public class ArcFlags {
                     }
                 }
             }
+
+            // Merging the two sets with lowest difference
+            // C' <- Ci1 \cup Ci2
             mergedMinPartition = new HashSet<>(partition.get(i1));
             boolean mergeWorked = mergedMinPartition.addAll(partition.get(i2));
             if (!mergeWorked) System.out.println("Merged Fucked Up: i1 = " + i1 + ", i2 = " + i2);
-            HashSet<Edge> mergedMinEdges = new HashSet<Edge>((Collection<? extends Edge>) flags[i1]);
+
+            // flags(C') <- flags(Ci1) \cup flags(Ci2)
+            HashSet<Edge> mergedMinEdges = new HashSet<>((Collection<? extends Edge>) flags[i1]);
             mergedMinEdges.addAll((Collection<? extends Edge>) flags[i2]);
+            flags[i1] = mergedMinEdges;
+
+            // Merge the cells with minimum difference
+            // C <- (C \ {Ci1, Ci2} \cup {C'}
             Set<Integer> i2Set = partition.get(i2);
             partition.remove(i1);
             partition.remove(i2Set);
@@ -65,11 +80,11 @@ public class ArcFlags {
 
             for (int i = 0; i < partition.size(); i++) {
                 if (partition.get(i).equals(mergedMinPartition)) continue;
-                double diffPartitionMinPartition = 0;
+                setDiff[i][i1] = 0;
                 for (int j = 0; j < graph.getNodeAmount(); j++) {
-                    List<List<Edge>> adjList = graph.getAdjList();
-                    for (int l = 0; l < adjList.get(j).size(); l++) {
-                        boolean exclusiveToPartition;
+                    List<Edge> adjList = graph.getAdjList().get(j);
+                    for (int l = 0; l < adjList.size(); l++) {
+                        updateCellDifference(i, i1, adjList.get(j));
                     }
                 }
             }
@@ -82,20 +97,22 @@ public class ArcFlags {
         for (int v = 0; v < graph.getNodeAmount(); v++) {
             for (int u = 0; u < v; u++) {
                 setDiff[v][u] = 0;
-                setDiff[u][v] = 0;
                 for (int l = 0; l < graph.getNodeAmount(); l++) {
                     List<Edge> edges = graph.getAdjList().get(l);
                     for (int m = 0; m < edges.size(); m++) {
-                        boolean exclusiveEdge = flags[u].contains(edges.get(m)) && !flags[v].contains(edges.get(m));
-                        boolean inverseExclusive = !flags[u].contains(edges.get(m)) && flags[v].contains(edges.get(m));
-                        boolean differenceFound = exclusiveEdge || inverseExclusive;
-                        if (differenceFound) {
-                            setDiff[v][u] = setDiff[v][u] + 1;
-                            setDiff[u][v] = setDiff[u][v] + 1;
-                        }
+                        updateCellDifference(v, u, edges.get(m));
                     }
                 }
             }
+        }
+    }
+
+    private void updateCellDifference(int v, int u, Edge o) {
+        boolean exclusiveEdge = flags[u].contains(o) && !flags[v].contains(o);
+        boolean inverseExclusive = !flags[u].contains(o) && flags[v].contains(o);
+        boolean differenceFound = exclusiveEdge || inverseExclusive;
+        if (differenceFound) {
+            setDiff[v][u] = setDiff[v][u] + 1;
         }
     }
 
