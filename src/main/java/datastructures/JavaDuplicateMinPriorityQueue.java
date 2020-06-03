@@ -26,6 +26,10 @@ public class JavaDuplicateMinPriorityQueue extends PriorityQueue<DuplicatePriori
         super(q);
     }
 
+    public JavaDuplicateMinPriorityQueue() {
+        super(duplicateComparator);
+    }
+
     @Override
     public Integer nodePeek() {
         DuplicatePriorityQueueNode peeked = super.peek();

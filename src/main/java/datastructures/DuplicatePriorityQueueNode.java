@@ -8,4 +8,20 @@ public class DuplicatePriorityQueueNode {
         this.index = index;
         this.value = value;
     }
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
 }
