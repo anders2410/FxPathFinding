@@ -4,6 +4,9 @@ import datastructures.DuplicatePriorityQueueNode;
 import datastructures.JavaDuplicateMinPriorityQueue;
 import model.Edge;
 import model.Graph;
+import org.jgrapht.alg.interfaces.PartitioningAlgorithm;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -23,11 +26,20 @@ public class ArcFlags {
 
     public ArcFlags(Graph graph) {
         this.graph = graph;
+        org.jgrapht.Graph<String, DefaultEdge> bacon = new SimpleGraph<>(DefaultEdge.class);
+        bacon.addVertex("Fest");
+        bacon.addVertex("Fest1");
+        bacon.addVertex("Fest2");
+        bacon.addEdge("fest", "fest1");
+        bacon.addEdge("fest", "fest2");
+        bacon.addEdge("fest1", "fest2");
+        List<Set<String>> hdh = new ArrayList<>();
+        hdh.add(bacon.vertexSet());
+        PartitioningAlgorithm.PartitioningImpl<Integer> fest = new PartitioningAlgorithm.PartitioningImpl<Integer>(hdh);
         revGraphAdjList = graph.getReverse(graph.getAdjList());
         nodeDist = new double[graph.getNodeAmount()];
         flags = new HashSet<?>[graph.getNodeAmount()];
         setDiff = new int[graph.getNodeAmount()][graph.getNodeAmount()];
-
     }
 
     public void preprocess(int k) {
