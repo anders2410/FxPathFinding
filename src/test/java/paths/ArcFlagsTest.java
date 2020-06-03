@@ -27,6 +27,6 @@ public class ArcFlagsTest {
     @Test
     public void testThatSomethingWorks() {
         ArcFlags arcFlags = new ArcFlags(originalGraph);
-        arcFlags.preprocess(0);
+        arcFlags.preprocess(10);
     }
 }
