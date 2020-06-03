@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 
 public class ArcFlagsTest {
     Graph originalGraph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "faroe-islands-latest.osm.pbf";
     GraphIO graphIO;
 
     @Before

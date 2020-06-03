@@ -15,26 +15,93 @@ public class ArcFlags {
     private final List<List<Edge>> revGraphAdjList;
 
     double[] nodeDist;
+    int[][] setDiff;
     HashSet<?>[] flags;
     private Set<Integer> dijkstraVisited;
 
-    private BiConsumer<Long, Long> progressListener = (l1, l2) -> { };
+    private BiConsumer<Long, Long> progressListener = (l1, l2) -> {
+    };
 
     public ArcFlags(Graph graph) {
         this.graph = graph;
         revGraphAdjList = graph.getReverse(graph.getAdjList());
         nodeDist = new double[graph.getNodeAmount()];
         flags = new HashSet<?>[graph.getNodeAmount()];
+        setDiff = new int[graph.getNodeAmount()][graph.getNodeAmount()];
+
     }
 
     public void preprocess(int k) {
         initializeFlags();
+        initialiseCellDifferences();
+
+        List<Set<Integer>> partition = new ArrayList<>();
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            partition.add(new HashSet<>(i));
+        }
+        while (partition.size() > k) {
+            double minDiff = Double.MAX_VALUE;
+            int i2;
+            int i1 = i2 = -1;
+            Set<Integer> mergedMinPartition;
+            for (int i = 0; i < partition.size(); i++) {
+                for (int j = 0; j < partition.size(); j++) {
+                    if (setDiff[i][j] < minDiff) {
+                        minDiff = setDiff[i][j];
+                        i1 = i;
+                        i2 = j;
+                    }
+                }
+            }
+            mergedMinPartition = new HashSet<>(partition.get(i1));
+            boolean mergeWorked = mergedMinPartition.addAll(partition.get(i2));
+            if (!mergeWorked) System.out.println("Merged Fucked Up: i1 = " + i1 + ", i2 = " + i2);
+            HashSet<Edge> mergedMinEdges = new HashSet<Edge>((Collection<? extends Edge>) flags[i1]);
+            mergedMinEdges.addAll((Collection<? extends Edge>) flags[i2]);
+            Set<Integer> i2Set = partition.get(i2);
+            partition.remove(i1);
+            partition.remove(i2Set);
+            partition.add(mergedMinPartition);
+
+            for (int i = 0; i < partition.size(); i++) {
+                if (partition.get(i).equals(mergedMinPartition)) continue;
+                double diffPartitionMinPartition = 0;
+                for (int j = 0; j < graph.getNodeAmount(); j++) {
+                    List<List<Edge>> adjList = graph.getAdjList();
+                    for (int l = 0; l < adjList.get(j).size(); l++) {
+                        boolean exclusiveToPartition;
+                    }
+                }
+            }
+        }
+    }
+
+    private void initialiseCellDifferences() {
+        // for all u \prec v \in V
+        // Interpreted as: more minimal based on index number
+        for (int v = 0; v < graph.getNodeAmount(); v++) {
+            for (int u = 0; u < v; u++) {
+                setDiff[v][u] = 0;
+                setDiff[u][v] = 0;
+                for (int l = 0; l < graph.getNodeAmount(); l++) {
+                    List<Edge> edges = graph.getAdjList().get(l);
+                    for (int m = 0; m < edges.size(); m++) {
+                        boolean exclusiveEdge = flags[u].contains(edges.get(m)) && !flags[v].contains(edges.get(m));
+                        boolean inverseExclusive = !flags[u].contains(edges.get(m)) && flags[v].contains(edges.get(m));
+                        boolean differenceFound = exclusiveEdge || inverseExclusive;
+                        if (differenceFound) {
+                            setDiff[v][u] = setDiff[v][u] + 1;
+                            setDiff[u][v] = setDiff[u][v] + 1;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void initializeFlags() {
         for (int i = 0; i < graph.getNodeAmount(); i++) {
-            Node n = graph.getNodeList().get(i);
-            Map<Integer, Integer> backwardsPathTree = dijkstra(n.index, revGraphAdjList);
+            Map<Integer, Integer> backwardsPathTree = dijkstra(i, revGraphAdjList);
             Set<Map.Entry<Integer, Integer>> shortestPathTree = backwardsPathTree.entrySet();
             HashMap<Integer, List<Integer>> leastCostTreeH = new HashMap<>();
             for (Map.Entry<Integer, Integer> entryPair : shortestPathTree) {
@@ -42,7 +109,7 @@ public class ArcFlags {
                 list.add(entryPair.getKey());
                 leastCostTreeH.replace(entryPair.getValue(), list);
             }
-            flags[i] = getEdgeSet(leastCostTreeH, n.index, new HashSet<>());
+            flags[i] = getEdgeSet(leastCostTreeH, i, new HashSet<>());
         }
     }
 
