@@ -131,8 +131,9 @@ public class ContractionHierarchies {
             if (contracted.get(inEdge.from)) {
                 continue;
             }
-            if (inMax < getEdgeWeightStrategy().getWeight(inEdge, ABDir.A)) {
-                inMax = getEdgeWeightStrategy().getWeight(inEdge, ABDir.A);
+            double inTemp = getWeightFromEdge(inEdge);
+            if (inMax < inTemp) {
+                inMax = inTemp;
             }
         }
 
@@ -141,8 +142,9 @@ public class ContractionHierarchies {
             if (contracted.get(outEdge.to)) {
                 continue;
             }
-            if (outMax < getEdgeWeightStrategy().getWeight(outEdge, ABDir.A)) {
-                outMax = getEdgeWeightStrategy().getWeight(outEdge, ABDir.A);
+            double outTemp = getWeightFromEdge(outEdge);
+            if (outMax < outTemp) {
+                outMax = outTemp;
             }
         }
 
@@ -151,7 +153,7 @@ public class ContractionHierarchies {
         // Iterating over all the incoming nodes
         for (Edge inEdge : inEdgeList) {
             int inNodeIndex = inEdge.from;
-            double inCost = getEdgeWeightStrategy().getWeight(inEdge, ABDir.A);
+            double inCost = getWeightFromEdge(inEdge);
 
             // If the node has already been contracted we will ignore it.
             if (contracted.get(inNodeIndex)) {
@@ -164,7 +166,7 @@ public class ContractionHierarchies {
             // This adds shortcuts if no witness path was found.
             for (Edge outEdge : outEdgeList) {
                 int outNodeIndex = outEdge.to;
-                double outCost = getEdgeWeightStrategy().getWeight(outEdge, ABDir.A);
+                double outCost = getWeightFromEdge(outEdge);
 
                 // If the node has already been contracted we will ignore it.
                 if (contracted.get(outNodeIndex) || inNodeIndex == outNodeIndex) {
@@ -191,7 +193,7 @@ public class ContractionHierarchies {
                         }
 
                         if (alreadyHasEdge) {
-                            if (getEdgeWeightStrategy().getWeight(alreadyEdge.getKey(), ABDir.A) > totalCost) {
+                            if (getWeightFromEdge(alreadyEdge.getKey()) > totalCost) {
                                 graph.getAdjList().get(inNodeIndex).set(alreadyEdge.getValue(), new Edge(inNodeIndex, outNodeIndex, totalCost));
 
                                 Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
@@ -204,12 +206,12 @@ public class ContractionHierarchies {
                         } else {
                             graph.addEdge(inNodeIndex, outNodeIndex, totalCost);
 
-                            List<Integer> temp11 = inNodeMap.get(outNodeIndex);
-                            temp11.add(inNodeIndex);
-                            inNodeMap.replace(outNodeIndex, temp11);
+                            List<Integer> temp = inNodeMap.get(outNodeIndex);
+                            temp.add(inNodeIndex);
+                            inNodeMap.replace(outNodeIndex, temp);
 
-                            Pair<Integer, Integer> pair3 = new Pair<>(inNodeIndex, outNodeIndex);
-                            shortcuts.put(pair3, n);
+                            Pair<Integer, Integer> shortcutPair = new Pair<>(inNodeIndex, outNodeIndex);
+                            shortcuts.put(shortcutPair, n);
                         }
                     }
                 }
@@ -246,7 +248,7 @@ public class ContractionHierarchies {
 
             for (Edge edge : graph.getAdjList().get(node)) {
                 int temp = edge.to;
-                double cost = getEdgeWeightStrategy().getWeight(edge, ABDir.A);
+                double cost = getWeightFromEdge(edge);
 
                 if (contracted.get(temp) || contractedNode == temp) {
                     continue;
@@ -272,6 +274,15 @@ public class ContractionHierarchies {
                 return Double.compare(dijkstraDistanceList.get(i), dijkstraDistanceList.get(j));
             }
         };
+    }
+
+    private double getWeightFromEdge(Edge e) {
+        Pair<Integer, Integer> pair = new Pair<>(e.from, e.to);
+        if (shortcuts.containsKey(pair)) {
+            return e.d;
+        } else {
+            return getEdgeWeightStrategy().getWeight(e, ABDir.A);
+        }
     }
 
     // --------------------------------------------- IMPORTANCE ------------------------------------------
