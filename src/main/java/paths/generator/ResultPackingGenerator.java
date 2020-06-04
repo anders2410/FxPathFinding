@@ -1,13 +1,16 @@
 package paths.generator;
 
 import javafx.util.Pair;
+import model.Edge;
 import paths.ABDir;
 import paths.SSSP;
 import paths.ShortestPathResult;
 import paths.strategy.ResultPackingStrategy;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static paths.SSSP.*;
@@ -66,7 +69,62 @@ public class ResultPackingGenerator {
                 }
                 shouldContinue = shouldBeDone(result);
             }
+
+            // This is used to unpack all the routes visited by CH;
+            if (false) {
+                Set<Integer> visitedA;
+                Set<Integer> visitedB;
+
+                Set<Integer> visitedNodeSet = new HashSet<>();
+                for (int node : getScanned(ABDir.A)) {
+                    if (getScanned(ABDir.A).contains(node) && getScanned(ABDir.B).contains(node)) {
+                        visitedNodeSet.add(node);
+                    }
+                }
+
+                visitedA = findVisitedNodes(visitedNodeSet, getSource(), ABDir.A);
+                visitedB = findVisitedNodes(visitedNodeSet, getTarget(), ABDir.B);
+
+                // Set<Integer> savedScannedA = new HashSet<>(getScanned(ABDir.A));
+                // Set<Integer> savedScannedB = new HashSet<>(getScanned(ABDir.B));
+
+                setScanned(ABDir.A, visitedA);
+                setScanned(ABDir.B, visitedB);
+            }
+
             return new ShortestPathResult(getGoalDistance(), new ArrayList<>(result), getScanned(ABDir.A), getScanned(ABDir.B), getRelaxed(ABDir.A), getRelaxed(ABDir.B), duration);
         };
+    }
+
+    private static Set<Integer> findVisitedNodes(Set<Integer> visitedNodeSet, int source, ABDir dir) {
+        Set<Integer> temp = new HashSet<>();
+        for (Integer i : visitedNodeSet) {
+            List<Integer> tempShortestPath = extractPath(SSSP.getPathMap(dir), source, i);
+            List<Integer> tempA = new ArrayList<>(tempShortestPath);
+            boolean shouldContinueA = true;
+            while (shouldContinueA) {
+                for (int j = 0; j < tempA.size() - 1; j++) {
+                    Integer contractedNode = getCHResult().getShortcuts().get(new Pair<>(tempA.get(j), tempA.get(j + 1)));
+                    if (contractedNode != null) {
+                        tempA.add(j + 1, contractedNode);
+                        break;
+                    }
+                }
+                shouldContinueA = shouldBeDone(tempA);
+            }
+            temp.addAll(tempA);
+        }
+        return temp;
+    }
+
+    private static boolean shouldBeDone(List<Integer> complete) {
+        for (int i = 0; i < complete.size() - 1; i++) {
+            Integer contractedNode = SSSP.getCHResult().getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
+            if (contractedNode != null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
