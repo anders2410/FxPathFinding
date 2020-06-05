@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Time;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -44,7 +43,6 @@ public class PathExperiments {
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
         graphIO.loadPreAll(fileName);
         graph = graphIO.getGraph();
-        SSSP.setGraph(graph);
     }
 
     @Test
@@ -518,6 +516,37 @@ public class PathExperiments {
             System.out.print(((i + 1) * densityStep + densityLower) + "," + avg_scans + ":");
         }
         System.out.println();
+    }
+
+    @Test
+    public void testEdgeWeight() {
+        int testCases = 10000;
+        GraphIO graphIO = new GraphIO(true);
+        SSSP.setDistanceStrategy(Util::sphericalDistance);
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getNatural());
+        String fileName = "denmark-latest.osm.pbf";
+        graphIO.loadGraphInfo(fileName);
+        SSSP.setGraphInfo(graphIO.getGraphInfo());
+        graphIO.loadPreALT(fileName);
+        SSSP.setCHResult(graphIO.loadCH(fileName));
+
+
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                DIJKSTRA,
+                BI_DIJKSTRA,
+                A_STAR,
+                BI_A_STAR_CONSISTENT,
+                BI_A_STAR_LANDMARKS,
+                CONTRACTION_HIERARCHIES
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        for (AlgorithmMode mode : modesToTest) {
+            int avg = results.stream().map(res -> res.get(mode).nodesScanned).reduce(Integer::sum).orElse(0) / results.size();
+            int max = results.stream().map(res -> res.get(mode).nodesScanned).max(Integer::compareTo).orElse(0);
+            double time = results.stream().map(res -> res.get(mode).runTime).reduce(Double::sum).orElse(0.0) / results.size();
+            System.out.println(avg + " nodes were scanned on average by " + Util.algorithmNames.get(mode) + ". " + max + " were the maximum nodes scanned. It took " + time + "ms on average" );
+        }
     }
 
     private TestManyRes convertToTestManyRes(ShortestPathResult spRes) {
