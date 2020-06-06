@@ -1,5 +1,7 @@
 package paths.preprocessing;
 
+import datastructures.DuplicatePriorityQueueNode;
+import datastructures.JavaDuplicateMinPriorityQueue;
 import javafx.FXMLController;
 import model.Edge;
 import model.Graph;
@@ -106,7 +108,7 @@ public class ReachProcessor {
             for (Edge e : subGraph.getAdjList().get(i)) {
                 maxFirst = Math.max(maxFirst, e.d);
             }
-            SSSP.setSingleToAllBound(2 * b + maxReachOriginalGraph + d + maxFirst);
+            //SSSP.setSingleToAllBound(2 * b + maxReachOriginalGraph + d + maxFirst);
        /*     long start1 = System.nanoTime();
 
             long end1 = System.nanoTime();
@@ -134,7 +136,7 @@ public class ReachProcessor {
             //nonRetardTraverseTree(leastCostTreeH, subGraph, i, b, maxReachOriginalGraph, g, d, boundedSPTResult, i);
             long traverseEnd = System.nanoTime();
             long timeElapsed2 = TimeUnit.MILLISECONDS.convert(traverseEnd - traverseTime, TimeUnit.NANOSECONDS);
-            /*if (b > 2) {
+            /*if (b > 30) {
                 System.out.println("---");
                 System.out.println("b :" + b + " oneToAll -> " + timeElapsed);
                 System.out.println("b :" + b + " TreeTraverse -> " + timeElapsed2);
@@ -168,30 +170,45 @@ public class ReachProcessor {
     }
 
     public BoundedSPTResult SPTWithinRadius(int source, double radius, Graph graph) {
+        HashSet<Integer> scanned = new HashSet<>(graph.getNodeAmount());
+        List<List<Edge>> adjList = graph.getAdjList();
         double[] nodeDist = new double[graph.getNodeAmount()];
         for (int i = 0; i < graph.getNodeAmount(); i++) {
             nodeDist[i] = Double.MAX_VALUE;
         }
         nodeDist[source] = 0.0;
         Map<Integer, Integer> pathMap = new HashMap<>();
-        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing((integer -> nodeDist[integer])));
+        //PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(Comparator.comparing((integer -> nodeDist[integer])));
         /*for (Node node : graph.getNodeList()) {
             if (node != null) priorityQueue.add(node.index);
         }*/
-        priorityQueue.add(source);
+        JavaDuplicateMinPriorityQueue priorityQueue = new JavaDuplicateMinPriorityQueue();
+        DuplicatePriorityQueueNode queueNode = new DuplicatePriorityQueueNode(source, 0.0);
+
+        priorityQueue.add(queueNode);
         List<Node> nList = graph.getNodeList();
-        while (!priorityQueue.isEmpty() && (nodeDist[priorityQueue.peek()]) < radius) {
-            Integer from = priorityQueue.poll();
-            for (Edge edge : graph.getAdjList().get(from)) {
+        while (!priorityQueue.isEmpty() && (nodeDist[priorityQueue.peek().getIndex()]) < radius) {
+            boolean newEntryFound = false;
+            DuplicatePriorityQueueNode from = null;
+            while (!newEntryFound) {
+                from = priorityQueue.poll();
+                if (from == null) return new BoundedSPTResult(pathMap, nodeDist);
+                if (!scanned.contains(from.getIndex())) newEntryFound = true;
+            }
+
+            scanned.add(from.getIndex());
+            for (Edge edge : adjList.get(from.getIndex())) {
                 if (nList.get(edge.to) == null) continue;
-                if (nodeDist[from] + edge.d < nodeDist[edge.to]) {
-                    nodeDist[edge.to] = nodeDist[from] + edge.d;
-                    priorityQueue.remove(edge.to);
-                    priorityQueue.add(edge.to);
+                if (nodeDist[from.getIndex()] + edge.d < nodeDist[edge.to]) {
+                    nodeDist[edge.to] = nodeDist[from.getIndex()] + edge.d;
+                    DuplicatePriorityQueueNode bacon = new DuplicatePriorityQueueNode(edge.to, nodeDist[edge.to]);
+                    priorityQueue.insert(bacon);
                     pathMap.put(edge.to, edge.from);
                 }
             }
+
         }
+
         return new BoundedSPTResult(pathMap, nodeDist);
     }
 

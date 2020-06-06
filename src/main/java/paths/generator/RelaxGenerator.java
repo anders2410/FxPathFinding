@@ -44,8 +44,9 @@ public class RelaxGenerator {
         return (edge, dir) -> {
             if (!getScanned(revDir(dir)).contains(edge.to)) {
                 getDijkstra().relax(edge, dir);
+                updateGoalDist(edge, dir);
             }
-            updateGoalDist(edge, dir);
+
         };
     }
 

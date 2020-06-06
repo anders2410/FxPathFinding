@@ -6,6 +6,7 @@ import model.Graph;
 import model.Node;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runners.JUnit4;
 import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.ContractionHierarchies;
 import paths.preprocessing.CHResult;
@@ -191,13 +192,13 @@ public class SSSPPBFTest {
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
-           /* testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
+            // testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
-            testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);*/
-            testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
           /*  testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
             testSingle(distDijk, pathDijk, AlgorithmMode.REACH_A_STAR, 9);
             testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_A_STAR, 10);
@@ -210,6 +211,7 @@ public class SSSPPBFTest {
         }
         if (Arrays.equals(new int[algorithms], matrix)) {
             System.out.println(Arrays.deepToString(runtimes));
+            assertTrue(true);
         } else fail();
     }
 
