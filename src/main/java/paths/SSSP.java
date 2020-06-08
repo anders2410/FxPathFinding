@@ -300,17 +300,6 @@ public class SSSP {
         return new ShortestPathResult(0, shortestPath, scannedA, relaxedA, nodeDistA, pathMapA, duration);
     }
 
-    public static boolean shouldBeDone(List<Integer> complete) {
-        for (int i = 0; i < complete.size() - 1; i++) {
-            Integer contractedNode = chResult.getShortcuts().get(new Pair<>(complete.get(i), complete.get(i + 1)));
-            if (contractedNode != null) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public static List<Integer> extractPathBi() {
         List<Integer> shortestPathA = extractPath(pathMapA, source, middlePoint);
         List<Integer> shortestPathB = extractPath(pathMapB, target, middlePoint);
@@ -435,6 +424,14 @@ public class SSSP {
 
     public static Set<Integer> getScanned(ABDir dir) {
         return dir == A ? scannedA : scannedB;
+    }
+
+    public static void setScanned(ABDir dir, Set<Integer> newValue) {
+        if (dir == A) {
+            scannedA = newValue;
+        } else {
+            scannedB = newValue;
+        }
     }
 
     public static List<Double> getNodeDist(ABDir dir) {
