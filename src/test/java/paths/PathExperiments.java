@@ -545,8 +545,7 @@ public class PathExperiments {
 
     @Test
     public void massTestSave() {
-        setUp("malta-latest.osm.pbf");
-        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> dijkstraDubPair = new Pair<>("DijkstraDub", DUPLICATE_DIJKSTRA);
 
@@ -618,12 +617,32 @@ public class PathExperiments {
         pairList.add(CHDubPair);*/
         pairList.add(biAStarPair);
         pairList.add(biAStarSymPair);
-        pairList.add(BIALTPair);
-        pairList.add(ReachALTPair);
 
+        setUp("malta-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testCompareDijkstraAlgorithm(data, "Malta");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+
+        setUp("estonia-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testCompareDijkstraAlgorithm(data, "Estonia");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+
+        setUp("denmark-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testCompareDijkstraAlgorithm(data, "Denmark");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
@@ -681,19 +700,20 @@ public class PathExperiments {
     }
 
     private void testCompareDijkstraAlgorithm(TestDataExtra data, String country) {
+        System.out.println("----" + country + "----");
         int testCases = 10000;
         int i = 0;
         int failCounter = 0;
         seed = 0;
         while (i < testCases) {
-            if (i % 500 == 0) {
+            /*if (i % 500 == 0) {
                 System.out.println("Running test nr: " + i);
-            }
+            }*/
             SSSP.seed++;
             ShortestPathResult res = SSSP.randomPath(data.getMode());
             ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
             data.addVisit(res);
-            if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
+            if (Math.abs(res.d - resDijk.d) > 0.000000000001 || !res.path.equals(resDijk.path)) {
                 failCounter++;
                 System.out.println("( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):");
             }
