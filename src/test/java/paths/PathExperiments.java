@@ -659,7 +659,7 @@ public class PathExperiments {
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testCompareDijkstraAlgorithm(data, "Estonia");
+            testSaveAlgorithm(data, "Estonia");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
@@ -669,7 +669,7 @@ public class PathExperiments {
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testCompareDijkstraAlgorithm(data, "Denmark");
+            testSaveAlgorithm(data, "Denmark");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
