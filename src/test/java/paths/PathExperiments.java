@@ -545,7 +545,7 @@ public class PathExperiments {
             int avg = results.stream().map(res -> res.get(mode).nodesScanned).reduce(Integer::sum).orElse(0) / results.size();
             int max = results.stream().map(res -> res.get(mode).nodesScanned).max(Integer::compareTo).orElse(0);
             double time = results.stream().map(res -> res.get(mode).runTime).reduce(Double::sum).orElse(0.0) / results.size();
-            System.out.println(avg + " nodes were scanned on average by " + Util.algorithmNames.get(mode) + ". " + max + " were the maximum nodes scanned. It took " + time + "ms on average" );
+            System.out.println(avg + " nodes were scanned on average by " + Util.algorithmNames.get(mode) + ". " + max + " were the maximum nodes scanned. It took " + time + "ms on average");
         }
     }
 
@@ -690,7 +690,7 @@ public class PathExperiments {
         int i = 0;
         int failCounter = 0;
         seed = 0;
-        String fileName = country + data.getMode().toString() + testCases + ".txt";
+        String fileName = country + data.getMode().toString() + testCases + "FINAL.txt";
         File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
         f.getParentFile().mkdirs();
         try {
@@ -705,12 +705,13 @@ public class PathExperiments {
                 ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
                 data.addVisit(res);
                 String resultToSave;
-                if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
+              /*  if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
                     failCounter++;
                     resultToSave = "( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):";
                 } else {
                     resultToSave = "(" + res.scannedNodesA.size() + "," + res.runTime + "):";
-                }
+                }*/
+                resultToSave = "(" + res.scannedNodesA.size() + "," + res.runTime + "):";
                 out.write(resultToSave);
                 i++;
             }
