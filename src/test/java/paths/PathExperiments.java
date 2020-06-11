@@ -587,15 +587,14 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraDubPair = new Pair<>("Bi-DijkstraDub", DUPLICATE_BI_DIJKSTRA);
 
-        Pair<String, AlgorithmMode> biAStarSymPair = new Pair<>("Bi-AStarSym", BI_A_STAR_SYMMETRIC);
         Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
-        Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", BI_A_STAR_CONSISTENT);
+        Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", DUPLICATE_BI_A_STAR_CONSISTENT);
 
         Pair<String, AlgorithmMode> BIALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
-        Pair<String, AlgorithmMode> BIALTDubPair = new Pair<>("BiALTDub", BI_A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> BIALTDubPair = new Pair<>("BiALTDub", DUPLICATE_BI_A_STAR_LANDMARKS);
 
         Pair<String, AlgorithmMode> BiReachALTPair = new Pair<>("BiREAL", BI_REACH_LANDMARKS);
-        Pair<String, AlgorithmMode> BiReachALTDubPair = new Pair<>("BiREALDub", BI_REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> BiReachALTDubPair = new Pair<>("BiREALDub", DUPLICATE_BI_REACH_LANDMARKS);
 
         Pair<String, AlgorithmMode> BiReachPair = new Pair<>("BiReach", BI_REACH);
         Pair<String, AlgorithmMode> BiReachDubPair = new Pair<>("BiReachDub", DUPLICATE_BI_REACH);
@@ -614,11 +613,11 @@ public class PathExperiments {
 
 
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
-        Pair<String, AlgorithmMode> CHDubPair = new Pair<>("CHDub", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> CHDubPair = new Pair<>("CHDub", DUPLICATE_CONTRACTION_HIERARCHIES);
 
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        /*pairList.add(dijkstraPair);
+        pairList.add(dijkstraPair);
         pairList.add(dijkstraDubPair);
         pairList.add(aStarPair);
         pairList.add(aStarDubPair);
@@ -643,15 +642,14 @@ public class PathExperiments {
         pairList.add(BiReachAStarPair);
         pairList.add(BiReachAStarDubPair);
         pairList.add(CHPair);
-        pairList.add(CHDubPair);*/
+        pairList.add(CHDubPair);
         pairList.add(biAStarPair);
-        pairList.add(biAStarSymPair);
 
         setUp("malta-latest.osm.pbf");
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testCompareDijkstraAlgorithm(data, "Malta");
+            testSaveAlgorithm(data, "Malta");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
