@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Time;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -44,7 +43,6 @@ public class PathExperiments {
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
         graphIO.loadPreAll(fileName);
         graph = graphIO.getGraph();
-        SSSP.setGraph(graph);
     }
 
     @Test
@@ -520,6 +518,37 @@ public class PathExperiments {
         System.out.println();
     }
 
+    @Test
+    public void testEdgeWeight() {
+        int testCases = 10000;
+        GraphIO graphIO = new GraphIO(true);
+        SSSP.setDistanceStrategy(Util::sphericalDistance);
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getNatural());
+        String fileName = "denmark-latest.osm.pbf";
+        graphIO.loadGraphInfo(fileName);
+        SSSP.setGraphInfo(graphIO.getGraphInfo());
+        graphIO.loadPreALT(fileName);
+        SSSP.setCHResult(graphIO.loadCH(fileName));
+
+
+        List<AlgorithmMode> modesToTest = Arrays.asList(
+                DIJKSTRA,
+                BI_DIJKSTRA,
+                A_STAR,
+                BI_A_STAR_CONSISTENT,
+                BI_A_STAR_LANDMARKS,
+                CONTRACTION_HIERARCHIES
+        );
+        seed = 0;
+        List<Map<AlgorithmMode, TestManyRes>> results = testMany(modesToTest, testCases);
+        for (AlgorithmMode mode : modesToTest) {
+            int avg = results.stream().map(res -> res.get(mode).nodesScanned).reduce(Integer::sum).orElse(0) / results.size();
+            int max = results.stream().map(res -> res.get(mode).nodesScanned).max(Integer::compareTo).orElse(0);
+            double time = results.stream().map(res -> res.get(mode).runTime).reduce(Double::sum).orElse(0.0) / results.size();
+            System.out.println(avg + " nodes were scanned on average by " + Util.algorithmNames.get(mode) + ". " + max + " were the maximum nodes scanned. It took " + time + "ms on average" );
+        }
+    }
+
     private TestManyRes convertToTestManyRes(ShortestPathResult spRes) {
         if (spRes.path.size() == 0) {
             return new TestManyRes(0, 0);
@@ -545,8 +574,7 @@ public class PathExperiments {
 
     @Test
     public void massTestSave() {
-        setUp("malta-latest.osm.pbf");
-        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> dijkstraDubPair = new Pair<>("DijkstraDub", DUPLICATE_DIJKSTRA);
 
@@ -559,6 +587,7 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraDubPair = new Pair<>("Bi-DijkstraDub", DUPLICATE_BI_DIJKSTRA);
 
+        Pair<String, AlgorithmMode> biAStarSymPair = new Pair<>("Bi-AStarSym", BI_A_STAR_SYMMETRIC);
         Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
         Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", BI_A_STAR_CONSISTENT);
 
@@ -589,7 +618,7 @@ public class PathExperiments {
 
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        pairList.add(dijkstraPair);
+        /*pairList.add(dijkstraPair);
         pairList.add(dijkstraDubPair);
         pairList.add(aStarPair);
         pairList.add(aStarDubPair);
@@ -614,28 +643,52 @@ public class PathExperiments {
         pairList.add(BiReachAStarPair);
         pairList.add(BiReachAStarDubPair);
         pairList.add(CHPair);
-        pairList.add(CHDubPair);
+        pairList.add(CHDubPair);*/
+        pairList.add(biAStarPair);
+        pairList.add(biAStarSymPair);
 
+        setUp("malta-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testSaveAlgorithm(data, "Malta");
+            testCompareDijkstraAlgorithm(data, "Malta");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }
+
+        setUp("estonia-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testCompareDijkstraAlgorithm(data, "Estonia");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
         }
 
         setUp("denmark-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testSaveAlgorithm(data, "Denmark");
+            testCompareDijkstraAlgorithm(data, "Denmark");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
         }
+
+        /*setUp("denmark-latest.osm.pbf");
+        for (Pair<String, AlgorithmMode> pair : pairList) {
+            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
+            testSaveAlgorithm(data, "Malta");
+            System.out.println(data);
+            // printInSections(data, 0, 50, 100, 150, 200);
+            // printInSections(data, 0, 125, 250, 375, 500);
+        }*/
     }
 
     private void testSaveAlgorithm(TestDataExtra data, String country) {
-        int testCases = 10000;
+        int testCases = 1;
         int i = 0;
         int failCounter = 0;
         seed = 0;
@@ -654,7 +707,7 @@ public class PathExperiments {
                 ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
                 data.addVisit(res);
                 String resultToSave;
-                if (Math.abs(res.d - resDijk.d) > 0.00000000001 || !res.path.equals(resDijk.path)) {
+                if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
                     failCounter++;
                     resultToSave = "( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):";
                 } else {
@@ -672,6 +725,28 @@ public class PathExperiments {
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void testCompareDijkstraAlgorithm(TestDataExtra data, String country) {
+        System.out.println("----" + country + "----");
+        int testCases = 10000;
+        int i = 0;
+        int failCounter = 0;
+        seed = 0;
+        while (i < testCases) {
+            /*if (i % 500 == 0) {
+                System.out.println("Running test nr: " + i);
+            }*/
+            SSSP.seed++;
+            ShortestPathResult res = SSSP.randomPath(data.getMode());
+            ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
+            data.addVisit(res);
+            if (Math.abs(res.d - resDijk.d) > 0.000000000001 || !res.path.equals(resDijk.path)) {
+                failCounter++;
+                System.out.println("( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):");
+            }
+            i++;
         }
     }
 

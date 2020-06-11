@@ -4,10 +4,13 @@ import load.GraphIO;
 import model.Graph;
 import model.ModelUtil;
 import model.Node;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import paths.preprocessing.ReachProcessor;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -59,6 +62,39 @@ public class ReachTest {
         List<Double> arr = reachProcessor.computeReachBound(graph);
         graphIO.saveReach(fileName, arr);
         System.out.println(arr);
+    }
+
+    @Test
+    public void estoniaReachSave() {
+        fileName = "estonia-latest.osm.pbf";
+        BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
+        SSSP.setDistanceStrategy(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1, true);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        ReachProcessor reachProcessor = new ReachProcessor();
+        List<Double> arr = reachProcessor.computeReachBound(graph);
+        graphIO.saveReach(fileName, arr);
+        /*List<Double> a = graphIO.loadReach(fileName);
+        System.out.println(arr);
+        System.out.println(a);
+        Assert.assertEquals(arr, a);*/
+    }
+
+    @Test
+    public void georgiaReachSave() {
+        fileName = "georgia-latest.osm.pbf";
+        BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
+        SSSP.setDistanceStrategy(distanceStrategy1);
+        graphIO = new GraphIO(distanceStrategy1, true);
+        graphIO.loadGraph(fileName);
+        graph = graphIO.getGraph();
+        SSSP.setGraph(graph);
+        ReachProcessor reachProcessor = new ReachProcessor();
+        List<Double> arr = reachProcessor.computeReachBound(graph);
+        graphIO.saveReach(fileName, arr);
+       // System.out.println(arr);
     }
 
     @Test

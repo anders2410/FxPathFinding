@@ -26,7 +26,7 @@ public class BiLandmarksFactory implements AlgorithmFactory {
 
     @Override
     public TerminationStrategy getTerminationStrategy() {
-        return TerminationGenerator.getSameScannedTermination();
+        return TerminationGenerator.getStrongNonConHeuristicTermination();
     }
     @Override
     public ScanPruningStrategy getScanPruningStrategy() {
