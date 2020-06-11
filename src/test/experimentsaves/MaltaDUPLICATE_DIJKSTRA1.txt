@@ -1,0 +1,4 @@
+(9221,28077200):
+Average Computation Time: 28077200
+Average Visits: 9221
+Fails: 0
