@@ -1,6 +1,7 @@
 package paths;
 
 import load.GraphIO;
+import model.Edge;
 import model.Graph;
 import model.ModelUtil;
 import model.Node;
@@ -8,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.ReachProcessor;
 
 import java.util.Arrays;
@@ -69,6 +71,7 @@ public class ReachTest {
         fileName = "estonia-latest.osm.pbf";
         BiFunction<Node, Node, Double> distanceStrategy1 = Util::sphericalDistance;
         SSSP.setDistanceStrategy(distanceStrategy1);
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         graphIO = new GraphIO(distanceStrategy1, true);
         graphIO.loadGraph(fileName);
         graph = graphIO.getGraph();
@@ -94,7 +97,7 @@ public class ReachTest {
         ReachProcessor reachProcessor = new ReachProcessor();
         List<Double> arr = reachProcessor.computeReachBound(graph);
         graphIO.saveReach(fileName, arr);
-       // System.out.println(arr);
+        // System.out.println(arr);
     }
 
     @Test

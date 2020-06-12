@@ -22,7 +22,7 @@ import static paths.SSSP.getHeuristicFunction;
 
 public class SSSPPBFTest {
     Graph graph;
-    String fileName = "malta-latest.osm.pbf";
+    String fileName = "estonia-latest.osm.pbf";
     GraphIO graphIO;
     private double[] acumRunTimes;
 
@@ -209,7 +209,9 @@ public class SSSPPBFTest {
             i++;
         }
         if (Arrays.equals(new int[algorithms], matrix)) {
-            System.out.println(Arrays.deepToString(runtimes));
+            for (int j = 0; j < acumRunTimes.length; j++) {
+                System.out.println(acumRunTimes[j]);
+            }
             assertTrue(true);
         } else fail();
     }
@@ -219,7 +221,7 @@ public class SSSPPBFTest {
         acumRunTimes[i2] += result.runTime;
         double dist = result.d;
         List<Integer> path = result.path;
-        if (Math.abs(dist - distDijk) > 0.0000000000001 || !path.equals(pathDijk)) {
+        if (Math.abs(dist - distDijk) > 0.000000000001 || !path.equals(pathDijk)) {
             System.out.println(mode + ": " + pathDijk.get(0) + " -> " + pathDijk.get(pathDijk.size() - 1));
             System.out.println(dist);
             System.out.println(distDijk);

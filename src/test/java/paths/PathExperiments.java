@@ -703,9 +703,6 @@ public class PathExperiments {
                 SSSP.seed++;
                 ShortestPathResult res = SSSP.randomPath(data.getMode());
                 ShortestPathResult resDijk;
-                if (data.getMode() == DUPLICATE_CONTRACTION_HIERARCHIES){
-                    SSSP.randomPath(DIJKSTRA);
-                }
                 data.addVisit(res);
                 String resultToSave;
               /*  if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
