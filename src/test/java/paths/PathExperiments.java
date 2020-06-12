@@ -545,7 +545,7 @@ public class PathExperiments {
             int avg = results.stream().map(res -> res.get(mode).nodesScanned).reduce(Integer::sum).orElse(0) / results.size();
             int max = results.stream().map(res -> res.get(mode).nodesScanned).max(Integer::compareTo).orElse(0);
             double time = results.stream().map(res -> res.get(mode).runTime).reduce(Double::sum).orElse(0.0) / results.size();
-            System.out.println(avg + " nodes were scanned on average by " + Util.algorithmNames.get(mode) + ". " + max + " were the maximum nodes scanned. It took " + time + "ms on average" );
+            System.out.println(avg + " nodes were scanned on average by " + Util.algorithmNames.get(mode) + ". " + max + " were the maximum nodes scanned. It took " + time + "ms on average");
         }
     }
 
@@ -587,15 +587,14 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraDubPair = new Pair<>("Bi-DijkstraDub", DUPLICATE_BI_DIJKSTRA);
 
-        Pair<String, AlgorithmMode> biAStarSymPair = new Pair<>("Bi-AStarSym", BI_A_STAR_SYMMETRIC);
         Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
-        Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", BI_A_STAR_CONSISTENT);
+        Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", DUPLICATE_BI_A_STAR_CONSISTENT);
 
         Pair<String, AlgorithmMode> BIALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
-        Pair<String, AlgorithmMode> BIALTDubPair = new Pair<>("BiALTDub", BI_A_STAR_LANDMARKS);
+        Pair<String, AlgorithmMode> BIALTDubPair = new Pair<>("BiALTDub", DUPLICATE_BI_A_STAR_LANDMARKS);
 
         Pair<String, AlgorithmMode> BiReachALTPair = new Pair<>("BiREAL", BI_REACH_LANDMARKS);
-        Pair<String, AlgorithmMode> BiReachALTDubPair = new Pair<>("BiREALDub", BI_REACH_LANDMARKS);
+        Pair<String, AlgorithmMode> BiReachALTDubPair = new Pair<>("BiREALDub", DUPLICATE_BI_REACH_LANDMARKS);
 
         Pair<String, AlgorithmMode> BiReachPair = new Pair<>("BiReach", BI_REACH);
         Pair<String, AlgorithmMode> BiReachDubPair = new Pair<>("BiReachDub", DUPLICATE_BI_REACH);
@@ -614,11 +613,11 @@ public class PathExperiments {
 
 
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
-        Pair<String, AlgorithmMode> CHDubPair = new Pair<>("CHDub", CONTRACTION_HIERARCHIES);
+        Pair<String, AlgorithmMode> CHDubPair = new Pair<>("CHDub", DUPLICATE_CONTRACTION_HIERARCHIES);
 
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        /*pairList.add(dijkstraPair);
+        pairList.add(dijkstraPair);
         pairList.add(dijkstraDubPair);
         pairList.add(aStarPair);
         pairList.add(aStarDubPair);
@@ -643,15 +642,14 @@ public class PathExperiments {
         pairList.add(BiReachAStarPair);
         pairList.add(BiReachAStarDubPair);
         pairList.add(CHPair);
-        pairList.add(CHDubPair);*/
+        pairList.add(CHDubPair);
         pairList.add(biAStarPair);
-        pairList.add(biAStarSymPair);
 
         setUp("malta-latest.osm.pbf");
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testCompareDijkstraAlgorithm(data, "Malta");
+            testSaveAlgorithm(data, "Malta");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
@@ -661,7 +659,7 @@ public class PathExperiments {
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testCompareDijkstraAlgorithm(data, "Estonia");
+            testSaveAlgorithm(data, "Estonia");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
@@ -671,7 +669,7 @@ public class PathExperiments {
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testCompareDijkstraAlgorithm(data, "Denmark");
+            testSaveAlgorithm(data, "Denmark");
             System.out.println(data);
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
@@ -692,7 +690,7 @@ public class PathExperiments {
         int i = 0;
         int failCounter = 0;
         seed = 0;
-        String fileName = country + data.getMode().toString() + testCases + ".txt";
+        String fileName = country + data.getMode().toString() + testCases + "FINAL.txt";
         File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
         f.getParentFile().mkdirs();
         try {
@@ -707,12 +705,13 @@ public class PathExperiments {
                 ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
                 data.addVisit(res);
                 String resultToSave;
-                if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
+              /*  if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
                     failCounter++;
                     resultToSave = "( FAIL, " + resDijk.path.get(0) + " -> " + resDijk.path.get(resDijk.path.size() - 1) + "|" + res.d + " vs " + resDijk.d + "|" + res.path.size() + " vs " + resDijk.path.size() + "):";
                 } else {
                     resultToSave = "(" + res.scannedNodesA.size() + "," + res.runTime + "):";
-                }
+                }*/
+                resultToSave = "(" + res.scannedNodesA.size() + "," + res.runTime + "):";
                 out.write(resultToSave);
                 i++;
             }
