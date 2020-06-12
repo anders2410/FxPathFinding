@@ -7,7 +7,13 @@ import static paths.SSSP.*;
 
 public class ScanPruningGenerator {
     public static ScanPruningStrategy getBasePruning() {
-        return (dir, nodeToScan) -> getStalled().get(nodeToScan);
+        // return (dir, nodeToScan) -> getStalled().get(nodeToScan);
+        return (dir, nodeToScan) -> {
+            if (getScanned(dir).contains(nodeToScan)) {
+                return true;
+            }
+            return nodeToScan == null;
+        };
     }
 
     public static ScanPruningStrategy getBoundsPruning() {
@@ -23,5 +29,4 @@ public class ScanPruningGenerator {
             return getNodeDist(dir).get(nodeToScan) > getBestPathLengthSoFar();
         };
     }
-
 }
