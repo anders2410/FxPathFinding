@@ -649,8 +649,6 @@ public class PathExperiments {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testSaveAlgorithm(data, "Malta");
             System.out.println(data);
-            // printInSections(data, 0, 50, 100, 150, 200);
-            // printInSections(data, 0, 125, 250, 375, 500);
         }
         SSSP.setLandmarkArray(null);
         setUp("estonia-latest.osm.pbf");
@@ -659,8 +657,6 @@ public class PathExperiments {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testSaveAlgorithm(data, "Estonia");
             System.out.println(data);
-            // printInSections(data, 0, 50, 100, 150, 200);
-            // printInSections(data, 0, 125, 250, 375, 500);
         }
         SSSP.setLandmarkArray(null);
 

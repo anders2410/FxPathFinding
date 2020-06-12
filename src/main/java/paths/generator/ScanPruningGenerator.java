@@ -7,6 +7,7 @@ import static paths.SSSP.*;
 
 public class ScanPruningGenerator {
     public static ScanPruningStrategy getBasePruning() {
+        // return (dir, nodeToScan) -> getStalled().get(nodeToScan);
         return (dir, nodeToScan) -> {
             return nodeToScan == null;
         };
@@ -25,5 +26,4 @@ public class ScanPruningGenerator {
             return getNodeDist(dir).get(nodeToScan) > getBestPathLengthSoFar();
         };
     }
-
 }

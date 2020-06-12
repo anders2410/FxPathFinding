@@ -279,6 +279,7 @@ public class SSSP {
         Integer currentNode = extractMinNode(dir);
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
+        // stalled.set(currentNode, true);
         // if (stalled.get(currentNode)) return;
         for (Edge edge : adjList.get(currentNode)) {
             getRelaxStrategy(dir).relax(edge, dir);
