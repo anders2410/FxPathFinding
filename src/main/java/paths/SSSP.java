@@ -108,10 +108,10 @@ public class SSSP {
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
 
-        stalled = new ArrayList<>(graph.getNodeAmount());
+        /*stalled = new ArrayList<>(graph.getNodeAmount());
         for (int i = 0; i < graph.getNodeAmount(); i++) {
             stalled.add(false);
-        }
+        }*/
 
         if (allowFlip) {
             List<List<Edge>> adjList = getAdjList();
