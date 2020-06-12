@@ -108,10 +108,10 @@ public class SSSP {
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
 
-        /*stalled = new ArrayList<>(graph.getNodeAmount());
+        stalled = new ArrayList<>(graph.getNodeAmount());
         for (int i = 0; i < graph.getNodeAmount(); i++) {
             stalled.add(false);
-        }*/
+        }
 
         if (allowFlip) {
             List<List<Edge>> adjList = getAdjList();
@@ -279,6 +279,7 @@ public class SSSP {
         Integer currentNode = extractMinNode(dir);
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
+        stalled.set(currentNode, true);
         // if (stalled.get(currentNode)) return;
         for (Edge edge : adjList.get(currentNode)) {
             getRelaxStrategy(dir).relax(edge, dir);

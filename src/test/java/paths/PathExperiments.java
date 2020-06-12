@@ -574,7 +574,6 @@ public class PathExperiments {
 
     @Test
     public void massTestSave() {
-
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> dijkstraDubPair = new Pair<>("DijkstraDub", DUPLICATE_DIJKSTRA);
 
@@ -618,7 +617,7 @@ public class PathExperiments {
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
         pairList.add(dijkstraPair);
         pairList.add(dijkstraDubPair);
-        pairList.add(aStarPair);
+        /*pairList.add(aStarPair);
         pairList.add(aStarDubPair);
         pairList.add(biDijkstraPair);
         pairList.add(biDijkstraDubPair);
@@ -639,9 +638,9 @@ public class PathExperiments {
         pairList.add(ReachALTPair);
         pairList.add(ReachALTDubPair);
         pairList.add(BiReachAStarPair);
-        pairList.add(BiReachAStarDubPair);
-         pairList.add(CHPair);
-         pairList.add(CHDubPair);
+        pairList.add(BiReachAStarDubPair);*/
+        pairList.add(CHPair);
+        pairList.add(CHDubPair);
 
         setUp("malta-latest.osm.pbf");
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
@@ -649,8 +648,6 @@ public class PathExperiments {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testSaveAlgorithm(data, "Malta");
             System.out.println(data);
-            // printInSections(data, 0, 50, 100, 150, 200);
-            // printInSections(data, 0, 125, 250, 375, 500);
         }
         SSSP.setLandmarkArray(null);
         setUp("estonia-latest.osm.pbf");
@@ -659,8 +656,6 @@ public class PathExperiments {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testSaveAlgorithm(data, "Estonia");
             System.out.println(data);
-            // printInSections(data, 0, 50, 100, 150, 200);
-            // printInSections(data, 0, 125, 250, 375, 500);
         }
         SSSP.setLandmarkArray(null);
 
@@ -671,18 +666,7 @@ public class PathExperiments {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testSaveAlgorithm(data, "Denmark");
             System.out.println(data);
-            // printInSections(data, 0, 50, 100, 150, 200);
-            // printInSections(data, 0, 125, 250, 375, 500);
         }
-
-        /*setUp("denmark-latest.osm.pbf");
-        for (Pair<String, AlgorithmMode> pair : pairList) {
-            TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
-            testSaveAlgorithm(data, "Malta");
-            System.out.println(data);
-            // printInSections(data, 0, 50, 100, 150, 200);
-            // printInSections(data, 0, 125, 250, 375, 500);
-        }*/
     }
 
     private void testSaveAlgorithm(TestDataExtra data, String country) {
@@ -702,10 +686,6 @@ public class PathExperiments {
                 }*/
                 SSSP.seed++;
                 ShortestPathResult res = SSSP.randomPath(data.getMode());
-                ShortestPathResult resDijk;
-                if (data.getMode() == DUPLICATE_CONTRACTION_HIERARCHIES){
-                    SSSP.randomPath(DIJKSTRA);
-                }
                 data.addVisit(res);
                 String resultToSave;
               /*  if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
