@@ -41,7 +41,7 @@ public class PathExperiments {
         this.fileName = fileName;
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadPreAll(fileName);
+        graphIO.loadPreCH(fileName);
         graph = graphIO.getGraph();
     }
 
@@ -752,7 +752,7 @@ public class PathExperiments {
 
     @Test
     public void compareSelectedAlgorithmsOnNodesVisitedAndSpeed() {
-        setUp("malta-latest.osm.pbf");
+        setUp("denmark-latest.osm.pbf");
 
         Pair<String, AlgorithmMode> dijkstraPair = new Pair<>("Dijkstra", DIJKSTRA);
         Pair<String, AlgorithmMode> biDijkstraPair = new Pair<>("Bi-Dijkstra", BI_DIJKSTRA);
@@ -762,11 +762,11 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        pairList.add(dijkstraPair);
+        /*pairList.add(dijkstraPair);
         pairList.add(biDijkstraPair);
         pairList.add(biAStarPair);
         pairList.add(ALTPair);
-        pairList.add(ReachPair);
+        pairList.add(ReachPair);*/
         pairList.add(CHPair);
 
         for (Pair<String, AlgorithmMode> pair : pairList) {
@@ -801,7 +801,7 @@ public class PathExperiments {
     }
 
     private void testAlgorithm(TestDataExtra data) {
-        int testCases = 10000;
+        int testCases = 2000;
         int i = 0;
         seed = 0;
         while (i < testCases) {

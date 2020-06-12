@@ -1,15 +1,13 @@
 package paths;
 
 import datastructures.MinPriorityQueue;
-import javafx.util.Pair;
+import info_model.GraphInfo;
 import model.Edge;
 import model.Graph;
-import info_model.GraphInfo;
 import model.Node;
 import paths.factory.*;
-import paths.generator.EdgeWeightGenerator;
-import paths.factory.BiReachLandmarksFactory;
 import paths.factory.DuplicateFactories.*;
+import paths.generator.EdgeWeightGenerator;
 import paths.generator.RelaxGenerator;
 import paths.preprocessing.CHResult;
 import paths.preprocessing.Landmarks;
@@ -18,11 +16,11 @@ import paths.strategy.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static paths.ABDir.A;
 import static paths.ABDir.B;
 import static paths.AlgorithmMode.*;
+import static paths.Util.revDir;
 
 public class SSSP {
     public static boolean trace = false;
@@ -43,6 +41,7 @@ public class SSSP {
     private static List<Double> reachBounds;
     private static List<Integer> densityMeasures;
     private static List<Double> densityMeasuresNorm;
+    private static List<Boolean> stalled;
 
     // All the different strategies!
     private static boolean biDirectional;
@@ -93,8 +92,10 @@ public class SSSP {
     }
 
     private static void initDataStructures() {
+        // We should move these into the same for-loop..
         nodeDistA = initNodeDist(source, graph.getNodeAmount());
         nodeDistB = initNodeDist(target, graph.getNodeAmount());
+
         scannedA = new HashSet<>();
         scannedB = new HashSet<>();
         relaxedA = new HashSet<>();
@@ -106,6 +107,11 @@ public class SSSP {
         heuristicValuesA = initHeuristicValues(graph.getNodeAmount());
         heuristicValuesB = initHeuristicValues(graph.getNodeAmount());
         bestPathLengthSoFar = Double.MAX_VALUE;
+
+        /*stalled = new ArrayList<>(graph.getNodeAmount());
+        for (int i = 0; i < graph.getNodeAmount(); i++) {
+            stalled.add(false);
+        }*/
 
         if (allowFlip) {
             List<List<Edge>> adjList = getAdjList();
@@ -273,8 +279,17 @@ public class SSSP {
         Integer currentNode = extractMinNode(dir);
         if (scanPruningStrategy.checkPrune(dir, currentNode)) return;
         getScanned(dir).add(currentNode);
+        // if (stalled.get(currentNode)) return;
         for (Edge edge : adjList.get(currentNode)) {
             getRelaxStrategy(dir).relax(edge, dir);
+            // Stall-on-demand heuristic. Helps prune the search space!
+            /*if (mode == CONTRACTION_HIERARCHIES) {
+                if (getNodeDist(revDir(dir)).get(edge.to) + edge.d < getNodeDist(revDir(dir)).get(edge.from)) {
+                    SSSP.getStalled().set(edge.from, true);
+                    // System.out.println(getStalled().get(edge.from));
+                    break;
+                }
+            }*/
         }
     }
 
@@ -553,5 +568,13 @@ public class SSSP {
 
     public static void setRevAdjList(List<List<Edge>> revAdjList) {
         SSSP.revAdjList = revAdjList;
+    }
+
+    public static List<Boolean> getStalled() {
+        return stalled;
+    }
+
+    public static void setStalled(List<Boolean> stalled) {
+        SSSP.stalled = stalled;
     }
 }

@@ -163,6 +163,7 @@ public class RelaxGenerator {
                     updatePriority(edge.to, dir);
                     getPathMap(dir).put(edge.to, edge.from);
                     putRelaxedEdge(dir, edge);
+                    //if (SSSP.getStalled().get(edge.from)) SSSP.getStalled().set(edge.from, false);
                 }
             }
         };
