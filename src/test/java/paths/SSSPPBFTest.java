@@ -24,6 +24,7 @@ public class SSSPPBFTest {
     Graph graph;
     String fileName = "malta-latest.osm.pbf";
     GraphIO graphIO;
+    private double[] acumRunTimes;
 
     @Before
     public void setUp() {
@@ -177,7 +178,7 @@ public class SSSPPBFTest {
 //        graph = graphs.get(0);
         new GraphIO(true).loadPreAll(fileName);
         testCases = 10000;
-        runtimes = new double[algorithms][testCases];
+        acumRunTimes = new double[algorithms];
 
         i = 0;
         failMap = new HashMap<>();
@@ -188,24 +189,22 @@ public class SSSPPBFTest {
             }
             seed++;
             ShortestPathResult dijkRes = SSSP.randomPath(AlgorithmMode.DIJKSTRA);
-            runtimes[0][i] = dijkRes.runTime;
+            acumRunTimes[0] = dijkRes.runTime;
             double distDijk = dijkRes.d;
             List<Integer> pathDijk = dijkRes.path;
 
-            // testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR, 1);
-            //testSingle(distDijk, pathDijk, AlgorithmMode.BI_DIJKSTRA, 2);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_SYMMETRIC, 3);
-            //testSingle(distDijk, pathDijk, AlgorithmMode.A_STAR_LANDMARKS, 4);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_CONSISTENT, 5);
-            //testSingle(distDijk, pathDijk, AlgorithmMode.BI_A_STAR_LANDMARKS, 6);
-            //testSingle(distDijk, pathDijk, AlgorithmMode.REACH, 7);
-          /*  testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH, 8);
-            testSingle(distDijk, pathDijk, AlgorithmMode.REACH_A_STAR, 9);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_A_STAR, 10);
-            testSingle(distDijk, pathDijk, AlgorithmMode.REACH_LANDMARKS, 11);
-            testSingle(distDijk, pathDijk, AlgorithmMode.BI_REACH_LANDMARKS, 12);
-            testSingle(distDijk, pathDijk, AlgorithmMode.CONTRACTION_HIERARCHIES, 13);*/
-
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_A_STAR, 1);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_BI_DIJKSTRA, 2);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_A_STAR_LANDMARKS, 3);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_BI_A_STAR_CONSISTENT, 4);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_BI_A_STAR_LANDMARKS, 5);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_REACH, 6);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_BI_REACH, 7);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_REACH_A_STAR, 8);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_BI_REACH_A_STAR, 9);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_REACH_LANDMARKS, 10);
+            testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_BI_REACH_LANDMARKS, 11);
+            //testSingle(distDijk, pathDijk, AlgorithmMode.DUPLICATE_CONTRACTION_HIERARCHIES, 12);
             //Only interested in tests where path is at least 100
             i++;
         }
@@ -217,7 +216,7 @@ public class SSSPPBFTest {
 
     private void testSingle(double distDijk, List<Integer> pathDijk, AlgorithmMode mode, int i2) {
         ShortestPathResult result = SSSP.randomPath(mode);
-        runtimes[i2][i] = result.runTime;
+        acumRunTimes[i2] += result.runTime;
         double dist = result.d;
         List<Integer> path = result.path;
         if (Math.abs(dist - distDijk) > 0.0000000000001 || !path.equals(pathDijk)) {

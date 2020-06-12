@@ -7,7 +7,12 @@ import static paths.SSSP.*;
 
 public class ScanPruningGenerator {
     public static ScanPruningStrategy getBasePruning() {
-        return (dir, nodeToScan) -> nodeToScan == null;
+        return (dir, nodeToScan) -> {
+            if (getScanned(dir).contains(nodeToScan)) {
+                return true;
+            }
+            return nodeToScan == null;
+        };
     }
 
     public static ScanPruningStrategy getBoundsPruning() {

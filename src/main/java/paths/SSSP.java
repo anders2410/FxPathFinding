@@ -112,7 +112,7 @@ public class SSSP {
             List<List<Edge>> revAdjList = getRevAdjList();
             setAdjList(revAdjList);
             setRevAdjList(adjList);
-        } else if (mode == CONTRACTION_HIERARCHIES) {
+        } else if (mode == CONTRACTION_HIERARCHIES || mode == DUPLICATE_CONTRACTION_HIERARCHIES) {
             adjList = CHGraph.getAdjList();
             revAdjList = CHRevAdjList;
         } else {

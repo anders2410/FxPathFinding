@@ -611,7 +611,6 @@ public class PathExperiments {
         Pair<String, AlgorithmMode> BiReachAStarPair = new Pair<>("BiReachA*", BI_REACH_A_STAR);
         Pair<String, AlgorithmMode> BiReachAStarDubPair = new Pair<>("BiReachA*Dub", DUPLICATE_BI_REACH_A_STAR);
 
-
         Pair<String, AlgorithmMode> CHPair = new Pair<>("CH", CONTRACTION_HIERARCHIES);
         Pair<String, AlgorithmMode> CHDubPair = new Pair<>("CHDub", DUPLICATE_CONTRACTION_HIERARCHIES);
 
@@ -641,9 +640,8 @@ public class PathExperiments {
         pairList.add(ReachALTDubPair);
         pairList.add(BiReachAStarPair);
         pairList.add(BiReachAStarDubPair);
-        pairList.add(CHPair);
-        pairList.add(CHDubPair);
-        pairList.add(biAStarPair);
+         pairList.add(CHPair);
+         pairList.add(CHDubPair);
 
         setUp("malta-latest.osm.pbf");
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
@@ -654,7 +652,7 @@ public class PathExperiments {
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
         }
-
+        SSSP.setLandmarkArray(null);
         setUp("estonia-latest.osm.pbf");
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
@@ -664,10 +662,12 @@ public class PathExperiments {
             // printInSections(data, 0, 50, 100, 150, 200);
             // printInSections(data, 0, 125, 250, 375, 500);
         }
+        SSSP.setLandmarkArray(null);
 
         setUp("denmark-latest.osm.pbf");
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
         for (Pair<String, AlgorithmMode> pair : pairList) {
+            System.out.println("At denmark, testing: " + pair.getValue().toString());
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testSaveAlgorithm(data, "Denmark");
             System.out.println(data);
@@ -686,7 +686,7 @@ public class PathExperiments {
     }
 
     private void testSaveAlgorithm(TestDataExtra data, String country) {
-        int testCases = 1;
+        int testCases = 1000;
         int i = 0;
         int failCounter = 0;
         seed = 0;
@@ -702,7 +702,10 @@ public class PathExperiments {
                 }*/
                 SSSP.seed++;
                 ShortestPathResult res = SSSP.randomPath(data.getMode());
-                ShortestPathResult resDijk = SSSP.randomPath(DIJKSTRA);
+                ShortestPathResult resDijk;
+                if (data.getMode() == DUPLICATE_CONTRACTION_HIERARCHIES){
+                    SSSP.randomPath(DIJKSTRA);
+                }
                 data.addVisit(res);
                 String resultToSave;
               /*  if (Math.abs(res.d - resDijk.d) > 0.0000000000001 || !res.path.equals(resDijk.path)) {
