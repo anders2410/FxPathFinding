@@ -46,7 +46,6 @@ public class RelaxGenerator {
                 getDijkstra().relax(edge, dir);
                 updateGoalDist(edge, dir);
             }
-
         };
     }
 
@@ -135,9 +134,9 @@ public class RelaxGenerator {
     public static RelaxStrategy getCH() {
         return (edge, dir) -> {
             List<Integer> ranks = getCHResult().getRanks();
-            Map<Pair<Integer, Integer>, Integer> shortcuts = getCHResult().getShortcuts();
+            //Map<Pair<Integer, Integer>, Integer> shortcuts = getCHResult().getShortcuts();
             if (ranks.get(edge.from) < ranks.get(edge.to)) {
-                Pair<Integer, Integer> pair;
+                /*Pair<Integer, Integer> pair;
                 if (dir == ABDir.A) {
                     pair = new Pair<>(edge.from, edge.to);
                 } else {
@@ -145,26 +144,24 @@ public class RelaxGenerator {
                 }
 
                 double edgeWeight = shortcuts.containsKey(pair) ? edge.d : edgeWeightStrategy.getWeight(edge, dir);
-                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeight + getNodeDist(revDir(dir)).get(edge.to);
+                double pathLength = getNodeDist(dir).get(edge.from) + edgeWeight + getNodeDist(revDir(dir)).get(edge.to);*/
                 if (getScanned(revDir(dir)).contains(edge.to)) {
+                    double pathLength = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir) + getNodeDist(revDir(dir)).get(edge.to);
                     if (pathLength < getBestPathLengthSoFar()) {
                         setBestPathLengthSoFar(pathLength);
                     }
                 }
 
-                if (pathLength < getGoalDistance()) {
-                    setGoalDistance(pathLength);
-                    setMiddlePoint(edge.to);
-                }
+                getDijkstra().relax(edge, dir);
 
-                double newDist = getNodeDist(dir).get(edge.from) + edgeWeight;
+                /*double newDist = getNodeDist(dir).get(edge.from) + edgeWeightStrategy.getWeight(edge, dir);
                 if (newDist < getNodeDist(dir).get(edge.to)) {
                     getNodeDist(dir).set(edge.to, newDist);
                     updatePriority(edge.to, dir);
                     getPathMap(dir).put(edge.to, edge.from);
                     putRelaxedEdge(dir, edge);
                     //if (SSSP.getStalled().get(edge.from)) SSSP.getStalled().set(edge.from, false);
-                }
+                }*/
             }
         };
     }

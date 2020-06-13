@@ -615,8 +615,8 @@ public class PathExperiments {
 
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        pairList.add(dijkstraPair);
-        pairList.add(dijkstraDubPair);
+        /*pairList.add(dijkstraPair);
+        pairList.add(dijkstraDubPair);*/
         /*pairList.add(aStarPair);
         pairList.add(aStarDubPair);
         pairList.add(biDijkstraPair);
