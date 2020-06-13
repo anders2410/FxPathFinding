@@ -199,6 +199,7 @@ public class SSSP {
         factoryMap.put(DUPLICATE_A_STAR, new AStarDuplicate());
         factoryMap.put(DUPLICATE_A_STAR_LANDMARKS, new LandmarksDuplicateFactory());
         factoryMap.put(DUPLICATE_BI_A_STAR_CONSISTENT, new BiAstarConsistenDuplicateFactory());
+        factoryMap.put(DUPLICATE_BI_A_STAR_SYMMETRIC, new BiAstarSymmetricDuplicateFactory());
         factoryMap.put(DUPLICATE_BI_A_STAR_LANDMARKS, new BiLandmarksDuplicateFactory());
         factoryMap.put(DUPLICATE_BI_DIJKSTRA, new BiDijkstraDuplicateFactory());
         factoryMap.put(DUPLICATE_BI_REACH, new BiReachDuplicateFactory());

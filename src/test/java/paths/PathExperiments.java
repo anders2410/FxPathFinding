@@ -41,7 +41,7 @@ public class PathExperiments {
         this.fileName = fileName;
         graphIO = new GraphIO(distanceStrategy, true);
         assert graphIO.fileExtensionExists(fileName, "-graph.tmp"); // Check that scc exists
-        graphIO.loadPreCH(fileName);
+        graphIO.loadPreAll(fileName);
         graph = graphIO.getGraph();
     }
 
@@ -589,6 +589,8 @@ public class PathExperiments {
 
         Pair<String, AlgorithmMode> biAStarPair = new Pair<>("Bi-AStar", BI_A_STAR_CONSISTENT);
         Pair<String, AlgorithmMode> biAStarDubPair = new Pair<>("Bi-AStarDub", DUPLICATE_BI_A_STAR_CONSISTENT);
+        Pair<String, AlgorithmMode> biAStarSymPair = new Pair<>("Bi-AStar-Symmetric", DUPLICATE_BI_A_STAR_SYMMETRIC);
+
 
         Pair<String, AlgorithmMode> BIALTPair = new Pair<>("BiALT", BI_A_STAR_LANDMARKS);
         Pair<String, AlgorithmMode> BIALTDubPair = new Pair<>("BiALTDub", DUPLICATE_BI_A_STAR_LANDMARKS);
@@ -624,6 +626,7 @@ public class PathExperiments {
         pairList.add(biDijkstraDubPair);
         pairList.add(biAStarPair);
         pairList.add(biAStarDubPair);
+        pairList.add(biAStarSymPair);
         pairList.add(BIALTPair);
         pairList.add(BIALTDubPair);
         pairList.add(BiReachALTPair);
@@ -640,8 +643,8 @@ public class PathExperiments {
         pairList.add(ReachALTDubPair);
         pairList.add(BiReachAStarPair);
         pairList.add(BiReachAStarDubPair);
-         pairList.add(CHPair);
-         pairList.add(CHDubPair);
+        pairList.add(CHPair);
+        pairList.add(CHDubPair);
 
         setUp("malta-latest.osm.pbf");
         SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
@@ -682,7 +685,7 @@ public class PathExperiments {
     }
 
     private void testSaveAlgorithm(TestDataExtra data, String country) {
-        int testCases = 1000;
+        int testCases = 10000;
         int i = 0;
         int failCounter = 0;
         seed = 0;
