@@ -10,16 +10,14 @@ import paths.generator.EdgeWeightGenerator;
 import paths.preprocessing.LandmarkMode;
 import paths.preprocessing.Landmarks;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -618,7 +616,7 @@ public class PathExperiments {
 
 
         List<Pair<String, AlgorithmMode>> pairList = new ArrayList<>();
-        pairList.add(dijkstraPair);
+       /* pairList.add(dijkstraPair);
         pairList.add(dijkstraDubPair);
         pairList.add(aStarPair);
         pairList.add(aStarDubPair);
@@ -642,7 +640,7 @@ public class PathExperiments {
         pairList.add(ReachALTPair);
         pairList.add(ReachALTDubPair);
         pairList.add(BiReachAStarPair);
-        pairList.add(BiReachAStarDubPair);
+        pairList.add(BiReachAStarDubPair);*/
         pairList.add(CHPair);
         pairList.add(CHDubPair);
 
@@ -670,6 +668,64 @@ public class PathExperiments {
             TestDataExtra data = new TestDataExtra(pair.getKey(), pair.getValue());
             testSaveAlgorithm(data, "Denmark");
             System.out.println(data);
+        }
+    }
+
+    @Test
+    public void correlatePathLengthWithSavedData() {
+        String country = "Malta";
+        setUp("malta-latest.osm.pbf");
+        SSSP.setEdgeWeightStrategy(EdgeWeightGenerator.getDistanceWeights());
+        AlgorithmMode modeToParse = DUPLICATE_CONTRACTION_HIERARCHIES;
+        int lengthCategoriesAmount = 5;
+        int[][] ranges = new int[lengthCategoriesAmount][2];
+        ranges[0][0] = 0;
+        ranges[0][1] = 5;
+        ranges[1][0] = 5;
+        ranges[1][1] = 10;
+        ranges[2][0] = 10;
+        ranges[2][1] = 15;
+        ranges[3][0] = 15;
+        ranges[3][1] = 20;
+        ranges[4][0] = 20;
+        ranges[4][1] = Integer.MAX_VALUE;
+        Map<Integer, List<Integer>> categoryListMap = new HashMap<>();
+        for (int i = 0; i < lengthCategoriesAmount; i++) {
+            categoryListMap.put(i, new ArrayList<>());
+        }
+        int testCases = 10000;
+        String fileName = country + modeToParse + testCases + "FINAL.txt";
+        File f = new File(System.getProperty("user.dir") + "/src/test/experimentsaves/" + fileName);
+        int i = 0;
+        ArrayList<Double> pathLengthList = new ArrayList<>(testCases);
+        while (i < testCases) {
+            SSSP.seed++;
+            ShortestPathResult res = SSSP.randomPath(CONTRACTION_HIERARCHIES);
+            pathLengthList.add(res.d);
+            i++;
+        }
+        String input = null;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(f));
+            input = in.lines().collect(Collectors.joining());
+            List<String> items = Arrays.asList(input.split(":"));
+            for (int j = 0; j < items.size(); j++) {
+                // Filter last lines of 'Averaged.....'
+                if (items.get(j).charAt(0) == '(') {
+                    for (int k = 0; k < lengthCategoriesAmount; k++) {
+                        if (pathLengthList.get(j) < ranges[k][1] && pathLengthList.get(j) >= ranges[k][0]) {
+                            categoryListMap.get(k).add(Integer.valueOf(items.get(j).split(",")[1].replace(")", "")));
+                        }
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        for (int j = 0; j < ranges.length; j++) {
+            System.out.println(country + " " + modeToParse + " " + "paths in range: [" + ranges[j][0] + "-" + ranges[j][1] + "[");
+            System.out.println("Statistics: " + categoryListMap.get(j).stream().mapToLong((x) -> x).summaryStatistics());
+            System.out.println("");
         }
     }
 
