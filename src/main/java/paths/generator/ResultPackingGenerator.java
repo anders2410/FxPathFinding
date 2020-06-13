@@ -53,7 +53,10 @@ public class ResultPackingGenerator {
                     }
                 }
             }
+
             setMiddlePoint(middlepoint);
+            setGoalDistance(finalDistance);
+
             // This is the unpacking of the shortest path. It unpacks all shortcuts on the route found by
             // the modified Bi-Directional Dijkstras.
             List<Integer> shortestPathCH = extractPathBi();
@@ -84,9 +87,6 @@ public class ResultPackingGenerator {
 
                 visitedA = findVisitedNodes(visitedNodeSet, getSource(), ABDir.A);
                 visitedB = findVisitedNodes(visitedNodeSet, getTarget(), ABDir.B);
-
-                // Set<Integer> savedScannedA = new HashSet<>(getScanned(ABDir.A));
-                // Set<Integer> savedScannedB = new HashSet<>(getScanned(ABDir.B));
 
                 setScanned(ABDir.A, visitedA);
                 setScanned(ABDir.B, visitedB);
